@@ -8,7 +8,7 @@ use vesper3d::{
 };
 
 pub const PROTOCOL_VERSION: u32 = 1;
-pub const MAX_PACKET_BYTES: usize = 1100;
+pub const MAX_PACKET_BYTES: usize = 4096;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ClientInput {
@@ -90,7 +90,7 @@ impl WireMessage {
     pub fn encode(&self) -> vesper3d::Result<Vec<u8>> {
         let bytes = serde_json::to_vec(self)?;
         if bytes.len() > MAX_PACKET_BYTES {
-            return Err("BlueDM packet exceeds the 1100-byte transport budget".into());
+            return Err("BlueDM packet exceeds the 4096-byte transport budget".into());
         }
         Ok(bytes)
     }
@@ -99,5 +99,42 @@ impl WireMessage {
         (bytes.len() <= MAX_PACKET_BYTES)
             .then(|| serde_json::from_slice(bytes).ok())
             .flatten()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn full_eight_player_match_fits_snapshot_budget() {
+        let state = MatchSnapshot {
+            tick: u64::MAX,
+            team_scores: [99, 99],
+            score_limit: 100,
+            winner: None,
+            players: (1..=8)
+                .map(|id| PlayerSnapshot {
+                    id,
+                    position: V(-19.123456, 1.68, 3.612345),
+                    yaw: 1.2345678,
+                    pitch: -1.1234567,
+                    team: Team::Crimson,
+                    model: OperativeModel::FieldTech,
+                    health: 100,
+                    kills: 999,
+                    deaths: 999,
+                    weapon_slot: 4,
+                    magazine: 30,
+                    reserve: 120,
+                    reloading: false,
+                })
+                .collect(),
+        };
+        let message = WireMessage::Snapshot {
+            token: [255; 16],
+            state,
+        };
+        let bytes = message.encode().unwrap();
+        assert!(WireMessage::decode(&bytes).is_some());
     }
 }

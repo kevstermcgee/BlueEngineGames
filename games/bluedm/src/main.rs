@@ -1,3 +1,4 @@
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 use bluedm::{
     content_path,
     protocol::{ClientInput, MatchSnapshot, WireMessage, PROTOCOL_VERSION},
@@ -5,14 +6,21 @@ use bluedm::{
     DEFAULT_KEY, DEFAULT_SERVER,
 };
 use macroquad::prelude::*;
+use vesper3d::viewer::game_text::{draw_text, measure_text};
+use vesper3d::viewer::game_visuals::{SurfaceRenderer, WeaponPresentation, WeaponStyle};
+mod native_input;
+use native_input::{is_key_down, is_key_pressed, is_mouse_button_down, is_mouse_button_pressed};
 use std::{
     net::SocketAddr,
     sync::{atomic::AtomicBool, Arc},
     time::{Duration, Instant},
 };
+use vesper3d::viewer::{
+    game_client::{static_meshes, window_config, GameShell},
+    presentation::PoseStream,
+};
 use vesper3d::{
     math::V,
-    scene::{Shape, Track},
     viewer::{
         authoring::MapDocument,
         controller::Movement,
@@ -21,15 +29,8 @@ use vesper3d::{
     },
 };
 
-fn window_conf() -> Conf {
-    Conf {
-        window_title: "BlueDM".into(),
-        window_width: 1280,
-        window_height: 720,
-        high_dpi: true,
-        sample_count: 4,
-        ..Default::default()
-    }
+fn window_conf() -> macroquad::conf::Conf {
+    window_config("BlueDM")
 }
 
 struct Client {
@@ -46,6 +47,7 @@ struct Client {
     pitch: f32,
     aim: AimState,
     snapshot: Option<MatchSnapshot>,
+    poses: PoseStream,
     status: String,
     last_join: Instant,
 }
@@ -66,6 +68,7 @@ impl Client {
             pitch: 0.0,
             aim: AimState::default(),
             snapshot: None,
+            poses: PoseStream::default(),
             status: "Connecting to Cobalt Foundry...".into(),
             last_join: Instant::now() - Duration::from_secs(1),
         })
@@ -95,11 +98,37 @@ impl Client {
                     self.player_id = Some(player_id);
                     self.token = Some(token);
                     self.status = format!("Online as operative {player_id}");
-                    set_cursor_grab(true);
-                    show_mouse(false);
                 }
                 Some(WireMessage::Reject { reason }) => self.status = reason,
                 Some(WireMessage::Snapshot { token, state }) if Some(token) == self.token => {
+                    if self
+                        .snapshot
+                        .as_ref()
+                        .is_some_and(|old| state.tick <= old.tick)
+                    {
+                        continue;
+                    }
+                    if self.snapshot.is_none() {
+                        if let Some(local) =
+                            state.players.iter().find(|p| Some(p.id) == self.player_id)
+                        {
+                            client_initial_look(
+                                &mut self.yaw,
+                                &mut self.pitch,
+                                local.yaw,
+                                local.pitch,
+                            );
+                        }
+                    }
+                    self.poses.push(
+                        state.tick,
+                        get_time(),
+                        &state
+                            .players
+                            .iter()
+                            .map(|p| (p.id, p.position))
+                            .collect::<Vec<_>>(),
+                    );
                     self.snapshot = Some(state);
                 }
                 _ => {}
@@ -115,7 +144,7 @@ impl Client {
             };
             self.transport.send(self.server, &join.encode()?)?;
         }
-        if let Some(token) = self.token {
+        if let Some(token) = self.token.filter(|_| self.snapshot.is_some()) {
             self.sequence += 1;
             self.fire_counter = self.fire_counter.wrapping_add(u32::from(fire_pressed));
             self.reload_counter = self.reload_counter.wrapping_add(u32::from(reload));
@@ -156,70 +185,149 @@ async fn main() -> vesper3d::Result<()> {
         std::thread::sleep(Duration::from_millis(750));
     }
     let map = MapDocument::load(&content_path())?;
+    let room = map.build()?;
+    let meshes = static_meshes(&room.world);
+    let mut surfaces = SurfaceRenderer::new()?;
+    surfaces.add_sign(
+        "FOUNDRY / LOADING 02",
+        vec3(-15., 3.10, -11.84),
+        Vec3::X,
+        0.50,
+    );
+    surfaces.add_sign("DISPATCH / 01", vec3(9., 3.10, 11.84), -Vec3::X, 0.50);
+    let mut effects = WeaponPresentation::new().await;
     let mut client = Client::new(address.parse()?, key)?;
     let catalog = armory();
 
+    let mut shell = GameShell::new();
+    let mut frame_times = Vec::<f32>::new();
     let mut frame = 0u32;
     loop {
-        if is_key_pressed(KeyCode::Escape) {
-            set_cursor_grab(false);
-            show_mouse(true);
+        if !foreground() && !args.iter().any(|a| a == "--capture") {
+            shell.paused = true;
         }
-        if is_mouse_button_pressed(MouseButton::Left) && client.token.is_some() {
-            set_cursor_grab(true);
-            show_mouse(false);
-        }
-        if is_key_down(KeyCode::LeftAlt) {
-            set_cursor_grab(false);
-            show_mouse(true);
-        } else if client.token.is_some() {
+        native_input::poll(foreground());
+        shell.begin_frame_with_input(client.token.is_some(), is_key_pressed);
+        let playing = shell.playing();
+        if playing {
             let delta = mouse_delta_position();
-            client.yaw = (client.yaw - delta.x * 2.5).rem_euclid(std::f32::consts::TAU);
-            client.pitch = (client.pitch - delta.y * 2.5).clamp(-1.48, 1.48);
+            client.yaw = (client.yaw - delta.x * 2.35).rem_euclid(std::f32::consts::TAU);
+            client.pitch = (client.pitch + delta.y * 2.35).clamp(-1.48, 1.48);
         }
-        select_weapon(&mut client.weapon_slot);
-        let (_, wheel) = mouse_wheel();
-        if wheel != 0.0 {
-            client.weapon_slot = if wheel > 0.0 {
-                (client.weapon_slot + catalog.weapons.len() - 1) % catalog.weapons.len()
-            } else {
-                (client.weapon_slot + 1) % catalog.weapons.len()
-            };
+        if playing {
+            select_weapon(&mut client.weapon_slot);
+            let (_, wheel) = mouse_wheel();
+            if wheel != 0.0 {
+                client.weapon_slot = if wheel > 0.0 {
+                    (client.weapon_slot + catalog.weapons.len() - 1) % catalog.weapons.len()
+                } else {
+                    (client.weapon_slot + 1) % catalog.weapons.len()
+                };
+            }
         }
+        let (forward, right) = native_input::axes();
         let mut movement = Movement {
-            forward: axis(KeyCode::W, KeyCode::S),
-            right: axis(KeyCode::D, KeyCode::A),
+            forward,
+            right,
             jump: is_key_pressed(KeyCode::Space),
             crouch: is_key_down(KeyCode::LeftControl),
             sprint: is_key_down(KeyCode::LeftShift),
         };
+        if !playing {
+            movement = Movement::default();
+        }
         if capture_path.is_some() && frame < 75 {
             movement.forward = 1.0;
             movement.sprint = true;
         }
-        let ads = is_mouse_button_down(MouseButton::Right);
+        let ads = playing && is_mouse_button_down(MouseButton::Right);
         client
             .aim
             .update(ads, get_frame_time(), &catalog.weapons[client.weapon_slot]);
         client.update_network(
             movement,
-            is_mouse_button_pressed(MouseButton::Left),
-            is_mouse_button_down(MouseButton::Left),
-            is_key_pressed(KeyCode::R),
+            playing && is_mouse_button_pressed(MouseButton::Left),
+            playing && is_mouse_button_down(MouseButton::Left),
+            playing && is_key_pressed(KeyCode::R),
             ads,
         )?;
 
+        let local = client
+            .snapshot
+            .as_ref()
+            .and_then(|s| s.players.iter().find(|p| Some(p.id) == client.player_id));
+        let origin = local.map_or(V(-20., 1.68, 0.), |p| p.position);
+        let weapon = &catalog.weapons[client.weapon_slot];
+        let can_fire = playing
+            && match weapon.fire_mode {
+                vesper3d::viewer::fps::FireMode::SemiAutomatic => {
+                    is_mouse_button_pressed(MouseButton::Left)
+                }
+                _ => {
+                    is_mouse_button_down(MouseButton::Left)
+                        || is_mouse_button_pressed(MouseButton::Left)
+                }
+            }
+            && local.is_some_and(|p| p.health > 0 && p.magazine > 0 && !p.reloading);
+        effects.trigger(
+            can_fire,
+            weapon.ticks_between_shots() as f64 / 60.,
+            origin,
+            vesper3d::viewer::fps::direction(client.yaw, client.pitch),
+            &room.world,
+        );
         draw_world(
-            &map,
+            &meshes,
             &client,
+            &room.colliders,
+            &surfaces,
+            &effects,
             client.aim.fov(76.0, &catalog.weapons[client.weapon_slot]),
             capture_path.is_some(),
         );
+        effects.draw(
+            match weapon.class {
+                WeaponClass::Pistol => WeaponStyle::Pistol,
+                WeaponClass::Shotgun => WeaponStyle::Shotgun,
+                WeaponClass::SniperRifle | WeaponClass::MarksmanRifle => WeaponStyle::Scoped,
+                WeaponClass::MachineGun => WeaponStyle::Heavy,
+                _ => WeaponStyle::Rifle,
+            },
+            client.aim.amount(),
+            movement.forward != 0. || movement.right != 0.,
+            local.is_some_and(|p| p.reloading),
+        );
         draw_hud(&client, &catalog.weapons[client.weapon_slot]);
+        if args.iter().any(|a| a == "--capture-menu") {
+            shell.paused = true;
+        }
+        if shell.menu(
+            "BLUEDM",
+            &[
+                "WASD / arrows   Move",
+                "Mouse   Look / fire",
+                "Space   Jump    Shift   Sprint",
+                "1-0 / wheel   Weapons",
+                "F / F11   Fullscreen",
+                "Esc   Menu    F3   Diagnostics",
+            ],
+        ) {
+            return Ok(());
+        }
+        if shell.diagnostics {
+            draw_text(&format!("{} FPS", get_fps()), 16., 25., 18., WHITE);
+        }
+        if frame > 15 {
+            frame_times.push(get_frame_time() * 1000.);
+        }
         frame += 1;
         if frame == 90 {
             if let Some(path) = &capture_path {
                 get_screen_data().export_png(path);
+                frame_times.sort_by(f32::total_cmp);
+                let n = frame_times.len();
+                let report = serde_json::json!({"sample_frames":n,"median_ms":frame_times[n/2],"p95_ms":frame_times[n*95/100],"p99_ms":frame_times[n*99/100],"snapshot_tick":client.snapshot.as_ref().map(|s|s.tick)});
+                std::fs::write(format!("{path}.json"), serde_json::to_vec_pretty(&report)?)?;
                 return Ok(());
             }
         }
@@ -227,19 +335,32 @@ async fn main() -> vesper3d::Result<()> {
     }
 }
 
-fn draw_world(map: &MapDocument, client: &Client, fov: f32, showcase: bool) {
-    clear_background(Color::new(0.025, 0.045, 0.075, 1.0));
+fn draw_world(
+    meshes: &[Mesh],
+    client: &Client,
+    colliders: &[vesper3d::viewer::controller::Collider],
+    surfaces: &SurfaceRenderer,
+    effects: &WeaponPresentation,
+    fov: f32,
+    showcase: bool,
+) {
+    clear_background(Color::new(0.65, 0.77, 0.84, 1.0));
     let local = client.snapshot.as_ref().and_then(|snapshot| {
         let id = client.player_id?;
         snapshot.players.iter().find(|player| player.id == id)
     });
     let eye = if showcase {
-        V(0.5, 1.68, -4.4)
+        V(-12.0, 1.68, 8.0)
     } else {
-        local.map_or(V(-20.0, 1.68, 0.0), |player| player.position)
+        local.map_or(V(-20.0, 1.68, 0.0), |player| {
+            client
+                .poses
+                .collision_safe_position(player.id, get_time(), colliders, 1.68, 1.8, 0.23)
+                .unwrap_or(player.position)
+        })
     };
     let direction = if showcase {
-        vesper3d::viewer::fps::direction(1.15, -0.04)
+        vesper3d::viewer::fps::direction(1.0, -0.02)
     } else {
         vesper3d::viewer::fps::direction(client.yaw, client.pitch)
     };
@@ -254,32 +375,19 @@ fn draw_world(map: &MapDocument, client: &Client, fov: f32, showcase: bool) {
         fovy: fov.to_radians(),
         ..Default::default()
     });
-    for node in &map.scene.nodes {
-        let (Track::Fixed(position), Track::Fixed(scale)) = (&node.pos, &node.scale) else {
-            continue;
-        };
-        let material = map
-            .scene
-            .materials
-            .get(&node.material)
-            .cloned()
-            .unwrap_or_default();
-        let color = Color::new(material.color.0, material.color.1, material.color.2, 1.0);
-        let center = vec3(position.0, position.1, position.2);
-        match node.shape {
-            Shape::Sphere => draw_sphere(center, scale.0.max(scale.1).max(scale.2), None, color),
-            _ => draw_cube(
-                center,
-                vec3(scale.0 * 2.0, scale.1 * 2.0, scale.2 * 2.0),
-                None,
-                color,
-            ),
-        }
-    }
+    surfaces.draw(meshes);
+    effects.world_effects();
     if let Some(snapshot) = &client.snapshot {
         for player in &snapshot.players {
             if Some(player.id) != client.player_id && player.health > 0 {
-                draw_operative(player.position, player.team, player.model);
+                draw_operative(
+                    client
+                        .poses
+                        .position(player.id, get_time(), false)
+                        .unwrap_or(player.position),
+                    player.team,
+                    player.model,
+                );
             }
         }
     }
@@ -350,162 +458,75 @@ fn draw_operative(position: V, team: Team, model: OperativeModel) {
 }
 
 fn draw_hud(client: &Client, weapon: &vesper3d::viewer::fps::WeaponDefinition) {
-    let width = screen_width();
-    let height = screen_height();
-    let aim = client.aim.amount();
-    let gap = 11.0 * (1.0 - aim) + 2.0;
-    let cx = width * 0.5;
-    let cy = height * 0.5;
-    draw_line(cx - gap - 9.0, cy, cx - gap, cy, 2.0, WHITE);
-    draw_line(cx + gap, cy, cx + gap + 9.0, cy, 2.0, WHITE);
-    draw_line(cx, cy - gap - 9.0, cx, cy - gap, 2.0, WHITE);
-    draw_line(cx, cy + gap, cx, cy + gap + 9.0, 2.0, WHITE);
+    let w = screen_width();
+    let h = screen_height();
+    let local = client
+        .snapshot
+        .as_ref()
+        .and_then(|s| s.players.iter().find(|p| Some(p.id) == client.player_id));
+    let health = local.map_or(0, |p| p.health);
+    let ammo = local.map_or(weapon.magazine_size, |p| p.magazine);
+    let reserve = local.map_or(weapon.reserve_ammo, |p| p.reserve);
 
-    let local = client.snapshot.as_ref().and_then(|snapshot| {
-        let id = client.player_id?;
-        snapshot.players.iter().find(|player| player.id == id)
-    });
-    let health = local.map_or(0, |player| player.health);
-    let (magazine, reserve, reloading) = local.map_or(
-        (weapon.magazine_size, weapon.reserve_ammo, false),
-        |player| (player.magazine, player.reserve, player.reloading),
-    );
-    draw_rectangle(
-        18.0,
-        height - 86.0,
-        260.0,
-        62.0,
-        Color::from_rgba(7, 14, 24, 220),
-    );
+    draw_circle(w * 0.5, h * 0.5, 3.5, BLACK);
+    draw_circle(w * 0.5, h * 0.5, 1.8, WHITE);
+    draw_rectangle(20., h - 74., 150., 54., Color::from_rgba(12, 24, 29, 155));
     draw_text(
-        &format!("HEALTH {health:03}"),
-        32.0,
-        height - 47.0,
-        30.0,
-        if health > 30 { WHITE } else { RED },
+        &format!("{health}"),
+        34.,
+        h - 37.,
+        32.,
+        if health > 30 { WHITE } else { ORANGE },
     );
-    draw_rectangle(
-        width - 318.0,
-        height - 100.0,
-        300.0,
-        76.0,
-        Color::from_rgba(7, 14, 24, 220),
-    );
-    draw_text(&weapon.name, width - 302.0, height - 66.0, 22.0, WHITE);
-    draw_text(
-        &if reloading {
-            "RELOADING".into()
-        } else {
-            format!("{magazine:02} / {reserve:03}")
-        },
-        width - 302.0,
-        height - 37.0,
-        24.0,
-        GOLD,
-    );
-
-    if let Some(snapshot) = &client.snapshot {
+    draw_text("HEALTH", 94., h - 39., 15., WHITE);
+    let x = (w - 220.).max(180.);
+    draw_rectangle(x, h - 84., 200., 64., Color::from_rgba(12, 24, 29, 155));
+    draw_text(&weapon.name, x + 14., h - 61., 16., WHITE);
+    let text = if local.is_some_and(|p| p.reloading) {
+        "RELOADING".into()
+    } else {
+        format!("{ammo}  /  {reserve}")
+    };
+    draw_text(&text, x + 14., h - 34., 27., WHITE);
+    if let Some(s) = &client.snapshot {
+        let score = format!(
+            "AZURE  {} : {}  CRIMSON",
+            s.team_scores[0], s.team_scores[1]
+        );
+        let size = measure_text(&score, None, 20, 1.);
         draw_rectangle(
-            width * 0.5 - 150.0,
-            12.0,
-            300.0,
-            52.0,
-            Color::from_rgba(7, 14, 24, 220),
+            w * 0.5 - size.width * 0.5 - 12.,
+            12.,
+            size.width + 24.,
+            30.,
+            Color::from_rgba(12, 24, 29, 155),
         );
-        draw_text(
-            &format!(
-                "AZURE {:02}   /   {:02} CRIMSON",
-                snapshot.team_scores[0], snapshot.team_scores[1]
-            ),
-            width * 0.5 - 125.0,
-            46.0,
-            25.0,
-            WHITE,
-        );
-        if let Some(winner) = snapshot.winner {
-            draw_rectangle(
-                0.0,
-                height * 0.38,
-                width,
-                100.0,
-                Color::from_rgba(5, 8, 14, 220),
-            );
+        draw_text(&score, w * 0.5 - size.width * 0.5, 33., 20., WHITE);
+        if let Some(team) = s.winner {
             draw_text(
-                &format!("{:?} TEAM WINS", winner).to_uppercase(),
-                width * 0.5 - 170.0,
-                height * 0.38 + 62.0,
-                42.0,
+                &format!("{team:?} wins"),
+                w * 0.5 - 100.,
+                h * 0.4,
+                32.,
                 GOLD,
             );
         }
+    } else {
+        draw_text(&client.status, 20., 32., 20., WHITE);
     }
-    draw_weapon_viewmodel(weapon.class, aim);
-    draw_text(&client.status, 18.0, 28.0, 20.0, LIGHTGRAY);
-    draw_text(
-        "WASD move  SHIFT sprint  RMB aim  R reload  1-0 / wheel weapons  ALT release mouse",
-        18.0,
-        height - 112.0,
-        17.0,
-        LIGHTGRAY,
-    );
-}
-
-fn draw_weapon_viewmodel(class: WeaponClass, aim: f32) {
-    let width = screen_width();
-    let height = screen_height();
-    let center_x = width * 0.5;
-    let base_x = width * 0.72 + (center_x - width * 0.72) * aim;
-    let base_y = height * 0.83 + 34.0 * aim;
-    let (length, body_h, accent) = match class {
-        WeaponClass::Pistol => (155.0, 42.0, SKYBLUE),
-        WeaponClass::SubmachineGun => (230.0, 52.0, LIME),
-        WeaponClass::AssaultRifle => (310.0, 58.0, BLUE),
-        WeaponClass::Shotgun => (340.0, 48.0, ORANGE),
-        WeaponClass::MarksmanRifle => (360.0, 50.0, GOLD),
-        WeaponClass::SniperRifle => (390.0, 46.0, PURPLE),
-        WeaponClass::MachineGun => (355.0, 72.0, RED),
-    };
-    let dark = Color::new(0.055, 0.07, 0.09, 1.0);
-    draw_rectangle(base_x - length * 0.5, base_y - body_h, length, body_h, dark);
-    draw_rectangle(
-        base_x - length * 0.28,
-        base_y - body_h - 11.0,
-        length * 0.50,
-        12.0,
-        accent,
-    );
-    draw_rectangle(
-        base_x + length * 0.18,
-        base_y - body_h - 22.0,
-        9.0,
-        22.0,
-        dark,
-    );
-    draw_rectangle(base_x - length * 0.20, base_y, 38.0, 68.0, dark);
-    if matches!(class, WeaponClass::MarksmanRifle | WeaponClass::SniperRifle) {
-        draw_circle(base_x - 15.0, base_y - body_h - 13.0, 15.0, accent);
-        draw_circle(base_x - 15.0, base_y - body_h - 13.0, 8.0, dark);
+    if is_key_down(KeyCode::Tab) {
+        draw_rectangle(24., 60., 260., 80., Color::from_rgba(12, 24, 29, 220));
+        if let Some(p) = local {
+            draw_text(
+                &format!("Kills {}   Deaths {}", p.kills, p.deaths),
+                40.,
+                95.,
+                22.,
+                WHITE,
+            );
+        }
+        draw_text("Esc menu    F fullscreen", 40., 123., 17., WHITE);
     }
-    if aim > 0.55 {
-        draw_rectangle(
-            center_x - 19.0,
-            screen_height() * 0.5 + 25.0,
-            5.0,
-            28.0,
-            dark,
-        );
-        draw_rectangle(
-            center_x + 14.0,
-            screen_height() * 0.5 + 25.0,
-            5.0,
-            28.0,
-            dark,
-        );
-    }
-}
-
-fn axis(positive: KeyCode, negative: KeyCode) -> f32 {
-    is_key_down(positive) as u8 as f32 - is_key_down(negative) as u8 as f32
 }
 
 fn select_weapon(slot: &mut usize) {
@@ -535,4 +556,29 @@ fn value_after(args: &[String], name: &str) -> Option<String> {
         .position(|arg| arg == name)
         .and_then(|index| args.get(index + 1))
         .cloned()
+}
+
+// Own-window focus query belongs to the executable, not the engine library.
+fn foreground() -> bool {
+    #[cfg(windows)]
+    {
+        // These Win32 calls read the foreground window PID into a valid stack pointer.
+        unsafe {
+            let mut pid = 0;
+            windows_sys::Win32::UI::WindowsAndMessaging::GetWindowThreadProcessId(
+                windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow(),
+                &mut pid,
+            );
+            pid == windows_sys::Win32::System::Threading::GetCurrentProcessId()
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        true
+    }
+}
+
+fn client_initial_look(yaw: &mut f32, pitch: &mut f32, server_yaw: f32, server_pitch: f32) {
+    *yaw = server_yaw;
+    *pitch = server_pitch;
 }

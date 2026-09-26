@@ -19,7 +19,14 @@ name = "riftwake-server"
 path = "src/bin/riftwake-server.rs"
 
 [dependencies]
-vesper3d = { git = "https://github.com/kevstermcgee/BlueEngine", rev = "ce9a9511c275ab0ee8fcf6dbf308c3af72c3a6b7", package = "be2", default-features = false }
+vesper3d = { git = "https://github.com/kevstermcgee/BlueEngine.git", rev = "16acc82ddc3f934748ff5cf7e1f7a5ac74a289e3", package = "be2", default-features = false, features = ["presentation"] }
 serde = { version = "=1.0.219", features = ["derive"] }
 serde_json = "=1.0.140"
 macroquad = { version = "=0.4.14", default-features = false }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_UI_WindowsAndMessaging", "Win32_System_Threading", "Win32_UI_Input_KeyboardAndMouse"] }

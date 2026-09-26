@@ -19,7 +19,14 @@ name = "bluedm-server"
 path = "src/bin/bluedm-server.rs"
 
 [dependencies]
-vesper3d = { git = "https://github.com/kevstermcgee/BlueEngine", rev = "7b3b58ccfa32a7a6971c01180153138ca837eca9", package = "be2", default-features = false }
+vesper3d = { git = "https://github.com/kevstermcgee/BlueEngine.git", rev = "16acc82ddc3f934748ff5cf7e1f7a5ac74a289e3", package = "be2", default-features = false, features = ["presentation"] }
 serde = { version = "=1.0.219", features = ["derive"] }
 serde_json = "=1.0.140"
 macroquad = { version = "=0.4.14", default-features = false }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_UI_WindowsAndMessaging", "Win32_System_Threading", "Win32_UI_Input_KeyboardAndMouse"] }

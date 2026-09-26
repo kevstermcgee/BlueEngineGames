@@ -43,7 +43,7 @@ pub struct Server {
 impl Server {
     pub fn bind(address: &str, key: String) -> vesper3d::Result<Self> {
         let map = MapDocument::load(&content_path())?;
-        let world = HeadlessWorld::try_with_room(map.build()?)?;
+        let world = HeadlessWorld::with_static_room(map.build()?);
         let match_state = TeamDeathmatch::new(
             TeamDeathmatchConfig::default(),
             vec![(V(-20.0, 0.0, -3.6), 1.57), (V(-20.0, 0.0, 3.6), 1.57)],
@@ -146,7 +146,17 @@ impl Server {
                         .expect("new player spawn");
                     self.world.join_at(id, spawn.position);
                     if let Some(controller) = self.world.player_mut(id) {
-                        controller.set_physics_state(spawn.position + V(0.0, 1.68, 0.0), 0.0, true);
+                        *controller = vesper3d::viewer::controller::Controller::for_profile(
+                            vesper3d::viewer::profile::ControllerProfile {
+                                walk_speed: 5.8,
+                                sprint_speed: 8.0,
+                                crouch_speed: 2.5,
+                                jump_height: 0.6,
+                                ..Default::default()
+                            },
+                            spawn.position,
+                            spawn.yaw,
+                        )?;
                         controller.yaw = spawn.yaw;
                     }
                     let catalog = armory();
@@ -218,6 +228,11 @@ impl Server {
     }
 
     fn step(&mut self) {
+        for (&id, player) in &self.players {
+            if player.last_seen.elapsed() > Duration::from_millis(150) {
+                self.world.neutralize_input(id);
+            }
+        }
         self.world.step();
         let catalog = armory();
         let mut attacks = Vec::new();
@@ -241,7 +256,7 @@ impl Server {
             let shots = player.weapons[slot].tick(
                 definition,
                 fire_pressed,
-                player.input.fire_held,
+                player.input.fire_held && player.last_seen.elapsed() <= Duration::from_millis(150),
                 reload_pressed,
                 player.aim.amount(),
             );

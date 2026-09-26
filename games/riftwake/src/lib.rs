@@ -119,11 +119,11 @@ impl ArenaBox {
 /// Hand-authored three-level duel arena: a readable loop, crossing sightline,
 /// risky central power position, jump-pad shortcuts and enough cover to break rails.
 pub fn arena_boxes() -> Vec<ArenaBox> {
-    let stone = [0.10, 0.13, 0.20];
-    let metal = [0.20, 0.26, 0.36];
-    let trim = [0.28, 0.34, 0.46];
-    let cyan = [0.04, 0.68, 0.86];
-    let magenta = [0.78, 0.08, 0.38];
+    let stone = [0.34, 0.34, 0.31];
+    let metal = [0.64, 0.62, 0.54];
+    let trim = [0.22, 0.30, 0.34];
+    let cyan = [0.24, 0.36, 0.44];
+    let magenta = [0.63, 0.47, 0.19];
     let mut boxes = vec![
         // Ground plane and enclosing walls establish one intentional combat volume.
         ArenaBox {
@@ -160,7 +160,7 @@ pub fn arena_boxes() -> Vec<ArenaBox> {
         ArenaBox {
             center: V(0., 2.0, 0.),
             size: V(7., 4., 7.),
-            color: [0.10, 0.11, 0.18],
+            color: [0.62, 0.59, 0.49],
             emissive: false,
         },
         ArenaBox {
@@ -307,9 +307,9 @@ pub fn arena_boxes() -> Vec<ArenaBox> {
             emissive: true,
         },
         ArenaBox {
-            center: V(0., 4.75, 0.),
-            size: V(7., 0.18, 7.),
-            color: [0.68, 0.12, 0.95],
+            center: V(0., 4.508, 0.),
+            size: V(7., 0.012, 7.),
+            color: [0.33, 0.35, 0.32],
             emissive: true,
         },
         ArenaBox {
@@ -325,14 +325,14 @@ pub fn arena_boxes() -> Vec<ArenaBox> {
             emissive: true,
         },
         ArenaBox {
-            center: V(-8.75, 4.82, 2.55),
-            size: V(7.5, 0.12, 0.12),
+            center: V(-8.75, 4.678, 2.55),
+            size: V(7.5, 0.012, 0.12),
             color: cyan,
             emissive: true,
         },
         ArenaBox {
-            center: V(8.75, 4.82, -2.55),
-            size: V(7.5, 0.12, 0.12),
+            center: V(8.75, 4.678, -2.55),
+            size: V(7.5, 0.012, 0.12),
             color: magenta,
             emissive: true,
         },
@@ -341,29 +341,29 @@ pub fn arena_boxes() -> Vec<ArenaBox> {
     // Six-step approaches make both mid decks traversable without a jump pad.
     staircase_x(
         &mut boxes,
-        Staircase::new(V(-4.8, 0.0, -8.0), -1.0, 6, 0.38, 0.7, 3.0, metal),
+        Staircase::new(V(-4.8, 0.0, -8.0), -1.0, 12, 0.19, 0.35, 3.0, metal),
     );
     staircase_x(
         &mut boxes,
-        Staircase::new(V(4.8, 0.0, 8.0), 1.0, 6, 0.38, 0.7, 3.0, metal),
+        Staircase::new(V(4.8, 0.0, 8.0), 1.0, 12, 0.19, 0.35, 3.0, metal),
     );
     // Eleven-step gallery stairs form clear, grounded routes to the top circuit.
     staircase_x(
         &mut boxes,
-        Staircase::new(V(-6.2, 0.0, 7.0), -1.0, 11, 0.42, 0.6, 3.0, trim),
+        Staircase::new(V(-6.2, 0.0, 7.0), -1.0, 22, 0.21, 0.3, 3.0, trim),
     );
     staircase_x(
         &mut boxes,
-        Staircase::new(V(6.2, 0.0, -7.0), 1.0, 11, 0.42, 0.6, 3.0, trim),
+        Staircase::new(V(6.2, 0.0, -7.0), 1.0, 22, 0.21, 0.3, 3.0, trim),
     );
     // Mirrored reactor stairs prevent the mega platform from being pad-only.
     staircase_x(
         &mut boxes,
-        Staircase::new(V(-10.3, 0.0, 0.0), 1.0, 10, 0.42, 0.6, 2.8, stone),
+        Staircase::new(V(-10.3, 0.0, 0.0), 1.0, 20, 0.225, 0.3, 2.8, stone),
     );
     staircase_x(
         &mut boxes,
-        Staircase::new(V(10.3, 0.0, 0.0), -1.0, 10, 0.42, 0.6, 2.8, stone),
+        Staircase::new(V(10.3, 0.0, 0.0), -1.0, 20, 0.225, 0.3, 2.8, stone),
     );
     boxes
 }
@@ -441,15 +441,16 @@ pub fn launch_pads() -> [LaunchVolume; 2] {
 
 pub fn spawns() -> [(V, f32); 8] {
     [
-        (V(-18., 0., -13.), 1.1),
-        (V(18., 0., 13.), -2.0),
-        (V(-15., 2.3, -8.), 1.2),
-        (V(15., 2.3, 8.), -1.9),
-        (V(-16., 4.7, 10.), 1.8),
-        (V(16., 4.7, -10.), -1.3),
-        (V(0., 0., 14.), std::f32::consts::PI),
-        (V(0., 0., -14.), 0.),
+        V(-18., 0., -13.),
+        V(18., 0., 13.),
+        V(-15., 2.3, -8.),
+        V(15., 2.3, 8.),
+        V(-16., 4.7, 10.),
+        V(16., 4.7, -10.),
+        V(0., 0., 14.),
+        V(0., 0., -14.),
     ]
+    .map(|feet| (feet, (-feet.0).atan2(feet.2)))
 }
 
 pub fn pickups() -> Vec<TimedPickup> {
@@ -490,6 +491,60 @@ fn arena_pickup(id: &str, kind: PickupKind, position: V, amount: u16, ticks: u32
     let mut pickup = TimedPickup::new(id, kind, position, amount, ticks).unwrap();
     pickup.radius = 1.15;
     pickup
+}
+
+/// Facade details are outside movement lanes; gameplay collision remains arena_boxes.
+pub fn arena_details() -> Vec<ArenaBox> {
+    let mut out = Vec::new();
+    let mut add = |center, size, color| {
+        out.push(ArenaBox {
+            center,
+            size,
+            color,
+            emissive: true,
+        })
+    };
+    let dark = [0.16, 0.20, 0.21];
+    let glass = [0.18, 0.28, 0.32];
+    let cream = [0.70, 0.67, 0.57];
+    for z in [-17.48, 17.48] {
+        for x in [-17., -8., 2., 12.] {
+            add(V(x, 4.6, z), V(6.2, 1.7, 0.04), dark);
+            add(V(x, 4.6, z - z.signum() * 0.025), V(5.9, 1.45, 0.03), glass);
+            for offset in [-2., 0., 2.] {
+                add(
+                    V(x + offset, 4.6, z - z.signum() * 0.05),
+                    V(0.065, 1.55, 0.03),
+                    cream,
+                );
+            }
+        }
+        for x in [-5., 5.] {
+            add(V(x, 1.6, z), V(3.6, 3.2, 0.05), dark);
+            for y in 0..13 {
+                add(
+                    V(x, 0.15 + y as f32 * 0.23, z - z.signum() * 0.04),
+                    V(3.5, 0.02, 0.025),
+                    cream,
+                );
+            }
+        }
+        add(V(0., 3.35, z - z.signum() * 0.10), V(43., 0.12, 0.12), dark);
+    }
+    // Distant utility buildings and roof equipment complete the site silhouette.
+    for (x, z) in [(-28., -9.), (28., 9.)] {
+        add(V(x, 5., z), V(9., 10., 20.), cream);
+        add(V(x, 10.25, z), V(9.5, 0.5, 20.5), dark);
+        add(V(x, 11.2, z), V(4., 1.4, 5.), [0.35, 0.37, 0.34]);
+    }
+    // Service vents and a blue identification band on the central machine housing.
+    for x in [-3.51, 3.51] {
+        for i in 0..8 {
+            add(V(x, 1. + i as f32 * 0.20, 0.), V(0.025, 0.055, 3.8), dark);
+        }
+        add(V(x, 3.3, 0.), V(0.025, 0.55, 6.8), [0.23, 0.34, 0.40]);
+    }
+    out
 }
 
 #[cfg(test)]
@@ -561,6 +616,39 @@ mod arena_tests {
                 "{} is out of reach",
                 pickup.id
             );
+        }
+    }
+
+    #[test]
+    fn traversal_never_leaves_body_embedded_in_walls_or_steps() {
+        let walls = colliders();
+        for start in [
+            V(-18., 0., -12.),
+            V(18., 0., 12.),
+            V(-11.3, 0., 0.),
+            V(-5.2, 0., 7.),
+        ] {
+            let mut body = ArenaBody::spawn(start, 0., Default::default()).unwrap();
+            for tick in 0..900 {
+                body.yaw = (tick / 90) as f32 * 0.73;
+                body.step(
+                    ArenaInput {
+                        forward: 1.,
+                        right: if tick % 180 < 90 { 0.4 } else { -0.4 },
+                        jump: tick % 73 == 0,
+                    },
+                    1. / 60.,
+                    &walls,
+                );
+                let feet = body.feet();
+                assert!(
+                    !walls.iter().any(|c| c.max.1 > feet.1 + 0.002
+                        && c.min.1 < feet.1 + body.config.height - 0.002
+                        && c.overlaps_xz(body.position, body.config.radius - 0.002)),
+                    "embedded at tick {tick}: {:?}",
+                    body.position
+                );
+            }
         }
     }
 

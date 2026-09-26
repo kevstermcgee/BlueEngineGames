@@ -4,4 +4,4 @@ param(
 )
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path -Parent $PSScriptRoot)
-cargo run --bin riftwake-server -- --listen $Listen --key $Key
+cargo run --release --locked --bin riftwake-server -- --listen $Listen --key $Key

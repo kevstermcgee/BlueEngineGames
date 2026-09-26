@@ -4,4 +4,4 @@ param(
 )
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path -Parent $PSScriptRoot)
-cargo run --bin bluedm-server -- --listen $Listen --key $Key
+cargo run --release --locked --bin bluedm-server -- --listen $Listen --key $Key
