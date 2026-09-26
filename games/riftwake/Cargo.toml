@@ -1,0 +1,25 @@
+[package]
+name = "riftwake"
+version = "0.1.0"
+edition = "2021"
+description = "Riftwake: a networked hyperkinetic arena FPS built with BlueEngine"
+license = "MIT"
+default-run = "riftwake"
+
+[lib]
+name = "riftwake"
+path = "src/lib.rs"
+
+[[bin]]
+name = "riftwake"
+path = "src/main.rs"
+
+[[bin]]
+name = "riftwake-server"
+path = "src/bin/riftwake-server.rs"
+
+[dependencies]
+vesper3d = { git = "https://github.com/kevstermcgee/BlueEngine", rev = "1875878acc7c8f0758d851e7e12d5c6d349f1caf", package = "be2", default-features = false }
+serde = { version = "=1.0.219", features = ["derive"] }
+serde_json = "=1.0.140"
+macroquad = { version = "=0.4.14", default-features = false }
