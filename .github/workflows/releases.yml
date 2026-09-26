@@ -1,0 +1,69 @@
+name: Build Windows releases
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .games-catalog.json
+      - .github/scripts/**
+      - .github/workflows/releases.yml
+  workflow_dispatch:
+
+concurrency:
+  group: blueenginegames-windows-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out the games catalog
+        uses: actions/checkout@v7
+
+      - name: Read source revision
+        id: catalog
+        shell: pwsh
+        run: |
+          $catalog = Get-Content -Raw .games-catalog.json | ConvertFrom-Json
+          $short = $catalog.source_revision.Substring(0, 12)
+          "source_repository=$($catalog.source_repository)" >> $env:GITHUB_OUTPUT
+          "source_revision=$($catalog.source_revision)" >> $env:GITHUB_OUTPUT
+          "tag=blueengine-$short" >> $env:GITHUB_OUTPUT
+          "title=BlueEngine playable builds ($short)" >> $env:GITHUB_OUTPUT
+
+      - name: Check out the exact BlueEngine source
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ steps.catalog.outputs.source_repository }}
+          ref: ${{ steps.catalog.outputs.source_revision }}
+          path: _engine
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build BlueEngine for Windows
+        working-directory: _engine
+        run: cargo build --release --locked --bin be2
+
+      - name: Package playable downloads
+        shell: pwsh
+        run: .github/scripts/package_releases.ps1 -EngineExe _engine/target/release/be2.exe -EngineName BlueEngine.exe -ProductName BlueEngine
+
+      - name: Create or update the GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.catalog.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.catalog.outputs.title }}
+        run: |
+          $assets = @(Get-ChildItem dist -File | Where-Object Name -ne 'release-notes.md' | ForEach-Object FullName)
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG $assets --clobber
+            gh release edit $env:RELEASE_TAG --title $env:RELEASE_TITLE --notes-file dist/release-notes.md --latest
+          } else {
+            gh release create $env:RELEASE_TAG $assets --target $env:GITHUB_SHA --title $env:RELEASE_TITLE --notes-file dist/release-notes.md --latest
+          }

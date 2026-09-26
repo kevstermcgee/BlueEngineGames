@@ -3,6 +3,11 @@
 Games, prototypes, test content, and demos produced with
 [BlueEngine](https://github.com/kevstermcgee/BlueEngine).
 
+**[Download ready-to-play Windows builds](../../releases/latest).** Extract a ZIP
+and double-click its `Play-*.exe` launcher; no Rust toolchain or command line is
+required. The executables are not code-signed, so Windows may show a SmartScreen
+warning.
+
 - `games/` contains playable game documents.
 - `prototypes/` contains API and multiplayer starter projects.
 - `tests/` contains test maps and runnable validation examples.
