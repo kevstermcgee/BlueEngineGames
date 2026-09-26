@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - .games-catalog.json
+      - games/**
       - .github/scripts/**
       - .github/workflows/releases.yml
   workflow_dispatch:
