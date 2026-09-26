@@ -158,7 +158,7 @@ async fn main() -> vesper3d::Result<()> {
         } else if client.token.is_some() {
             let delta = mouse_delta_position();
             client.yaw = (client.yaw - delta.x * 2.35).rem_euclid(std::f32::consts::TAU);
-            client.pitch = (client.pitch - delta.y * 2.35).clamp(-1.48, 1.48);
+            client.pitch = pitch_after_mouse(client.pitch, delta.y);
         }
         select_weapon(&mut client.weapon_slot);
         let (_, wheel) = mouse_wheel();
@@ -196,14 +196,14 @@ async fn main() -> vesper3d::Result<()> {
 }
 
 fn draw_world(client: &Client, showcase: bool, frame: u32) {
-    clear_background(Color::new(0.012, 0.014, 0.035, 1.0));
+    clear_background(Color::new(0.025, 0.045, 0.085, 1.0));
     let eye = if showcase {
-        V(-13.0, 6.8, 15.5)
+        V(-13.0, 7.5, 14.0)
     } else {
         client.local().map_or(V(-18., 1.56, -12.), |p| p.position)
     };
     let dir = if showcase {
-        (V(0.0, 2.8, 0.0) - eye).norm()
+        (V(0.0, 1.8, 0.0) - eye).norm()
     } else {
         direction(client.yaw, client.pitch)
     };
@@ -487,6 +487,9 @@ fn direction(yaw: f32, pitch: f32) -> V {
     )
     .norm()
 }
+fn pitch_after_mouse(current: f32, vertical_delta: f32) -> f32 {
+    (current + vertical_delta * 2.35).clamp(-1.48, 1.48)
+}
 fn axis(positive: KeyCode, negative: KeyCode) -> f32 {
     is_key_down(positive) as u8 as f32 - is_key_down(negative) as u8 as f32
 }
@@ -512,4 +515,16 @@ fn value_after(args: &[String], name: &str) -> Option<String> {
         .position(|x| x == name)
         .and_then(|i| args.get(i + 1))
         .cloned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{direction, pitch_after_mouse};
+
+    #[test]
+    fn upward_mouse_motion_raises_the_view() {
+        let pitch = pitch_after_mouse(0.0, 0.1);
+        assert!(pitch > 0.0);
+        assert!(direction(0.0, pitch).1 > 0.0);
+    }
 }

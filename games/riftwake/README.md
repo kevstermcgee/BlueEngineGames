@@ -41,9 +41,10 @@ There are no reloads: the prototype keeps the focus on movement, selection and t
 
 ## The Fracture
 
-The hand-authored duel arena has three elevations, a central mega-health power position,
-two armor routes, two launch-pad shortcuts, broken rail sightlines and mirrored-but-not-
-identical traversal. Neon edge bands and rift pylons make orientation immediate at speed.
+The hand-authored duel arena has three elevations, six grounded stair routes, connected
+upper bridges, a central mega-health power position, two armor circuits, two unobstructed
+jump-pad shortcuts, framed gateways and broken rail sightlines. Structural piers ground
+every deck, while neon edge bands and rift pylons make orientation immediate at speed.
 
 ## Prototype boundaries
 
