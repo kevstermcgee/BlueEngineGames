@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "demos/examples/custom_client.rs",
-      "sha256": "b31859c132060c3fc946d74a13dffe089743686bf5ad068b1d47a35aceec4c98"
+      "sha256": "8b7cef1175e9a1051ae32a610b753a665c7837b32baa7ef2070d661ca4f746f2"
     },
     {
       "path": "demos/examples/export_props.rs",
@@ -300,7 +300,7 @@
     },
     {
       "path": "games/blueengine-sandbox/VALIDATION.md",
-      "sha256": "71b751b97b1dc4e88a248d7ac118272aef2f201157943129268eb947e939879f"
+      "sha256": "b279c97b60fa0a4f3956019b794b2536ce3775a2be932d284523af62711b79d7"
     },
     {
       "path": "games/blueengine-sandbox/assets.json",
@@ -1044,6 +1044,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "bbbbe1736ddef81560e527b8573858661fefae6d",
+  "source_revision": "bc5f6621f8fb5aa004548478a76040913a2b83ec",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
