@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 72,
-    "games": 3,
+    "games": 17,
     "prototypes": 10,
     "tests": 64
   },
@@ -293,6 +293,62 @@
     {
       "path": "demos/previews/toolkit/render-report.txt",
       "sha256": "9a906abf2a58cd8738e3448151c793060d898c66b7473563e20a344153ccea50"
+    },
+    {
+      "path": "games/bluedm/Cargo.lock",
+      "sha256": "70269ab545b882258083ef3690f4fed5f3b4a68d1d0bfb47274ffb00f14c0ea8"
+    },
+    {
+      "path": "games/bluedm/Cargo.toml",
+      "sha256": "d67ef90d05462662810094eed945475209026b5d67130a2a35e1d22c9e896c34"
+    },
+    {
+      "path": "games/bluedm/README.md",
+      "sha256": "88581aca8ebc2b7f990b2b25276f554678613934c18eb7e4d90e1807223ea5eb"
+    },
+    {
+      "path": "games/bluedm/blueprints/foundry.blueprint.json",
+      "sha256": "4de04902fa773f0ac05eda527f4cf9a674e44759956c0e270dde75add416e937"
+    },
+    {
+      "path": "games/bluedm/maps/foundry.json",
+      "sha256": "398c9096fcbb783f8a35d99502307b9260aa9ff2d90464f94c2363c0a05ed7ef"
+    },
+    {
+      "path": "games/bluedm/preview.png",
+      "sha256": "0fcdc693811445d4c97b8bffd79a486a6c6deea1ed6e4acb555cd145430ba7fa"
+    },
+    {
+      "path": "games/bluedm/scripts/play-host.ps1",
+      "sha256": "788dcf2b2deb3eb5ac2797bd272a27e692638420c330470ce9fc38706d0d6837"
+    },
+    {
+      "path": "games/bluedm/scripts/run-server.ps1",
+      "sha256": "b2b515f877690a6fa40ec1c7376fe645efa51f1feb937355cdeecc676b70fbb6"
+    },
+    {
+      "path": "games/bluedm/src/bin/bluedm-server.rs",
+      "sha256": "5e2be7d95e39adf19c64a6b174d12e5cdb37968bd697b5955cc3aba0df4b98f8"
+    },
+    {
+      "path": "games/bluedm/src/lib.rs",
+      "sha256": "7eb43914456009c3f0fcbd10fbd2fe031e8e3e5afefb8ffcf7bb29b6a756e76f"
+    },
+    {
+      "path": "games/bluedm/src/main.rs",
+      "sha256": "f8fe8880a8235d2ebec8aedef007152032171d49bba4d2fc0f1aa190143df9be"
+    },
+    {
+      "path": "games/bluedm/src/protocol.rs",
+      "sha256": "6a3d07db101de2d852d2072b9a98f92b73f5e170096ca0613d3232d744d08dc1"
+    },
+    {
+      "path": "games/bluedm/src/server.rs",
+      "sha256": "cb27beb92158121d9cc8564cf21f027c6d8ce4b70d39f898c12d37f5284b793e"
+    },
+    {
+      "path": "games/bluedm/tests/network_smoke.rs",
+      "sha256": "257446d9870c10a45ad3560925b3201ba11884e3dc226ddb0bf5e9b0adc6bb63"
     },
     {
       "path": "games/three-switches/game.json",
@@ -632,6 +688,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "30e1e5958bede98f8f3d421c8653100889339461",
+  "source_revision": "4835d3db29351dae3a0dd8f062adeac62c3cd489",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
