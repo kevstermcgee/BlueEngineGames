@@ -1,0 +1,610 @@
+{
+  "collections": {
+    "demos": 72,
+    "games": 3,
+    "prototypes": 10,
+    "tests": 64
+  },
+  "files": [
+    {
+      "path": "demos/examples/custom_client.rs",
+      "sha256": "42eb3a81941b18c763d6b578e8de9c4a726fb3f95285fd7102e608baedfdefec"
+    },
+    {
+      "path": "demos/examples/export_props.rs",
+      "sha256": "ce3a236d60f74212f83446861e60b7da9683fdec055e36de5d86afb35f82b041"
+    },
+    {
+      "path": "demos/examples/first-light.json",
+      "sha256": "72eb6c25a1dcd8b3713febbab46b67c93d0010c708ec8c34dd8aef41a6f31744"
+    },
+    {
+      "path": "demos/examples/first-light.wav",
+      "sha256": "55cd923748973867e47c7ccfd9517aa680add28ff83cae98d5c58522755a1637"
+    },
+    {
+      "path": "demos/examples/grove.json",
+      "sha256": "6e2265329915710894ff32f5f5576e97f6040d0c61c0c75d29ecbbb4385da4c8"
+    },
+    {
+      "path": "demos/examples/hello.json",
+      "sha256": "f988d9a5c1de80b626e382ae058adbf6e9b10937756f2d6b5c3a23f279113475"
+    },
+    {
+      "path": "demos/examples/materials.json",
+      "sha256": "6fbfe55f129d2531afa48932c0cb9c2dd2737dadb83614fda3dd3024fdaeed04"
+    },
+    {
+      "path": "demos/examples/mesh.json",
+      "sha256": "1f28ccfbc66f929d5aa7ec216980ba63ddfd89b1414eca9dc3c4848106a712bd"
+    },
+    {
+      "path": "demos/examples/network_smoke.rs",
+      "sha256": "0afee9d3191b05fa076df82a2626031824fd41a5d25798e7e3b469fdc9d424f3"
+    },
+    {
+      "path": "demos/examples/prototype.rs",
+      "sha256": "aea4ca5ef1f4021f80a81bfa9a2b8322b93b815924f4b2f6e9133414f88132df"
+    },
+    {
+      "path": "demos/examples/pyramid.obj",
+      "sha256": "69170ba0984610f2aacf83ffd9308278cd4d44004cb5540f5c5c9efa65e2c406"
+    },
+    {
+      "path": "demos/examples/validate_expanded_maps.rs",
+      "sha256": "a965988f79879c3aae5c73cbb2da0e33e1d97ce87e532457cb915286e1bf4876"
+    },
+    {
+      "path": "demos/previews/BE2-cereal-apple.png",
+      "sha256": "414f304c794c65db811d3100006eb0d5cf7e0098c62ffba878bde5f596ce3082"
+    },
+    {
+      "path": "demos/previews/BE2-chair.png",
+      "sha256": "51ed5fd523b5076c4849892eefe950b75bfb49ba9605e692c124b34275b357db"
+    },
+    {
+      "path": "demos/previews/BE2-menu.png",
+      "sha256": "b9abbe32fb80df877e4d66603329717504e6ac39518df297d0a6b1ae8d079027"
+    },
+    {
+      "path": "demos/previews/BE2-props.png",
+      "sha256": "7a96c511b1168308ed7e8f330a99778fb5a1916939f79a3c3551b79d18f39e98"
+    },
+    {
+      "path": "demos/previews/BE2-room.png",
+      "sha256": "ce33c1d37d124a815fa7da80a83820e2791a8a6d5975fe002a9c00d1ecddda8e"
+    },
+    {
+      "path": "demos/previews/BE2-simple-props.png",
+      "sha256": "5569e0a589503a5a543f3ddab2ccf6c41c2a9148335b36157725487335974510"
+    },
+    {
+      "path": "demos/previews/BE2-stool.png",
+      "sha256": "677d40ba7e989b493696604bd2793205821ce68e6b8679927ee64b5aa7f6b2fb"
+    },
+    {
+      "path": "demos/previews/feta-camera/approach.png",
+      "sha256": "c76495dd82093ac4ca6b9880f2ed3de6a8c7c846f37aedf8095640a1e3c3963d"
+    },
+    {
+      "path": "demos/previews/feta-camera/exit.png",
+      "sha256": "3c2f7b34343b6454b7946e817644145a6278c155124518b4ffe13dcdcd654c3a"
+    },
+    {
+      "path": "demos/previews/feta-camera/pause.png",
+      "sha256": "e3b9cf2f7934eb9f8c263f27ac9136379d204144a76d612a8bfb47968ad91ab4"
+    },
+    {
+      "path": "demos/previews/feta-camera/table.json",
+      "sha256": "c6bb2ae94743ba3a55d8c432e60dfd7bb6d84b0b06a24c20408019c3f26cd053"
+    },
+    {
+      "path": "demos/previews/feta-camera/under-table.png",
+      "sha256": "6dcc27e7fccfe267bab9bc19d0b8fe16567b02f606ae894e713eea613d47bd2f"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-1.png",
+      "sha256": "7f30a0774708b78be257db7c9aa780c294e1c367a030b101ac4a2dc7bd42ca00"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-2.png",
+      "sha256": "f43340ea260cf734c8abafc0a5156eb7490b7f6ddfe13403bc66dde9077e951b"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-3.png",
+      "sha256": "462b3280bfcb50d7d7f7837cd7c1a2a4492fe810f1d6953eddc24209ce6afb97"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-4.png",
+      "sha256": "1d926a1c38d270ff9796e2cf91be854f98ea2cc2e807a3ec67330e646d1ed2e3"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-5.png",
+      "sha256": "55a2120c204ccd79798b076362af7b1e967013945edf5c928a40c29b12d3ebb7"
+    },
+    {
+      "path": "demos/previews/game-documents/blue-engine-6.png",
+      "sha256": "477d5a5ec2768adaf9b52016c70d7a899847fa4dfb54355acb406597a51de16b"
+    },
+    {
+      "path": "demos/previews/game-documents/game-state.json",
+      "sha256": "2fe5e76f8cff533c6ab5812b67913add07ab6140a4c99ddcf4983f8ae2892e1b"
+    },
+    {
+      "path": "demos/previews/game-documents/physics-report.json",
+      "sha256": "1b540f8208dea67b75e5cbc6b947b1dc0053fcfb287120fb945c312443130747"
+    },
+    {
+      "path": "demos/previews/game-documents/render-report.txt",
+      "sha256": "bc2e78c2c210c541b918c1f825bfa21b3c730dff39931711710f4491c1c300ca"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-1.png",
+      "sha256": "ef6ad3e678ba7e78e3bb13db54d3db2fcee4a49e439c40fb36bb2de34435b5e4"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-10.png",
+      "sha256": "06ab458a25224d564ed24f4c423b9420c28390c5746368f82e71cfa5e2718272"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-11.png",
+      "sha256": "e59eb298024f859d4a5658fcbea585aa34b39aff5136faa060eabaa9cd1a81b2"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-12.png",
+      "sha256": "4e9db2b79beee7eeca52ce2b499abe8b30946e53b68a001e938e4f598922042e"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-2.png",
+      "sha256": "2de19ec5d7aa7778df6112ca5c90e0613c4db8c40ac0ed28c7f9adc369df00b2"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-3.png",
+      "sha256": "8f5aa59642b47733c49f4f0e8864cc0613d072b28b6ad378980681c1decb4a37"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-4.png",
+      "sha256": "12294579652a031c720bb0c533ec766a2f22ded22ed8e42b7a5322c0327b1ca0"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-5.png",
+      "sha256": "ebfdb81b5054f4065da1e272d498648bde40f0a6f4f1c074e332d5e879e8be2b"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-6.png",
+      "sha256": "d4b2ac4f2fdeac7d73a3251ce92b6c81657f51dd65811e8cbc227d96b295c59a"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-7.png",
+      "sha256": "3c46640c00086faba1099e1ca4e1cbb60ed9bb565c8a390cab3b5fa6482b1ba5"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-8.png",
+      "sha256": "3186b750a160ed0b645619a897aa3e0bcfe849b1497180af31644c0d94ae67ed"
+    },
+    {
+      "path": "demos/previews/house-cover/blue-engine-9.png",
+      "sha256": "fef4a2bead4ef3df5e5236f9a9e4476ddbee612379a5c9b3c19c61fde27ce9e2"
+    },
+    {
+      "path": "demos/previews/house-cover/render-report.txt",
+      "sha256": "57dfcef7db545d385dffc153c9dbf7b30b3b09ea866b0ef6deb1e3060bbc9ccf"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-1.png",
+      "sha256": "971c85c0b31b558469ebd9d5861f91a2104090f40d99305bef49c6e20f94d817"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-2.png",
+      "sha256": "5905f7be151833dfec6d21287b24655af840011336801bb6569a5a15742c3ade"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-3.png",
+      "sha256": "d9da0bda7de8c9dcbce00d39a0b5ed0ab6fbf1b13543b88bcb7069eb17c02287"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-4.png",
+      "sha256": "8a10d124cd3abbf0a914a575dbe930aa8734b64f9f605a42ad2457fe38a00228"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-5.png",
+      "sha256": "e3ddb9e72045edffff00570a784c8742ffc97bc1a73a3e009f9bb9816892c9f5"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-6.png",
+      "sha256": "26fa565ceff61eceaf5a1c2ebd8fdb41dcfb3d9de68d9b51e5fe199779209654"
+    },
+    {
+      "path": "demos/previews/house/blue-engine-7.png",
+      "sha256": "abcdcb01b197dedc83302d39fcf1d9dd80b92a724790f42685e525f86de7b00c"
+    },
+    {
+      "path": "demos/previews/house/render-report.txt",
+      "sha256": "b838e6eef0ee28612e31c3f7770acd4acfe79399a5ac92ade62d0948939de7c6"
+    },
+    {
+      "path": "demos/previews/interior-layout/kitchen.png",
+      "sha256": "d02290b6c2fe1d449b69ed03cef4dc826f34e5a7c7f5a60c94ef8a7dc3d80bc9"
+    },
+    {
+      "path": "demos/previews/interior-layout/living-room.png",
+      "sha256": "dfb13c762d8775bd7d1cee7ddd010b0fc074678316fba0c94af3f9500a76538f"
+    },
+    {
+      "path": "demos/previews/interior-layout/master-bedroom.png",
+      "sha256": "f56771115bb2de9ba0653f394b41f6a2e30b2142e28d9b42fca828d3e4ed0002"
+    },
+    {
+      "path": "demos/previews/interior-layout/menu.png",
+      "sha256": "81a41b0c6491ec6fa58a6c3bd3d82cc98789c152e606a9c3af7963e5ffc34eba"
+    },
+    {
+      "path": "demos/previews/interior-layout/render-report.txt",
+      "sha256": "007ba9a15bfc21aba33e594f8bd0bbcc54cfe470b26c04616599e0c36cf05314"
+    },
+    {
+      "path": "demos/previews/interior-layout/single-bedroom.png",
+      "sha256": "8ffb7d06d574782ebc9cfe470657ffa9202d1d37510f2d9feaffd6aaed5a130b"
+    },
+    {
+      "path": "demos/previews/interior-layout/tv-wall.png",
+      "sha256": "f88b6af5791cce63c48056734c721b19e9f1e6012b2c5fb2c6f3a55ba6df0743"
+    },
+    {
+      "path": "demos/previews/landscaping/backyard.png",
+      "sha256": "b11ce09905657e4edd3958c03d2987644fc95b74b17c84e1cdd001a39b61109b"
+    },
+    {
+      "path": "demos/previews/landscaping/exterior.png",
+      "sha256": "d898e1796272c150097d8867018d14e0acc17c1f0bdec5aa39553fda9bbe9eda"
+    },
+    {
+      "path": "demos/previews/landscaping/menu.png",
+      "sha256": "5ccb10154cde382ca30e0b89be47e19cffdcede0a89ce968d3d395dffb019a5e"
+    },
+    {
+      "path": "demos/previews/landscaping/render-report.txt",
+      "sha256": "e88306857271abc5a5afed3f13caf7fb5eb2088e86038799db505a9340df51e6"
+    },
+    {
+      "path": "demos/previews/landscaping/side-garden.png",
+      "sha256": "9628198f371c50e2afde86f5a7fd0daeba1a1ca35faaa60bbf258563aeb1f0f9"
+    },
+    {
+      "path": "demos/previews/pause-menu/pause.png",
+      "sha256": "6d3d5b1cbacf1222276b0e0818cff8a5b681b2a2078712070a94992fc3ac7a60"
+    },
+    {
+      "path": "demos/previews/pause-menu/settings.png",
+      "sha256": "3c5ecbebbcf3b2692eaa82cc1153908347129792ec88a6e6b2b26bd802f01dc5"
+    },
+    {
+      "path": "demos/previews/toolkit/edited-backyard.png",
+      "sha256": "c6d5d5e13c08ede95b44da6a060f81cf38d3d80dd9de6f8b3129dca730435b38"
+    },
+    {
+      "path": "demos/previews/toolkit/edited-menu.png",
+      "sha256": "5b4ad181e38097e5c3f24efb94f398bb68fea075b9bf2bfa6da6bfb90867d081"
+    },
+    {
+      "path": "demos/previews/toolkit/house-collisions.svg",
+      "sha256": "c5079f0f64cac1a557635322ed7c6dfbb4c766fcdb5ed9fafb3fc6dc7c64a82d"
+    },
+    {
+      "path": "demos/previews/toolkit/render-report.txt",
+      "sha256": "9a906abf2a58cd8738e3448151c793060d898c66b7473563e20a344153ccea50"
+    },
+    {
+      "path": "games/three-switches/game.json",
+      "sha256": "cdc69ba3f13f5d106adc4b1f8d3a39205008f00362e5dfd449b3ee3df2598799"
+    },
+    {
+      "path": "games/three-switches/map.json",
+      "sha256": "efb878b217e7559dc95de6b54af12035d4627f9c256dac64615601154541a980"
+    },
+    {
+      "path": "games/three-switches/scenario.json",
+      "sha256": "9c15c15d68b916d4c88b2fa6e3400f23cce6d57a9afc2623fd42e6d9cd9ac766"
+    },
+    {
+      "path": "prototypes/multiplayer-game/Cargo.lock",
+      "sha256": "f30338918e84b64002d2195a42fadecd9974fdb297a4ed9a6c5232683677ec0d"
+    },
+    {
+      "path": "prototypes/multiplayer-game/Cargo.toml",
+      "sha256": "606d135e71dcb465f7b269af5d9e5cab8f0579ade0f6b74d683a95314242e802"
+    },
+    {
+      "path": "prototypes/multiplayer-game/README.md",
+      "sha256": "67489cadaca34988412a923ea4a159b78ec24e8c5f52a90953fee0265b8a7c84"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/client.rs",
+      "sha256": "1dbf37dd91ba16f566e79d2dd8677052672d09fe74fbc50b9f464bbde0cde096"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/game.rs",
+      "sha256": "43e94ac89a756fce25b461daef13f0e20ca0f0146481b18a34152a6981bc019e"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/lobby.rs",
+      "sha256": "face166177d65043bb395fef5bc0f0e477e4d4e9b57452ecc9c8bb5199d01c7d"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/main.rs",
+      "sha256": "2115cdb7e3b2738a7c665f8b2273fbfab0ebfb3afb525d386b9fbcc77f38cdc3"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/menu.rs",
+      "sha256": "cfb2a12f8060b4d9ec6cbba4797b90215428b703d2a1b1387dbca06a53286fc1"
+    },
+    {
+      "path": "prototypes/multiplayer-game/src/server.rs",
+      "sha256": "4cca791f4b4e4482ad78849d405f0823da52c0e5f441089727b98e6ff70586eb"
+    },
+    {
+      "path": "prototypes/rust-api/prototype.rs",
+      "sha256": "aea4ca5ef1f4021f80a81bfa9a2b8322b93b815924f4b2f6e9133414f88132df"
+    },
+    {
+      "path": "tests/network/network_smoke.rs",
+      "sha256": "0afee9d3191b05fa076df82a2626031824fd41a5d25798e7e3b469fdc9d424f3"
+    },
+    {
+      "path": "tests/starter-maps/README.md",
+      "sha256": "1f8fee9b851499b2337b3efc7799a2755596f775fc0e2c25a2a73048f22e47a1"
+    },
+    {
+      "path": "tests/starter-maps/bedroom-validation.json",
+      "sha256": "bbb5b7395d0d2144f6e1075df0a3a4b8c742457c97ac679c581cea312cc02f21"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.entry-open.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.exit-negative.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-length.json",
+      "sha256": "01fd1c25c90b11903e9244f6fef6fae922c5f24169f769683a1fe9b1fe0f33b6"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-parking.json",
+      "sha256": "b4085f3b24fc5fead1ed8a54cc17addb58a80c91b67e5348f9d735cc5e6b98a6"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-picnic-east.json",
+      "sha256": "e2e6fdf0c1377245fe0ccfe71b4fd99c89b60a88861803b81a5e9a68758a1080"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-picnic-west.json",
+      "sha256": "1b615dc17b8980351fe387f016b6a3161bb8a0d90d943fa0fc83b81c531a850f"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-receiving.json",
+      "sha256": "65fe02ea9956675404eae37b431be62549b644edc9c62813721acb08b241bbd6"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-stalls.json",
+      "sha256": "e8447099bc061aba2f670ec99e28af39c3fc879f0212e2f7b6bdb870701203b1"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.expansion-stock.json",
+      "sha256": "f82310dbf652473572d088cd9f91f2e3d3cacbf1ff720d67e06851749b8b093b"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.json",
+      "sha256": "921b9433b7950a019abce1d20ab918aa5a879f075042825bab346a25d959dd4b"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.route-1.json",
+      "sha256": "f1a8458c5ff39206b485c6351430dd2e6239336e193e1ecde8a068335094ed43"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.route-2.json",
+      "sha256": "ccb97a13277a4a4fec0a92c94e428c827f8df58139b29b044d9fdb0a1e191bad"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.route-3.json",
+      "sha256": "b54c6df256b82551da5617548491698bb3689e889cec8c753d45f123f987d56d"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.route-4.json",
+      "sha256": "5e432138805a3664babc53dd4c3d8286c3cdc909094e49a299b5ce4b071f9afb"
+    },
+    {
+      "path": "tests/starter-maps/convenience-store.svg",
+      "sha256": "d7d88d231136cb8113ab8537f06405449e94daee89c6b5e16d9112073cf3967c"
+    },
+    {
+      "path": "tests/starter-maps/expansion-validation.json",
+      "sha256": "28e65bf5e42f2b68329805dbdee8d2f5d92e689ea373a4ecde7612b650320e77"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-allotment-0.json",
+      "sha256": "baaaf260d7a09290cdefc95a17e7b6fb9f22a146ebb00a4261044fb0290c5cb8"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-allotment-1.json",
+      "sha256": "472b576258ff59e54d03e6441421c449658cd8e553ef3e149b1c60880600b68b"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-garden-kitchen.json",
+      "sha256": "3b55001bfc8a56b300464b7d495990245aa8780e38229483b08e5178e6c77b5e"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-guest-pavilion.json",
+      "sha256": "6d5dea59c38b0219ca80bce586b604d396871149bba02b26bb5aac058624f103"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-length.json",
+      "sha256": "0b0dcbb5df1173c2387946021fe6d2a3b672752e9ffa682f122a11e233454e40"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-potting-shed.json",
+      "sha256": "1d4f602811485c20c5ee67ef1c567692ca674890e18c1393a1d8ea98ee246d71"
+    },
+    {
+      "path": "tests/starter-maps/house.expansion-workshop.json",
+      "sha256": "cd81ab6d8d0c07515219dc54bc9e1f29e7e8d0ab0fd90c1aa213960e206915ab"
+    },
+    {
+      "path": "tests/starter-maps/house.json",
+      "sha256": "92dbd1bded27c16436dba41653ea9bd6f1b70f6e8caf5ebbe16632417a53af3e"
+    },
+    {
+      "path": "tests/starter-maps/house.route-1.json",
+      "sha256": "e0f3c79b4ad1e2b4655942654f0022613b11bb7c5d193b327d719de1241beb2d"
+    },
+    {
+      "path": "tests/starter-maps/house.route-2.json",
+      "sha256": "5375c531e8892dc5fc726d53665295e041820f2241e2a4d5da072bcd0358dd13"
+    },
+    {
+      "path": "tests/starter-maps/house.route-3.json",
+      "sha256": "c8c2277982b19db72034d12f0660a57d04b40c7ad1e9a933ade1e00ac9f11bd9"
+    },
+    {
+      "path": "tests/starter-maps/house.route-4.json",
+      "sha256": "e448a146c60a203ef6d98c0421bf44f6a819f2e7d3f1a68a0d11131691fa9757"
+    },
+    {
+      "path": "tests/starter-maps/lived-in-validation.json",
+      "sha256": "e7b3d001b5b26e2a6d31a0c7a69126a8965f313678e48fb728b9c45073cceb35"
+    },
+    {
+      "path": "tests/starter-maps/office.entry-open.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/office.exit-negative.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/office.expansion-archive.json",
+      "sha256": "6ff1ae18ae112f4976e35c428327f52660f3cab3775d9f5bd19bc1097054822c"
+    },
+    {
+      "path": "tests/starter-maps/office.expansion-full-corridor.json",
+      "sha256": "01fd1c25c90b11903e9244f6fef6fae922c5f24169f769683a1fe9b1fe0f33b6"
+    },
+    {
+      "path": "tests/starter-maps/office.expansion-lounge.json",
+      "sha256": "90b1a3e829ece8ed41edd32cc37d816c94235fc725b81c2d9b4017143980c7b2"
+    },
+    {
+      "path": "tests/starter-maps/office.expansion-projects.json",
+      "sha256": "1aac9c01931a0e1857cec8ce03479f42d1cb37fd18cf0ee8277941a455395f83"
+    },
+    {
+      "path": "tests/starter-maps/office.expansion-training.json",
+      "sha256": "55e77941fe4ad6544f398f4c32390fd26bad3239a6e1c11d7cb4f703aa8f17e6"
+    },
+    {
+      "path": "tests/starter-maps/office.json",
+      "sha256": "063522c9cf81311d42381c9f36adbbc420782f1dead8e20ec8f827103e41c314"
+    },
+    {
+      "path": "tests/starter-maps/office.route-1.json",
+      "sha256": "b384b6320d924ddbf12fbc9776dd9f046535e7a3246910e06514582d62c1234d"
+    },
+    {
+      "path": "tests/starter-maps/office.route-2.json",
+      "sha256": "c1a2691277f33b415698364cfdb377b1878416d8c77484de5686e0346a7562dd"
+    },
+    {
+      "path": "tests/starter-maps/office.route-3.json",
+      "sha256": "f1b374f1fd0d264abfc64f5aaf35c32d880d0e605af885fef0166308a64c8c27"
+    },
+    {
+      "path": "tests/starter-maps/office.route-4.json",
+      "sha256": "7ab40f3e386d0b5cc2ae7ebce6909386cada0cc6ef9cfcf1b94b5e8c63fe2b3a"
+    },
+    {
+      "path": "tests/starter-maps/office.route-5.json",
+      "sha256": "09d698ab4dfc0d4efbab01b8bb3a9d585128a4ff13cfc90a5f8538a128f19232"
+    },
+    {
+      "path": "tests/starter-maps/office.route-6.json",
+      "sha256": "42054e9f4443c781862433c76eae58ef1c9d7335519379d26f5a4075ff4252d1"
+    },
+    {
+      "path": "tests/starter-maps/office.svg",
+      "sha256": "e512cc7e5e29df4ae56a3eb219794f3e20b51e726c63189bbc9e8824f7ae4ba3"
+    },
+    {
+      "path": "tests/starter-maps/redesign-validation.json",
+      "sha256": "74e5b38684457d2eea664b45d0143dc8e562321ce21375ef5e4eb0c42d10f341"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.entry-open.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.exit-negative.json",
+      "sha256": "c89b54f60c3551d4f58851cbde78786efb73fc4fbb285f9858b42204d85159d7"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-garden.json",
+      "sha256": "85634a12316d7a6df3f90f0a2584ab96798ff223ea780b4f2f1b77dc7d0bf1ed"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-learning.json",
+      "sha256": "3988813503aafb70c5506f10593c5b0ea4bb7e22885ecc1d09be46e87c9d8aa2"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-length.json",
+      "sha256": "01fd1c25c90b11903e9244f6fef6fae922c5f24169f769683a1fe9b1fe0f33b6"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-play-deck.json",
+      "sha256": "1a102c877c4c8765205ba8837a4e712c5500f5a154a2e1f25a09807301ddea19"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-play.json",
+      "sha256": "949f4db8f585966bcbc9da1cb76fc4d39a3f6a33840667bd549006e378691e5f"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.expansion-sand.json",
+      "sha256": "37ab910f7fd7eb5ed436de02e998473b7636a719af8b462b8cf290f1881e7e8a"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.json",
+      "sha256": "f534266d77ccacced7960075f4d2b0a59e8e941c31d89e84a3f7376c45a45c1d"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.route-1.json",
+      "sha256": "b945a7970452aadf447eac9341cc646d1e5e7ba21539a07bab518489d8091a7c"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.route-2.json",
+      "sha256": "26a668b787a3e59ec0901e4a71490331160f5f446fde4a778f8e9a8638c27349"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.route-3.json",
+      "sha256": "d047730fb6f45125d4e1ef0c6822bea6e29b7f626d95f3bbd19a14ddae0b0f50"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.route-4.json",
+      "sha256": "f62121efcbf760a79729ef4bcef90b9387feada491adf3c3a7cbb26d06d9f214"
+    },
+    {
+      "path": "tests/starter-maps/school-wing.svg",
+      "sha256": "b0c8d3aec3ec8429c17d84b0a473e22b7673c7c71e8b68eef6c291fede47cb0c"
+    },
+    {
+      "path": "tests/starter-maps/validation.json",
+      "sha256": "4ebb604d8368b0c0060c7abfe88e4a36d9937d4aa07ab4cfe377dbb6499aa8c6"
+    },
+    {
+      "path": "tests/validation/validate_expanded_maps.rs",
+      "sha256": "a965988f79879c3aae5c73cbb2da0e33e1d97ce87e532457cb915286e1bf4876"
+    }
+  ],
+  "schema_version": 1,
+  "source_repository": "kevstermcgee/BlueEngine",
+  "source_revision": "a52b94d74a3e1125aacf25f039eca2c7afcf3681",
+  "target_repository": "kevstermcgee/BlueEngineGames"
+}
