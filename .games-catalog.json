@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "demos/examples/custom_client.rs",
-      "sha256": "f63f749748de9a55e369dbe588af200597f11624578b5d0a286e58ff4439e25d"
+      "sha256": "b31859c132060c3fc946d74a13dffe089743686bf5ad068b1d47a35aceec4c98"
     },
     {
       "path": "demos/examples/export_props.rs",
@@ -320,7 +320,7 @@
     },
     {
       "path": "prototypes/multiplayer-game/src/client.rs",
-      "sha256": "1dbf37dd91ba16f566e79d2dd8677052672d09fe74fbc50b9f464bbde0cde096"
+      "sha256": "399375a866cb4490905a9247f8c6fa7063550afceac2ab19a058ddb8604ceafb"
     },
     {
       "path": "prototypes/multiplayer-game/src/game.rs",
@@ -336,7 +336,7 @@
     },
     {
       "path": "prototypes/multiplayer-game/src/menu.rs",
-      "sha256": "cfb2a12f8060b4d9ec6cbba4797b90215428b703d2a1b1387dbca06a53286fc1"
+      "sha256": "9fe536dc3e8fd91850629fcc05ba7cfe34b3fb56a5873985b1624fab3195e48e"
     },
     {
       "path": "prototypes/multiplayer-game/src/server.rs",
@@ -636,6 +636,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "ce9a9511c275ab0ee8fcf6dbf308c3af72c3a6b7",
+  "source_revision": "16acc82ddc3f934748ff5cf7e1f7a5ac74a289e3",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
