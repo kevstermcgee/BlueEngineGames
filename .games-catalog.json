@@ -603,8 +603,35 @@
       "sha256": "a965988f79879c3aae5c73cbb2da0e33e1d97ce87e532457cb915286e1bf4876"
     }
   ],
+  "playables": [
+    {
+      "arguments": [
+        "--game",
+        "content/games/three-switches/game.json"
+      ],
+      "entry": "games/three-switches/game.json",
+      "files": [
+        "games/three-switches"
+      ],
+      "name": "Three Switches",
+      "slug": "three-switches"
+    },
+    {
+      "arguments": [
+        "--map",
+        "content/demos/examples/first-light.json"
+      ],
+      "entry": "demos/examples/first-light.json",
+      "files": [
+        "demos/examples/first-light.json",
+        "demos/examples/first-light.wav"
+      ],
+      "name": "First Light",
+      "slug": "first-light"
+    }
+  ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "06d8a9e91064fc58dac993e239c5c98542312aca",
+  "source_revision": "222ca9c5b74f798b05ee7468041437a33a65def0",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
