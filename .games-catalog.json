@@ -8,7 +8,7 @@
   "files": [
     {
       "path": "demos/examples/custom_client.rs",
-      "sha256": "42eb3a81941b18c763d6b578e8de9c4a726fb3f95285fd7102e608baedfdefec"
+      "sha256": "f63f749748de9a55e369dbe588af200597f11624578b5d0a286e58ff4439e25d"
     },
     {
       "path": "demos/examples/export_props.rs",
@@ -44,7 +44,7 @@
     },
     {
       "path": "demos/examples/prototype.rs",
-      "sha256": "aea4ca5ef1f4021f80a81bfa9a2b8322b93b815924f4b2f6e9133414f88132df"
+      "sha256": "b6cbbba6cb6aaf135d59014fb4752fc1f49c83993aeaa43fc85406af33fa8be5"
     },
     {
       "path": "demos/examples/pyramid.obj",
@@ -344,7 +344,7 @@
     },
     {
       "path": "prototypes/rust-api/prototype.rs",
-      "sha256": "aea4ca5ef1f4021f80a81bfa9a2b8322b93b815924f4b2f6e9133414f88132df"
+      "sha256": "b6cbbba6cb6aaf135d59014fb4752fc1f49c83993aeaa43fc85406af33fa8be5"
     },
     {
       "path": "tests/network/network_smoke.rs",
@@ -632,6 +632,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "df3a85d126f761c1d7811a3048ff06711ec34748",
+  "source_revision": "30e1e5958bede98f8f3d421c8653100889339461",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
