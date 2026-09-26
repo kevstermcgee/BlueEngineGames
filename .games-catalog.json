@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 72,
-    "games": 3,
+    "games": 105,
     "prototypes": 10,
     "tests": 64
   },
@@ -293,6 +293,414 @@
     {
       "path": "demos/previews/toolkit/render-report.txt",
       "sha256": "9a906abf2a58cd8738e3448151c793060d898c66b7473563e20a344153ccea50"
+    },
+    {
+      "path": "games/blueengine-sandbox/README.md",
+      "sha256": "8930571c64125b37f54def31a8bbeecca5e72107cf8ca864131500214f650990"
+    },
+    {
+      "path": "games/blueengine-sandbox/VALIDATION.md",
+      "sha256": "23f0ffc57fb792e5dbd0e6db0fbec0c5a9f9473309822878effd7f2ab0e43419"
+    },
+    {
+      "path": "games/blueengine-sandbox/assets.json",
+      "sha256": "9aaccef00d680f6625f7e6fd9621da59f3e001a74999fea82075af4c7b58733e"
+    },
+    {
+      "path": "games/blueengine-sandbox/catalog.json",
+      "sha256": "abf0be8bec94fcb97cea1dc4ebce9fcb42688a1d014d169b857b7e32d4702e3a"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/bench.json",
+      "sha256": "08d19db6c38b590c2a2c6a05083e7249f6d2435990de40006a2487a5d6135f1c"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/bollard.json",
+      "sha256": "c8b1e54a73edfe20aaa6e653ec3ceeb10f136506a339ded0c6664e9c6b3abd8f"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/gantry.json",
+      "sha256": "ccc8391ee31b3f147da22afedc6020ab9e53c6636618874c13dd4914a2d494aa"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/pallet.json",
+      "sha256": "1a409c5aa40efd23f51825268494a1df9b7e3f1661546c97610fe27d17e7e18c"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/pine.json",
+      "sha256": "91d03c4b571efa71ca0a222f3d68050cf4048ed5118e5f0d9664f38d651ebe76"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/planter.json",
+      "sha256": "64ef0e27cb01b61ba6d62c0c49fa219feb6744411e56340f405b81920ddf747b"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/shipping-crate.json",
+      "sha256": "b72e85f45791c79a8849b7ed1d817657b2996fe73d74a4ee84e210831ae12b77"
+    },
+    {
+      "path": "games/blueengine-sandbox/kit/work-light.json",
+      "sha256": "332c8d19e81f9f49fca2b72fa7e4102f5ab38231f2f20e12cdf636da5cf88983"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/atrium.json",
+      "sha256": "f555fb5574911a568fb7ba02df99f2fb371ee30f4ce4859c1f8b78cba1a926a5"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/calibration.json",
+      "sha256": "1d4743bdcdf6250b7d2e0e709e2893dc97fa8d7c0342c3ce9054877d0a620de7"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/convenience-store.json",
+      "sha256": "f3207f86da4db6dc4391a9bef684e07e581f8492c8bd2479b86ed4c0969e2707"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/courtyard.json",
+      "sha256": "0adcf426e1b97b2fdce35422298b860c7b3fd58ef85820d0b4f0567358633e34"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/foundry.json",
+      "sha256": "dde6a8a8df03333e0be7a319214f471ee70fd9cae5ca2e7bce5cf619aeec1a93"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/house.json",
+      "sha256": "1045f9d16f5d8bf1e7a3e00d187ab453447f44954a68fc95865f8812fd99bbaa"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/office.json",
+      "sha256": "acd79e23c0cb4ec698454c0c61cdbc18db18813cc5ce2d96cf6b9b11e81878a2"
+    },
+    {
+      "path": "games/blueengine-sandbox/maps/school-wing.json",
+      "sha256": "051d7cab6128bdca9607a368542732c6d954f0d194f00048e987056ede7ff0e2"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-backpack.json",
+      "sha256": "d456202f016300c8654543f9280f13faf4ba954b81b42a30c82215fc00cfede5"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-bench.json",
+      "sha256": "2a390f5096d700b7524a675a50ebe07432854d50b58f4975bf439bb8cd792715"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-bookcase.json",
+      "sha256": "2625aa80ae10b38d7c245bdb3c1d3c434d984015b2b3e1631342226e7f5f864a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-bottle.json",
+      "sha256": "b2ddbcab45b827946340b9c3f29579f0c66b613eaa1374b52d68ac9c084f0647"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-bread-loaf.json",
+      "sha256": "73cc3a69f98c7eff47cdc6078eade9975c4b659b891d011caf80b8c4dfeac36a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-carrot.json",
+      "sha256": "62eccbe5cb322dac9a2b84324235a64545b8e3344aeb21b09187bfb14441e91a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-carton.json",
+      "sha256": "6c0c4c94c67db405176fdcb3b91cac4058b27b805e8dfd88b1890b83bfdce077"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-closed-double-door.json",
+      "sha256": "a06e96391bdaf65759ebbc6c4fea782e1b2598cf56888875200e0aeac124dffb"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-coffee-machine.json",
+      "sha256": "8fc8b60000fbae481197ca11e3eea986d0d8f1b83321625ca362d55dd5e0ade2"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-computer.json",
+      "sha256": "720e6405c3e9040cfe6f51479e8e312566f9b0d0c2f9e04ef29802cd60669e85"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-cubby-bin.json",
+      "sha256": "b19a00f5e4891b9864005af599e7f66a08fa6d326a0e58a068c1fc689dcf4d4b"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-file-cabinet.json",
+      "sha256": "dec54343d6bafb08a3ceaedaeac08adaf25bcf0981b0ba0b5b8ccbbf7b32ece1"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-floor-lamp-drum.json",
+      "sha256": "6dad61267b8459d4cea4d740ab50dd5b63e196a868feb605aa65d78c38e6e36c"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-floor-lamp-reading.json",
+      "sha256": "265195d1a40ec0f977476e81d170a4c3814353c2aab84487b6fe63a7b8c028c9"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-locker.json",
+      "sha256": "2dcbcd2fd216bb18e7742f31ce8263474130b902aacd5df4b66c2150be08299d"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-lunch-tray.json",
+      "sha256": "0ce41572b5eb27da0cc5a17b535a65efa3a0dd7b827fb77b78ff1fd92c2d7dfe"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-market-citrus-print.json",
+      "sha256": "f7f66b4815f778db803ae880115eebe91cfbae0daf329baa0c423c0d57365a1b"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-market-coffee-print.json",
+      "sha256": "a5bf14f384bf6f2bf912a960483405e70ab52af6d5a6160c0918fe9cd91b9608"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-math-board.json",
+      "sha256": "23b006812ccd1fa17b157d7a88c3c66f586fd3c9327aef68d74f76f2ec0f571a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-microwave.json",
+      "sha256": "233c7d4574ba9b81c683539804f89a55138f0d46a3f239243051f0c8085623b5"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-mug.json",
+      "sha256": "0b737f45cd75ba483e7f7e7625a255fdfe1c04a76623edf79eb09f07728c8e0d"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-orange.json",
+      "sha256": "f4a9c3cb8d6fdd32230d96c93f472cb5fcaca9f8d6028dfb1813a1d056641a6a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-painting-botanical.json",
+      "sha256": "2f33a2ffeb51a7680535b58cd89053353a9864589c9032fe8f8a89a516bec097"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-painting-coast.json",
+      "sha256": "9bc2d0c233d550e7a7fd4c40d313cdb3b767589b31e92964517a245e7ef893c1"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-painting-geometric.json",
+      "sha256": "3141673892ddcdb27ab6fb02e915f5d8a57719c87e34bb6d8a999daedfb866f9"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-painting-sunset.json",
+      "sha256": "9da268ba9c1ec9c201d4d4a6be8c048452d93e313fe9093c3718e0342d1cabea"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-papers.json",
+      "sha256": "cbd6855576ff6306323e27005ec429c3d04ee55e3d958991c657cb2cab9fa17c"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-pear.json",
+      "sha256": "b8026f90d3d297a4b44d2c92e34ae0e73bff19a4fcd5c034189680257908f676"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-pencil-cup.json",
+      "sha256": "5061675caaad3460b98eab99d67d1040c4b3c86282ca481ff89b6ef454896744"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-plain-basket.json",
+      "sha256": "3cb3d3ffd26101c2d7378c0a1b9f2607cd0e48720ad300998676b810aaf3251c"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-printer.json",
+      "sha256": "a87d17fc9a06e42264db501e88f1f70cbc9a66de06eef54caf65fc75b31e2b9b"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-produce-stand.json",
+      "sha256": "b1acf40a638b40ed1d5af40744ec4646671566c8222e6d5ef9ac0ec1dc68fe15"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-reading-board.json",
+      "sha256": "a14a983c26991fcb34fe3138ce11d7152ff40a14fed3d58f6fcb47badf3806c1"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-register.json",
+      "sha256": "4d2a389f1568b0adae8595b18f8108abf33eb958c53b2e92e505bd6cfe2b87a4"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-retail-shelf.json",
+      "sha256": "206275723fb6e106005b23009cf8e4bd48ef18102b7bc1cd3d02e13d66e7b7da"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-school-shape-print.json",
+      "sha256": "93bd498e6cd8e7ecfabd79b45dc9552afb0f568db0229a5330386b81c6eaca99"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-school-solar-print.json",
+      "sha256": "fd9f11282e5e6cfaafa9b3ced60a1363bee0f37ae52e6941f2a1f3e5d3140464"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-shopping-basket-stack.json",
+      "sha256": "a7fb5f07cad0e524bb776cf46b5cbb84f206265a3127ded593736caf7ad4d391"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-shopping-basket.json",
+      "sha256": "4eb454b9f5d05e4bd68be579e2de1301871b55eb863c934e7c8ced85805ee138"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-sink-vanity.json",
+      "sha256": "076dbf22d5e836c18b4816a34c2e4c9c1b4a6d695feded1dad63e64d0ec8bb45"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-small-cubby.json",
+      "sha256": "73c3d964dde76c68e3223b52659020d4e11a046cbe024273489feb88aa64f186"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-snack-bag.json",
+      "sha256": "b8129bd3bea9d3fd4b3eb4987aa016e13ede69dbfff9f4d1a07b66a16ccf8e9e"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-soap-dispenser.json",
+      "sha256": "6d7279465010e2eaee2e6eb016e06a45e3febfc2c9986cc63b1543565c3eeab7"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-sofa-two-seat.json",
+      "sha256": "174ad7b218e129b7a041f44988d15fbbef126c9f32154b186a931f828e35eb7e"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-student-desk.json",
+      "sha256": "aaf49e5508b23c929079c5894598efb3f24b889d6094f6f0adf4e69b569fb815"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-table-lamp-ceramic.json",
+      "sha256": "31ebaf7544e475658e75ef2633b70d64043638060ca1248202e57710478153cc"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-toilet-fixture.json",
+      "sha256": "245148f3a40ecb365c315ab75a180df09d9210241eb8bc986022674942027399"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-toilet-roll.json",
+      "sha256": "cd14555eaa06cbacd2eb8a14d8a13e84ea673fe0416476f8820b71d3bdda0cf2"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-trophy.json",
+      "sha256": "19d6545945dfda79ca930eeb6839dc587c35aecefb5a2bc9bd2ac85a2b47ebcf"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-wall-clock.json",
+      "sha256": "e88cf2f31ba0d9babe83246ef0d061f7cb043cf9b13d2622380d651d7532be10"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-wall-window.json",
+      "sha256": "80080e612a1578a52bfea0826bd96862d6b0d7abd23956073dbb3dcc075d535a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-waste-bin.json",
+      "sha256": "a790e2105221ae5bd6223236d7d8e3b39f58a0a5cd38af984dd36fa760673b21"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-interiors-water-dispenser.json",
+      "sha256": "83c21d0a8ea98a70b9c31a4c20477f1d82396a55e37c900605a06a5842897d23"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-apple_red.json",
+      "sha256": "7a336953b4910c9530953ad2bbd050cfd078851d19c359cabc60c78333547435"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-book_stack_1.json",
+      "sha256": "37928b2e15826bdca3c3b78a3ccd17cf0ceb513fedd3a28a5dc924e6f5ce3d9f"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-bowl_1.json",
+      "sha256": "668e99f8d712eebff4f78e3111b22da5e7112994df9dc17eba484a72a4088132"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-candle_trio_1.json",
+      "sha256": "795e70ba557f647ef478e57c559f6cd2d0012da7e2114dee598fac2148ef6aad"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-cereal_box_1.json",
+      "sha256": "8f128ddb4a8eb517fd8450e8031d59c8ba10281ae884ce37db65c0c21d84166e"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-chair_wooden_1.json",
+      "sha256": "f9a6b4df82783c46f153ab3c40e86f83ff5e24fa760953777599f0eeaae27ffe"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-flower_vase_1.json",
+      "sha256": "c1a91b63655cfcffb34106347e0ec4c562358750972d6e1079ad8b4912f4917a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-framed_art_1.json",
+      "sha256": "e63042bb0fd8fc34255385f4b3d3862b01246b49083fd87b8e2ae07cc01039d4"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-framed_botanical_1.json",
+      "sha256": "942599a2ab018dadb7c23b6385f495ad02a2975d0e10947b66a80bfe563ea7b3"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-mantel_clock_1.json",
+      "sha256": "d543e6967ca7941d68b510205fc8c3d333bb1b638da5ed5b034ef1213d638995"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-potted_cactus_1.json",
+      "sha256": "eae0a7aba3c06b9961c9946e92509826405d450d1bd6fafd7bfa1d52fc3e8b9a"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-sculpture_1.json",
+      "sha256": "75405cb6ec63dc5d14fbdd59bd4f3d12cf825a8272bfb68f9b06a0002824fa37"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-table_lamp_1.json",
+      "sha256": "eebcf49791d0c5fee94d53297a3ed2dc591a0ef1d120b506cb7e81a624dc5760"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-table_wooden_1.json",
+      "sha256": "2e089fcf3c4534209b3ca4ac403ac590584de62e231831fb7d52bc8daecfb23f"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-tall_vase_1.json",
+      "sha256": "ced948e0c4ea07835e239acd6ca0aabfa86825da3f20af7247f79092be0bf03c"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-vase_plant_1.json",
+      "sha256": "2dfd3787b78744a12d8436c8ccfd75976a17d6634a77a00699ab22dd1ea271fe"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/core-native-woven_basket_1.json",
+      "sha256": "5d406f130b12a53f511802d5ee0ab17924746b8f9fd55adfe6ae4eed70dbd0ec"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-bench.json",
+      "sha256": "85e6f5036d4ec03b426caa1fd5bf5ece5c58eeea260548b84d887ed4fd6676a1"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-bollard.json",
+      "sha256": "f249e3a103ff431876f8d1b3e8697f7997b6389c6f7569d54cec5ea02c4aabe1"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-gantry.json",
+      "sha256": "f17c5f2fe77384784718e57e4a354a1a94a0e03bc8ddfa3639c8b403f103eb31"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-pallet.json",
+      "sha256": "6b2c9b5663d7383026fede3a007e6d434987981b9b933676796eee0f7d10f071"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-pine.json",
+      "sha256": "35f1d62f0526c0ee3b669df6f6c974903e9e4c501f5fc3d70713c8c6b9b652f9"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-planter.json",
+      "sha256": "26bf9e9332168816c2fe6e5b586e86f3ae4acd2e5656b5fded7dfbffa86030af"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-shipping-crate.json",
+      "sha256": "f5ecb30f38e47a6b1ce9863c0df4f4853d48b53cd24a2c6558dd2e0da914f8cf"
+    },
+    {
+      "path": "games/blueengine-sandbox/previews/sandbox-work-light.json",
+      "sha256": "c2cd5ee94bc3fd5f1b9c3fe09c527546b292da40aeced6aaf266bad99c648bde"
+    },
+    {
+      "path": "games/blueengine-sandbox/routes/atrium.json",
+      "sha256": "8c7dc7ee367a3dc071598ea1921e6bdda9efa1aee4f36b6dd5b1ca6f8e39afc9"
+    },
+    {
+      "path": "games/blueengine-sandbox/routes/calibration.json",
+      "sha256": "54fecd3cc36b45983a41f6c9b5fd510788c1a53cce117c209eea9e0ba5d777c9"
+    },
+    {
+      "path": "games/blueengine-sandbox/routes/courtyard.json",
+      "sha256": "9a8cb4a9951eddebeb4894cd39b8c1a32ab6e3b3f9172080cfcc691518ea4b5a"
+    },
+    {
+      "path": "games/blueengine-sandbox/routes/foundry.json",
+      "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
     },
     {
       "path": "games/three-switches/game.json",
@@ -636,6 +1044,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "16acc82ddc3f934748ff5cf7e1f7a5ac74a289e3",
+  "source_revision": "a49824fcd9b7d0e424af56a14669aa8f47bf2fb5",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
