@@ -40,7 +40,7 @@
     },
     {
       "path": "demos/examples/network_smoke.rs",
-      "sha256": "0afee9d3191b05fa076df82a2626031824fd41a5d25798e7e3b469fdc9d424f3"
+      "sha256": "ae90cc3e72c3da3784027040f243c6991c22211dba336c2bec4272f77f16bbad"
     },
     {
       "path": "demos/examples/prototype.rs",
@@ -756,7 +756,7 @@
     },
     {
       "path": "tests/network/network_smoke.rs",
-      "sha256": "0afee9d3191b05fa076df82a2626031824fd41a5d25798e7e3b469fdc9d424f3"
+      "sha256": "ae90cc3e72c3da3784027040f243c6991c22211dba336c2bec4272f77f16bbad"
     },
     {
       "path": "tests/starter-maps/README.md",
@@ -1044,6 +1044,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "2db1cc5d7b073541118a972c959e5c6e7f044cc8",
+  "source_revision": "dab921cd3f0979142161f09af7e3e175c8421d0f",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
