@@ -40,7 +40,7 @@
     },
     {
       "path": "demos/examples/minimal_game.rs",
-      "sha256": "78b1555ac5fc1c33144d21d30f54e9565110d10d8ef08b2eaae37dd799c95c91"
+      "sha256": "b694000fee0cb0fcf0b700760c03c1026aeb3b8b2bc5cb860f77d7426ec7e1b6"
     },
     {
       "path": "demos/examples/network_smoke.rs",
@@ -1052,6 +1052,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "d6683813cf9d6a70897aec37edf302101c951ecd",
+  "source_revision": "6f2edcc6d5f7584e07bf835db3ae19830bba9e4c",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
