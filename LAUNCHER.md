@@ -6,8 +6,9 @@ type, and description. **Install & play** downloads the matching ZIP from the la
 BlueEngineGames release into the current user's local application-data directory,
 then starts its `.exe`.
 
-Run `Install-BlueEngineLauncher.cmd` to build and install the launcher and create a
-desktop shortcut. The release workflow also publishes
+Run `Install-BlueEngineLauncher.cmd` to build the launcher, install the launcher app
+under `Documents/Codex/Launchers`, and create a desktop shortcut. Downloaded games
+remain in the current user's local application-data directory. The release workflow also publishes
 `BlueEngineLauncher-windows-x64.zip`.
 
 The launcher catalog is generated from `.games-catalog.json`,

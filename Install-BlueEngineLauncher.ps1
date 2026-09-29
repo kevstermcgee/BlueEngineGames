@@ -7,7 +7,8 @@ $config = Get-Content -Raw -LiteralPath (Join-Path $repoRoot '.launcher-config.j
 $build = Join-Path $repoRoot 'launcher\build'
 & (Join-Path $repoRoot 'launcher\build.ps1') -OutputDirectory $build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$install = Join-Path $env:LOCALAPPDATA ([string]$config.install_folder)
+$documents = [Environment]::GetFolderPath('MyDocuments')
+$install = Join-Path (Join-Path $documents 'Codex\Launchers') ([string]$config.install_folder)
 if (Test-Path -LiteralPath $install) { Remove-Item -LiteralPath $install -Recurse -Force }
 New-Item -ItemType Directory -Path $install | Out-Null
 Copy-Item -Path (Join-Path $build '*') -Destination $install -Recurse
