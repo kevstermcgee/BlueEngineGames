@@ -1040,10 +1040,13 @@
   ],
   "preserved_paths": [
     "games/bluedm",
-    "games/riftwake"
+    "games/riftwake",
+    "games/skyhook-sprint",
+    "games/magnet-mine",
+    "games/wrecking-orbit"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "a4eb1e12bbab7113ec3014c7270091b59ed79a1a",
+  "source_revision": "917ca41d0607ba5e0fd7ca3df4478c2b11cb1963",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
