@@ -17,13 +17,13 @@ internal sealed class GameInfo
 internal sealed class LauncherForm : Form
 {
     private readonly string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-    private readonly string product;
-    private readonly string repository;
-    private readonly string installFolder;
-    private readonly string catalogUrl;
-    private readonly Color accent;
+    private readonly string product, repository, installFolder, catalogUrl;
+    private readonly Color accent, background, surface, cardColor, muted;
+    private readonly Panel viewport = new Panel(), scrollTrack = new Panel(), scrollThumb = new Panel();
     private readonly FlowLayoutPanel gamesPanel = new FlowLayoutPanel();
     private readonly Label status = new Label();
+    private int scrollOffset, dragStartY, dragStartTop;
+    private bool draggingThumb;
 
     public LauncherForm()
     {
@@ -32,60 +32,82 @@ internal sealed class LauncherForm : Form
         repository = settings["repository"];
         installFolder = settings["install_folder"];
         catalogUrl = settings["catalog_url"];
-        accent = ColorTranslator.FromHtml(settings["accent"]);
+        accent = ReadColor(settings, "accent", "#2F81F7");
+        background = ReadColor(settings, "background", "#090F1D");
+        surface = ReadColor(settings, "surface", "#111C31");
+        cardColor = ReadColor(settings, "card", "#172641");
+        muted = ReadColor(settings, "muted", "#91A6C6");
 
         Text = product;
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(980, 680);
-        MinimumSize = new Size(760, 520);
-        BackColor = Color.FromArgb(11, 16, 28);
+        ClientSize = new Size(720, 500);
+        MinimumSize = new Size(600, 390);
+        BackColor = background;
         ForeColor = Color.White;
         Font = new Font("Segoe UI", 10F);
         Icon = SystemIcons.Application;
 
-        var header = new Panel { Dock = DockStyle.Top, Height = 118, BackColor = Color.FromArgb(16, 24, 40) };
-        var eyebrow = new Label {
-            Text = "ENGINE GAMES  /  WINDOWS", AutoSize = true, ForeColor = accent,
-            Font = new Font("Segoe UI Semibold", 9F), Location = new Point(28, 19)
-        };
-        var title = new Label {
-            Text = product, AutoSize = true, ForeColor = Color.White,
-            Font = new Font("Segoe UI Semibold", 25F), Location = new Point(24, 39)
-        };
-        var subtitle = new Label {
-            Text = "Install once. Launch fast. Every game stays in its own lane.",
-            AutoSize = true, ForeColor = Color.FromArgb(155, 168, 190), Location = new Point(29, 82)
-        };
-        var downloads = MakeButton("Release downloads", 150);
-        downloads.Location = new Point(790, 39);
+        var header = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = surface };
+        var title = new Label { Text = product, AutoSize = true, ForeColor = Color.White,
+            Font = new Font("Segoe UI Semibold", 19F), Location = new Point(20, 18) };
+        var downloads = MakeQuietButton("Downloads", 94);
+        downloads.Location = new Point(606, 18);
         downloads.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         downloads.Click += delegate { OpenUrl("https://github.com/" + repository + "/releases/latest"); };
-        header.Controls.AddRange(new Control[] { eyebrow, title, subtitle, downloads });
+        header.Controls.AddRange(new Control[] { title, downloads });
 
-        gamesPanel.Dock = DockStyle.Fill;
-        gamesPanel.AutoScroll = true;
-        gamesPanel.FlowDirection = FlowDirection.TopDown;
-        gamesPanel.WrapContents = false;
-        gamesPanel.Padding = new Padding(24, 20, 24, 20);
-        gamesPanel.BackColor = BackColor;
-        gamesPanel.SizeChanged += delegate {
-            foreach (Control c in gamesPanel.Controls) c.Width = Math.Max(620, gamesPanel.ClientSize.Width - 55);
-        };
-
-        var footer = new Panel { Dock = DockStyle.Bottom, Height = 42, BackColor = Color.FromArgb(16, 24, 40) };
+        var footer = new Panel { Dock = DockStyle.Bottom, Height = 32, BackColor = surface };
         status.Text = "Ready";
         status.AutoEllipsis = true;
-        status.ForeColor = Color.FromArgb(155, 168, 190);
-        status.Location = new Point(28, 12);
-        status.Size = new Size(900, 22);
+        status.ForeColor = muted;
+        status.Location = new Point(20, 8);
+        status.Size = new Size(675, 18);
         status.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
         footer.Controls.Add(status);
 
-        Controls.Add(gamesPanel);
+        viewport.Dock = DockStyle.Fill;
+        viewport.BackColor = background;
+        viewport.Resize += delegate { LayoutGameList(); };
+        viewport.MouseWheel += OnListMouseWheel;
+
+        gamesPanel.FlowDirection = FlowDirection.TopDown;
+        gamesPanel.WrapContents = false;
+        gamesPanel.AutoSize = true;
+        gamesPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        gamesPanel.BackColor = background;
+        gamesPanel.Location = new Point(16, 12);
+        gamesPanel.MouseWheel += OnListMouseWheel;
+        viewport.Controls.Add(gamesPanel);
+
+        scrollTrack.Width = 8;
+        scrollTrack.BackColor = surface;
+        scrollTrack.Cursor = Cursors.Hand;
+        scrollTrack.MouseDown += delegate(object sender, MouseEventArgs e) {
+            if (!scrollThumb.Bounds.Contains(e.Location)) SetScrollFromThumb(e.Y - scrollThumb.Height / 2);
+        };
+        scrollThumb.BackColor = accent;
+        scrollThumb.Cursor = Cursors.Hand;
+        scrollThumb.MouseDown += delegate {
+            draggingThumb = true; dragStartY = Cursor.Position.Y; dragStartTop = scrollThumb.Top; scrollThumb.Capture = true;
+        };
+        scrollThumb.MouseMove += delegate {
+            if (draggingThumb) SetScrollFromThumb(dragStartTop + Cursor.Position.Y - dragStartY);
+        };
+        scrollThumb.MouseUp += delegate { draggingThumb = false; scrollThumb.Capture = false; };
+        scrollTrack.Controls.Add(scrollThumb);
+        viewport.Controls.Add(scrollTrack);
+
+        Controls.Add(viewport);
         Controls.Add(footer);
         Controls.Add(header);
+        MouseWheel += OnListMouseWheel;
         LoadGames();
         Shown += async delegate { await RefreshCatalog(); };
+    }
+
+    private static Color ReadColor(Dictionary<string, string> settings, string key, string fallback)
+    {
+        return ColorTranslator.FromHtml(settings.ContainsKey(key) ? settings[key] : fallback);
     }
 
     private Dictionary<string, string> ReadSettings(string path)
@@ -100,21 +122,18 @@ internal sealed class LauncherForm : Form
     {
         gamesPanel.Controls.Clear();
         var path = Path.Combine(baseDir, "launcher-catalog.tsv");
-        if (!File.Exists(path)) {
-            ShowError("The launcher catalog is missing: " + path);
-            return;
-        }
+        if (!File.Exists(path)) { ShowError("The launcher catalog is missing: " + path); return; }
         var games = new List<GameInfo>();
         foreach (var line in File.ReadAllLines(path).Skip(1)) {
             var f = line.Split('\t');
             if (f.Length != 8) continue;
-            games.Add(new GameInfo {
-                Slug = f[0], Name = f[1], Description = f[2], Created = f[3],
-                GameVersion = f[4], EngineVersion = f[5], Kind = f[6], Asset = f[7]
-            });
+            games.Add(new GameInfo { Slug = f[0], Name = f[1], Description = f[2], Created = f[3],
+                GameVersion = f[4], EngineVersion = f[5], Kind = f[6], Asset = f[7] });
         }
-        foreach (var game in games.OrderBy(x => x.Name)) gamesPanel.Controls.Add(MakeCard(game));
-        status.Text = games.Count + " games available · Downloads are verified against the latest GitHub release";
+        foreach (var game in games.OrderBy(x => x.Name)) gamesPanel.Controls.Add(MakeRow(game));
+        scrollOffset = 0;
+        LayoutGameList();
+        status.Text = games.Count + " games";
     }
 
     private async Task RefreshCatalog()
@@ -128,69 +147,114 @@ internal sealed class LauncherForm : Form
             }
             var path = Path.Combine(baseDir, "launcher-catalog.tsv");
             if (!String.Equals(File.ReadAllText(path), text, StringComparison.Ordinal)) {
-                File.WriteAllText(path, text);
-                LoadGames();
-            } else {
-                status.Text = gamesPanel.Controls.Count + " games available · Catalog is current";
-            }
-        } catch {
-            status.Text = gamesPanel.Controls.Count + " games available · Offline catalog";
-        }
+                File.WriteAllText(path, text); LoadGames();
+            } else status.Text = gamesPanel.Controls.Count + " games";
+        } catch { status.Text = gamesPanel.Controls.Count + " games · offline"; }
     }
 
-    private Control MakeCard(GameInfo game)
+    private Control MakeRow(GameInfo game)
     {
-        var card = new Panel {
-            Height = 126, Width = Math.Max(620, gamesPanel.ClientSize.Width - 55),
-            BackColor = Color.FromArgb(21, 30, 49), Margin = new Padding(0, 0, 0, 12)
-        };
-        var marker = new Panel { BackColor = accent, Location = new Point(0, 0), Size = new Size(5, 126) };
-        var name = new Label {
-            Text = game.Name, AutoSize = true, ForeColor = Color.White,
-            Font = new Font("Segoe UI Semibold", 15F), Location = new Point(22, 15)
-        };
-        var desc = new Label {
-            Text = game.Description, AutoEllipsis = true, ForeColor = Color.FromArgb(184, 195, 214),
-            Location = new Point(25, 49), Size = new Size(card.Width - 210, 24), Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
-        };
-        var meta = new Label {
-            Text = "Created " + game.Created + "   ·   Game " + game.GameVersion +
-                   "   ·   Engine " + game.EngineVersion + "   ·   " + game.Kind,
-            AutoEllipsis = true, ForeColor = Color.FromArgb(116, 137, 169),
-            Font = new Font("Segoe UI", 9F), Location = new Point(25, 84),
-            Size = new Size(card.Width - 210, 22), Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top
-        };
-        var action = MakeButton(FindGameExe(game) == null ? "Install & play" : "Play", 142);
-        action.Location = new Point(card.Width - 166, 41);
+        var row = new Panel { Height = 66, Width = 650, BackColor = cardColor, Margin = new Padding(0, 0, 0, 8) };
+        var marker = new Panel { BackColor = accent, Location = new Point(0, 0), Size = new Size(4, 66) };
+        var name = new Label { Text = game.Name, AutoEllipsis = true, ForeColor = Color.White,
+            Font = new Font("Segoe UI Semibold", 12F), Location = new Point(17, 11), Size = new Size(380, 24),
+            Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top };
+        var hint = new Label { Text = FindGameExe(game) == null ? "Ready to install" : "Installed", AutoSize = true,
+            ForeColor = muted, Font = new Font("Segoe UI", 8.5F), Location = new Point(18, 38) };
+        var info = MakeQuietButton("i", 34);
+        info.Location = new Point(row.Width - 148, 15);
+        info.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        info.Click += delegate { ShowGameDetails(game); };
+        var action = MakeButton(FindGameExe(game) == null ? "Install" : "Play", 96);
+        action.Location = new Point(row.Width - 106, 15);
         action.Anchor = AnchorStyles.Top | AnchorStyles.Right;
         action.Click += async delegate {
             action.Enabled = false;
-            try {
-                await InstallAndPlay(game);
-                action.Text = "Play";
-            } finally {
-                action.Enabled = true;
-            }
+            try { await InstallAndPlay(game); action.Text = "Play"; hint.Text = "Installed"; }
+            finally { action.Enabled = true; }
         };
-        card.Controls.AddRange(new Control[] { marker, name, desc, meta, action });
-        return card;
+        row.Controls.AddRange(new Control[] { marker, name, hint, info, action });
+        WireWheel(row);
+        return row;
+    }
+
+    private void ShowGameDetails(GameInfo game)
+    {
+        MessageBox.Show(this, game.Description + Environment.NewLine + Environment.NewLine +
+            "Created: " + game.Created + Environment.NewLine +
+            "Game version: " + game.GameVersion + Environment.NewLine +
+            "Engine: " + game.EngineVersion + Environment.NewLine +
+            "Package: " + game.Kind, game.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private void WireWheel(Control control)
+    {
+        control.MouseWheel += OnListMouseWheel;
+        foreach (Control child in control.Controls) child.MouseWheel += OnListMouseWheel;
+    }
+
+    private void OnListMouseWheel(object sender, MouseEventArgs e)
+    {
+        ScrollTo(scrollOffset + (e.Delta > 0 ? -72 : 72));
+    }
+
+    private void LayoutGameList()
+    {
+        int width = Math.Max(480, viewport.ClientSize.Width - 42);
+        foreach (Control row in gamesPanel.Controls) row.Width = width;
+        gamesPanel.Width = width;
+        int contentHeight = gamesPanel.Controls.Cast<Control>().Sum(x => x.Height + x.Margin.Vertical);
+        gamesPanel.Height = Math.Max(1, contentHeight);
+        scrollTrack.Location = new Point(Math.Max(0, viewport.ClientSize.Width - 14), 12);
+        scrollTrack.Height = Math.Max(1, viewport.ClientSize.Height - 24);
+        int visible = Math.Max(1, viewport.ClientSize.Height - 24);
+        scrollThumb.Size = new Size(8, contentHeight <= visible ? scrollTrack.Height :
+            Math.Max(34, scrollTrack.Height * visible / contentHeight));
+        scrollTrack.Visible = contentHeight > visible;
+        scrollTrack.BringToFront();
+        ScrollTo(scrollOffset);
+    }
+
+    private void ScrollTo(int value)
+    {
+        int visible = Math.Max(1, viewport.ClientSize.Height - 24);
+        int max = Math.Max(0, gamesPanel.Height - visible);
+        scrollOffset = Math.Max(0, Math.Min(max, value));
+        gamesPanel.Top = 12 - scrollOffset;
+        scrollThumb.Top = max > 0 && scrollTrack.Height > scrollThumb.Height
+            ? scrollOffset * (scrollTrack.Height - scrollThumb.Height) / max : 0;
+    }
+
+    private void SetScrollFromThumb(int top)
+    {
+        int travel = Math.Max(1, scrollTrack.Height - scrollThumb.Height);
+        top = Math.Max(0, Math.Min(travel, top));
+        int max = Math.Max(0, gamesPanel.Height - Math.Max(1, viewport.ClientSize.Height - 24));
+        ScrollTo(top * max / travel);
     }
 
     private Button MakeButton(string text, int width)
     {
-        var button = new Button {
-            Text = text, Width = width, Height = 38, FlatStyle = FlatStyle.Flat,
+        var button = new Button { Text = text, Width = width, Height = 36, FlatStyle = FlatStyle.Flat,
             BackColor = accent, ForeColor = Color.White, Cursor = Cursors.Hand,
-            Font = new Font("Segoe UI Semibold", 9.5F), UseVisualStyleBackColor = false
-        };
+            Font = new Font("Segoe UI Semibold", 9F), UseVisualStyleBackColor = false };
         button.FlatAppearance.BorderSize = 0;
+        return button;
+    }
+
+    private Button MakeQuietButton(string text, int width)
+    {
+        var button = MakeButton(text, width);
+        button.BackColor = cardColor;
+        button.FlatAppearance.BorderSize = 1;
+        button.FlatAppearance.BorderColor = accent;
         return button;
     }
 
     private string GameDirectory(GameInfo game)
     {
-        var root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), installFolder, "games");
-        return Path.Combine(root, game.Slug);
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            installFolder, "games", game.Slug);
     }
 
     private string FindGameExe(GameInfo game)
@@ -200,12 +264,11 @@ internal sealed class LauncherForm : Form
         var exact = Directory.GetFiles(dir, "Play-" + game.Slug + ".exe", SearchOption.AllDirectories).FirstOrDefault();
         if (exact != null) return exact;
         var normalizedSlug = game.Slug.Replace("-", "");
-        var candidates = Directory.GetFiles(dir, "*.exe", SearchOption.AllDirectories)
-            .Where(x => {
-                var n = Path.GetFileNameWithoutExtension(x).ToLowerInvariant();
-                return !n.Contains("server") && !n.Contains("tools") &&
-                       (n.Replace("-", "") == normalizedSlug || !n.Contains("engine"));
-            }).ToArray();
+        var candidates = Directory.GetFiles(dir, "*.exe", SearchOption.AllDirectories).Where(x => {
+            var n = Path.GetFileNameWithoutExtension(x).ToLowerInvariant();
+            return !n.Contains("server") && !n.Contains("tools") &&
+                (n.Replace("-", "") == normalizedSlug || !n.Contains("engine"));
+        }).ToArray();
         return candidates.FirstOrDefault() ?? Directory.GetFiles(dir, "*.exe", SearchOption.AllDirectories)
             .FirstOrDefault(x => !Path.GetFileNameWithoutExtension(x).ToLowerInvariant().Contains("server"));
     }
@@ -215,10 +278,9 @@ internal sealed class LauncherForm : Form
         try {
             var exe = FindGameExe(game);
             if (exe == null) {
-                status.Text = "Downloading " + game.Name + "…";
+                status.Text = "Installing " + game.Name + "…";
                 var dir = GameDirectory(game);
-                var parent = Directory.GetParent(dir).FullName;
-                Directory.CreateDirectory(parent);
+                Directory.CreateDirectory(Directory.GetParent(dir).FullName);
                 var zip = Path.Combine(Path.GetTempPath(), game.Slug + "-" + Guid.NewGuid().ToString("N") + ".zip");
                 var staging = dir + ".installing";
                 if (Directory.Exists(staging)) Directory.Delete(staging, true);
@@ -237,10 +299,7 @@ internal sealed class LauncherForm : Form
             status.Text = "Launching " + game.Name + "…";
             Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = Path.GetDirectoryName(exe), UseShellExecute = true });
             status.Text = game.Name + " is running";
-        } catch (Exception ex) {
-            status.Text = "Could not launch " + game.Name;
-            ShowError(ex.Message);
-        }
+        } catch (Exception ex) { status.Text = "Could not launch " + game.Name; ShowError(ex.Message); }
     }
 
     private static void OpenUrl(string url)

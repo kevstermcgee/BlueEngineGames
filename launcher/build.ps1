@@ -153,6 +153,11 @@ $settings += "repository${separator}$($config.repository)"
 $settings += "install_folder${separator}$($config.install_folder)"
 $settings += "catalog_url${separator}https://github.com/$($config.repository)/releases/latest/download/$($config.output_name)-catalog.tsv"
 $settings += "accent${separator}$($config.accent)"
+foreach ($color in @('background', 'surface', 'card', 'muted')) {
+    if ($config.PSObject.Properties.Name -contains $color) {
+        $settings += "${color}${separator}$($config.$color)"
+    }
+}
 $header = @('slug', 'name', 'description', 'created', 'game_version', 'engine_version', 'kind', 'asset') -join [char]9
 Set-Content -LiteralPath (Join-Path $output 'launcher-settings.tsv') -Value $settings -Encoding utf8
 Set-Content -LiteralPath (Join-Path $output 'launcher-catalog.tsv') -Value (@($header) + $rows) -Encoding utf8

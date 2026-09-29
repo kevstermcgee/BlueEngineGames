@@ -5,5 +5,9 @@
   "repository": "kevstermcgee/BlueEngineGames",
   "engine_name": "BlueEngine",
   "install_folder": "BlueEngineLauncher",
-  "accent": "#2F81F7"
+  "accent": "#31C3FF",
+  "background": "#07111F",
+  "surface": "#0D2035",
+  "card": "#12304C",
+  "muted": "#86B8D6"
 }
