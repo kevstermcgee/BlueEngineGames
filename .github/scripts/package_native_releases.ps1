@@ -82,10 +82,18 @@ try {
         }
 
         if ($kind -eq 'engine-sandbox') {
-            & cargo build --release --locked --manifest-path (Join-Path $engineRootPath 'Cargo.toml') --bin blueengine-sandbox --bin be2 --bin be2-tools
-            if ($LASTEXITCODE -ne 0) { throw "BlueEngineSandbox build failed with exit code $LASTEXITCODE" }
-            & python (Join-Path $engineRootPath 'scripts\package_sandbox.py') --output $stage
-            if ($LASTEXITCODE -ne 0) { throw "BlueEngineSandbox packaging failed with exit code $LASTEXITCODE" }
+            # package_sandbox.py reads <engine>/target/release, so this game keeps the engine's own target
+            # directory (already warm from the engine build step) instead of the shared one below.
+            $sharedTarget = $env:CARGO_TARGET_DIR
+            Remove-Item Env:CARGO_TARGET_DIR -ErrorAction SilentlyContinue
+            try {
+                & cargo build --release --locked --manifest-path (Join-Path $engineRootPath 'Cargo.toml') --bin blueengine-sandbox --bin be2 --bin be2-tools
+                if ($LASTEXITCODE -ne 0) { throw "BlueEngineSandbox build failed with exit code $LASTEXITCODE" }
+                & python (Join-Path $engineRootPath 'scripts\package_sandbox.py') --output $stage
+                if ($LASTEXITCODE -ne 0) { throw "BlueEngineSandbox packaging failed with exit code $LASTEXITCODE" }
+            } finally {
+                if ($sharedTarget) { $env:CARGO_TARGET_DIR = $sharedTarget }
+            }
         } elseif ($kind -eq 'cargo-package') {
             Push-Location $directory
             try {
@@ -100,7 +108,9 @@ try {
             & cargo build --release --locked --manifest-path (Join-Path $directory 'Cargo.toml') --bin ([string]$game.binary)
             if ($LASTEXITCODE -ne 0) { throw "$name build failed with exit code $LASTEXITCODE" }
             New-Item -ItemType Directory -Path $stage | Out-Null
-            $builtExe = Join-Path $directory "target\release\$($game.binary).exe"
+            # With a shared CARGO_TARGET_DIR every game's output lands in one place.
+            $targetRoot = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $directory 'target' }
+            $builtExe = Join-Path $targetRoot "release\$($game.binary).exe"
             if (-not (Test-Path -LiteralPath $builtExe -PathType Leaf)) {
                 throw "Built executable is missing: $builtExe"
             }
