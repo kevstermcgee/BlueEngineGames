@@ -43,6 +43,13 @@
       "directory": "games/wrecking-orbit",
       "kind": "cargo-package",
       "binary": "wrecking-orbit"
+    },
+    {
+      "slug": "pulse-nova",
+      "name": "Pulse Nova",
+      "directory": "games/pulse-nova",
+      "kind": "cargo-package",
+      "binary": "pulse-nova"
     }
   ]
 }

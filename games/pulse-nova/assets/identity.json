@@ -1,0 +1,14 @@
+{
+  "title": "Pulse Nova",
+  "tagline": "High-velocity kinetic arena shooter: blast swarms, chain combos, and survive the surge.",
+  "controls": "WASD move, mouse look, Left Click/E fire pulse, Shift/Right Click dash, Space jump, F5/F9 save/load, R restart, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100"
+  ],
+  "engine_revision": "917ca41d0607"
+}
