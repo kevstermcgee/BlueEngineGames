@@ -1043,10 +1043,11 @@
     "games/riftwake",
     "games/skyhook-sprint",
     "games/magnet-mine",
-    "games/wrecking-orbit"
+    "games/wrecking-orbit",
+    "games/pulse-nova"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "917ca41d0607ba5e0fd7ca3df4478c2b11cb1963",
+  "source_revision": "7218a3cf0d4a467e34c03e2dab85a7291a331567",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
