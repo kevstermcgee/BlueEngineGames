@@ -1,0 +1,14 @@
+{
+  "title": "Wrecking Orbit",
+  "tagline": "Whip two spring-tethered wrecking balls through every crystal.",
+  "controls": "WASD move anchor, mouse look, Space whip orbit, F5/F9 save/load, F fullscreen, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100"
+  ],
+  "engine_revision": "e661e90bdfd2"
+}

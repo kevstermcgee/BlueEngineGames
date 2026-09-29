@@ -1,0 +1,14 @@
+{
+  "title": "Magnet Mine",
+  "tagline": "Flip magnetic polarity and guide three drones into sockets.",
+  "controls": "WASD move, mouse look, Space flip polarity, F5/F9 save/load, F fullscreen, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100"
+  ],
+  "engine_revision": "e661e90bdfd2"
+}

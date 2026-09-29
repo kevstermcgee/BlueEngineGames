@@ -1,0 +1,4 @@
+# Feedback prompt
+
+Review the external BlueEngine game **Wrecking Orbit** as evidence about constrained-body gameplay. Preserve the two damped spring tethers, opposing tangential whip impulse, speed bounds, target destruction, deterministic state hash, snapshots, and headless tests. This game required hand-authored spring integration and overloaded the starter's bumper/orb presentation even though tether, trail, and collision-debug visuals are common needs. Design the smallest reusable deterministic constraint helper and presentation primitive that could express spring distance, damping, bounded velocity, and a visible tether without putting renderer types in the authority. Include validation for non-finite/zero-length cases, focused tests, discoverability through the engine context index, and one concise example. Do not add a general scripting layer, couple authority to frame time, or optimize solely for this game.
+
