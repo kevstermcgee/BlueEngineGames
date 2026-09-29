@@ -2,16 +2,119 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 internal sealed class GameInfo
 {
     public string Slug, Name, Description, Created, GameVersion, EngineVersion, Kind, Asset;
+}
+
+// Catalog parsing, merge and local-game discovery. Kept static so it can be tested without a display.
+internal static class CatalogLogic
+{
+    public static List<GameInfo> ParseCatalog(string text)
+    {
+        var games = new List<GameInfo>();
+        if (text == null) return games;
+        foreach (var line in text.Replace("\r", "").Split('\n').Skip(1)) {
+            var f = line.Split('\t');
+            if (f.Length != 8 || f[0].Length == 0) continue;
+            games.Add(new GameInfo { Slug = f[0], Name = f[1], Description = f[2], Created = f[3],
+                GameVersion = f[4], EngineVersion = f[5], Kind = f[6], Asset = f[7] });
+        }
+        return games;
+    }
+
+    // Merge by slug: the shipped/local catalog is the base, remote rows replace matching slugs,
+    // and games that exist only locally (catalog rows or discovered folders) are always kept.
+    public static List<GameInfo> Merge(IEnumerable<GameInfo> local, IEnumerable<GameInfo> remote, IEnumerable<GameInfo> discovered)
+    {
+        var order = new List<string>();
+        var bySlug = new Dictionary<string, GameInfo>(StringComparer.OrdinalIgnoreCase);
+        foreach (var game in (local ?? new GameInfo[0]).Concat(remote ?? new GameInfo[0])) {
+            if (!bySlug.ContainsKey(game.Slug)) order.Add(game.Slug);
+            bySlug[game.Slug] = game;
+        }
+        foreach (var game in discovered ?? new GameInfo[0]) {
+            if (bySlug.ContainsKey(game.Slug)) continue;
+            order.Add(game.Slug);
+            bySlug[game.Slug] = game;
+        }
+        return order.Select(x => bySlug[x]).ToList();
+    }
+
+    // <slug>.exe, then Play-<slug>.exe, then the only .exe in the folder.
+    public static string TopLevelExe(string dir, string slug)
+    {
+        foreach (var name in new[] { slug + ".exe", "Play-" + slug + ".exe" }) {
+            var path = Path.Combine(dir, name);
+            if (File.Exists(path)) return path;
+        }
+        var exes = Directory.GetFiles(dir, "*.exe", SearchOption.TopDirectoryOnly);
+        return exes.Length == 1 ? exes[0] : null;
+    }
+
+    public static List<GameInfo> DiscoverLocal(string gamesRoot)
+    {
+        var found = new List<GameInfo>();
+        if (!Directory.Exists(gamesRoot)) return found;
+        foreach (var dir in Directory.GetDirectories(gamesRoot)) {
+            try {
+                var slug = Path.GetFileName(dir);
+                if (slug.StartsWith(".") || slug.EndsWith(".installing", StringComparison.OrdinalIgnoreCase)) continue;
+                if (TopLevelExe(dir, slug) == null) continue;
+                var meta = ReadLocalMeta(dir);
+                Func<string, string, string> get = (key, fallback) => meta.ContainsKey(key) ? meta[key] : fallback;
+                var title = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(slug.Replace('-', ' ').Replace('_', ' '));
+                found.Add(new GameInfo { Slug = slug, Name = get("name", title),
+                    Description = get("description", "Local game found in your games folder."),
+                    Created = get("created", Directory.GetCreationTime(dir).ToString("yyyy-MM-dd")),
+                    GameVersion = get("version", "local"), EngineVersion = get("engine", "local"),
+                    Kind = "local game", Asset = "" });
+            } catch (Exception) { }
+        }
+        return found;
+    }
+
+    // Optional metadata: game.json, manifest.tsv (key<TAB>value lines), then ship.json. First value wins.
+    private static Dictionary<string, string> ReadLocalMeta(string dir)
+    {
+        var meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        Action<string, string> set = (key, value) => {
+            value = Regex.Replace(value ?? "", @"\s+", " ").Trim();
+            if (value.Length > 0 && !meta.ContainsKey(key)) meta[key] = value;
+        };
+        set("name", JsonString(dir, "game.json", "name"));
+        set("name", JsonString(dir, "game.json", "title"));
+        foreach (var key in new[] { "description", "version", "created" })
+            set(key, JsonString(dir, "game.json", key));
+        var manifest = Path.Combine(dir, "manifest.tsv");
+        if (File.Exists(manifest))
+            foreach (var line in File.ReadAllLines(manifest)) {
+                var f = line.Split(new[] { '\t' }, 2);
+                if (f.Length == 2) set(f[0].Trim() == "title" ? "name" : f[0].Trim(), f[1]);
+            }
+        set("name", JsonString(dir, "ship.json", "title"));
+        var packaged = JsonString(dir, "ship.json", "packaged_at");
+        set("created", packaged != null && packaged.Length >= 10 ? packaged.Substring(0, 10) : null);
+        set("engine", JsonString(dir, "ship.json", "engine_revision"));
+        return meta;
+    }
+
+    private static string JsonString(string dir, string file, string key)
+    {
+        var path = Path.Combine(dir, file);
+        if (!File.Exists(path)) return null;
+        var m = Regex.Match(File.ReadAllText(path), "\"" + Regex.Escape(key) + "\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+        return m.Success ? Regex.Unescape(m.Groups[1].Value) : null;
+    }
 }
 
 internal sealed class LauncherForm : Form
@@ -118,24 +221,34 @@ internal sealed class LauncherForm : Form
             .ToDictionary(x => x[0], x => x[1], StringComparer.OrdinalIgnoreCase);
     }
 
+    private string LauncherDataDirectory()
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), installFolder);
+    }
+
+    private string RemoteCatalogCache()
+    {
+        return Path.Combine(LauncherDataDirectory(), "remote-catalog.tsv");
+    }
+
+    // Shipped catalog + cached remote catalog (remote wins) + games discovered in the install folder.
     private void LoadGames()
     {
         gamesPanel.Controls.Clear();
         var path = Path.Combine(baseDir, "launcher-catalog.tsv");
-        if (!File.Exists(path)) { ShowError("The launcher catalog is missing: " + path); return; }
-        var games = new List<GameInfo>();
-        foreach (var line in File.ReadAllLines(path).Skip(1)) {
-            var f = line.Split('\t');
-            if (f.Length != 8) continue;
-            games.Add(new GameInfo { Slug = f[0], Name = f[1], Description = f[2], Created = f[3],
-                GameVersion = f[4], EngineVersion = f[5], Kind = f[6], Asset = f[7] });
-        }
+        var local = File.Exists(path) ? CatalogLogic.ParseCatalog(File.ReadAllText(path)) : new List<GameInfo>();
+        var cache = RemoteCatalogCache();
+        var remote = File.Exists(cache) ? CatalogLogic.ParseCatalog(File.ReadAllText(cache)) : new List<GameInfo>();
+        var discovered = CatalogLogic.DiscoverLocal(Path.Combine(LauncherDataDirectory(), "games"));
+        var games = CatalogLogic.Merge(local, remote, discovered);
+        if (games.Count == 0 && !File.Exists(path)) { ShowError("The launcher catalog is missing: " + path); return; }
         foreach (var game in games.OrderBy(x => x.Name)) gamesPanel.Controls.Add(MakeRow(game));
         scrollOffset = 0;
         LayoutGameList();
         status.Text = games.Count + " games";
     }
 
+    // The remote catalog is only cached, never written over the shipped catalog, so local games are not lost.
     private async Task RefreshCatalog()
     {
         try {
@@ -145,9 +258,11 @@ internal sealed class LauncherForm : Form
                 client.Headers.Add("User-Agent", product.Replace(" ", "-"));
                 text = await client.DownloadStringTaskAsync(new Uri(catalogUrl));
             }
-            var path = Path.Combine(baseDir, "launcher-catalog.tsv");
-            if (!String.Equals(File.ReadAllText(path), text, StringComparison.Ordinal)) {
-                File.WriteAllText(path, text); LoadGames();
+            if (CatalogLogic.ParseCatalog(text).Count == 0) throw new InvalidDataException("Remote catalog has no games.");
+            var cache = RemoteCatalogCache();
+            if (!File.Exists(cache) || !String.Equals(File.ReadAllText(cache), text, StringComparison.Ordinal)) {
+                Directory.CreateDirectory(LauncherDataDirectory());
+                File.WriteAllText(cache, text); LoadGames();
             } else status.Text = gamesPanel.Controls.Count + " games";
         } catch { status.Text = gamesPanel.Controls.Count + " games · offline"; }
     }
@@ -159,7 +274,8 @@ internal sealed class LauncherForm : Form
         var name = new Label { Text = game.Name, AutoEllipsis = true, ForeColor = Color.White,
             Font = new Font("Segoe UI Semibold", 12F), Location = new Point(17, 11), Size = new Size(380, 24),
             Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top };
-        var hint = new Label { Text = FindGameExe(game) == null ? "Ready to install" : "Installed", AutoSize = true,
+        var hint = new Label { Text = FindGameExe(game) != null ? "Installed" :
+            String.IsNullOrEmpty(game.Asset) ? "Not found locally" : "Ready to install", AutoSize = true,
             ForeColor = muted, Font = new Font("Segoe UI", 8.5F), Location = new Point(18, 38) };
         var info = MakeQuietButton("i", 34);
         info.Location = new Point(row.Width - 148, 15);
@@ -263,6 +379,8 @@ internal sealed class LauncherForm : Form
         if (!Directory.Exists(dir)) return null;
         var exact = Directory.GetFiles(dir, "Play-" + game.Slug + ".exe", SearchOption.AllDirectories).FirstOrDefault();
         if (exact != null) return exact;
+        var topLevel = CatalogLogic.TopLevelExe(dir, game.Slug);
+        if (topLevel != null) return topLevel;
         var normalizedSlug = game.Slug.Replace("-", "");
         var candidates = Directory.GetFiles(dir, "*.exe", SearchOption.AllDirectories).Where(x => {
             var n = Path.GetFileNameWithoutExtension(x).ToLowerInvariant();
@@ -278,6 +396,8 @@ internal sealed class LauncherForm : Form
         try {
             var exe = FindGameExe(game);
             if (exe == null) {
+                if (String.IsNullOrEmpty(game.Asset))
+                    throw new InvalidOperationException(game.Name + " has no download and no .exe was found in " + GameDirectory(game) + ".");
                 status.Text = "Installing " + game.Name + "…";
                 var dir = GameDirectory(game);
                 Directory.CreateDirectory(Directory.GetParent(dir).FullName);
