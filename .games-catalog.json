@@ -1,6 +1,6 @@
 {
   "collections": {
-    "demos": 72,
+    "demos": 73,
     "games": 105,
     "prototypes": 10,
     "tests": 64
@@ -37,6 +37,10 @@
     {
       "path": "demos/examples/mesh.json",
       "sha256": "1f28ccfbc66f929d5aa7ec216980ba63ddfd89b1414eca9dc3c4848106a712bd"
+    },
+    {
+      "path": "demos/examples/minimal_game.rs",
+      "sha256": "78b1555ac5fc1c33144d21d30f54e9565110d10d8ef08b2eaae37dd799c95c91"
     },
     {
       "path": "demos/examples/network_smoke.rs",
@@ -728,7 +732,7 @@
     },
     {
       "path": "prototypes/multiplayer-game/src/client.rs",
-      "sha256": "399375a866cb4490905a9247f8c6fa7063550afceac2ab19a058ddb8604ceafb"
+      "sha256": "8b5995de6ef5ed098a6a837be5725bc8ab514d2a33b23e9965f00da23bf09e96"
     },
     {
       "path": "prototypes/multiplayer-game/src/game.rs",
@@ -1048,6 +1052,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "095c56020076a89adb9e63dbb7ac6474fea41445",
+  "source_revision": "d6683813cf9d6a70897aec37edf302101c951ecd",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
