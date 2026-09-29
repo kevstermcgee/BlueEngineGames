@@ -13,6 +13,15 @@ $catalog = Get-Content -Raw -LiteralPath $catalogPath | ConvertFrom-Json
 if (-not $catalog.playables -or $catalog.playables.Count -eq 0) {
     throw 'The catalog has no playable releases.'
 }
+$releaseConfigPath = Join-Path $repoRoot '.release-games.json'
+if (-not (Test-Path -LiteralPath $releaseConfigPath -PathType Leaf)) {
+    throw 'The repository has no .release-games.json coverage manifest.'
+}
+$releaseConfig = Get-Content -Raw -LiteralPath $releaseConfigPath | ConvertFrom-Json
+if ($releaseConfig.version -ne 1) {
+    throw '.release-games.json must have version 1.'
+}
+$playables = @($catalog.playables) + @($releaseConfig.data_playables)
 
 function Resolve-RepositoryPath([string]$RelativePath) {
     if ([System.IO.Path]::IsPathRooted($RelativePath)) {
@@ -27,6 +36,46 @@ function Resolve-RepositoryPath([string]$RelativePath) {
         throw "Published path does not exist: $RelativePath"
     }
     return $absolute
+}
+
+$seenSlugs = @{}
+foreach ($playable in $playables) {
+    $slug = [string]$playable.slug
+    if ($slug -notmatch '^[a-z0-9]+(?:-[a-z0-9]+)*$') {
+        throw "Unsafe playable slug: $slug"
+    }
+    if ($seenSlugs.ContainsKey($slug)) {
+        throw "Duplicate playable slug: $slug"
+    }
+    $seenSlugs[$slug] = $true
+    if (-not $playable.files -or -not $playable.arguments) {
+        throw "Playable $slug must provide files and arguments."
+    }
+    foreach ($publishedPath in $playable.files) {
+        Resolve-RepositoryPath ([string]$publishedPath) | Out-Null
+    }
+}
+
+$coveredDirectories = @{}
+foreach ($playable in $playables) {
+    foreach ($publishedPath in $playable.files) {
+        $coveredDirectories[([string]$publishedPath).Replace('\', '/').TrimEnd('/')] = $true
+    }
+}
+foreach ($native in @($releaseConfig.native_playables)) {
+    $directory = ([string]$native.directory).Replace('\', '/').TrimEnd('/')
+    Resolve-RepositoryPath $directory | Out-Null
+    $coveredDirectories[$directory] = $true
+}
+foreach ($gameRoot in @($releaseConfig.game_roots)) {
+    $rootRelative = ([string]$gameRoot).Replace('\', '/').TrimEnd('/')
+    $rootPath = Resolve-RepositoryPath $rootRelative
+    foreach ($directory in Get-ChildItem -LiteralPath $rootPath -Directory) {
+        $relative = "$rootRelative/$($directory.Name)"
+        if (-not $coveredDirectories.ContainsKey($relative)) {
+            throw "Game directory has no Windows release definition: $relative"
+        }
+    }
 }
 
 $enginePath = [System.IO.Path]::GetFullPath($EngineExe)
@@ -63,7 +112,7 @@ $notes = @(
     ''
 )
 
-foreach ($playable in $catalog.playables) {
+foreach ($playable in $playables) {
     $slug = [string]$playable.slug
     if ($slug -notmatch '^[a-z0-9]+(?:-[a-z0-9]+)*$') {
         throw "Unsafe playable slug: $slug"
@@ -111,4 +160,4 @@ $checksumLines = Get-ChildItem -LiteralPath $dist -Filter '*.zip' | Sort-Object 
 Set-Content -LiteralPath (Join-Path $dist 'SHA256SUMS.txt') -Value $checksumLines -Encoding ascii
 Set-Content -LiteralPath (Join-Path $dist 'release-notes.md') -Value $notes -Encoding utf8NoBOM
 
-Write-Output "Packaged $($catalog.playables.Count) $ProductName playable build(s)."
+Write-Output "Packaged $($playables.Count) $ProductName data-driven playable build(s)."

@@ -5,7 +5,11 @@ on:
     branches: [main]
     paths:
       - .games-catalog.json
+      - .release-games.json
+      - .launcher-config.json
       - games/**
+      - launcher/**
+      - Install-BlueEngineLauncher.*
       - .github/scripts/**
       - .github/workflows/releases.yml
   workflow_dispatch:
@@ -52,6 +56,14 @@ jobs:
       - name: Package playable downloads
         shell: pwsh
         run: .github/scripts/package_releases.ps1 -EngineExe _engine/target/release/be2.exe -EngineName BlueEngine.exe -ProductName BlueEngine
+
+      - name: Build and package native game downloads
+        shell: pwsh
+        run: .github/scripts/package_native_releases.ps1 -EngineRoot _engine
+
+      - name: Package BlueEngine Launcher
+        shell: pwsh
+        run: .github/scripts/package_launcher.ps1 -OutputName BlueEngineLauncher
 
       - name: Create or update the GitHub Release
         shell: pwsh

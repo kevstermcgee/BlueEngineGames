@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "game_roots": ["games"],
+  "data_playables": [],
+  "native_playables": [
+    {
+      "slug": "blueengine-sandbox",
+      "name": "BlueEngineSandbox",
+      "directory": "games/blueengine-sandbox",
+      "kind": "engine-sandbox"
+    },
+    {
+      "slug": "bluedm",
+      "name": "BlueDM",
+      "directory": "games/bluedm",
+      "kind": "cargo",
+      "binary": "bluedm"
+    },
+    {
+      "slug": "riftwake",
+      "name": "Riftwake",
+      "directory": "games/riftwake",
+      "kind": "cargo",
+      "binary": "riftwake"
+    },
+    {
+      "slug": "skyhook-sprint",
+      "name": "Skyhook Sprint",
+      "directory": "games/skyhook-sprint",
+      "kind": "cargo-package",
+      "binary": "skyhook-sprint"
+    },
+    {
+      "slug": "magnet-mine",
+      "name": "Magnet Mine",
+      "directory": "games/magnet-mine",
+      "kind": "cargo-package",
+      "binary": "magnet-mine"
+    },
+    {
+      "slug": "wrecking-orbit",
+      "name": "Wrecking Orbit",
+      "directory": "games/wrecking-orbit",
+      "kind": "cargo-package",
+      "binary": "wrecking-orbit"
+    }
+  ]
+}
