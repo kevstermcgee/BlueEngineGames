@@ -284,13 +284,13 @@ mod tests {
         for i in 0..5 {
             b.solid(-2. + i as f32 * 0.4, -1., -1.6 + i as f32 * 0.4, 1., 0., 0.2 * (i + 1) as f32, Material::Concrete);
         }
-        b.solid(-0.4, -1., 6., 1., 0., 1.0, Material::Concrete); // a platform too tall to step onto
+        b.solid(3., 4., 6., 7., 0., 1.0, Material::Concrete); // a platform too tall to step onto
         let level = b.finish();
         let nav = Nav::build(&level);
         let top = nav.nearest(V(-0.05, 1.0, 0.)).expect("the top stair is a node");
         assert!(nav.pos(top).1 > 0.9);
         assert!(nav.path(V(-4., 0., 0.), V(-0.05, 1.0, 0.)).is_some());
-        let platform = nav.nearest(V(3., 1.0, 0.)).expect("the platform top is a node");
+        let platform = nav.nearest(V(4.5, 1.0, 5.5)).expect("the platform top is a node");
         assert!(nav.path(V(-4., 0., 0.), nav.pos(platform)).is_none(), "a 1 m ledge cannot be walked up");
     }
 }
