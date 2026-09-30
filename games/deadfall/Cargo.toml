@@ -32,6 +32,11 @@ name = "audio_dump"
 path = "src/bin/audio_dump.rs"
 required-features = ["client"]
 
+[[bin]]
+name = "preview_chars"
+path = "src/bin/preview_chars.rs"
+required-features = ["client"]
+
 [dependencies]
 vesper3d = { package = "be2", path = "/home/kevin/BlueEngine-fc", default-features = false }
 macroquad = { optional = true, version = "=0.4.14", default-features = false, features = ["audio"] }
