@@ -1,0 +1,19 @@
+{
+  "title": "Spooky Kart",
+  "tagline": "Eight Halloween drivers, eight haunted karts, one hollow to win.",
+  "controls": "W/S gas and brake, A/D steer, Shift drift, Space perk, F5/F9 save/load, Esc menu; controller: RT gas, LT brake, stick steer, bumper drift, X perk",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "60,300",
+    "--exit-after",
+    "320",
+    "--character",
+    "vampire"
+  ],
+  "engine_revision": "e76c14509214",
+  "package": [
+    "server.txt"
+  ]
+}
