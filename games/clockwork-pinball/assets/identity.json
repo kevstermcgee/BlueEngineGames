@@ -1,0 +1,15 @@
+{
+  "title": "Clockwork Pinball",
+  "tagline": "A neon pinball table with real rolling-ball physics, kicking bumpers and a spinning gear.",
+  "controls": "A/D or Left/Right flip, Space plunge, R restart, F5/F9 save/load, Esc menu; controller: LB/RB flip, A plunge",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "120,600",
+    "--exit-after",
+    "620",
+    "--autoplay"
+  ],
+  "engine_revision": "49db8397ec6f"
+}

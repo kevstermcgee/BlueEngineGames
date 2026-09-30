@@ -1,0 +1,15 @@
+{
+  "title": "Wobble Tower",
+  "tagline": "Stack swinging crates into a tower that real physics and real wind try to topple.",
+  "controls": "Space/Down drop crate, R restart, F5/F9 save/load, Esc menu; controller: A drop",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "300,1200",
+    "--exit-after",
+    "1220",
+    "--autoplay"
+  ],
+  "engine_revision": "49db8397ec6f"
+}

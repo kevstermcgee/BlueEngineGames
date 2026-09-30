@@ -20,6 +20,9 @@ are not code-signed, so Windows may show a SmartScreen warning.
 - [Wrecking Orbit](../../releases/latest/download/wrecking-orbit-windows-x64.zip)
 - [Pulse Nova](../../releases/latest/download/pulse-nova-windows-x64.zip)
 - [Spooky Kart](../../releases/latest/download/spooky-kart-windows-x64.zip)
+- [Clockwork Pinball](../../releases/latest/download/clockwork-pinball-windows-x64.zip)
+- [Wobble Tower](../../releases/latest/download/wobble-tower-windows-x64.zip)
+- [Tumble Maze](../../releases/latest/download/tumble-maze-windows-x64.zip)
 
 Run `Install-BlueEngineLauncher.cmd` from a checkout to build the launcher and add
 a **BlueEngine Launcher** shortcut to your Windows desktop.
@@ -32,6 +35,9 @@ a **BlueEngine Launcher** shortcut to your Windows desktop.
 ## Game downloads and experiments
 
 - [`Physics Lab`](games/physics-lab) — interactive fire, water cooling, buoyancy, mirrors, six materials and changing lighting.
+- [`Clockwork Pinball`](games/clockwork-pinball) — neon pinball on real rigid-body physics: CCD steel ball, kinematic flippers, bumpers, lane multiplier.
+- [`Wobble Tower`](games/wobble-tower) — stack swinging heavy and light crates under rising wind before the tower topples.
+- [`Tumble Maze`](games/tumble-maze) — tilt a board to roll a marble past sinkholes and sweeping bars through three mazes.
 - [`Spooky Kart`](games/spooky-kart) — Halloween kart racer for up to eight: eight drivers with their own karts and perks, one haunted map, offline against bots or online on a dedicated server.
 - [`Pulse Nova`](games/pulse-nova) — high-velocity kinetic arena shooter with chain explosions, jump pads, and wave surges.
 - [`Skyhook Sprint`](games/skyhook-sprint) — matched aerial-momentum course.

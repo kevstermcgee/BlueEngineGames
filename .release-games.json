@@ -66,6 +66,27 @@
       "directory": "games/physics-lab",
       "kind": "cargo-package",
       "binary": "physics-lab"
+    },
+    {
+      "slug": "clockwork-pinball",
+      "name": "Clockwork Pinball",
+      "directory": "games/clockwork-pinball",
+      "kind": "cargo-package",
+      "binary": "clockwork-pinball"
+    },
+    {
+      "slug": "wobble-tower",
+      "name": "Wobble Tower",
+      "directory": "games/wobble-tower",
+      "kind": "cargo-package",
+      "binary": "wobble-tower"
+    },
+    {
+      "slug": "tumble-maze",
+      "name": "Tumble Maze",
+      "directory": "games/tumble-maze",
+      "kind": "cargo-package",
+      "binary": "tumble-maze"
     }
   ]
 }
