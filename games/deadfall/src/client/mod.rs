@@ -7,3 +7,4 @@ pub mod previewkit;
 
 pub use anchors::WeaponAnchors;
 pub mod sound;
+pub mod controls;
