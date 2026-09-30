@@ -15,13 +15,7 @@ use macroquad::prelude::*;
 use vesper3d::viewer::{devkit::flag_value, kit::Template};
 
 fn window() -> macroquad::conf::Conf {
-    // A soldier is thousands of vertices: raise the draw-call capacities like the game's own window does.
-    macroquad::conf::Conf {
-        miniquad_conf: previewkit::window_conf("Deadfall characters"),
-        draw_call_vertex_capacity: 30000,
-        draw_call_index_capacity: 30000,
-        ..Default::default()
-    }
+    previewkit::window_conf("Deadfall characters")
 }
 
 fn num(args: &Args, name: &str, d: f32) -> f32 {

@@ -3,7 +3,7 @@ use deadfall::client::previewkit::{self, Args, Stage};
 use macroquad::prelude::*;
 use vesper3d::viewer::kit::Template;
 
-fn window() -> Conf {
+fn window() -> macroquad::conf::Conf {
     previewkit::window_conf("Deadfall preview")
 }
 
