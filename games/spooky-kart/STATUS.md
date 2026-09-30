@@ -22,10 +22,17 @@
   loss, bots as clients), `tests/udp.rs` (real sockets). Verified with the real server and the real window
   client together on a virtual display.
 - **Milestone 4, data** (`tools/analyze.py`, `tools/load_test.py`, `bin/spooky-kart-bots.rs`): every race appends
-  to `races.jsonl`; the load test races bot clients over real UDP; BlueEngine's `python tools/perf.py record
+  to `matches.jsonl`; the load test races bot clients over real UDP; BlueEngine's `python tools/perf.py record
   --suite kart` records it as `kart_*` metrics. First baseline (1, 4 and 8 bot clients, dev build): the server
   used 1.4-1.9% of one core and 3.7 MB, tick 130-170 us mean, 18 KB/s down and 2.2 KB/s up per client, RTT 17 ms
   on loopback, no prediction snaps. Lessons for the engine: `docs/ENGINE_LESSONS.md`.
+- **Milestone 5, shipping**: the release package (`python3 scripts/ship.py package`, 7.4 MB) and the desktop
+  shortcut (`python3 scripts/ship.py shortcut`) build on Linux and `python3 scripts/check.py` passes including the
+  ship gate (`scripts/blue` needs a `python` binary, which this box lacks; call the Python scripts directly).
+  The package carries a comments-only `server.txt`. Published into BlueEngineGames as `games/spooky-kart` (pull
+  request; the engine's `games-publish.json` preserves it) with a Windows release definition.
+  **To let friends connect with one click, put the public `host:port` (and join key) in
+  `games/spooky-kart/server.txt` in BlueEngineGames before a release.**
 - Race length is now 2 laps (about 1:40 with bots).
 
 ## Seeing the game without a display
@@ -45,7 +52,7 @@ handling, so this only guards against a broken kart; real tuning needs human pla
 
 ## Next Steps
 - Verify controller feel on real hardware; tune handling and the camera by playing.
-- Deploy the server on the Debian box (deploy/spooky-kart-server.service, docs/HOSTING.md); not yet enabled.
-- Test the production (QUIC/TLS) transport end to end.
+- Deploy the server on the Debian box (deploy/spooky-kart-server.service, docs/HOSTING.md); prepared, not yet enabled.
+  The production QUIC/TLS transport is verified end to end with a real certificate.
 - Predict kart-to-kart collisions on the client (see docs/ENGINE_LESSONS.md, item 5).
 - Milestone 5: identity and icon, `scripts/blue ship`, publish to BlueEngineGames.

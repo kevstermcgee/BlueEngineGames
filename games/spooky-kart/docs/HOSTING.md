@@ -62,12 +62,12 @@ Open UDP 4100 on the router and firewall only when you want outside players.
 
 ## What it records
 
-Every finished race appends one line to `races.jsonl` in the report directory: the results, each racer's
+Every finished race appends one line to `matches.jsonl` in the report directory: the results, each racer's
 drifting, wall hits, collisions, perk uses and speeds, and each player's network quality (round-trip time,
 bytes, repeated or skipped inputs) plus the server's tick times. Read it with:
 
 ```sh
-python tools/analyze.py ~/.local/share/spooky-kart/races.jsonl
+python tools/analyze.py ~/.local/share/spooky-kart/matches.jsonl
 ```
 
 The character table shows who is strong or weak (rebalance `src/character.rs`); the network table shows lag

@@ -6,13 +6,14 @@
 //! `development` is raw UDP for a LAN or testing. `production` is QUIC/TLS 1.3 with the engine's pinned
 //! certificate (`BLUE_TLS_KEY_FILE` for the key, `BLUE_TLS_CERT_FILE` for a certificate of your own); use it
 //! for anything reachable from the internet, together with a join key (`--join-key` or SPOOKY_KART_JOIN_KEY).
-//! Every finished race appends a line to `DIR/races.jsonl`: results, per-character statistics and network
+//! Every finished race appends a line to `DIR/matches.jsonl`: results, per-character statistics and network
 //! quality, the data used to tune the game.
-use spooky_kart::server::{KartServer, ServerConfig};
-use spooky_kart::transport::server_transport;
+use spooky_kart::KartGame;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use vesper3d::viewer::net::server_transport;
 use vesper3d::viewer::net::TransportProfile;
+use vesper3d::viewer::netplay::{NetServer, ServerConfig};
 
 fn main() -> vesper3d::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -30,7 +31,7 @@ fn main() -> vesper3d::Result<()> {
             "--listen" => listen = value(&mut i, "--listen")?,
             "--transport" => profile = value(&mut i, "--transport")?.parse()?,
             "--join-key" => cfg.join_key = Some(value(&mut i, "--join-key")?),
-            "--racers" => cfg.racers = value(&mut i, "--racers")?.parse::<usize>()?.clamp(1, 8),
+            "--racers" => cfg.participants = value(&mut i, "--racers")?.parse::<usize>()?.clamp(1, 8),
             "--auto-start" => cfg.auto_start_seconds = value(&mut i, "--auto-start")?.parse()?,
             "--report-dir" => cfg.report_dir = Some(value(&mut i, "--report-dir")?.into()),
             "--seed" => cfg.seed = Some(value(&mut i, "--seed")?.parse()?),
@@ -52,13 +53,13 @@ fn main() -> vesper3d::Result<()> {
     }
     println!(
         "[Server] Selected {profile} transport, up to {} racers, join key {}",
-        cfg.racers,
+        cfg.participants,
         if cfg.join_key.is_some() { "required" } else { "not required" }
     );
     if profile == TransportProfile::Development && cfg.join_key.is_none() && !listen.starts_with("127.") {
         println!("[Server] Warning: development UDP is unencrypted; use --transport production for the internet");
     }
     let transport = server_transport(profile, &listen)?;
-    let mut server = KartServer::new(transport, cfg)?;
+    let mut server = NetServer::<KartGame, _>::new(transport, cfg)?;
     server.run_realtime(Arc::new(AtomicBool::new(false)), None)
 }

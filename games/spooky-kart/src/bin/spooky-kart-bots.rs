@@ -5,14 +5,14 @@
 //!                         [--join-key KEY] [--seconds LIMIT]
 //!
 //! Prints one JSON line when done: how many races completed and each client's network statistics (round-trip
-//! time, snapshots, prediction corrections). The server writes the race results to its own races.jsonl.
+//! time, snapshots, prediction corrections). The server writes the race results to its own matches.jsonl.
 use spooky_kart::bot;
-use spooky_kart::client::{ClientConfig, ClientState, KartClient};
 use spooky_kart::kart::KartInput;
-use spooky_kart::transport::{client_transport, AnyTransport};
+use spooky_kart::KartGame;
 use std::net::ToSocketAddrs;
 use std::time::{Duration, Instant};
-use vesper3d::viewer::net::TransportProfile;
+use vesper3d::viewer::net::{client_transport, AnyTransport, TransportProfile};
+use vesper3d::viewer::netplay::{ClientConfig, ClientState, NetClient};
 
 fn main() -> vesper3d::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -37,12 +37,12 @@ fn main() -> vesper3d::Result<()> {
         }
         i += 2;
     }
-    let mut clients: Vec<KartClient<AnyTransport>> = (0..clients_n)
+    let mut clients: Vec<NetClient<KartGame, AnyTransport>> = (0..clients_n)
         .map(|n| {
-            KartClient::new(
+            NetClient::<KartGame, _>::new(
                 client_transport(profile, address)?,
                 address,
-                ClientConfig { name: format!("Bot {}", n + 1), key: key.clone(), character: n as u8 },
+                ClientConfig { name: format!("Bot {}", n + 1), key: key.clone(), choice: n as u8 },
             )
         })
         .collect::<Result<_, _>>()?;
@@ -63,11 +63,11 @@ fn main() -> vesper3d::Result<()> {
                         c.ready(true);
                     }
                 }
-                ClientState::Racing => {
+                ClientState::Playing => {
                     let input = c
-                        .my_kart()
-                        .filter(|k| c.sim().karts.len() > *k)
-                        .map_or(KartInput::default(), |k| bot::drive(c.sim(), k));
+                        .participant()
+                        .filter(|k| c.view().sim().karts.len() > *k)
+                        .map_or(KartInput::default(), |k| bot::drive(c.view().sim(), k));
                     c.tick(input);
                 }
                 ClientState::Rejected(why) | ClientState::Disconnected(why) => {
@@ -78,7 +78,7 @@ fn main() -> vesper3d::Result<()> {
             }
             c.frame(now, 1. / 60.);
         }
-        let racing = clients.first().is_some_and(|c| *c.state() == ClientState::Racing);
+        let racing = clients.first().is_some_and(|c| *c.state() == ClientState::Playing);
         if was_racing && !racing {
             done += 1;
         }
@@ -92,7 +92,7 @@ fn main() -> vesper3d::Result<()> {
             let s = c.stats();
             serde_json::json!({
                 "rtt_ms": s.rtt_ms, "snapshots": s.snapshots, "packets_in": s.packets_in, "bytes_in": s.bytes_in,
-                "corrections": s.corrections, "snaps": s.snaps, "max_error_m": s.max_error_m,
+                "corrections": s.prediction.corrections, "snaps": s.prediction.snaps, "max_error_m": s.prediction.max_error,
             })
         })
         .collect();

@@ -17,11 +17,9 @@ mod platform;
 
 use macroquad::prelude::*;
 use spooky_kart::{
-    client::{ClientConfig, ClientState, KartClient},
     controls::{self, Raw},
     track::{forward, wrap_angle, yaw_of},
-    transport::{client_transport, AnyTransport},
-    Character, Driver, Event, HazardKind, Inputs, Kart, KartInput, Perk, Phase, Sim, ALL, LAPS, MAX_RACERS,
+    Character, Driver, Event, HazardKind, Inputs, Kart, KartGame, KartInput, Perk, Phase, Sim, ALL, LAPS, MAX_RACERS,
 };
 use std::net::ToSocketAddrs;
 use vesper3d::viewer::{
@@ -31,7 +29,8 @@ use vesper3d::viewer::{
     gamepad::Button,
     identity::Identity,
     kit::{self, hud, Batch, Fx, Look, Materials, Rendered, SoundBank, Template, Tint, View},
-    net::TransportProfile,
+    net::{client_transport, AnyTransport, TransportProfile},
+    netplay::{ClientConfig, ClientState, NetClient},
 };
 
 /// Title, tagline and controls live in one file, shared with the build script and `scripts/ship.py`.
@@ -260,6 +259,8 @@ fn announce(fx: &mut Fx, notice: &Notice) {
     fx.banners.clear();
     fx.banner(notice.title, notice.detail.clone(), notice.color);
 }
+
+type Client = NetClient<KartGame, AnyTransport>;
 
 enum Screen {
     Select,
@@ -521,7 +522,7 @@ fn draw_race_hud(sim: &Sim, me: usize, view: &View, ui: f32) {
 }
 
 /// The networked lobby: the driver picker plus who is here and what the server says.
-fn draw_lobby(client: &KartClient<AnyTransport>, choice: usize, my_ready: bool, time: f32, ui: f32) {
+fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32) {
     let (w, h) = (screen_width(), screen_height());
     let prompt = if my_ready {
         "Ready! Enter or A to un-ready    O: practice offline"
@@ -561,7 +562,7 @@ fn draw_lobby(client: &KartClient<AnyTransport>, choice: usize, my_ready: bool, 
             if let Some(l) = lobby {
                 for (i, e) in l.entries.iter().enumerate() {
                     let y = py + 76. * ui + i as f32 * 26. * ui;
-                    let c = Character::from_wire(e.character).unwrap_or(Character::Vampire);
+                    let c = Character::from_wire(e.choice).unwrap_or(Character::Vampire);
                     draw_rectangle(px + 20. * ui, y - 16. * ui, 8. * ui, 20. * ui, hud::col(models::colour(c), 1.));
                     let mine = e.slot == client.seat();
                     hud::text_outlined(
@@ -576,7 +577,7 @@ fn draw_lobby(client: &KartClient<AnyTransport>, choice: usize, my_ready: bool, 
                         hud::text_right("READY", px + pw - 16. * ui, y, 15. * ui, hud::col([0.4, 1., 0.5], 1.));
                     }
                 }
-                let bots = (l.racers as usize).saturating_sub(l.entries.len());
+                let bots = (l.participants as usize).saturating_sub(l.entries.len());
                 let footer = if l.seconds_left > 0 {
                     format!("Race starts in {}", l.seconds_left)
                 } else if bots > 0 {
@@ -664,7 +665,7 @@ async fn main() {
     let (mut fx, mut juice) = (Fx::new(seed), Juice::default());
     let mut choice = direct.map_or(0, |c| c.index());
     let auto_ready = has_flag(&args, "--auto-ready");
-    let mut client: Option<KartClient<AnyTransport>> = None;
+    let mut client: Option<Client> = None;
     if let Some((target, key, profile)) = server_settings(&args) {
         let address = target.to_socket_addrs().ok().and_then(|mut a| a.next()).unwrap_or_else(|| {
             eprintln!("Cannot find a server at {target}");
@@ -676,7 +677,7 @@ async fn main() {
             .or_else(|| std::env::var("USERNAME").ok())
             .unwrap_or_else(|| "Racer".into());
         let made = client_transport(profile, address)
-            .and_then(|t| KartClient::new(t, address, ClientConfig { name, key, character: choice as u8 }));
+            .and_then(|t| Client::new(t, address, ClientConfig { name, key, choice: choice as u8 }));
         match made {
             Ok(c) => client = Some(c),
             Err(e) => eprintln!("Cannot start the network ({e}); playing offline"),
@@ -715,14 +716,14 @@ async fn main() {
         if let Some(c) = client.as_mut() {
             c.poll(time as f64);
             c.frame(time as f64, dt);
-            let me_net = c.my_kart().unwrap_or(0);
+            let me_net = c.participant().unwrap_or(0);
             for event in c.drain_events() {
-                if c.sim().karts.len() > me_net {
-                    react(&event, c.sim(), me_net, &mut sounds, &mut fx, &mut juice);
+                if c.view().sim().karts.len() > me_net {
+                    react(&event, c.view().sim(), me_net, &mut sounds, &mut fx, &mut juice);
                 }
             }
             match (c.state().clone(), &screen) {
-                (ClientState::Racing, Screen::Lobby) => {
+                (ClientState::Playing, Screen::Lobby) => {
                     screen = Screen::Race;
                     fx.clear();
                     juice = Juice::default();
@@ -740,7 +741,7 @@ async fn main() {
             if let Some(e) = &mine {
                 // Follow the server's answer (it may have given us another driver) unless we just chose.
                 if time - choice_changed > 1.0 {
-                    choice = e.character as usize % MAX_RACERS;
+                    choice = e.choice as usize % MAX_RACERS;
                 }
             }
             if auto_ready && *c.state() == ClientState::Lobby && mine.is_some() && !my_ready {
@@ -870,9 +871,9 @@ async fn main() {
                     // Online: each tick is predicted and sent; the server decides the race.
                     for _ in 0..life.ticks(dt, 1., playing) {
                         let tick = life.take_tick();
-                        let mine = c.my_kart().filter(|m| c.sim().karts.len() > *m);
+                        let mine = c.participant().filter(|m| c.view().sim().karts.len() > *m);
                         let kart_input = match (autopilot, mine) {
-                            (true, Some(m)) => spooky_kart::bot::drive(c.sim(), m),
+                            (true, Some(m)) => spooky_kart::bot::drive(c.view().sim(), m),
                             (true, None) => KartInput::default(),
                             (false, _) => KartInput {
                                 throttle: tick.held.throttle,
@@ -884,7 +885,7 @@ async fn main() {
                         c.tick(kart_input);
                     }
                     if playing {
-                        trails(c.sim(), &mut fx);
+                        trails(c.view().sim(), &mut fx);
                         juice.update(dt);
                         fx.update(dt);
                     }
@@ -918,7 +919,7 @@ async fn main() {
 
         // What is on screen: the local race, or the network client's predicted view of the server's.
         let (view_sim, view_me): (&Sim, usize) = match &client {
-            Some(c) => (c.sim(), c.my_kart().unwrap_or(0)),
+            Some(c) => (c.view().sim(), c.participant().unwrap_or(0)),
             None => (&sim, me),
         };
         let have_karts = view_me < view_sim.karts.len();
