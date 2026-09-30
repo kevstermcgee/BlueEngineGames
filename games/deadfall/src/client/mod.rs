@@ -4,3 +4,4 @@ pub mod audio;
 pub mod previewkit;
 
 pub use anchors::WeaponAnchors;
+pub mod sound;
