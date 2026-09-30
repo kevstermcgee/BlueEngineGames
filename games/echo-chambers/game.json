@@ -56,13 +56,106 @@
   ],
   "rules": [
     {
+      "id": "wrong-s",
+      "on_interact": "monolith_s",
+      "condition": {
+        "counter": "seq_step",
+        "not_equals": 1
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "set_counter",
+          "counter": "seq_step",
+          "value": 0
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_n",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_s",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_e",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "wrong-e",
+      "on_interact": "monolith_e",
+      "condition": {
+        "counter": "seq_step",
+        "not_equals": 2
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "set_counter",
+          "counter": "seq_step",
+          "value": 0
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_n",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_s",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_e",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "wrong-w",
+      "on_interact": "monolith_w",
+      "condition": {
+        "counter": "seq_step",
+        "not_equals": 3
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "set_counter",
+          "counter": "seq_step",
+          "value": 0
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_n",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_s",
+          "enabled": true
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_e",
+          "enabled": true
+        }
+      ]
+    },
+    {
       "id": "strike-n",
       "on_interact": "monolith_n",
       "condition": {
         "counter": "seq_step",
         "equals": 0
       },
-      "once": true,
+      "once": false,
       "actions": [
         {
           "action": "increment",
@@ -83,7 +176,7 @@
         "counter": "seq_step",
         "equals": 1
       },
-      "once": true,
+      "once": false,
       "actions": [
         {
           "action": "increment",
@@ -104,7 +197,7 @@
         "counter": "seq_step",
         "equals": 2
       },
-      "once": true,
+      "once": false,
       "actions": [
         {
           "action": "increment",
@@ -125,7 +218,7 @@
         "counter": "seq_step",
         "equals": 3
       },
-      "once": true,
+      "once": false,
       "actions": [
         {
           "action": "increment",

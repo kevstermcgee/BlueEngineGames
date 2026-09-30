@@ -48,6 +48,33 @@
   ],
   "rules": [
     {
+      "id": "laser-trip",
+      "on_enter": "laser_1",
+      "condition": null,
+      "once": false,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "alarms",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "laser-lockdown",
+      "on_enter": "laser_1",
+      "condition": {
+        "counter": "alarms",
+        "at_least": 3
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "fail"
+        }
+      ]
+    },
+    {
       "id": "hack-console-a",
       "on_interact": "console_a",
       "condition": null,
@@ -109,6 +136,24 @@
           "action": "complete"
         }
       ]
+    }
+  ],
+  "trigger_zones": [
+    {
+      "id": "laser_1",
+      "bounds": {
+        "min": [
+          -2.2,
+          0.0,
+          2.0
+        ],
+        "max": [
+          -1.8,
+          2.0,
+          4.2
+        ]
+      },
+      "enabled": true
     }
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "name": "KNOWN GAP: the right pan is refused until the left is loaded, and there is no weighing: the puzzle is a fixed two-step order",
+  "game_path": "game.json",
+  "ticks": 54,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 39,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 49,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 54,
+      "counter": "plates_placed",
+      "counter_equals": 0,
+      "target": "ballast_pan_right",
+      "enabled_equals": true,
+      "completed_equals": false
+    }
+  ]
+}

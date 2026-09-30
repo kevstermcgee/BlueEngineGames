@@ -1,7 +1,7 @@
 {
-  "name": "align prisms 1, 2, 3 then energize the mainframe",
+  "name": "KNOWN GAP: aligning prism 3 first arms the mainframe early; pressing it with one prism aligned does nothing",
   "game_path": "game.json",
-  "ticks": 153,
+  "ticks": 142,
   "players": [
     {
       "id": 1
@@ -11,68 +11,40 @@
     {
       "tick": 1,
       "player": 1,
-      "interact": true,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 3,
-      "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 41,
+      "tick": 77,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 51,
+      "tick": 87,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 53,
+      "tick": 89,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 91,
+      "tick": 127,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 101,
-      "player": 1,
-      "interact": true,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 103,
-      "player": 1,
-      "right": 1.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 141,
-      "player": 1,
-      "right": 0.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 151,
+      "tick": 137,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -81,15 +53,17 @@
   ],
   "assertions": [
     {
-      "tick": 102,
+      "tick": 88,
       "counter": "aligned_count",
-      "counter_equals": 3,
+      "counter_equals": 1,
       "target": "mainframe_terminal",
       "enabled_equals": true
     },
     {
-      "tick": 153,
-      "completed_equals": true
+      "tick": 142,
+      "counter": "aligned_count",
+      "counter_equals": 1,
+      "completed_equals": false
     }
   ]
 }

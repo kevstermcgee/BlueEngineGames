@@ -1,0 +1,55 @@
+{
+  "name": "carry the relic too long without stabilizing it: it shatters (match lost) and the pylon no longer helps",
+  "game_path": "game.json",
+  "ticks": 133,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 78,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 116,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 126,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 51,
+      "counter": "relic_charge",
+      "counter_equals": 1,
+      "failed_equals": false
+    },
+    {
+      "tick": 133,
+      "counter": "recharge_count",
+      "counter_equals": 0,
+      "completed_equals": false,
+      "failed_equals": true
+    }
+  ]
+}

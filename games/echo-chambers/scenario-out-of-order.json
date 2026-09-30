@@ -1,7 +1,7 @@
 {
-  "name": "ping both sonar beacons, then take the exit",
+  "name": "the altar does nothing before the sequence is complete",
   "game_path": "game.json",
-  "ticks": 103,
+  "ticks": 99,
   "players": [
     {
       "id": 1
@@ -11,47 +11,33 @@
     {
       "tick": 1,
       "player": 1,
-      "interact": true,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 3,
-      "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 41,
+      "tick": 58,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 51,
+      "tick": 68,
       "player": 1,
-      "interact": true,
+      "forward": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 53,
+      "tick": 87,
       "player": 1,
-      "right": 1.0,
+      "forward": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 91,
-      "player": 1,
-      "right": 0.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 101,
+      "tick": 97,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -60,10 +46,12 @@
   ],
   "assertions": [
     {
-      "tick": 103,
-      "counter": "ping_count",
-      "counter_equals": 2,
-      "completed_equals": true
+      "tick": 99,
+      "counter": "unsealed",
+      "counter_equals": 0,
+      "target": "altar_core",
+      "enabled_equals": false,
+      "completed_equals": false
     }
   ]
 }
