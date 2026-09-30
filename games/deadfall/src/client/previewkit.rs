@@ -59,10 +59,14 @@ impl Args {
 /// Window configuration for a preview (size from `--size WxH`, default 1280x720).
 pub fn window_conf(title: &str) -> Conf {
     let args: Vec<String> = std::env::args().collect();
-    let (w, h) = flag_value(&args, "--size")
-        .and_then(vesper3d::viewer::devkit::parse_size)
-        .unwrap_or((1280, 720));
-    Conf { window_title: title.to_string(), window_width: w as i32, window_height: h as i32, high_dpi: false, ..Default::default() }
+    let (w, h) = flag_value(&args, "--size").and_then(vesper3d::viewer::devkit::parse_size).unwrap_or((1280, 720));
+    Conf {
+        window_title: title.to_string(),
+        window_width: w as i32,
+        window_height: h as i32,
+        high_dpi: false,
+        ..Default::default()
+    }
 }
 
 /// The world material and a neutral daylight to judge colours by.
@@ -88,13 +92,7 @@ impl Stage {
         let eye = args.at + vec3(yaw.sin() * pitch.cos(), pitch.sin(), yaw.cos() * pitch.cos()) * args.dist;
         // Look from the eye towards the target: the view's yaw/pitch face the opposite way to the offset.
         let to = (args.at - eye).normalize();
-        let view = View {
-            eye,
-            yaw: to.x.atan2(-to.z),
-            pitch: to.y.asin(),
-            roll: 0.,
-            fov: args.fov.to_radians(),
-        };
+        let view = View { eye, yaw: to.x.atan2(-to.z), pitch: to.y.asin(), roll: 0., fov: args.fov.to_radians() };
         clear_background(self.look.clear_color());
         set_camera(&view.camera(0.02, 400.));
         self.materials.set_scene(&self.look, eye, 0., 0.);
