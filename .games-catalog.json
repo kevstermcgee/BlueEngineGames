@@ -1057,10 +1057,11 @@
     "games/magnet-mine",
     "games/wrecking-orbit",
     "games/pulse-nova",
-    "games/spooky-kart"
+    "games/spooky-kart",
+    "games/physics-lab"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "49db8397ec6fe7b502e084daf13d863019ac2d25",
+  "source_revision": "17d90e95342aa172135be7fc3617de81251e2038",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
