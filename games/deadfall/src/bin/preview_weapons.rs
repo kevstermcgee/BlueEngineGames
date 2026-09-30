@@ -135,7 +135,9 @@ fn sheets(args: &Args) -> Vec<Shot> {
         .unwrap_or_default();
     let all: Vec<&str> = weapon_models::keys().to_vec();
     let keys: Vec<&str> = if listed.is_empty() { all } else { listed.iter().map(String::as_str).collect() };
-    let num = |name: &str, d: f32| vesper3d::viewer::devkit::flag_value(&args.raw, name).and_then(|v| v.parse().ok()).unwrap_or(d);
+    let num = |name: &str, d: f32| {
+        vesper3d::viewer::devkit::flag_value(&args.raw, name).and_then(|v| v.parse().ok()).unwrap_or(d)
+    };
     let cols = if listed.is_empty() { 3usize } else { num("--cols", 2.) as usize };
     let rows = if listed.is_empty() { 4usize } else { keys.len().div_ceil(cols) };
     let (dx, dy) = (num("--dx", 1.7), num("--dy", 0.62));

@@ -177,10 +177,6 @@ impl M {
     fn cy(&mut self, x: f32, z: f32, y: [f32; 2], r: f32, c: C) {
         self.rod(vec3(x, y[0], z), vec3(x, y[1], z), r, r, c, 0.);
     }
-    /// Frustum along Y.
-    fn ky(&mut self, x: f32, z: f32, y: [f32; 2], r: [f32; 2], c: C) {
-        self.rod(vec3(x, y[0], z), vec3(x, y[1], z), r[0], r[1], c, 0.);
-    }
     fn ball(&mut self, c: [f32; 3], radii: [f32; 3], col: C) {
         self.t.ball(v3(c), v3(radii), col, 0., 10, 7);
     }
@@ -242,10 +238,6 @@ impl M {
             self.prism(x, &[f0, f1, b1, b0], c);
         }
     }
-
-    fn append(&mut self, o: &M) {
-        self.t.append(&o.t);
-    }
 }
 
 /// Offset helper for `fin`.
@@ -260,8 +252,10 @@ fn fin(body: M, anchors: WeaponAnchors, mag: Option<(M, Off)>, slide: Option<(M,
     let mag = mag.map(|(m, off)| (m.t.transformed(Mat4::from_translation(-v3(off))), v3(off)));
     let slide = slide.map(|(m, travel)| (m.t, v3(travel)));
     let mut model = WeaponModel { body: body.t, anchors, length: 0., mag, slide };
+    // Muzzle to rear of the weapon proper: a raked pistol grip or magazine bottom does not count.
     let all = model.assembled();
-    let (lo, hi) = all.verts.iter().fold((f32::MAX, f32::MIN), |a, v| (a.0.min(v.p.z), a.1.max(v.p.z)));
+    let (lo, hi) =
+        all.verts.iter().filter(|v| v.p.y > -0.02).fold((f32::MAX, f32::MIN), |a, v| (a.0.min(v.p.z), a.1.max(v.p.z)));
     model.length = hi - lo;
     model
 }
@@ -652,7 +646,7 @@ fn pdw() -> WeaponModel {
 
 fn vkr() -> WeaponModel {
     let (mut b, mut g) = (M::new(), M::new());
-    let tan = [0.50, 0.43, 0.30];
+    let tan = TAN;
     let tan_d = [0.38, 0.32, 0.22];
     b.prism([-0.0225, 0.0225], &[(0.095, 0.14), (0.095, -0.09), (0.072, -0.145), (0.022, -0.145), (0.022, 0.14)], tan);
     b.cz(0., 0.050, [-0.27, -0.14], 0.0215, tan_d);
@@ -797,10 +791,10 @@ fn m4c() -> WeaponModel {
     b.cz(0., 0.060, [0.055, 0.275], 0.0185, STEEL);
     b.prism(
         [-0.019, 0.019],
-        &[(0.082, 0.14), (0.082, 0.29), (0.0, 0.31), (-0.065, 0.305), (-0.065, 0.26), (0.02, 0.14)],
+        &[(0.070, 0.14), (0.070, 0.295), (0.030, 0.312), (-0.045, 0.308), (-0.048, 0.27), (0.0, 0.14)],
         lo,
     );
-    b.bx([-0.0195, 0.0195], [-0.066, 0.030], [0.306, 0.318], POLY_G);
+    b.bx([-0.0195, 0.0195], [-0.050, 0.040], [0.306, 0.318], POLY_G);
     // STANAG magazine
     g.band(
         [-0.0115, 0.0115],
@@ -818,8 +812,8 @@ fn m4c() -> WeaponModel {
 
 fn fm2() -> WeaponModel {
     let (mut b, mut g) = (M::new(), M::new());
-    let ol = [0.22, 0.27, 0.16];
-    let ol_d = [0.16, 0.20, 0.12];
+    let ol = OLIVE;
+    let ol_d = OLIVE_D;
     // body: front receiver/shroud block and the bullpup rear section
     b.bx([-0.0255, 0.0255], [0.0, 0.078], [-0.30, 0.04], ol);
     b.prism(
@@ -864,7 +858,7 @@ fn fm2() -> WeaponModel {
 
 fn bpa() -> WeaponModel {
     let (mut b, mut g) = (M::new(), M::new());
-    let ol = [0.21, 0.26, 0.17];
+    let ol = OLIVE;
     let blk = [0.07, 0.075, 0.08];
     b.prism(
         [-0.0285, 0.0285],
@@ -881,8 +875,10 @@ fn bpa() -> WeaponModel {
     b.cz(0., 0.060, [-0.478, -0.468], 0.0135, STEEL_L);
     // optic handle
     b.bx([-0.0195, 0.0195], [0.085, 0.104], [-0.22, 0.10], ol);
-    b.cz(0., 0.116, [-0.10, 0.11], 0.0205, blk);
+    b.cz(0., 0.116, [-0.10, 0.11], 0.0205, ol);
     b.kz(0., 0.116, [-0.10, -0.135], [0.0205, 0.0245], blk);
+    b.cz(0., 0.116, [-0.02, 0.0], 0.0214, blk);
+    b.cz(0., 0.116, [0.085, 0.10], 0.0214, blk);
     b.cz(0., 0.116, [0.11, 0.123], 0.0230, STEEL_L);
     b.lens(0., 0.116, [-0.137, -0.134], 0.0210);
     b.lens(0., 0.116, [0.124, 0.122], 0.0160);
@@ -934,10 +930,10 @@ fn gl4() -> WeaponModel {
     b.tb([0., -0.030, 0.014], [0.0165, 0.065, 0.022], -20., fur);
     b.prism(
         [-0.0185, 0.0185],
-        &[(0.085, 0.22), (0.075, 0.40), (0.065, 0.425), (-0.075, 0.425), (-0.08, 0.40), (0.0, 0.22)],
+        &[(0.078, 0.22), (0.070, 0.40), (0.062, 0.425), (-0.052, 0.425), (-0.058, 0.40), (0.015, 0.22)],
         fur,
     );
-    b.bx([-0.0190, 0.0190], [-0.082, 0.066], [0.422, 0.434], POLY);
+    b.bx([-0.0190, 0.0190], [-0.056, 0.064], [0.422, 0.434], POLY);
     // 20-round magazine
     g.band([-0.0145, 0.0145], &[(0.030, -0.060, 0.043), (-0.050, -0.066, 0.043), (-0.115, -0.074, 0.043)], GUNMETAL);
     g.band([-0.0150, 0.0150], &[(-0.040, -0.063, 0.035), (-0.047, -0.064, 0.035)], STEEL);
@@ -952,7 +948,7 @@ fn gl4() -> WeaponModel {
 
 fn dmr20() -> WeaponModel {
     let (mut b, mut g, mut s) = (M::new(), M::new(), M::new());
-    let tan = [0.54, 0.45, 0.31];
+    let tan = TAN;
     let tan_d = [0.40, 0.33, 0.22];
     b.bx([-0.0215, 0.0215], [0.020, 0.090], [-0.14, 0.17], tan);
     b.bx([0.0216, 0.0222], [0.050, 0.078], [-0.04, 0.03], POLY);
@@ -1054,10 +1050,10 @@ fn scout() -> WeaponModel {
     b.tb([0., -0.030, 0.012], [0.0165, 0.060, 0.0215], -18., st);
     b.prism(
         [-0.0185, 0.0185],
-        &[(0.072, 0.10), (0.082, 0.30), (0.070, 0.35), (-0.085, 0.35), (-0.085, 0.31), (-0.03, 0.10)],
+        &[(0.070, 0.10), (0.078, 0.30), (0.066, 0.35), (-0.058, 0.35), (-0.058, 0.31), (-0.02, 0.10)],
         st,
     );
-    b.bx([-0.0190, 0.0190], [-0.088, 0.072], [0.348, 0.360], POLY);
+    b.bx([-0.0190, 0.0190], [-0.062, 0.070], [0.348, 0.360], POLY);
     trigger_guard(&mut b, 0.030, 0.030, [-0.070, 0.002], 0.0095, st_d);
     // ghost ring rear sight, forward-mounted scope on a rail along the barrel
     b.bx([-0.0055, 0.0055], [0.082, 0.098], [0.092, 0.102], STEEL);
@@ -1108,11 +1104,11 @@ fn awm() -> WeaponModel {
     trigger_guard(&mut b, 0.030, 0.030, [-0.070, 0.004], 0.0095, gr_d);
     b.prism(
         [-0.0185, 0.0185],
-        &[(0.072, 0.10), (0.084, 0.30), (0.084, 0.36), (-0.072, 0.36), (-0.078, 0.30), (-0.03, 0.10)],
+        &[(0.072, 0.10), (0.084, 0.30), (0.084, 0.36), (-0.060, 0.36), (-0.064, 0.30), (-0.02, 0.10)],
         gr,
     );
     b.bx([-0.0160, 0.0160], [0.084, 0.102], [0.17, 0.30], gr_d);
-    b.bx([-0.0195, 0.0195], [-0.078, 0.084], [0.358, 0.372], POLY);
+    b.bx([-0.0195, 0.0195], [-0.064, 0.084], [0.358, 0.372], POLY);
     // folded bipod
     b.bx([-0.030, 0.030], [-0.004, 0.010], [-0.38, -0.34], STEEL);
     b.sym(|b, k| b.rod(vec3(k * 0.027, 0.0, -0.36), vec3(k * 0.027, -0.010, -0.58), 0.0045, 0.0045, STEEL_L, 0.));
@@ -1204,10 +1200,10 @@ fn pump12() -> WeaponModel {
     // wooden stock and guard
     b.prism(
         [-0.0185, 0.0185],
-        &[(0.088, -0.005), (0.070, 0.235), (0.060, 0.305), (-0.075, 0.310), (-0.070, 0.275), (-0.030, -0.015)],
+        &[(0.088, -0.005), (0.070, 0.235), (0.060, 0.305), (-0.062, 0.310), (-0.060, 0.275), (-0.030, -0.015)],
         WOOD,
     );
-    b.bx([-0.0190, 0.0190], [-0.078, 0.064], [0.308, 0.322], POLY);
+    b.bx([-0.0190, 0.0190], [-0.066, 0.064], [0.308, 0.322], POLY);
     trigger_guard(&mut b, 0.030, 0.030, [-0.105, -0.022], 0.0095, STEEL);
     // pump forend (moves with the action bars)
     s.bx([-0.0235, 0.0235], [0.030, 0.070], [-0.47, -0.30], WOOD_D);
@@ -1224,7 +1220,7 @@ fn pump12() -> WeaponModel {
 }
 
 fn auto12() -> WeaponModel {
-    let (mut b, mut _g) = (M::new(), M::new());
+    let mut b = M::new();
     let rc = [0.19, 0.195, 0.20];
     b.bx([-0.0195, 0.0195], [0.030, 0.092], [-0.20, 0.04], rc);
     b.bx([0.0196, 0.0202], [0.056, 0.084], [-0.11, -0.05], POLY);
@@ -1391,8 +1387,8 @@ fn rpg() -> WeaponModel {
     // launch tube, muzzle collar and rear venturi
     b.cz(0., y, [-0.26, 0.36], 0.0205, tube);
     b.cz(0., y, [-0.268, -0.255], 0.0232, STEEL);
-    b.kz(0., y, [0.36, 0.44], [0.0205, 0.0410], [0.20, 0.22, 0.17]);
-    b.cz(0., y, [0.436, 0.444], 0.0420, STEEL);
+    b.kz(0., y, [0.36, 0.42], [0.0205, 0.0400], [0.20, 0.22, 0.17]);
+    b.cz(0., y, [0.414, 0.422], 0.0410, STEEL);
     b.kz(0., y, [0.355, 0.375], [0.0232, 0.0232], STEEL);
     // wooden heat shield, trigger group, grip
     b.cz(0., y, [-0.22, -0.06], 0.0225, WOOD);
@@ -1414,12 +1410,12 @@ fn rpg() -> WeaponModel {
     g.kz(0., y, [-0.30, -0.34], [0.0185, 0.0425], [0.30, 0.31, 0.27]);
     g.cz(0., y, [-0.34, -0.40], 0.0425, [0.27, 0.32, 0.19]);
     g.cz(0., y, [-0.356, -0.364], 0.0432, BRASS);
-    g.kz(0., y, [-0.40, -0.50], [0.0425, 0.0115], [0.27, 0.32, 0.19]);
-    g.cz(0., y, [-0.50, -0.55], 0.0095, [0.16, 0.17, 0.18]);
-    g.kz(0., y, [-0.55, -0.565], [0.0095, 0.002], STEEL_L);
+    g.kz(0., y, [-0.40, -0.47], [0.0425, 0.0115], [0.27, 0.32, 0.19]);
+    g.cz(0., y, [-0.47, -0.515], 0.0095, [0.16, 0.17, 0.18]);
+    g.kz(0., y, [-0.515, -0.53], [0.0095, 0.002], STEEL_L);
     fin(
         b,
-        anch(Some([0., 0.062, -0.14]), [-0.047, 0.118, 0.17], [0., y, -0.565], [0., y, 0.44]),
+        anch(Some([0., 0.062, -0.14]), [-0.047, 0.118, 0.17], [0., y, -0.53], [0., y, 0.422]),
         Some((g, [0., y, -0.26])),
         None,
     )
@@ -1444,10 +1440,10 @@ fn thumper() -> WeaponModel {
     // walnut stock
     b.prism(
         [-0.0190, 0.0190],
-        &[(0.078, 0.0), (0.068, 0.26), (0.050, 0.30), (-0.072, 0.300), (-0.066, 0.26), (-0.03, -0.01)],
+        &[(0.078, 0.0), (0.066, 0.26), (0.050, 0.30), (-0.055, 0.30), (-0.052, 0.26), (-0.03, -0.01)],
         WOOD,
     );
-    b.bx([-0.0195, 0.0195], [-0.074, 0.052], [0.298, 0.310], STEEL);
+    b.bx([-0.0195, 0.0195], [-0.058, 0.052], [0.298, 0.310], STEEL);
     fin(b, anch(Some([0., 0.020, -0.15]), [0., 0.150, 0.05], [0., 0.060, -0.4355], [0.0226, 0.060, 0.0]), None, None)
 }
 // ---------------------------------------------------------------------------------------------------------
@@ -1466,12 +1462,10 @@ fn pin_ring(m: &mut M, y: f32, z: f32) {
     }
 }
 
-fn grenade(mut body: M, height: f32, spoon_x: f32) -> WeaponModel {
-    // The hand holds the body; a thrown weapon leaves the hand forwards and up.
-    body.t.alpha = 1.;
+fn grenade(body: M, height: f32) -> WeaponModel {
+    // The hand holds the body; a thrown weapon leaves the hand forwards and up. Its "length" is its height.
     let mut m = fin(body, anch(None, [0., 0.10, 0.06], [0., 0.03, -0.06], [0., 0., 0.]), None, None);
     m.length = height;
-    let _ = spoon_x;
     m
 }
 
@@ -1487,7 +1481,7 @@ fn frag() -> WeaponModel {
     b.bx([0.0275, 0.0320], [0.014, 0.060], [-0.0055, 0.0055], STEEL_L);
     b.bx([0.0, 0.0320], [0.058, 0.0635], [-0.0055, 0.0055], STEEL_L);
     pin_ring(&mut b, 0.040, 0.0);
-    grenade(b, 0.096, 0.032)
+    grenade(b, 0.096)
 }
 
 fn flash() -> WeaponModel {
@@ -1505,7 +1499,7 @@ fn flash() -> WeaponModel {
     // stencilled warning stripe
     b.cy(0., 0., [-0.012, -0.004], 0.0268, [0.85, 0.78, 0.15]);
     pin_ring(&mut b, 0.043, 0.0);
-    grenade(b, 0.107, 0.031)
+    grenade(b, 0.107)
 }
 
 fn smoke() -> WeaponModel {
@@ -1524,7 +1518,7 @@ fn smoke() -> WeaponModel {
     b.bx([0.0322, 0.0366], [-0.040, 0.050], [-0.0055, 0.0055], STEEL_L);
     b.bx([0.0, 0.0366], [0.062, 0.0695], [-0.0055, 0.0055], STEEL_L);
     pin_ring(&mut b, 0.054, 0.0);
-    grenade(b, 0.121, 0.037)
+    grenade(b, 0.121)
 }
 
 fn incen() -> WeaponModel {
@@ -1548,7 +1542,7 @@ fn incen() -> WeaponModel {
     b.bx([0.0308, 0.0350], [-0.038, 0.046], [-0.0055, 0.0055], STEEL_L);
     b.bx([0.0, 0.0350], [0.058, 0.0655], [-0.0055, 0.0055], STEEL_L);
     pin_ring(&mut b, 0.050, 0.0);
-    grenade(b, 0.115, 0.035)
+    grenade(b, 0.115)
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -1654,5 +1648,193 @@ fn crowbar() -> WeaponModel {
     b.bx([-0.0120, 0.0120], [-0.0030, 0.0030], [0.335, 0.350], CHROME);
     melee(b, [0., -0.09, -0.41])
 }
-// STUBS BEGIN
-// STUBS END
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ROSTER: [&str; 33] = [
+        "k9", "m45", "hc50", "rv357", "mp9", "ump", "pdw", "vkr", "k47", "m4c", "fm2", "bpa", "gl4", "dmr20", "svd",
+        "scout", "awm", "m82", "pump12", "auto12", "sawn", "para", "pk", "rpg", "thumper", "frag", "flash", "smoke",
+        "incen", "knife", "machete", "axe", "crowbar",
+    ];
+
+    /// (key, min length, max length) in metres: the real-world size class of each weapon.
+    const SIZES: [(&str, f32, f32); 33] = [
+        ("k9", 0.17, 0.24),
+        ("m45", 0.18, 0.26),
+        ("hc50", 0.22, 0.32),
+        ("rv357", 0.22, 0.32),
+        ("mp9", 0.55, 0.75),
+        ("ump", 0.55, 0.75),
+        ("pdw", 0.45, 0.60),
+        ("vkr", 0.45, 0.68),
+        ("k47", 0.80, 0.95),
+        ("m4c", 0.75, 0.90),
+        ("fm2", 0.68, 0.82),
+        ("bpa", 0.70, 0.85),
+        ("gl4", 0.95, 1.10),
+        ("dmr20", 0.90, 1.10),
+        ("svd", 1.15, 1.30),
+        ("scout", 0.90, 1.10),
+        ("awm", 1.10, 1.30),
+        ("m82", 1.35, 1.55),
+        ("pump12", 0.95, 1.15),
+        ("auto12", 0.90, 1.10),
+        ("sawn", 0.45, 0.65),
+        ("para", 0.95, 1.12),
+        ("pk", 1.05, 1.25),
+        ("rpg", 0.88, 1.05),
+        ("thumper", 0.65, 0.80),
+        ("frag", 0.07, 0.13),
+        ("flash", 0.07, 0.13),
+        ("smoke", 0.07, 0.13),
+        ("incen", 0.07, 0.13),
+        ("knife", 0.27, 0.33),
+        ("machete", 0.50, 0.65),
+        ("axe", 0.80, 1.00),
+        ("crowbar", 0.60, 0.85),
+    ];
+
+    fn finite(v: Vec3) -> bool {
+        v.x.is_finite() && v.y.is_finite() && v.z.is_finite()
+    }
+
+    /// `cargo test --lib weapon_models -- --ignored --nocapture` lists vertex counts.
+    #[test]
+    #[ignore]
+    fn print_vertex_counts() {
+        for k in keys() {
+            let m = build(k).unwrap();
+            eprintln!("{k:8} {:5} verts  {:.2} m", m.assembled().verts.len(), m.length);
+        }
+    }
+
+    #[test]
+    fn keys_match_the_design_roster() {
+        assert_eq!(keys(), &ROSTER[..]);
+    }
+
+    #[test]
+    fn every_key_builds_and_unknown_does_not() {
+        for k in keys() {
+            assert!(build(k).is_some(), "{k} does not build");
+        }
+        assert!(build("nope").is_none());
+        assert!(build("").is_none());
+    }
+
+    #[test]
+    fn geometry_is_sound_and_within_budget() {
+        for k in keys() {
+            let m = build(k).unwrap();
+            let all = m.assembled();
+            assert!(!m.body.is_empty(), "{k}: empty body");
+            assert!(all.verts.len() < 3500, "{k}: {} vertices", all.verts.len());
+            assert_eq!(all.idx.len() % 3, 0, "{k}");
+            assert!(all.idx.iter().all(|&i| (i as usize) < all.verts.len()), "{k}: index out of range");
+            for v in &all.verts {
+                assert!(finite(v.p) && finite(v.n), "{k}: non-finite vertex");
+                assert!((v.n.length() - 1.).abs() < 1e-3, "{k}: normal not unit");
+                assert!(v.p.abs().max_element() < 2., "{k}: vertex far from the grip");
+            }
+        }
+    }
+
+    #[test]
+    fn length_matches_the_real_size_class() {
+        for (k, lo, hi) in SIZES {
+            let m = build(k).unwrap();
+            assert!(m.length >= lo && m.length <= hi, "{k}: length {} not in {lo}..{hi}", m.length);
+        }
+    }
+
+    #[test]
+    fn anchors_are_finite_and_sensible() {
+        for k in keys() {
+            let m = build(k).unwrap();
+            let a = m.anchors;
+            assert!(finite(a.grip) && finite(a.sight) && finite(a.muzzle) && finite(a.eject), "{k}");
+            if let Some(s) = a.support {
+                assert!(finite(s), "{k}");
+            }
+            assert_eq!(a.grip, Vec3::ZERO, "{k}: the grip is the origin");
+            assert!(a.muzzle.z < a.grip.z, "{k}: muzzle must be in front of the grip");
+            let all = m.assembled();
+            let (mut lo, mut hi) = (Vec3::splat(f32::MAX), Vec3::splat(f32::MIN));
+            for v in &all.verts {
+                lo = lo.min(v.p);
+                hi = hi.max(v.p);
+            }
+            let centre = (lo + hi) * 0.5;
+            assert!(a.sight.y > centre.y, "{k}: sight {} not above the body centre {}", a.sight.y, centre.y);
+            // The muzzle lies on the weapon: inside its bounding box (a grenade's release point is just ahead of it).
+            let thrown = ["frag", "flash", "smoke", "incen"].contains(k);
+            if !thrown {
+                assert!(a.muzzle.z >= lo.z - 0.02 && a.muzzle.z <= hi.z, "{k}: muzzle off the model");
+                assert!(a.muzzle.y >= lo.y - 0.02 && a.muzzle.y <= hi.y + 0.02, "{k}: muzzle off the model");
+            }
+        }
+    }
+
+    #[test]
+    fn support_hand_only_on_two_handed_weapons() {
+        for k in keys() {
+            let m = build(k).unwrap();
+            let one_handed =
+                ["k9", "m45", "hc50", "rv357", "frag", "flash", "smoke", "incen", "knife", "machete", "axe", "crowbar"];
+            assert_eq!(m.anchors.support.is_none(), one_handed.contains(k), "{k}");
+        }
+    }
+
+    #[test]
+    fn moving_parts_are_consistent() {
+        for k in keys() {
+            let m = build(k).unwrap();
+            if let Some((t, off)) = &m.mag {
+                assert!(!t.is_empty() && finite(*off), "{k}: mag");
+            }
+            if let Some((t, travel)) = &m.slide {
+                assert!(!t.is_empty() && finite(*travel), "{k}: slide");
+                assert!(travel.z > 0. && travel.z < 0.15, "{k}: slide travels backwards a few centimetres");
+            }
+        }
+        // Pistols have a slide and a magazine (except the revolver); the rocket launcher reloads its rocket.
+        for k in ["k9", "m45", "hc50"] {
+            let m = build(k).unwrap();
+            assert!(m.slide.is_some() && m.mag.is_some(), "{k}");
+        }
+        assert!(build("rv357").unwrap().mag.is_none());
+        assert!(build("rpg").unwrap().mag.is_some());
+        assert!(build("pump12").unwrap().slide.is_some());
+        assert!(build("para").unwrap().mag.is_some() && build("pk").unwrap().mag.is_some());
+    }
+
+    #[test]
+    fn firearms_use_several_colours_and_optics_have_glass() {
+        let distinct = |t: &Template| {
+            let mut c: Vec<[u8; 3]> =
+                t.verts.iter().map(|v| [(v.c[0] * 255.) as u8, (v.c[1] * 255.) as u8, (v.c[2] * 255.) as u8]).collect();
+            c.sort_unstable();
+            c.dedup();
+            c.len()
+        };
+        for k in keys() {
+            let m = build(k).unwrap();
+            assert!(distinct(&m.assembled()) >= 3, "{k}: too flat a palette");
+        }
+        for k in ["bpa", "dmr20", "svd", "scout", "awm", "m82", "rpg", "pdw"] {
+            let glows = build(k).unwrap().assembled().verts.iter().any(|v| v.e > 0.1);
+            assert!(glows, "{k}: the optic needs a glowing lens");
+        }
+    }
+
+    #[test]
+    fn rifle_sight_lines_sit_above_the_barrel_and_behind_the_front() {
+        for k in ["k47", "m4c", "gl4", "svd", "awm", "m82", "pump12", "mp9"] {
+            let m = build(k).unwrap();
+            assert!(m.anchors.sight.z > m.anchors.muzzle.z + 0.3, "{k}: eye well behind the muzzle");
+            assert!(m.anchors.sight.y > m.anchors.muzzle.y, "{k}: eye above the bore");
+        }
+    }
+}
