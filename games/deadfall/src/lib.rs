@@ -11,6 +11,7 @@ pub mod team;
 pub mod weapons;
 pub mod sim;
 pub mod bots;
+pub mod netgame;
 
 pub use team::Team;
 
