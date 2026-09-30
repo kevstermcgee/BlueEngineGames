@@ -1,51 +1,51 @@
 {
-  "name": "full playthrough: bunker_station_1 -> bunker_station_2 -> turret_override completes",
-  "ticks": 101,
+  "name": "idle 300 ticks, then finish: the clock never blocks completion",
+  "ticks": 400,
   "inputs": [
     {
-      "tick": 1,
+      "tick": 300,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 2,
+      "tick": 301,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 40,
+      "tick": 339,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 50,
+      "tick": 349,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 51,
+      "tick": 350,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 89,
+      "tick": 388,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 99,
+      "tick": 398,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -54,40 +54,16 @@
   ],
   "assertions": [
     {
-      "tick": 1,
-      "counter": "bunker_progress",
-      "counter_equals": 1,
-      "target": "bunker_station_1",
-      "enabled_equals": false,
+      "tick": 299,
+      "counter": "cycle_phase",
+      "counter_equals": 9,
       "completed_equals": false
     },
     {
-      "tick": 2,
-      "target": "bunker_station_2",
-      "enabled_equals": true
-    },
-    {
-      "tick": 50,
-      "counter": "bunker_progress",
-      "counter_equals": 2,
-      "target": "bunker_station_2",
-      "enabled_equals": false,
-      "completed_equals": false
-    },
-    {
-      "tick": 51,
-      "target": "turret_override",
-      "enabled_equals": true
-    },
-    {
-      "tick": 99,
+      "tick": 400,
       "completed_equals": true,
       "counter": "cycle_phase",
-      "counter_equals": 3
-    },
-    {
-      "tick": 101,
-      "completed_equals": true
+      "counter_equals": 13
     }
   ],
   "game_path": "game.json",
