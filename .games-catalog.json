@@ -1052,10 +1052,11 @@
     "games/skyhook-sprint",
     "games/magnet-mine",
     "games/wrecking-orbit",
-    "games/pulse-nova"
+    "games/pulse-nova",
+    "games/spooky-kart"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "6167b53f4e042e822150d480cb91ac1b4d78077d",
+  "source_revision": "5eacf17c0afda12962d660f247d4cc1d0084bd28",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
