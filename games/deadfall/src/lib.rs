@@ -9,7 +9,9 @@ pub mod nav;
 pub mod level;
 pub mod team;
 pub mod weapons;
+pub mod prefs;
 pub mod sim;
+pub mod stats;
 pub mod bots;
 pub mod netgame;
 
