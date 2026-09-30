@@ -1,51 +1,51 @@
 {
-  "name": "idle 300 ticks, then finish: the clock never blocks completion",
-  "ticks": 400,
+  "name": "do nothing until tick 180: the match is lost, and later presses change nothing",
+  "ticks": 300,
   "inputs": [
     {
-      "tick": 300,
+      "tick": 200,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 301,
+      "tick": 201,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 339,
+      "tick": 239,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 349,
+      "tick": 249,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 350,
+      "tick": 250,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 388,
+      "tick": 288,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 398,
+      "tick": 298,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -54,16 +54,27 @@
   ],
   "assertions": [
     {
-      "tick": 299,
-      "counter": "cycle_phase",
-      "counter_equals": 9,
-      "completed_equals": false
+      "tick": 179,
+      "counter": "lava_level",
+      "counter_equals": 5,
+      "completed_equals": false,
+      "failed_equals": false
     },
     {
-      "tick": 400,
-      "completed_equals": true,
-      "counter": "cycle_phase",
-      "counter_equals": 13
+      "tick": 180,
+      "counter": "lava_level",
+      "counter_equals": 6,
+      "completed_equals": false,
+      "failed_equals": true
+    },
+    {
+      "tick": 300,
+      "counter": "checkpoints",
+      "counter_equals": 0,
+      "target": "tier1_beacon",
+      "enabled_equals": true,
+      "completed_equals": false,
+      "failed_equals": true
     }
   ],
   "game_path": "game.json",

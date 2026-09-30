@@ -67,6 +67,20 @@
       ]
     },
     {
+      "id": "detonate",
+      "on_timer": "tick_timer",
+      "condition": {
+        "counter": "countdown",
+        "at_most": 0
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "fail"
+        }
+      ]
+    },
+    {
       "id": "cut-alpha",
       "on_interact": "station_alpha",
       "condition": {

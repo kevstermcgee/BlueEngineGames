@@ -67,6 +67,20 @@
       ]
     },
     {
+      "id": "lava-wins",
+      "on_timer": "lava_timer",
+      "condition": {
+        "counter": "lava_level",
+        "at_least": 6
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "fail"
+        }
+      ]
+    },
+    {
       "id": "reach-tier1",
       "on_interact": "tier1_beacon",
       "condition": null,

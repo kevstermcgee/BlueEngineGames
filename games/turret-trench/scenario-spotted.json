@@ -1,51 +1,51 @@
 {
-  "name": "idle 300 ticks, then finish: the clock never blocks completion",
-  "ticks": 400,
+  "name": "hack the override while the turret is facing you: the match is lost",
+  "ticks": 130,
   "inputs": [
     {
-      "tick": 300,
+      "tick": 1,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 301,
+      "tick": 2,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 339,
+      "tick": 40,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 349,
+      "tick": 50,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 350,
+      "tick": 51,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 388,
+      "tick": 89,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 398,
+      "tick": 125,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -54,16 +54,18 @@
   ],
   "assertions": [
     {
-      "tick": 299,
-      "counter": "countdown",
-      "counter_equals": 1,
-      "completed_equals": false
+      "tick": 124,
+      "counter": "cycle_phase",
+      "counter_equals": 4,
+      "completed_equals": false,
+      "failed_equals": false
     },
     {
-      "tick": 400,
-      "completed_equals": true,
-      "counter": "countdown",
-      "counter_equals": -3
+      "tick": 125,
+      "counter": "bunker_progress",
+      "counter_equals": 2,
+      "completed_equals": false,
+      "failed_equals": true
     }
   ],
   "game_path": "game.json",
