@@ -56,17 +56,19 @@ impl Args {
     }
 }
 
-/// Window configuration for a preview (size from `--size WxH`, default 1280x720).
-pub fn window_conf(title: &str) -> Conf {
+/// Window configuration for a preview (size from `--size WxH`, default 1280x720). Built on the engine's own
+/// window config so the draw-call vertex/index capacities are the engine's 30,000 (macroquad's defaults are
+/// 10,000/5,000 and silently clamp a larger mesh).
+pub fn window_conf(title: &str) -> macroquad::conf::Conf {
     let args: Vec<String> = std::env::args().collect();
-    let (w, h) = flag_value(&args, "--size").and_then(vesper3d::viewer::devkit::parse_size).unwrap_or((1280, 720));
-    Conf {
-        window_title: title.to_string(),
-        window_width: w as i32,
-        window_height: h as i32,
-        high_dpi: false,
-        ..Default::default()
-    }
+    let (w, h) = flag_value(&args, "--size")
+        .and_then(vesper3d::viewer::devkit::parse_size)
+        .unwrap_or((1280, 720));
+    let mut conf = vesper3d::viewer::game_client::window_config(title);
+    conf.miniquad_conf.window_width = w as i32;
+    conf.miniquad_conf.window_height = h as i32;
+    conf.miniquad_conf.high_dpi = false;
+    conf
 }
 
 /// The world material and a neutral daylight to judge colours by.
