@@ -1058,10 +1058,13 @@
     "games/wrecking-orbit",
     "games/pulse-nova",
     "games/spooky-kart",
-    "games/physics-lab"
+    "games/physics-lab",
+    "games/clockwork-pinball",
+    "games/wobble-tower",
+    "games/tumble-maze"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "17d90e95342aa172135be7fc3617de81251e2038",
+  "source_revision": "4ff0b5e6d3db0f16ea6bc4dc984d57778d26ccbe",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
