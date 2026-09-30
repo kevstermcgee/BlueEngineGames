@@ -1,0 +1,4 @@
+# Where to play online. Put your server on the next line as host:port (for example spooky.example.com:4100),
+# then optionally a join key on line 2 (or - for none) and the transport on line 3 (production or development;
+# production, encrypted, is the default). Leave this file without an address to play offline against bots.
+# Press O in the lobby at any time to practise offline.

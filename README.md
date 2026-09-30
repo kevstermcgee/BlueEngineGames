@@ -19,6 +19,7 @@ are not code-signed, so Windows may show a SmartScreen warning.
 - [Three Switches](../../releases/latest/download/three-switches-windows-x64.zip)
 - [Wrecking Orbit](../../releases/latest/download/wrecking-orbit-windows-x64.zip)
 - [Pulse Nova](../../releases/latest/download/pulse-nova-windows-x64.zip)
+- [Spooky Kart](../../releases/latest/download/spooky-kart-windows-x64.zip)
 
 Run `Install-BlueEngineLauncher.cmd` from a checkout to build the launcher and add
 a **BlueEngine Launcher** shortcut to your Windows desktop.
@@ -30,6 +31,7 @@ a **BlueEngine Launcher** shortcut to your Windows desktop.
 
 ## Game downloads and experiments
 
+- [`Spooky Kart`](games/spooky-kart) — Halloween kart racer for up to eight: eight drivers with their own karts and perks, one haunted map, offline against bots or online on a dedicated server.
 - [`Pulse Nova`](games/pulse-nova) — high-velocity kinetic arena shooter with chain explosions, jump pads, and wave surges.
 - [`Skyhook Sprint`](games/skyhook-sprint) — matched aerial-momentum course.
 - [`Magnet Mine`](games/magnet-mine) — polarity-driven drone docking.

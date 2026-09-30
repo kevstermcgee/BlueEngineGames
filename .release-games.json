@@ -50,6 +50,13 @@
       "directory": "games/pulse-nova",
       "kind": "cargo-package",
       "binary": "pulse-nova"
+    },
+    {
+      "slug": "spooky-kart",
+      "name": "Spooky Kart",
+      "directory": "games/spooky-kart",
+      "kind": "cargo-package",
+      "binary": "spooky-kart"
     }
   ]
 }

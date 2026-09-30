@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+cmd="${1:-help}"
+case "$cmd" in
+  check)
+    shift
+    python scripts/check.py "$@"
+    ;;
+  build-all)
+    cargo build --release
+    ;;
+  dev)
+    shift
+    python scripts/dev.py "$@"
+    ;;
+  play)
+    python scripts/dev.py --release
+    ;;
+  package)
+    shift
+    python scripts/ship.py package "$@"
+    ;;
+  shortcut)
+    shift
+    python scripts/ship.py shortcut "$@"
+    ;;
+  ship)
+    shift
+    python scripts/ship.py ship "$@"
+    ;;
+  *)
+    echo "Usage: scripts/blue {check|build-all|dev|play|package|shortcut|ship}"
+    ;;
+esac
