@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Summarise a Spooky Kart server's races.jsonl: which characters win and why, and how the network did.
+"""Summarise a Spooky Kart server's matches.jsonl: which characters win and why, and how the network did.
 
-  python tools/analyze.py [races.jsonl ...] [--json]
+  python tools/analyze.py [matches.jsonl ...] [--json]
 
 Each line is one finished race (results, per-racer statistics, per-player network quality, server load).
 Read the character table to rebalance src/character.rs (a character far from the average place needs a
@@ -32,7 +32,7 @@ def mean(values):
 def summarise(races):
     per = defaultdict(lambda: defaultdict(list))
     for race in races:
-        for r in race["race"]["racers"]:
+        for r in race["report"]["racers"]:
             c = r["character"]
             per[c]["place"].append(r["place"])
             per[c]["win"].append(1 if r["place"] == 1 else 0)
@@ -57,7 +57,7 @@ def summarise(races):
         }
     peers = [p for race in races for p in race["net"]["peers"]]
     servers = [race["net"]["server"] for race in races]
-    seconds = mean(race["race"]["race_seconds"] for race in races) or 1
+    seconds = mean(race["report"]["race_seconds"] for race in races) or 1
     network = {
         "races": len(races),
         "race_seconds_mean": seconds,
@@ -80,7 +80,7 @@ def summarise(races):
 
 def main(argv):
     as_json = "--json" in argv
-    paths = [a for a in argv if not a.startswith("--")] or ["spooky-kart-data/races.jsonl"]
+    paths = [a for a in argv if not a.startswith("--")] or ["spooky-kart-data/matches.jsonl"]
     races = load(paths)
     if not races:
         print("no races yet")

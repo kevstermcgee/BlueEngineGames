@@ -48,5 +48,5 @@ engine yet; each is a self-contained piece of work. Numbers come from `docs/perf
 11. **Bots as clients are the best test tool we found.** The bot logic reads the same `Sim` a client holds, so it
     drives a real client (`tests/net.rs`), fills the grid, and generates load (`tools/load_test.py`) with no
     extra code. Games that ship with AI drivers get load testing for free.
-12. **Per-race telemetry from day one.** `RaceReport` plus network statistics in `races.jsonl` made balance
+12. **Per-race telemetry from day one.** `RaceReport` plus network statistics in `matches.jsonl` made balance
     ("Frankenstein's Monster won 11 of 24 bot races before tuning") and network quality measurable, not felt.

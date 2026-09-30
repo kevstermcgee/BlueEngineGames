@@ -4,7 +4,7 @@
   python tools/load_test.py [--clients 1 4 8] [--races 1] [--release] [--out FILE.jsonl]
 
 For each client count it starts spooky-kart-server on loopback, runs spooky-kart-bots for the requested
-number of full races (about two minutes each, in real time), then reads the server's races.jsonl. It prints one
+number of full races (about two minutes each, in real time), then reads the server's matches.jsonl. It prints one
 JSON metric row per line: {"metric", "kind", "profile", "value", "unit", ...}, the schema BlueEngine's
 tools/perf.py records into docs/perf/metrics.jsonl (`python tools/perf.py record --suite kart`).
 """
@@ -65,7 +65,7 @@ def run_level(bin_dir, clients, races, port, profile):
     if bots.returncode:
         sys.exit(f"bots failed at {clients} clients: {bots.stderr[-800:]}")
     report = json.loads(bots.stdout.strip().splitlines()[-1])
-    log = data / "races.jsonl"
+    log = data / "matches.jsonl"
     if not log.exists():
         sys.exit("the server logged no race")
     races_data = analyze.load([log])

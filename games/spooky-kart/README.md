@@ -41,7 +41,7 @@ down, press Enter or O to practise offline.
 ## Hosting
 
 See [docs/HOSTING.md](docs/HOSTING.md). `spooky-kart-server` is one small process (about 1.5% of a core, under
-4 MB) and records every race to `races.jsonl`; `python tools/analyze.py` turns that into a per-character
+4 MB) and records every race to `matches.jsonl`; `python tools/analyze.py` turns that into a per-character
 balance table and a network report.
 
 ## Development
