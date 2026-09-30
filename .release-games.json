@@ -3,7 +3,108 @@
   "game_roots": [
     "games"
   ],
-  "data_playables": [],
+  "data_playables": [
+    {
+      "slug": "laser-vault",
+      "name": "Laser Vault",
+      "files": [
+        "games/laser-vault"
+      ],
+      "arguments": [
+        "content/games/laser-vault/game.json"
+      ]
+    },
+    {
+      "slug": "floor-is-lava",
+      "name": "Floor is Lava",
+      "files": [
+        "games/floor-is-lava"
+      ],
+      "arguments": [
+        "content/games/floor-is-lava/game.json"
+      ]
+    },
+    {
+      "slug": "echo-chambers",
+      "name": "Echo Chambers",
+      "files": [
+        "games/echo-chambers"
+      ],
+      "arguments": [
+        "content/games/echo-chambers/game.json"
+      ]
+    },
+    {
+      "slug": "relic-relay",
+      "name": "Relic Relay",
+      "files": [
+        "games/relic-relay"
+      ],
+      "arguments": [
+        "content/games/relic-relay/game.json"
+      ]
+    },
+    {
+      "slug": "prism-matrix",
+      "name": "Prism Matrix",
+      "files": [
+        "games/prism-matrix"
+      ],
+      "arguments": [
+        "content/games/prism-matrix/game.json"
+      ]
+    },
+    {
+      "slug": "phantom-maze",
+      "name": "Phantom Maze",
+      "files": [
+        "games/phantom-maze"
+      ],
+      "arguments": [
+        "content/games/phantom-maze/game.json"
+      ]
+    },
+    {
+      "slug": "bomb-defusal",
+      "name": "Bomb Defusal",
+      "files": [
+        "games/bomb-defusal"
+      ],
+      "arguments": [
+        "content/games/bomb-defusal/game.json"
+      ]
+    },
+    {
+      "slug": "turret-trench",
+      "name": "Turret Trench",
+      "files": [
+        "games/turret-trench"
+      ],
+      "arguments": [
+        "content/games/turret-trench/game.json"
+      ]
+    },
+    {
+      "slug": "weight-balance",
+      "name": "Weight & Balance",
+      "files": [
+        "games/weight-balance"
+      ],
+      "arguments": [
+        "content/games/weight-balance/game.json"
+      ]
+    },
+    {
+      "slug": "target-gallery",
+      "name": "Target Gallery",
+      "files": [
+        "games/target-gallery"
+      ],
+      "arguments": [
+        "content/games/target-gallery/game.json"
+      ]
+    }
+  ],
   "native_playables": [
     {
       "slug": "blueengine-sandbox",

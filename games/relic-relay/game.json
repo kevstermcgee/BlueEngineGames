@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "name": "Relic Relay - Fragile Courier Dash",
+  "map": "map.json",
+  "player_profile": {
+    "height": 1.8,
+    "crouched_height": 1.1,
+    "radius": 0.23,
+    "eye_height": 1.68,
+    "walk_speed": 3.2,
+    "sprint_speed": 5.6,
+    "crouch_speed": 1.3,
+    "jump_height": 0.35
+  },
+  "spawn_points": [
+    {
+      "id": "player-1",
+      "feet": [
+        -3.0,
+        0.0,
+        3.0
+      ],
+      "yaw": 0.0
+    }
+  ],
+  "counters": {
+    "relic_held": 0,
+    "recharge_count": 0
+  },
+  "timers": [
+    {
+      "id": "decay_timer",
+      "duration_ticks": 20,
+      "auto_start": false,
+      "repeats": true
+    }
+  ],
+  "interactables": [
+    {
+      "entity": "relic_pedestal",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "recharge_pylon",
+      "enabled": false,
+      "visible": true
+    },
+    {
+      "entity": "extraction_vault",
+      "enabled": false,
+      "visible": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "pickup-relic",
+      "on_interact": "relic_pedestal",
+      "condition": null,
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "relic_held",
+          "amount": 1
+        },
+        {
+          "action": "start_timer",
+          "timer": "decay_timer"
+        },
+        {
+          "action": "set_enabled",
+          "entity": "relic_pedestal",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "recharge_pylon",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "recharge-relic",
+      "on_interact": "recharge_pylon",
+      "condition": {
+        "counter": "relic_held",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "recharge_count",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "recharge_pylon",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "extraction_vault",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "deliver-relic",
+      "on_interact": "extraction_vault",
+      "condition": {
+        "counter": "recharge_count",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "complete"
+        }
+      ]
+    }
+  ]
+}

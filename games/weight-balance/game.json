@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "name": "Weight & Balance - Pressure Equilibrium",
+  "map": "map.json",
+  "player_profile": {
+    "height": 1.8,
+    "crouched_height": 1.1,
+    "radius": 0.23,
+    "eye_height": 1.68,
+    "walk_speed": 3.2,
+    "sprint_speed": 5.6,
+    "crouch_speed": 1.3,
+    "jump_height": 0.35
+  },
+  "spawn_points": [
+    {
+      "id": "player-1",
+      "feet": [
+        -3.0,
+        0.0,
+        3.0
+      ],
+      "yaw": 0.0
+    }
+  ],
+  "counters": {
+    "plates_placed": 0
+  },
+  "interactables": [
+    {
+      "entity": "ballast_pan_left",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "ballast_pan_right",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "counterweight_gate",
+      "enabled": false,
+      "visible": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "place-left-ballast",
+      "on_interact": "ballast_pan_left",
+      "condition": null,
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "plates_placed",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "ballast_pan_left",
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "id": "place-right-ballast",
+      "on_interact": "ballast_pan_right",
+      "condition": {
+        "counter": "plates_placed",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "plates_placed",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "ballast_pan_right",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "counterweight_gate",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "release-hydraulic-gate",
+      "on_interact": "counterweight_gate",
+      "condition": {
+        "counter": "plates_placed",
+        "equals": 2
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "complete"
+        }
+      ]
+    }
+  ]
+}

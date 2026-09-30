@@ -1,0 +1,30 @@
+{
+  "name": "hit all three silhouette targets then claim prize",
+  "game_path": "game.json",
+  "ticks": 3,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "interact": true
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 1,
+      "counter": "hits",
+      "counter_equals": 1,
+      "target": "target_left",
+      "enabled_equals": false,
+      "visible_equals": false,
+      "completed_equals": false
+    }
+  ]
+}

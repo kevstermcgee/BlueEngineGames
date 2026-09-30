@@ -1,0 +1,29 @@
+{
+  "name": "hack console a then b then extract vault",
+  "game_path": "game.json",
+  "ticks": 3,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "interact": true
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 1,
+      "counter": "hacked_a",
+      "counter_equals": 1,
+      "target": "console_a",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ]
+}

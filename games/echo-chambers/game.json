@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "name": "Echo Chambers - Harmonic Sequence",
+  "map": "map.json",
+  "player_profile": {
+    "height": 1.8,
+    "crouched_height": 1.1,
+    "radius": 0.23,
+    "eye_height": 1.68,
+    "walk_speed": 3.2,
+    "sprint_speed": 5.6,
+    "crouch_speed": 1.3,
+    "jump_height": 0.35
+  },
+  "spawn_points": [
+    {
+      "id": "player-1",
+      "feet": [
+        -3.0,
+        0.0,
+        3.0
+      ],
+      "yaw": 0.0
+    }
+  ],
+  "counters": {
+    "seq_step": 0,
+    "unsealed": 0
+  },
+  "interactables": [
+    {
+      "entity": "monolith_n",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "monolith_s",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "monolith_e",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "monolith_w",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "altar_core",
+      "enabled": false,
+      "visible": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "strike-n",
+      "on_interact": "monolith_n",
+      "condition": {
+        "counter": "seq_step",
+        "equals": 0
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "seq_step",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_n",
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "id": "strike-s",
+      "on_interact": "monolith_s",
+      "condition": {
+        "counter": "seq_step",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "seq_step",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_s",
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "id": "strike-e",
+      "on_interact": "monolith_e",
+      "condition": {
+        "counter": "seq_step",
+        "equals": 2
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "seq_step",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_e",
+          "enabled": false
+        }
+      ]
+    },
+    {
+      "id": "strike-w",
+      "on_interact": "monolith_w",
+      "condition": {
+        "counter": "seq_step",
+        "equals": 3
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "seq_step",
+          "amount": 1
+        },
+        {
+          "action": "increment",
+          "counter": "unsealed",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "monolith_w",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "altar_core",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "solve-sanctum",
+      "on_interact": "altar_core",
+      "condition": {
+        "counter": "unsealed",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "complete"
+        }
+      ]
+    }
+  ]
+}

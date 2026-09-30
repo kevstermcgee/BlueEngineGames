@@ -1,0 +1,29 @@
+{
+  "name": "place ballast on left and right pans to open gate",
+  "game_path": "game.json",
+  "ticks": 3,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "interact": true
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 1,
+      "counter": "plates_placed",
+      "counter_equals": 1,
+      "target": "ballast_pan_left",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ]
+}

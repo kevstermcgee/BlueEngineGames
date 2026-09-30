@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "name": "Floor is Lava - Vertical Ascent",
+  "map": "map.json",
+  "player_profile": {
+    "height": 1.8,
+    "crouched_height": 1.1,
+    "radius": 0.23,
+    "eye_height": 1.68,
+    "walk_speed": 3.2,
+    "sprint_speed": 5.6,
+    "crouch_speed": 1.3,
+    "jump_height": 0.35
+  },
+  "spawn_points": [
+    {
+      "id": "player-1",
+      "feet": [
+        -3.0,
+        0.0,
+        3.0
+      ],
+      "yaw": 0.0
+    }
+  ],
+  "counters": {
+    "lava_level": 0,
+    "checkpoints": 0
+  },
+  "timers": [
+    {
+      "id": "lava_timer",
+      "duration_ticks": 30,
+      "auto_start": true,
+      "repeats": true
+    }
+  ],
+  "interactables": [
+    {
+      "entity": "tier1_beacon",
+      "enabled": true,
+      "visible": true
+    },
+    {
+      "entity": "tier2_beacon",
+      "enabled": false,
+      "visible": true
+    },
+    {
+      "entity": "evac_transponder",
+      "enabled": false,
+      "visible": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "lava-pulse",
+      "on_timer": "lava_timer",
+      "condition": null,
+      "once": false,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "lava_level",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "reach-tier1",
+      "on_interact": "tier1_beacon",
+      "condition": null,
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "checkpoints",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "tier1_beacon",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "tier2_beacon",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "reach-tier2",
+      "on_interact": "tier2_beacon",
+      "condition": {
+        "counter": "checkpoints",
+        "equals": 1
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "checkpoints",
+          "amount": 1
+        },
+        {
+          "action": "set_enabled",
+          "entity": "tier2_beacon",
+          "enabled": false
+        },
+        {
+          "action": "set_enabled",
+          "entity": "evac_transponder",
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "id": "reach-evac",
+      "on_interact": "evac_transponder",
+      "condition": {
+        "counter": "checkpoints",
+        "equals": 2
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "complete"
+        }
+      ]
+    }
+  ]
+}

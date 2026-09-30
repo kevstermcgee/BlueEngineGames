@@ -1,0 +1,29 @@
+{
+  "name": "ping sonar beacons then escape maze",
+  "game_path": "game.json",
+  "ticks": 3,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "interact": true
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 1,
+      "counter": "ping_count",
+      "counter_equals": 1,
+      "target": "sonar_beacon_1",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ]
+}

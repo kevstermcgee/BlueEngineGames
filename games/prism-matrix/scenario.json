@@ -1,0 +1,29 @@
+{
+  "name": "align prisms and energize mainframe",
+  "game_path": "game.json",
+  "ticks": 3,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "interact": true
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 1,
+      "counter": "aligned_count",
+      "counter_equals": 1,
+      "target": "prism_station_1",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ]
+}
