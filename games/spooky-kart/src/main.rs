@@ -5,6 +5,7 @@
 //!   --script "fwd:0-400,left:60-120,drift:60-120,perk@200"   drive the human input path from a cue script
 //!   --autopilot   the bots' driving logic steers your kart (for captures and load tests)
 //!   --connect HOST:PORT   join a Spooky Kart server ([--transport development|production] [--name N] [--join-key K] [--auto-ready])
+//!   --debug-input   print the input gate and held state once a second (for "my keys do nothing" reports)
 //!   --select   open on the character select screen even when capturing
 //!   --character NAME   start a race at once as this driver (any part of the name: ghost, frank, ...)
 //!   --seed N   --size WxH   --mute   --perf           reproducible run, window size, silence, frame times
@@ -654,6 +655,8 @@ async fn main() {
     let unattended = life.options.unattended();
     let direct = flag_value(&args, "--character").and_then(character_from);
     let autopilot = has_flag(&args, "--autopilot");
+    let debug_input = has_flag(&args, "--debug-input");
+    let mut last_debug = u32::MAX;
 
     let materials = Materials::load().expect("the materials failed to compile");
     let look = halloween_look();
@@ -804,7 +807,17 @@ async fn main() {
             }
             Screen::Race => {
                 // 1. Devices in: one frame of held state and the perk press (from the script when there is one).
-                let live = shell.playing() && (unattended || platform::focused());
+                let live = controls::accepts_input(shell.paused, unattended || platform::focused());
+                if debug_input && (life.time() as u32) != last_debug {
+                    last_debug = life.time() as u32;
+                    eprintln!(
+                        "[input] paused={} (shell.playing()={} needs a captured mouse: not used) focused={} live={}",
+                        shell.paused,
+                        shell.playing(),
+                        unattended || platform::focused(),
+                        live
+                    );
+                }
                 let (held, perk) = match life.script() {
                     Some(s) => (
                         Held {

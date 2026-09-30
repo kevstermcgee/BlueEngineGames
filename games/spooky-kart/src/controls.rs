@@ -40,3 +40,13 @@ pub fn resolve(raw: &Raw) -> KartInput {
     let steer = if pad_steer.abs() > key_steer.abs() { pad_steer } else { key_steer };
     KartInput { throttle, steer, drift: raw.key_drift || raw.pad_drift, perk: false }
 }
+
+/// Whether the race should read the player's devices this frame.
+///
+/// Not `GameShell::playing()`: that is only true while the *mouse is captured*, which a game with no mouse look
+/// never asks for, so it is permanently false and silently drops every key and button (the menus, which read
+/// keys directly, would still work). A kart game accepts input whenever its pause menu is closed and the window
+/// has focus; `unattended` runs (capture, script) have no window focus to lose.
+pub fn accepts_input(paused: bool, focused: bool) -> bool {
+    !paused && focused
+}

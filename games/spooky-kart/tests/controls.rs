@@ -1,5 +1,5 @@
 //! Keyboard and controller mapping, tested without any device.
-use spooky_kart::controls::{resolve, steer_curve, Raw};
+use spooky_kart::controls::{accepts_input, resolve, steer_curve, Raw};
 
 #[test]
 fn the_right_trigger_is_analog_gas_and_the_left_trigger_brakes_and_reverses() {
@@ -50,4 +50,14 @@ fn either_bumper_or_shift_drifts_and_the_perk_is_left_to_the_caller() {
 #[test]
 fn nothing_pressed_means_no_input() {
     assert_eq!(resolve(&Raw::default()), Default::default());
+}
+
+#[test]
+fn input_is_read_whenever_the_game_is_unpaused_and_focused_and_never_otherwise() {
+    // Regression: the race once gated input on `GameShell::playing()`, which needs a captured mouse. This game
+    // has no mouse look, so it was always false and no key or button worked in the race (the menus did).
+    assert!(accepts_input(false, true), "an unpaused, focused game takes input");
+    assert!(!accepts_input(true, true), "the pause menu takes it instead");
+    assert!(!accepts_input(false, false), "an unfocused window takes none");
+    assert!(!accepts_input(true, false));
 }
