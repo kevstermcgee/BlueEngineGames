@@ -130,6 +130,10 @@ fn a_full_race_with_people_and_bots_finishes_with_good_prediction_and_modest_ban
     for c in &w.clients {
         let stats = c.stats();
         assert!(stats.snapshots > 100);
+        assert!(
+            stats.prediction.corrections > 0,
+            "a race with bumps really is corrected now and then (the statistics survive the return to the lobby)"
+        );
         assert_eq!(stats.prediction.snaps, 0, "no hard snaps on a clean network");
         assert!(stats.prediction.max_error < 3., "prediction error: {}", stats.prediction.max_error);
     }
