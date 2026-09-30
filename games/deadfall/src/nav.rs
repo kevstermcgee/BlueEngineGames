@@ -8,7 +8,9 @@ use vesper3d::viewer::controller::Collider;
 use vesper3d::viewer::devkit::Rng;
 
 pub const CELL: f32 = 0.5;
+/// What a player climbs from one cell to the next: a few stair treads fit in a cell, and a jump clears 0.55 m.
 const STEP: f32 = 0.22;
+const EDGE_STEP: f32 = 0.5;
 const DROP: f32 = 1.5;
 const CLEARANCE_RADIUS: f32 = 0.32;
 
@@ -74,12 +76,12 @@ impl Nav {
                 for y in floors {
                     // Standable: nothing occupies the body there (with some margin) and it is not a tall wall top.
                     let p = V(x, y, z);
-                    let blocked = here.iter().any(|&b| colliders[b as usize].overlaps_body(p, y + 0.0005, 1.8, CLEARANCE_RADIUS));
+                    let blocked = here.iter().any(|&b| colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS));
                     // Neighbouring buckets matter at bucket edges: test the four around too.
                     let blocked = blocked
                         || [(CLEARANCE_RADIUS, 0.), (-CLEARANCE_RADIUS, 0.), (0., CLEARANCE_RADIUS), (0., -CLEARANCE_RADIUS)]
                             .iter()
-                            .any(|(dx, dz)| near(x + dx, z + dz).iter().any(|&b| colliders[b as usize].overlaps_body(p, y + 0.0005, 1.8, CLEARANCE_RADIUS)));
+                            .any(|(dx, dz)| near(x + dx, z + dz).iter().any(|&b| colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS)));
                     if !blocked && y < 12. {
                         nodes.push(Node { ix, iz, y });
                     }
@@ -153,12 +155,12 @@ impl Nav {
             let diagonal = dx != 0 && dz != 0;
             for (k, m) in self.column(cx, cz).iter().enumerate() {
                 let dy = m.y - node.y;
-                if dy > STEP || dy < -DROP {
+                if dy > EDGE_STEP || dy < -DROP {
                     continue;
                 }
                 if diagonal {
                     // Do not cut a corner: both cells beside the move must be walkable at about this height.
-                    let side = |sx: i32, sz: i32| self.column(sx, sz).iter().any(|s| (s.y - node.y).abs() <= STEP.max(0.0) + 0.001 || (s.y < node.y && node.y - s.y <= DROP));
+                    let side = |sx: i32, sz: i32| self.column(sx, sz).iter().any(|s| (s.y - node.y).abs() <= EDGE_STEP || (s.y < node.y && node.y - s.y <= DROP));
                     if !side(node.ix + dx, node.iz) || !side(node.ix, node.iz + dz) {
                         continue;
                     }
