@@ -1,6 +1,6 @@
 {
   "collections": {
-    "demos": 74,
+    "demos": 75,
     "games": 105,
     "prototypes": 10,
     "tests": 64
@@ -53,6 +53,10 @@
     {
       "path": "demos/examples/pyramid.obj",
       "sha256": "69170ba0984610f2aacf83ffd9308278cd4d44004cb5540f5c5c9efa65e2c406"
+    },
+    {
+      "path": "demos/examples/runtime_perf.rs",
+      "sha256": "3aa16ec99df510ec9bafc372255aca7514d5534a300c183fe732a5d5ab370a39"
     },
     {
       "path": "demos/examples/server_load.rs",
@@ -1057,6 +1061,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "bba11ce23548fb89164fe6e3e06c4af1cd68c290",
+  "source_revision": "49db8397ec6fe7b502e084daf13d863019ac2d25",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
