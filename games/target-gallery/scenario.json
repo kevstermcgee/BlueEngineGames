@@ -1,7 +1,7 @@
 {
-  "name": "hit all three silhouette targets then claim prize",
+  "name": "hit the left, centre and right targets, then claim the prize",
   "game_path": "game.json",
-  "ticks": 3,
+  "ticks": 153,
   "players": [
     {
       "id": 1
@@ -11,20 +11,88 @@
     {
       "tick": 1,
       "player": 1,
+      "interact": true,
       "yaw": 0.0,
-      "pitch": 0.0,
-      "interact": true
+      "pitch": 0.0
+    },
+    {
+      "tick": 3,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 41,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 51,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 53,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 91,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 101,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 103,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 141,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 151,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
     }
   ],
   "assertions": [
     {
-      "tick": 1,
+      "tick": 2,
       "counter": "hits",
       "counter_equals": 1,
       "target": "target_left",
       "enabled_equals": false,
-      "visible_equals": false,
-      "completed_equals": false
+      "visible_equals": false
+    },
+    {
+      "tick": 153,
+      "counter": "hits",
+      "counter_equals": 3,
+      "completed_equals": true
     }
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "name": "pressing a target repeatedly counts once (it is disabled and hidden after the first hit)",
+  "game_path": "game.json",
+  "ticks": 10,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 3,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 5,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 10,
+      "counter": "hits",
+      "counter_equals": 1,
+      "target": "target_left",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ]
+}

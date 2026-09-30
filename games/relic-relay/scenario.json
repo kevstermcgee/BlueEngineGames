@@ -1,7 +1,7 @@
 {
-  "name": "pickup relic then recharge then deliver",
+  "name": "pick up the relic, stabilize it at the pylon in time, deliver it",
   "game_path": "game.json",
-  "ticks": 3,
+  "ticks": 103,
   "players": [
     {
       "id": 1
@@ -11,19 +11,71 @@
     {
       "tick": 1,
       "player": 1,
+      "interact": true,
       "yaw": 0.0,
-      "pitch": 0.0,
-      "interact": true
+      "pitch": 0.0
+    },
+    {
+      "tick": 3,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 41,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 51,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 53,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 91,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 101,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
     }
   ],
   "assertions": [
     {
-      "tick": 1,
+      "tick": 2,
       "counter": "relic_held",
       "counter_equals": 1,
-      "target": "relic_pedestal",
-      "enabled_equals": false,
-      "completed_equals": false
+      "target": "recharge_pylon",
+      "enabled_equals": true
+    },
+    {
+      "tick": 52,
+      "counter": "recharge_count",
+      "counter_equals": 1,
+      "failed_equals": false
+    },
+    {
+      "tick": 103,
+      "completed_equals": true,
+      "failed_equals": false
     }
   ]
 }

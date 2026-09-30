@@ -1,0 +1,86 @@
+{
+  "name": "do nothing until tick 300: the match is lost, and later presses change nothing",
+  "ticks": 420,
+  "inputs": [
+    {
+      "tick": 320,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 321,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 359,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 369,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 370,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 408,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 418,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 299,
+      "counter": "countdown",
+      "counter_equals": 1,
+      "completed_equals": false,
+      "failed_equals": false
+    },
+    {
+      "tick": 300,
+      "counter": "countdown",
+      "counter_equals": 0,
+      "completed_equals": false,
+      "failed_equals": true
+    },
+    {
+      "tick": 420,
+      "counter": "defused_steps",
+      "counter_equals": 0,
+      "target": "station_alpha",
+      "enabled_equals": true,
+      "completed_equals": false,
+      "failed_equals": true
+    }
+  ],
+  "game_path": "game.json",
+  "players": [
+    {
+      "id": 1
+    }
+  ]
+}

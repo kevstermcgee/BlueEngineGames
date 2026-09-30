@@ -1,7 +1,7 @@
 {
-  "name": "detour around the tripwire: hack a, hack b, loot the vault, no alarms",
+  "name": "walk straight through the tripwire once: one alarm, still winnable",
   "game_path": "game.json",
-  "ticks": 199,
+  "ticks": 103,
   "players": [
     {
       "id": 1
@@ -18,68 +18,40 @@
     {
       "tick": 3,
       "player": 1,
-      "forward": -1.0,
+      "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
       "tick": 41,
       "player": 1,
-      "forward": 0.0,
+      "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
       "tick": 51,
       "player": 1,
-      "right": 1.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 89,
-      "player": 1,
-      "right": 0.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 99,
-      "player": 1,
-      "forward": 1.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 137,
-      "player": 1,
-      "forward": 0.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 147,
-      "player": 1,
       "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 149,
+      "tick": 53,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 187,
+      "tick": 91,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 197,
+      "tick": 101,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -88,21 +60,14 @@
   ],
   "assertions": [
     {
-      "tick": 1,
-      "counter": "hacked_a",
-      "counter_equals": 1
-    },
-    {
-      "tick": 148,
-      "counter": "hacked_b",
-      "counter_equals": 1,
-      "target": "vault_safe",
-      "enabled_equals": true
-    },
-    {
-      "tick": 199,
+      "tick": 2,
       "counter": "alarms",
-      "counter_equals": 0,
+      "counter_equals": 0
+    },
+    {
+      "tick": 103,
+      "counter": "alarms",
+      "counter_equals": 1,
       "completed_equals": true,
       "failed_equals": false
     }

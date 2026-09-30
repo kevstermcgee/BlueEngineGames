@@ -1,7 +1,7 @@
 {
-  "name": "ping both sonar beacons, then take the exit",
+  "name": "KNOWN GAP: pinging beacon 2 first arms the exit early; with one ping the exit does nothing",
   "game_path": "game.json",
-  "ticks": 103,
+  "ticks": 104,
   "players": [
     {
       "id": 1
@@ -11,47 +11,40 @@
     {
       "tick": 1,
       "player": 1,
-      "interact": true,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 3,
-      "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 41,
+      "tick": 39,
       "player": 1,
       "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 49,
+      "player": 1,
+      "interact": true,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
       "tick": 51,
       "player": 1,
-      "interact": true,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 53,
-      "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 91,
+      "tick": 89,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 101,
+      "tick": 99,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -60,10 +53,17 @@
   ],
   "assertions": [
     {
-      "tick": 103,
+      "tick": 50,
       "counter": "ping_count",
-      "counter_equals": 2,
-      "completed_equals": true
+      "counter_equals": 1,
+      "target": "maze_exit_portal",
+      "enabled_equals": true
+    },
+    {
+      "tick": 104,
+      "counter": "ping_count",
+      "counter_equals": 1,
+      "completed_equals": false
     }
   ]
 }

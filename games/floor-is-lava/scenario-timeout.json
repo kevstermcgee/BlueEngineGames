@@ -1,0 +1,86 @@
+{
+  "name": "do nothing until tick 180: the match is lost, and later presses change nothing",
+  "ticks": 300,
+  "inputs": [
+    {
+      "tick": 200,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 201,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 239,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 249,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 250,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 288,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 298,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 179,
+      "counter": "lava_level",
+      "counter_equals": 5,
+      "completed_equals": false,
+      "failed_equals": false
+    },
+    {
+      "tick": 180,
+      "counter": "lava_level",
+      "counter_equals": 6,
+      "completed_equals": false,
+      "failed_equals": true
+    },
+    {
+      "tick": 300,
+      "counter": "checkpoints",
+      "counter_equals": 0,
+      "target": "tier1_beacon",
+      "enabled_equals": true,
+      "completed_equals": false,
+      "failed_equals": true
+    }
+  ],
+  "game_path": "game.json",
+  "players": [
+    {
+      "id": 1
+    }
+  ]
+}

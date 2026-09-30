@@ -1,7 +1,7 @@
 {
-  "name": "ping both sonar beacons, then take the exit",
+  "name": "console b before console a does nothing (and the detour keeps the alarm at 0)",
   "game_path": "game.json",
-  "ticks": 103,
+  "ticks": 152,
   "players": [
     {
       "id": 1
@@ -11,47 +11,47 @@
     {
       "tick": 1,
       "player": 1,
-      "interact": true,
+      "forward": -1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 3,
+      "tick": 39,
+      "player": 1,
+      "forward": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 49,
       "player": 1,
       "right": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 41,
+      "tick": 87,
       "player": 1,
       "right": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 51,
+      "tick": 97,
       "player": 1,
-      "interact": true,
+      "forward": 1.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 53,
+      "tick": 135,
       "player": 1,
-      "right": 1.0,
+      "forward": 0.0,
       "yaw": 0.0,
       "pitch": 0.0
     },
     {
-      "tick": 91,
-      "player": 1,
-      "right": 0.0,
-      "yaw": 0.0,
-      "pitch": 0.0
-    },
-    {
-      "tick": 101,
+      "tick": 145,
       "player": 1,
       "interact": true,
       "yaw": 0.0,
@@ -60,10 +60,12 @@
   ],
   "assertions": [
     {
-      "tick": 103,
-      "counter": "ping_count",
-      "counter_equals": 2,
-      "completed_equals": true
+      "tick": 152,
+      "counter": "alarms",
+      "counter_equals": 0,
+      "target": "console_b",
+      "enabled_equals": true,
+      "completed_equals": false
     }
   ]
 }

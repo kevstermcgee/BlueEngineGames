@@ -119,13 +119,45 @@
       "id": "hack-override",
       "on_interact": "turret_override",
       "condition": {
-        "counter": "bunker_progress",
-        "equals": 2
+        "all": [
+          {
+            "counter": "bunker_progress",
+            "equals": 2
+          },
+          {
+            "counter": "cycle_phase",
+            "modulo": 2,
+            "equals": 1
+          }
+        ]
       },
       "once": true,
       "actions": [
         {
           "action": "complete"
+        }
+      ]
+    },
+    {
+      "id": "spotted",
+      "on_interact": "turret_override",
+      "condition": {
+        "all": [
+          {
+            "counter": "bunker_progress",
+            "equals": 2
+          },
+          {
+            "counter": "cycle_phase",
+            "modulo": 2,
+            "equals": 0
+          }
+        ]
+      },
+      "once": true,
+      "actions": [
+        {
+          "action": "fail"
         }
       ]
     }

@@ -25,7 +25,8 @@
   ],
   "counters": {
     "relic_held": 0,
-    "recharge_count": 0
+    "recharge_count": 0,
+    "relic_charge": 3
   },
   "timers": [
     {
@@ -53,6 +54,56 @@
     }
   ],
   "rules": [
+    {
+      "id": "relic-decay",
+      "on_timer": "decay_timer",
+      "condition": {
+        "all": [
+          {
+            "counter": "relic_held",
+            "equals": 1
+          },
+          {
+            "counter": "recharge_count",
+            "equals": 0
+          }
+        ]
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "increment",
+          "counter": "relic_charge",
+          "amount": -1
+        }
+      ]
+    },
+    {
+      "id": "relic-shatters",
+      "on_timer": "decay_timer",
+      "condition": {
+        "all": [
+          {
+            "counter": "relic_held",
+            "equals": 1
+          },
+          {
+            "counter": "recharge_count",
+            "equals": 0
+          },
+          {
+            "counter": "relic_charge",
+            "at_most": 0
+          }
+        ]
+      },
+      "once": false,
+      "actions": [
+        {
+          "action": "fail"
+        }
+      ]
+    },
     {
       "id": "pickup-relic",
       "on_interact": "relic_pedestal",

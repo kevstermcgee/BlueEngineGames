@@ -1,0 +1,50 @@
+{
+  "name": "tier2_beacon ignored while disabled; nothing progresses",
+  "ticks": 70,
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 39,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 60,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 62,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 70,
+      "counter": "checkpoints",
+      "counter_equals": 0,
+      "target": "tier2_beacon",
+      "enabled_equals": false,
+      "completed_equals": false
+    }
+  ],
+  "game_path": "game.json",
+  "players": [
+    {
+      "id": 1
+    }
+  ]
+}

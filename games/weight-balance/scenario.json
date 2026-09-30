@@ -1,7 +1,7 @@
 {
-  "name": "place ballast on left and right pans to open gate",
+  "name": "place ballast on the left pan, then the right pan, then release the gate",
   "game_path": "game.json",
-  "ticks": 3,
+  "ticks": 103,
   "players": [
     {
       "id": 1
@@ -11,19 +11,64 @@
     {
       "tick": 1,
       "player": 1,
+      "interact": true,
       "yaw": 0.0,
-      "pitch": 0.0,
-      "interact": true
+      "pitch": 0.0
+    },
+    {
+      "tick": 3,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 41,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 51,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 53,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 91,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 101,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
     }
   ],
   "assertions": [
     {
-      "tick": 1,
+      "tick": 52,
       "counter": "plates_placed",
-      "counter_equals": 1,
-      "target": "ballast_pan_left",
-      "enabled_equals": false,
-      "completed_equals": false
+      "counter_equals": 2,
+      "target": "counterweight_gate",
+      "enabled_equals": true
+    },
+    {
+      "tick": 103,
+      "completed_equals": true
     }
   ]
 }

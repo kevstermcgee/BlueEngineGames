@@ -1,0 +1,42 @@
+{
+  "name": "the pylon does nothing before the relic is picked up",
+  "game_path": "game.json",
+  "ticks": 54,
+  "players": [
+    {
+      "id": 1
+    }
+  ],
+  "inputs": [
+    {
+      "tick": 1,
+      "player": 1,
+      "right": 1.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 39,
+      "player": 1,
+      "right": 0.0,
+      "yaw": 0.0,
+      "pitch": 0.0
+    },
+    {
+      "tick": 49,
+      "player": 1,
+      "interact": true,
+      "yaw": 0.0,
+      "pitch": 0.0
+    }
+  ],
+  "assertions": [
+    {
+      "tick": 54,
+      "counter": "recharge_count",
+      "counter_equals": 0,
+      "target": "recharge_pylon",
+      "enabled_equals": false
+    }
+  ]
+}
