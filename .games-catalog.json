@@ -1,6 +1,6 @@
 {
   "collections": {
-    "demos": 75,
+    "demos": 76,
     "games": 105,
     "prototypes": 10,
     "tests": 64
@@ -41,6 +41,10 @@
     {
       "path": "demos/examples/minimal_game.rs",
       "sha256": "b694000fee0cb0fcf0b700760c03c1026aeb3b8b2bc5cb860f77d7426ec7e1b6"
+    },
+    {
+      "path": "demos/examples/net_broadcast_bench.rs",
+      "sha256": "81208125515e4c90a75a4d38f8056ca226526271e483cb58135d19a29f803bbb"
     },
     {
       "path": "demos/examples/network_smoke.rs",
@@ -1075,6 +1079,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "bd67818949e3ea0d2553e513604fb467ac45ce38",
+  "source_revision": "49978b9e6db1285c6a3dac11d6b9f5166415508c",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
