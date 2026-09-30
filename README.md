@@ -31,6 +31,7 @@ a **BlueEngine Launcher** shortcut to your Windows desktop.
 
 ## Game downloads and experiments
 
+- [`Physics Lab`](games/physics-lab) — interactive fire, water cooling, buoyancy, mirrors, six materials and changing lighting.
 - [`Spooky Kart`](games/spooky-kart) — Halloween kart racer for up to eight: eight drivers with their own karts and perks, one haunted map, offline against bots or online on a dedicated server.
 - [`Pulse Nova`](games/pulse-nova) — high-velocity kinetic arena shooter with chain explosions, jump pads, and wave surges.
 - [`Skyhook Sprint`](games/skyhook-sprint) — matched aerial-momentum course.

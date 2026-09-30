@@ -1,6 +1,8 @@
 {
   "version": 1,
-  "game_roots": ["games"],
+  "game_roots": [
+    "games"
+  ],
   "data_playables": [],
   "native_playables": [
     {
@@ -57,6 +59,13 @@
       "directory": "games/spooky-kart",
       "kind": "cargo-package",
       "binary": "spooky-kart"
+    },
+    {
+      "slug": "physics-lab",
+      "name": "Physics Lab",
+      "directory": "games/physics-lab",
+      "kind": "cargo-package",
+      "binary": "physics-lab"
     }
   ]
 }

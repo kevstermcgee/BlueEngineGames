@@ -1,0 +1,14 @@
+{
+  "title": "Physics Lab",
+  "tagline": "An interactive laboratory for fire, water, materials and light.",
+  "controls": "WASD move, mouse look, Space jump, E launch, M material, 1 water, 2 fire, L lighting, G gravity, B wind, R reset, F5/F9 save/load, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100"
+  ],
+  "engine_revision": "17d90e9"
+}

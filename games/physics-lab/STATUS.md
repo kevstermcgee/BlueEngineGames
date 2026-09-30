@@ -1,0 +1,1 @@
+Physics Lab is complete and validated on Linux. Development feedback, engine improvements, model limits and verification are documented in DEVELOPMENT.md. Windows packaging is configured in the repository release workflow.
