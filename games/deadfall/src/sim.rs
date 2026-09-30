@@ -775,7 +775,6 @@ impl Match {
                 self.drop_gun(gun, feet);
             }
         }
-        let suicide = killer.is_none() || killer == Some(victim);
         if let Some(k) = killer {
             if k != victim {
                 let team = self.players[k].team.index();
@@ -785,11 +784,6 @@ impl Match {
                 }
                 self.scores[team] += 1;
             }
-        }
-        if suicide {
-            // A fall, a self-made explosion or leaving the map costs the other team nothing but the victim a death.
-            let other = self.players[victim].team.other().index();
-            let _ = other;
         }
         self.events.push(Event::Kill {
             killer: killer.map_or(255, |k| k as u8),
