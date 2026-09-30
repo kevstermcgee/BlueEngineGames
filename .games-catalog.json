@@ -1061,10 +1061,20 @@
     "games/physics-lab",
     "games/clockwork-pinball",
     "games/wobble-tower",
-    "games/tumble-maze"
+    "games/tumble-maze",
+    "games/laser-vault",
+    "games/floor-is-lava",
+    "games/echo-chambers",
+    "games/relic-relay",
+    "games/prism-matrix",
+    "games/phantom-maze",
+    "games/bomb-defusal",
+    "games/turret-trench",
+    "games/weight-balance",
+    "games/target-gallery"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "4ff0b5e6d3db0f16ea6bc4dc984d57778d26ccbe",
+  "source_revision": "bd67818949e3ea0d2553e513604fb467ac45ce38",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
