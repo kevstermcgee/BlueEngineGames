@@ -166,6 +166,24 @@ impl Level {
         best
     }
 
+    /// Like [`Level::raycast`], plus the outward normal of the face that was hit.
+    pub fn raycast_normal(&self, origin: V, dir: V, max: f32) -> Option<(f32, usize, V)> {
+        let (t, i) = self.raycast(origin, dir, max)?;
+        let b = &self.blocks[i];
+        let p = origin + dir * t;
+        // The face the hit point lies on (the one it is closest to).
+        let faces = [
+            ((p.0 - b.min.0).abs(), V(-1., 0., 0.)),
+            ((p.0 - b.max.0).abs(), V(1., 0., 0.)),
+            ((p.1 - b.min.1).abs(), V(0., -1., 0.)),
+            ((p.1 - b.max.1).abs(), V(0., 1., 0.)),
+            ((p.2 - b.min.2).abs(), V(0., 0., -1.)),
+            ((p.2 - b.max.2).abs(), V(0., 0., 1.)),
+        ];
+        let n = faces.iter().fold((f32::MAX, V(0., 1., 0.)), |best, f| if f.0 < best.0 { *f } else { best }).1;
+        Some((t, i, n))
+    }
+
     /// Whether the straight segment between two points is clear of every block.
     pub fn line_of_sight(&self, a: V, b: V) -> bool {
         let d = b - a;

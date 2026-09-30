@@ -277,7 +277,7 @@ impl Hands {
         if id == 0 {
             return;
         }
-        if sel == self.sel && sel != Sel::Grenade {
+        if sel == self.sel {
             return;
         }
         self.sel = sel;
@@ -429,7 +429,7 @@ impl Hands {
         }
     }
 
-    fn grenade_tick(&mut self, inv: &mut Inventory, def: &WeaponDef, fire: bool, alt: bool, out: &mut Vec<Out>) {
+    fn grenade_tick(&mut self, inv: &mut Inventory, _def: &WeaponDef, fire: bool, alt: bool, out: &mut Vec<Out>) {
         if self.busy == Busy::Idle {
             if fire && !self.pin {
                 self.pin = true;
@@ -470,6 +470,11 @@ impl Hands {
             self.left = 0;
         }
         if reload_req && self.busy == Busy::Idle && gun.mag < def.mag && gun.reserve > 0 && self.burst_left == 0 {
+            self.begin_reload(def, gun.id, out);
+            return;
+        }
+        // An empty magazine refills by itself as soon as the hands are free.
+        if gun.mag == 0 && gun.reserve > 0 && self.busy == Busy::Idle && self.burst_left == 0 && self.cooldown <= 0. {
             self.begin_reload(def, gun.id, out);
             return;
         }

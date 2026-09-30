@@ -10,7 +10,8 @@ use crate::weapons::{self, Class, Effect, Slot, WeaponDef, WeaponId};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex, OnceLock};
 use vesper3d::math::V;
-use vesper3d::viewer::controller::{Collider, Controller, ControllerProfile};
+use vesper3d::viewer::controller::{Collider, Controller};
+use vesper3d::viewer::profile::ControllerProfile;
 use vesper3d::viewer::devkit::Rng;
 
 pub const TICK_HZ: u64 = 60;
@@ -629,7 +630,7 @@ impl Match {
         let back = self.rewind_for(input);
         let mut events_to: Option<(V, u8, u8)> = None;
         let mut per_victim: Vec<(usize, f32, bool)> = Vec::new();
-        for pellet in 0..pellets.max(1) {
+        for _ in 0..pellets.max(1) {
             // The aim is the view plus the spray's kick, then a random offset inside the spread cone.
             let (mut yaw, mut pitch) = (input.yaw + punch.1, input.pitch + punch.0);
             if spread > 0. {
@@ -1201,6 +1202,15 @@ impl Match {
             }
             None => self.events.push(Event::Strike { attacker: slot as u8, weapon, heavy, hit: false }),
         }
+    }
+
+    /// Put a player somewhere (scenarios, tests and tools).
+    pub fn teleport(&mut self, slot: usize, feet: V, yaw: f32, pitch: f32) {
+        let p = &mut self.players[slot];
+        p.ctrl = new_body(feet, yaw);
+        p.ctrl.pitch = pitch;
+        p.last_input.yaw = yaw;
+        p.last_input.pitch = pitch;
     }
 
     /// Whether `from` could see `to` right now (walls and smoke block it).
