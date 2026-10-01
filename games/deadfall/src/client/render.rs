@@ -266,6 +266,10 @@ impl Renderer {
         for m in &self.decor_meshes {
             draw_mesh(m);
         }
+        // Glass panes are opaque (the engine's blended material has no depth test), drawn with the world.
+        for m in &self.glass_meshes {
+            draw_mesh(m);
+        }
         // Dynamic geometry.
         self.world.clear();
         self.alpha.clear();
@@ -352,10 +356,6 @@ impl Renderer {
         gl_use_material(&self.materials.world);
         self.world.draw();
         // Translucent: glass, smoke, then additive light.
-        gl_use_material(&self.materials.fx_alpha);
-        for m in &self.glass_meshes {
-            draw_mesh(m);
-        }
         let right = view.right();
         let up = view.up();
         for z in zones {

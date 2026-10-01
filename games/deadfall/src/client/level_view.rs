@@ -544,7 +544,7 @@ fn container(t: &mut Template, mn: Vec3, mx: Vec3, base: Rgb, k: f32) {
 
 fn glass_pane(acc: &mut Acc, glass: &mut Template, mn: Vec3, mx: Vec3) {
     let size = mx - mn;
-    glass.box_((mn + mx) * 0.5, size * 0.5, [0.46, 0.62, 0.72], 0.25);
+    glass.box_((mn + mx) * 0.5, size * 0.5, [0.30, 0.42, 0.50], 0.1);
     // Frame: rails along the long side and mullions every 2.5 m.
     let frame = [0.22, 0.24, 0.25];
     let t = acc.t();
