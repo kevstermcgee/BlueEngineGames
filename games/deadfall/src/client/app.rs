@@ -946,6 +946,12 @@ impl App {
         for e in &events {
             if let Event::Roster(entries) = e {
                 s.client.view_mut().roster = entries.clone();
+                // The server may have moved us to the other team to keep them at six a side.
+                if let Some(me) = s.client.participant() {
+                    if let Some(r) = entries.iter().find(|r| r.slot as usize == me) {
+                        s.my_team = r.team as usize;
+                    }
+                }
             }
         }
         let view = s.client.view();

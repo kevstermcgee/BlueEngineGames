@@ -1,60 +1,31 @@
-# Deadfall - AI Agent Guide
+# Deadfall: guide for the next person (or agent) to touch it
 
-A game with its own simulation on BlueEngine (path dependency `vesper3d`, see Cargo.toml). Read this
-file and `src/lib.rs`. Missing engine capability is engine work, not permission to invent an API: in the
-engine checkout run `python tools/be2.py context "<need>"`, and read docs/CUSTOM_CLIENT.md (the kit and
-the loop) and docs/SHARED_GAMEPLAY.md ("Custom loops").
+Deadfall is a six-versus-six team deathmatch shooter on BlueEngine, built with the engine's `netplay` kit. Read
+`DESIGN.md` (the brief and the weapon roster) and `README.md` (how it plays) first.
 
-## Architecture (do not break)
-- `src/lib.rs` is the game: pure, seeded (`devkit::Rng`), fixed 60 Hz `Sim::step(&Input)`. No window,
-  sound device or wall clock. It reaches the window only through `Event`s (`drain_events`).
-- `src/main.rs` is the window: `ClientInput` + `GameShell` for devices, `devkit::Lifecycle` for the run
-  flags, one `Input` per fixed tick, quick save/load and capture/perf evidence, `kit` renderer/HUD/sound.
-  Frame length is `input.frame_seconds()` through `life.begin_frame`, never macroquad's `get_frame_time()`
-  (bumpy under vsync). Add a device or cue: extend `Held`, the vocabulary passed to `Lifecycle::start`
-  and the two arms of the "devices in" match; nothing else in the loop changes.
-- `Controller` has an implicit floor at y = 0 unless `set_floor(None)` (this starter uses none: the
-  platform's collider is the only ground). Knockback is `apply_impulse`. Cannot see or hear the game?
-  Use `--capture`, `--script`, `--perf` below, and numbers.
+## Layout
+* `src/lib.rs`: the game as a plain library, no window. `weapons` (the 33-weapon armoury), `hands` (the per-player weapon state
+  machine: fire, reload, ADS, grenades, melee; shared by the server and the predicting client), `sim` (the authoritative
+  match), `bots` + `nav` (computer players on a 3D walkable graph), `netgame` (wire layouts, the `NetGame` impl, the client
+  view with prediction and the killcam history), `slagworks` (the map as boxes, spawns, loot, decor), `stats` and `prefs`.
+* `src/client/`: the window (feature `client`): `app` (screens and the frame loop), `render`, `level_view`, `character`, `arms`,
+  `weapon_models`, `overlay` (HUD), `ui` (menus), `controls`, `sound` + `audio` (all sound is synthesised).
+* Binaries: `deadfall` (the game), `deadfall-server` (headless dedicated server), `preview*` and `audio_dump` (look at one thing).
 
-## Look, scale, iteration
-- Mouse look has one convention (`devkit::look`): hand right turns right, hand up looks up. Feed
-  `MouseLook::look(px_right, px_down)` from `game_input::mouse_pixels()` into `FpsCamera` (or the same
-  `[right, down]` delta into `Controller::look(dx, dy, 1.0, false)`). Never read `mouse_delta_position()`
-  yourself (previous-minus-current: both signs flipped); never hand-write a yaw/pitch formula.
-- Gamepad: `input.look_delta_with(&shell, dt)` already adds mouse and right stick in that convention;
-  menus use `input.menu_step()` / `menu_select()` / `menu_back()` (flick + repeat built in). Quit with
-  `game_client::request_exit()` and break on `exit_requested()`; never `process::exit`.
-- Unit = metre. Check generated geometry without a window: `Bounds::of(points)?.expect_longest("shell",
-  0.05..=0.30)` fails with the scale to apply; `kit::gizmo::human_scale`/`bbox` show it in a frame.
-- Rebuild with `scripts/blue dev` (closes a still-open copy first: a running .exe cannot be relinked on
-  Windows) and use `scripts/blue dev -- --capture out --frames 30`; a release build is for `ship`.
+## Rules of the house
+* Server authority: clients send intentions (`input::Input`); the server decides hits with lag compensation (`Input::seen_tick`).
+  A client predicts its own body and hands by running the same `sim::step_body` and `Hands::tick`.
+* A press that must not be lost is a **counter** in `Input`, never an edge bit.
+* Changing a weapon number, the map, or any wire layout changes `netgame::fingerprint()`, so old clients are refused. Weapon wire
+  ids are positions in `weapons::WEAPONS`: append, never reorder.
+* No blood, no music, no voices. Ambience stems and one-shots live in `client/audio.rs`.
+* Gameplay keys are read straight from macroquad in `controls.rs`: the engine's `ClientInput` tracks only a fixed list of keys on Windows.
 
-## Save states
-- F5 / F9 save and load the `quick` slot (`devkit::snapshot`, wired by `devkit::Lifecycle` in `main.rs`):
-  `impl Snapshot for Sim` in `src/lib.rs` lists everything that decides the future. **Every new field of
-  `Sim` goes into `SimState`**, or a save loses it; `a_save_from_any_tick_resumes_as_the_game_promises...`
-  fails at the first tick that reads what was forgotten, and the error names the `hash_parts` piece.
-  Changing `SimState` after release: bump `VERSION` and add a `Migration` so old saves still load.
-- `Sim::POLICY` is the save promise, in one place: `SavePolicy::Exact` (this starter) or
-  `SavePolicy::PhysicsContinuation` for a `Sim` that embeds a rigid-body world (`HeadlessWorld`), whose
-  resumed run is a pure function of the file but not bit-identical (docs/SAVE_STATE.md). The test proves
-  whichever is declared; never weaken the policy to make a test pass for a non-physics field.
-- Loads are all-or-nothing and saves are atomic with a backup; never write your own save file code.
+## Looking at it without a screen
+`xvfb-run` plus `deadfall --solo --capture DIR --frames 200,600 --mute` saves screenshots; `--script "ads:100-300,fire:150-200,slot1@10,accept@400"`
+plays the local player; `DEADFALL_AUTOPILOT=1` lets a bot drive you; `DEADFALL_GIVE=awm,frag` starts you with those weapons;
+`DEADFALL_DATA=DIR` redirects stats and preferences.
 
-## Checks
-- `cargo test` (rules + determinism, headless). Add a test for every rule you add.
-- Iterate with `python scripts/check.py --skip-ship`; `--content-only` needs no Cargo.
-- Look at it: `target/debug/deadfall --capture out --frames 30,120 --seed 3`, then
-  `python <engine>/tools/contact_sheet.py sheet.png --dir out` (one image instead of many).
-  `--script "fwd:0-200,jump@60"` drives the human input path; `--perf` prints frame-time percentiles.
-
-## Definition of done (every game made with BlueEngine)
-1. `python scripts/check.py` passes. It ends with the ship gate, so it fails until step 2 is done.
-2. The game ships as a package with its own icon and desktop shortcut: fill in `assets/identity.json`
-   (real title, tagline, controls), regenerate the icon if the title changed
-   (`be2-tools icon TITLE assets --replace`, add a number for another design), then run
-   `scripts/blue ship`. It builds a release
-   package in `dist/`, creates the shortcut named after the game, and verifies target, icon
-   uniqueness among the desktop's shortcuts, window title and icon. Never point a shortcut at `target/`.
-3. You looked at real frames of the shipped exe and exercised the controls; say what you did not verify.
+## Tests
+`cargo test` runs the armoury checks, combat rules, 12-bot soaks, an online match on a lossy simulated network and a 20-second
+match over real UDP sockets. They need no window.
