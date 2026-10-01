@@ -961,21 +961,6 @@ pub(crate) fn glove(p: &Palette, left: bool, open: f32) -> Template {
     t
 }
 
-/// A sleeve: a tapered tube hanging from its origin (the elbow end) along -Y for `len`; its far end is the
-/// wrist, radius `r_end`, growing to `r_start` at the origin. The glove's gauntlet covers the wrist end.
-pub(crate) fn sleeve(p: &Palette, len: f32, r_end: f32, r_start: f32) -> Template {
-    let mut t = Template::new();
-    t.cone(vec3(0., -len + 0.05, 0.), r_end, r_start, len - 0.05, p.uniform, 0., 10);
-    t.cone(vec3(0., -len - 0.02, 0.), r_end + 0.003, r_end + 0.006, 0.075, p.glove, 0., 10);
-    t.cone(vec3(0., -len + 0.045, 0.), r_end + 0.007, r_end + 0.007, 0.012, p.glove_dark, 0., 10);
-    t
-}
-
-/// Placement of a [`sleeve`] whose far end is at `wrist` and which runs back along `dir` (unit, away from the wrist).
-pub(crate) fn sleeve_mat(wrist: Vec3, dir: Vec3, len: f32) -> Mat4 {
-    limb(wrist + dir * len, wrist)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
