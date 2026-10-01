@@ -1,0 +1,56 @@
+name: Deploy download site
+
+on:
+  workflow_run:
+    workflows: ["Build Windows releases"]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    # On workflow_run, only deploy after a successful release build.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history: build.py derives each game's "added" date from git.
+          fetch-depth: 0
+
+      - name: Fetch latest release metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -fsSL -o catalog.tsv \
+            https://github.com/${{ github.repository }}/releases/latest/download/BlueEngineLauncher-catalog.tsv
+          gh api repos/${{ github.repository }}/releases/latest > release.json
+
+      - name: Build site
+        run: python3 site/build.py --catalog catalog.tsv --release-json release.json --games-dir games --thumbs site/thumbs --out _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

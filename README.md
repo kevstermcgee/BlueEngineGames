@@ -3,6 +3,11 @@
 Games, prototypes, test content, and demos produced with
 [BlueEngine](https://github.com/kevstermcgee/BlueEngine).
 
+**[Browse and download all games](https://kevstermcgee.github.io/BlueEngineGames/)** —
+the download site lists every game with a screenshot, description, and direct
+download link. It rebuilds automatically from each release
+(see `site/` and `.github/workflows/pages.yml`).
+
 **[Download ready-to-play Windows builds](../../releases/latest).** Every directory
 under `games/` has a Windows x64 ZIP containing an `.exe`; extract it and start the
 included executable. No Rust toolchain or command line is required. The executables
