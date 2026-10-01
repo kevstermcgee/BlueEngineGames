@@ -8,6 +8,7 @@ pub mod input;
 pub mod nav;
 pub mod level;
 pub mod team;
+pub mod slagworks;
 pub mod weapons;
 pub mod prefs;
 pub mod sim;
@@ -28,5 +29,5 @@ pub fn level() -> &'static level::Level {
 
 /// Build the map afresh.
 pub fn map() -> level::Level {
-    level::placeholder()
+    slagworks::build()
 }
