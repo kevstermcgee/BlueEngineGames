@@ -52,16 +52,16 @@ fn hold_for(id: weapons::WeaponId) -> Hold {
     }
 }
 
-fn pose_named(name: &str, hold: Hold, t: f32) -> Pose {
+fn pose_named(name: &str, hold: Hold, t: f32, phase: f32) -> Pose {
     let mut p = Pose { hold, ..Pose::default() };
     match name {
         "walk" => {
             p.speed = 1.8;
-            p.walk_phase = 0.9;
+            p.walk_phase = phase;
         }
         "run" => {
             p.speed = 5.5;
-            p.walk_phase = 0.7;
+            p.walk_phase = phase;
         }
         "crouch" => p.crouch = 1.,
         "aim" => p.aim = 1.,
@@ -120,7 +120,7 @@ async fn main() {
     if what == "team0" || what == "team1" {
         let team = Team::from_index(if what == "team0" { 0 } else { 1 });
         let rig = Rig::new(team, skin.min(3));
-        let pose = pose_named(&pose_name, hold, t);
+        let pose = pose_named(&pose_name, hold, t, num(&args, "--phase", 0.8));
         println!("{} vertices per soldier: {:?}", rig.vertex_count(), rig.part_sizes());
         for &a in &args.angles {
             let mut items: Vec<(Template, Mat4)> =
@@ -148,7 +148,7 @@ async fn main() {
             Rig::new(Team::Ironclad, 3),
             Rig::new(Team::Nightwatch, 0),
         ];
-        let pose = pose_named(if pose_name == "stand" { "walk" } else { &pose_name }, hold, t);
+        let pose = pose_named(if pose_name == "stand" { "walk" } else { &pose_name }, hold, t, 0.);
         for &a in &args.angles {
             let mut items: Vec<(Template, Mat4)> = vec![(floor.clone(), Mat4::IDENTITY)];
             for k in 0..12 {

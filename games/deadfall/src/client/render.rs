@@ -504,7 +504,7 @@ impl Renderer {
         pos += vec3(0., 0.008 * kick, 0.03 * kick * (1. - 0.5 * a));
         rot = Mat4::from_rotation_x(0.03 * kick) * rot;
         // What the hands are doing.
-        let mut arm = ArmPose { ads: a, draw: 1., ..Default::default() };
+        let mut arm = ArmPose { ads: a, draw: 1., pin: hands.pin, ..Default::default() };
         let mut mag_shift = Vec3::ZERO;
         match hands.busy {
             Busy::Draw => {
