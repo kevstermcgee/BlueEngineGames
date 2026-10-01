@@ -6,6 +6,7 @@ pub mod audio;
 pub mod arms;
 pub mod character;
 pub mod previewkit;
+pub mod weapon_models;
 
 pub use anchors::WeaponAnchors;
 pub mod sound;
