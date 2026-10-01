@@ -901,7 +901,7 @@ impl ClientView<DeadfallGame> for DeadfallView {
         self.hands = own.hands;
         self.inv = own.inv;
         self.own = Some(own.clone());
-        if own.alive {
+        if own.alive && !sim::autopilot() {
             for (seq, input) in pending {
                 self.apply_input(input, false);
                 self.last_seq = self.last_seq.max(*seq);
@@ -921,12 +921,17 @@ impl ClientView<DeadfallGame> for DeadfallView {
             }
         } else {
             self.error = V::ZERO;
+            if own.alive {
+                // Autopilot: the server drives, the camera simply follows.
+                self.last_input.yaw = own.ctrl.yaw;
+                self.last_input.pitch = own.ctrl.pitch;
+            }
         }
     }
 
     fn on_input(&mut self, input: &Input) {
         self.last_input = *input;
-        if self.own.as_ref().is_some_and(|o| o.alive) {
+        if self.own.as_ref().is_some_and(|o| o.alive) && !sim::autopilot() {
             self.apply_input(input, true);
         }
     }

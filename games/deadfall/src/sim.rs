@@ -32,6 +32,12 @@ pub const GRAVITY: f32 = 9.8;
 pub const PICKUP_RANGE: f32 = 1.5;
 pub const DROP_LIFETIME: u32 = 60 * 45;
 
+/// `DEADFALL_AUTOPILOT=1` makes a bot drive every human slot (for screenshots and soak runs nobody plays).
+pub fn autopilot() -> bool {
+    static ON: OnceLock<bool> = OnceLock::new();
+    *ON.get_or_init(|| std::env::var_os("DEADFALL_AUTOPILOT").is_some())
+}
+
 // ---- match settings -------------------------------------------------------------------------------------------
 
 /// What ends the match.
@@ -84,7 +90,7 @@ static WORLD: OnceLock<Arc<World>> = OnceLock::new();
 pub fn world() -> Arc<World> {
     WORLD
         .get_or_init(|| {
-            let level = crate::map();
+            let level = crate::level().clone();
             let colliders = level.colliders();
             let nav = crate::nav::Nav::build(&level);
             Arc::new(World { level, colliders, nav })
@@ -315,7 +321,11 @@ impl Match {
         let mut slots = Vec::new();
         for (i, (_, name)) in humans.iter().enumerate().take(MAX_PLAYERS) {
             slots.push(players.len());
-            players.push(blank_player(players.len(), Team::from_index(teams[i]), name.clone(), true));
+            let mut p = blank_player(players.len(), Team::from_index(teams[i]), name.clone(), !autopilot());
+            if autopilot() {
+                p.bot = Some(BotState::new(2, &mut rng));
+            }
+            players.push(p);
         }
         if settings.bots {
             let mut have = [0usize; 2];

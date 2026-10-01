@@ -20,7 +20,13 @@ pub use team::Team;
 #[cfg(feature = "client")]
 pub mod client;
 
-/// The map every match is played on.
+/// The map every match is played on, built once.
+pub fn level() -> &'static level::Level {
+    static LEVEL: std::sync::OnceLock<level::Level> = std::sync::OnceLock::new();
+    LEVEL.get_or_init(map)
+}
+
+/// Build the map afresh.
 pub fn map() -> level::Level {
     level::placeholder()
 }
