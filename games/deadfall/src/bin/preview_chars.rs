@@ -9,13 +9,19 @@
 use deadfall::client::arms::{first_person_arms, ArmPose};
 use deadfall::client::character::{Hold, Pose, Rig};
 use deadfall::client::previewkit::{self, Args, Stage};
-use deadfall::client::WeaponAnchors;
+use deadfall::client::{weapon_models, WeaponAnchors};
+use deadfall::weapons::{self, Class};
 use deadfall::Team;
 use macroquad::prelude::*;
 use vesper3d::viewer::{devkit::flag_value, kit::Template};
 
 fn window() -> macroquad::conf::Conf {
-    previewkit::window_conf("Deadfall characters")
+    {
+        let mut c = previewkit::window_conf("Deadfall characters");
+        c.draw_call_vertex_capacity = 60000;
+        c.draw_call_index_capacity = 90000;
+        c
+    }
 }
 
 fn num(args: &Args, name: &str, d: f32) -> f32 {
@@ -31,6 +37,19 @@ fn marker() -> Template {
         t.box_(vec3(0., y, 0.), vec3(if k == 6 { 0.22 } else { 0.06 }, 0.006, 0.006), [0.95, 0.2, 0.2], 0.3);
     }
     t
+}
+
+fn hold_for(id: weapons::WeaponId) -> Hold {
+    match weapons::get(id).map(|d| d.class) {
+        Some(Class::Pistol) => Hold::Pistol,
+        Some(Class::Smg) => Hold::Smg,
+        Some(Class::AssaultRifle | Class::Dmr | Class::Lmg | Class::Shotgun) => Hold::Rifle,
+        Some(Class::Sniper) => Hold::Sniper,
+        Some(Class::Launcher) => Hold::Launcher,
+        Some(Class::Grenade) => Hold::Grenade,
+        Some(Class::Melee) => Hold::Melee,
+        None => Hold::Unarmed,
+    }
 }
 
 fn pose_named(name: &str, hold: Hold, t: f32) -> Pose {
@@ -159,13 +178,22 @@ async fn main() {
         }
     } else if what == "arms0" || what == "arms1" {
         let team = Team::from_index(if what == "arms0" { 0 } else { 1 });
+        // `--weapon key` uses the real model (and its hold); otherwise a stand-in with `--hold`.
+        let real = flag_value(&args.raw, "--weapon").and_then(weapon_models::build);
+        let hold = match flag_value(&args.raw, "--weapon").and_then(weapons::id_of) {
+            Some(id) => hold_for(id),
+            None => hold,
+        };
         let two_hand = !matches!(hold, Hold::Pistol | Hold::Grenade | Hold::Melee | Hold::Unarmed);
-        let anchors = WeaponAnchors {
-            grip: Vec3::ZERO,
-            support: two_hand.then(|| vec3(0., -0.02, -0.35)),
-            sight: vec3(0., 0.08, 0.05),
-            muzzle: vec3(0., 0.03, -0.85),
-            eject: vec3(0.03, 0.04, -0.1),
+        let anchors = match &real {
+            Some(m) => m.anchors,
+            None => WeaponAnchors {
+                grip: Vec3::ZERO,
+                support: two_hand.then(|| vec3(0., -0.02, -0.35)),
+                sight: vec3(0., 0.08, 0.05),
+                muzzle: vec3(0., 0.03, -0.85),
+                eject: vec3(0.03, 0.04, -0.1),
+            },
         };
         let ads = num(&args, "--ads", 0.);
         let pose = ArmPose {
@@ -174,31 +202,41 @@ async fn main() {
             throwing: num(&args, "--throw", 0.),
             draw: num(&args, "--draw", 1.),
             ads,
+            pin: args.has("--pin"),
         };
         let arms = first_person_arms(team, skin.min(3), &anchors, hold, &pose);
-        println!("{} arm vertices", arms.verts.len());
+        println!("{} arm vertices, hold {:?}", arms.verts.len(), hold);
         let fp = args.has("--fp");
-        let place = if fp {
-            if ads > 0.5 {
-                Mat4::from_translation(-anchors.sight)
-            } else {
-                Mat4::from_translation(vec3(0.25, -0.22, -0.4))
+        // Same placement as the game's viewmodel: hip position, or the sight point on the eye.
+        let hip = vec3(0.16, -0.17, -0.32);
+        let aimed = -anchors.sight + vec3(0., 0., -0.4);
+        let place = if fp { Mat4::from_translation(hip.lerp(aimed, ads)) } else { Mat4::IDENTITY };
+        if let (Some(m), Some(sp)) = (&real, anchors.support) {
+            let (mut lo, mut hi) = (Vec3::splat(9.), Vec3::splat(-9.));
+            for v in m.assembled().verts.iter().filter(|v| (v.p.z - sp.z).abs() < 0.03) {
+                lo = lo.min(v.p);
+                hi = hi.max(v.p);
             }
-        } else {
-            Mat4::IDENTITY
+            println!("support {:?} section lo {:?} hi {:?}", sp, lo, hi);
+        }
+        let weapon = match &real {
+            Some(m) => m.assembled(),
+            None => stand_in_weapon(!(fp && ads > 0.5)),
         };
         for &a in &args.angles {
-            let mut items: Vec<(Template, Mat4)> =
-                vec![(arms.clone(), place), (stand_in_weapon(!(fp && ads > 0.5)), place)];
+            let mut items: Vec<(Template, Mat4)> = vec![(arms.clone(), place)];
+            if !args.has("--bare") {
+                items.push((weapon.clone(), place));
+            }
             let (dist, at, fov, pitch) =
-                if fp { (0.001, Vec3::ZERO, 70., 0.) } else { (args.dist, args.at, args.fov, args.pitch) };
+                if fp { (0.001, Vec3::ZERO, 58., 0.) } else { (args.dist, args.at, args.fov, args.pitch) };
             if fp {
                 items.push((floor.clone(), Mat4::from_translation(vec3(0., -1.68, 0.))));
             }
             shots.push(Shot {
                 name: format!(
                     "{what}-{}-{}{:03}",
-                    flag_value(&args.raw, "--hold").unwrap_or("rifle"),
+                    flag_value(&args.raw, "--weapon").or(flag_value(&args.raw, "--hold")).unwrap_or("rifle"),
                     if fp { "fp-" } else { "" },
                     a as i32
                 ),
