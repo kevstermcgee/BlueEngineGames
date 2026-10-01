@@ -436,6 +436,19 @@ impl Match {
         p.protect_until = self.tick + PROTECT_TICKS;
         p.flash_until = 0;
         p.killed_by = None;
+        // Testing aid: `DEADFALL_GIVE=awm,frag,axe` starts every human with these weapons.
+        if p.human || autopilot() {
+            if let Some(list) = std::env::var_os("DEADFALL_GIVE") {
+                let keys: Vec<String> = list.to_string_lossy().split(',').map(|k| k.trim().to_string()).collect();
+                for key in keys {
+                    if let Some(id) = weapons::id_of(&key) {
+                        let _ = self.give(slot, id, None);
+                    }
+                }
+                let p = &mut self.players[slot];
+                p.hands = Hands::new(&p.inv);
+            }
+        }
         self.events.push(Event::Spawned { player: slot as u8 });
     }
 

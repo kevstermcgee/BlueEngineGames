@@ -305,7 +305,7 @@ impl Renderer {
                 if mem.fire > 0.6 && f.view.has(flag::ALIVE) {
                     let muzzle = mount.transform_point3(model.anchors.muzzle);
                     let v = View::first_person(view.eye, view.yaw, view.pitch);
-                    self.add.billboard(muzzle, v.right(), v.up(), 0.35, 0.35, [1., 0.8, 0.4], 0.9, 1.);
+                    Self::star(&mut self.add, muzzle, v.right(), v.up(), view.eye, 0.28, [1., 0.75, 0.35]);
                 }
             }
         }
@@ -327,7 +327,7 @@ impl Renderer {
                     rocket.cone(vec3(0., 0.45, 0.), 0.045, 0., 0.15, [0.6, 0.2, 0.15], 0., 8);
                     self.world.add(&rocket, Mat4::from_translation(pos) * Mat4::from_rotation_x(-std::f32::consts::FRAC_PI_2), Tint::NONE);
                     let v = View::first_person(view.eye, view.yaw, view.pitch);
-                    self.add.billboard(pos - vec3(0., 0., 0.2), v.right(), v.up(), 0.5, 0.5, [1., 0.6, 0.2], 0.8, 1.);
+                    Self::star(&mut self.add, pos, v.right(), v.up(), view.eye, 0.5, [1., 0.6, 0.2]);
                 }
                 _ => {
                     if let Some(m) = self.models.get(p.weapon as usize).and_then(|m| m.as_ref()) {
@@ -417,7 +417,14 @@ impl Renderer {
         let anchors = model.anchors;
         // Where the grip sits on screen at the hip and when aiming (the sight point lands on the eye).
         let hip = vec3(0.16, -0.17, -0.32);
-        let aimed = -anchors.sight + vec3(0., 0., -0.0);
+        // The eye sits a little behind the sight (eye relief), so the rear sight is not a wall across the screen.
+        let relief = match (def.sight, def.class) {
+            (Sight::Scope { .. }, _) => 0.1,
+            (_, Class::Pistol) => 0.55,
+            (Sight::Dot, _) => 0.3,
+            _ => 0.4,
+        };
+        let aimed = -anchors.sight + vec3(0., 0., -relief);
         let mut pos = hip.lerp(aimed, a);
         let mut rot = Mat4::IDENTITY;
         // Walking bob and idle breathing, mostly gone when aiming.
@@ -518,7 +525,7 @@ impl Renderer {
         if self.muzzle_flash > 0. {
             let mut glow = Batch::new();
             let muzzle = m.transform_point3(anchors.muzzle);
-            glow.billboard(muzzle, vm_view.right(), vm_view.up(), 0.22, 0.22, [1., 0.85, 0.5], 0.95, 1.);
+            Self::star(&mut glow, muzzle, vm_view.right(), vm_view.up(), vm_view.eye, 0.16, [1., 0.8, 0.4]);
             gl_use_material(&self.materials.fx_add);
             glow.draw();
         }
@@ -526,6 +533,16 @@ impl Renderer {
         set_default_camera();
         // Composite over the screen.
         draw_texture_ex(&rt.texture, 0., 0., WHITE, DrawTextureParams { dest_size: Some(vec2(screen_width(), screen_height())), flip_y: true, ..Default::default() });
+    }
+
+    /// A spiky flash instead of a flat square: two crossed beams and a hot core.
+    fn star(add: &mut Batch, centre: Vec3, right: Vec3, up: Vec3, eye: Vec3, size: f32, colour: [f32; 3]) {
+        for k in 0..3 {
+            let a = k as f32 * std::f32::consts::FRAC_PI_3;
+            let d = right * a.cos() + up * a.sin();
+            add.beam(centre - d * size, centre + d * size, eye, size * 0.28, colour, 0.0, 0.9, 1.);
+        }
+        add.billboard(centre, right, up, size * 0.5, size * 0.5, [1., 0.95, 0.8], 0.9, 1.);
     }
 
     pub fn vignette(&self) -> Texture2D {

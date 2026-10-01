@@ -142,12 +142,16 @@ pub fn scope(zoom: f32, amount: f32) {
     let (cx, cy) = (w * 0.5, h * 0.5);
     let r = h * 0.46;
     let black = Color::new(0., 0., 0., amount);
-    draw_rectangle(0., 0., cx - r, h, black);
-    draw_rectangle(cx + r, 0., w - cx - r, h, black);
-    // The corners outside the circle: four thick rings stand in for a mask.
-    let ring = r * 0.42;
-    draw_circle_lines(cx, cy, r + ring * 0.5, ring, black);
-    draw_circle_lines(cx, cy, r, 4., Color::new(0., 0., 0., amount));
+    // Everything outside the lens circle: a ring of triangles from the circle out past the screen corners.
+    let big = (w * w + h * h).sqrt();
+    let n = 96;
+    for i in 0..n {
+        let (a0, a1) = (i as f32 / n as f32 * std::f32::consts::TAU, (i + 1) as f32 / n as f32 * std::f32::consts::TAU);
+        let p = |a: f32, rad: f32| vec2(cx + a.cos() * rad, cy + a.sin() * rad);
+        draw_triangle(p(a0, r), p(a1, r), p(a0, big), black);
+        draw_triangle(p(a1, r), p(a1, big), p(a0, big), black);
+    }
+    draw_circle_lines(cx, cy, r, 3., Color::new(0., 0., 0., amount));
     let line = Color::new(0., 0., 0., 0.85 * amount);
     draw_line(cx - r, cy, cx + r, cy, 1.5, line);
     draw_line(cx, cy - r, cx, cy + r, 1.5, line);

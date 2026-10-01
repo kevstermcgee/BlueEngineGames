@@ -20,7 +20,49 @@ use vesper3d::viewer::game_client::GameShell;
 use vesper3d::viewer::game_input::ClientInput;
 use vesper3d::viewer::gamepad::Button;
 
+/// A scripted player for runs nobody can play: `--script "fwd:60-300,turn:0.01@60-300,ads:100-200,fire:120-150,reload@220"`.
+/// `name:a-b` holds from frame a to b, `name@n` presses at frame n. Names: fwd back left right ads fire crouch walk
+/// jump reload use melee drop slot1..slot4, `turn:RATE@a-b` (radians per frame, yaw) and `pitch:RATE@a-b`.
+#[derive(Clone, Debug, Default)]
+pub struct Script {
+    cues: Vec<(String, f32, u32, u32)>,
+    pub frame: u32,
+}
+
+impl Script {
+    pub fn parse(text: &str) -> Script {
+        let mut cues = Vec::new();
+        for part in text.split(',').map(str::trim).filter(|p| !p.is_empty()) {
+            let (name, rest) = part.split_once([':', '@']).map_or((part, ""), |(a, b)| (a, b));
+            let press = part.contains('@') && !part.contains(':');
+            let (rate, range) = match rest.split_once('@') {
+                Some((r, range)) => (r.parse().unwrap_or(0.), range),
+                None => (1., rest),
+            };
+            let (a, b) = match range.split_once('-') {
+                Some((a, b)) => (a.parse().unwrap_or(0), b.parse().unwrap_or(0)),
+                None => {
+                    let n = range.parse().unwrap_or(0);
+                    (n, if press { n } else { n })
+                }
+            };
+            cues.push((name.to_string(), rate, a, b));
+        }
+        Script { cues, frame: 0 }
+    }
+    fn held(&self, name: &str) -> bool {
+        self.cues.iter().any(|(n, _, a, b)| n == name && self.frame >= *a && self.frame <= *b)
+    }
+    fn pressed(&self, name: &str) -> bool {
+        self.cues.iter().any(|(n, _, a, _)| n == name && self.frame == *a)
+    }
+    fn rate(&self, name: &str) -> f32 {
+        self.cues.iter().filter(|(n, _, a, b)| n == name && self.frame >= *a && self.frame <= *b).map(|c| c.1).sum()
+    }
+}
+
 pub struct Controls {
+    pub script: Option<Script>,
     pub yaw: f32,
     pub pitch: f32,
     reload_seq: u8,
@@ -43,7 +85,7 @@ pub struct Controls {
 
 impl Controls {
     pub fn new() -> Self {
-        Controls { yaw: 0., pitch: 0., reload_seq: 0, use_seq: 0, melee_seq: 0, drop_seq: 0, switch_seq: 0, switch_to: 0, jump_latch: false, cycle: 1, scoreboard: false, fire: false, ads: false, crouch: false, walk: false, axes: (0., 0.) }
+        Controls { script: None, yaw: 0., pitch: 0., reload_seq: 0, use_seq: 0, melee_seq: 0, drop_seq: 0, switch_seq: 0, switch_to: 0, jump_latch: false, cycle: 1, scoreboard: false, fire: false, ads: false, crouch: false, walk: false, axes: (0., 0.) }
     }
 
     /// Start a new life or match facing `yaw`, and forget held state.
@@ -71,6 +113,37 @@ impl Controls {
     /// Read the devices once per frame: look, presses (counters), held state.
     /// `ads_ratio` is how much narrower the aiming field of view is (1 = not aiming); mouse speed follows it.
     pub fn frame(&mut self, input: &ClientInput, shell: &GameShell, dt: f32, prefs: &Prefs, ads_ratio: f32, has: [bool; 4]) {
+        if let Some(sc) = self.script.as_mut() {
+            sc.frame += 1;
+            let sc = sc.clone();
+            self.yaw = (self.yaw + sc.rate("turn")).rem_euclid(std::f32::consts::TAU);
+            self.pitch = (self.pitch + sc.rate("pitch")).clamp(-PITCH_LIMIT, PITCH_LIMIT);
+            self.axes = (f32::from(sc.held("right")) - f32::from(sc.held("left")), f32::from(sc.held("fwd")) - f32::from(sc.held("back")));
+            self.fire = sc.held("fire");
+            self.ads = sc.held("ads");
+            self.crouch = sc.held("crouch");
+            self.walk = sc.held("walk");
+            self.scoreboard = sc.held("scores");
+            if sc.pressed("jump") {
+                self.jump_latch = true;
+            }
+            for (name, f) in [("reload", 0), ("use", 1), ("melee", 2), ("drop", 3)] {
+                if sc.pressed(name) {
+                    match f {
+                        0 => self.reload_seq = self.reload_seq.wrapping_add(1),
+                        1 => self.use_seq = self.use_seq.wrapping_add(1),
+                        2 => self.melee_seq = self.melee_seq.wrapping_add(1),
+                        _ => self.drop_seq = self.drop_seq.wrapping_add(1),
+                    }
+                }
+            }
+            for (i, name) in ["slot1", "slot2", "slot3", "slot4"].iter().enumerate() {
+                if sc.pressed(name) {
+                    self.switch(i as u8);
+                }
+            }
+            return;
+        }
         let live = shell.accepting_input();
         if !live {
             self.fire = false;

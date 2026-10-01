@@ -228,6 +228,9 @@ impl App {
             prefs,
         };
         app.rebuild_items();
+        if let Some(text) = flag_value(args, "--script") {
+            app.controls.script = Some(super::controls::Script::parse(text));
+        }
         if let Some(dir) = &app.capture_dir {
             let _ = std::fs::create_dir_all(dir);
         }
@@ -866,6 +869,11 @@ impl App {
         let Some(s) = self.session.as_mut() else { return };
         let me = s.client.participant().map(|p| p as u8);
         s.tracker.me = me;
+        for e in &events {
+            if let Event::Roster(entries) = e {
+                s.client.view_mut().roster = entries.clone();
+            }
+        }
         let view = s.client.view();
         let level = crate::level();
         let listener = match view.eye() {
@@ -1215,7 +1223,7 @@ impl App {
         }
         if let Some(o) = own.as_ref() {
             if alive && !over {
-                overlay::crosshair(v.hands.recoil * 1.2 + (1. - v.hands.ads) * 2., scoped);
+                overlay::crosshair(v.hands.recoil * 1.2 + (1. - v.hands.ads) * 2., scoped || v.hands.ads > 0.6);
                 let gun = v.inv.gun(v.hands.sel).copied();
                 let reloading = matches!(v.hands.busy, Busy::Reload | Busy::ShellLoad);
                 overlay::health_and_ammo(o.health, o.armor, def, gun.map_or(0, |g| g.mag), gun.map_or(0, |g| g.reserve), reloading, v.inv.grenades.iter().filter(|g| **g != 0).count(), def.map_or("", |d| d.name));
