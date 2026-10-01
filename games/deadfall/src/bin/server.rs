@@ -15,7 +15,12 @@ use vesper3d::viewer::netplay::{NetServer, ServerConfig};
 
 fn main() -> vesper3d::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    let mut cfg = ServerConfig { participants: 12, auto_start_seconds: 30, report_dir: Some("deadfall-data".into()), ..Default::default() };
+    let mut cfg = ServerConfig {
+        participants: 12,
+        auto_start_seconds: 30,
+        report_dir: Some("deadfall-data".into()),
+        ..Default::default()
+    };
     cfg.join_key = std::env::var("DEADFALL_JOIN_KEY").ok().filter(|k| !k.is_empty());
     let mut listen = "0.0.0.0:4100".to_string();
     let mut profile = TransportProfile::Development;
@@ -30,8 +35,12 @@ fn main() -> vesper3d::Result<()> {
             "--listen" => listen = value(&mut i, "--listen")?,
             "--transport" => profile = value(&mut i, "--transport")?.parse()?,
             "--join-key" => cfg.join_key = Some(value(&mut i, "--join-key")?),
-            "--minutes" => settings.end = EndRule::Time { minutes: value(&mut i, "--minutes")?.parse::<u16>()?.clamp(1, 60) },
-            "--kills" => settings.end = EndRule::Kills { target: value(&mut i, "--kills")?.parse::<u16>()?.clamp(1, 500) },
+            "--minutes" => {
+                settings.end = EndRule::Time { minutes: value(&mut i, "--minutes")?.parse::<u16>()?.clamp(1, 60) }
+            }
+            "--kills" => {
+                settings.end = EndRule::Kills { target: value(&mut i, "--kills")?.parse::<u16>()?.clamp(1, 500) }
+            }
             "--bots" => settings.bots = true,
             "--skill" => settings.bot_skill = value(&mut i, "--skill")?.parse::<u8>()?.min(2),
             "--auto-start" => cfg.auto_start_seconds = value(&mut i, "--auto-start")?.parse()?,

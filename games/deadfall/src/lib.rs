@@ -3,18 +3,18 @@
 //! The simulation, the armoury, the map, the bots and the network layouts live here and need no window, so
 //! the server and the tests run headless. The window (renderer, menus, sound, input) is the `client` module,
 //! behind the `client` feature.
+pub mod bots;
 pub mod hands;
 pub mod input;
-pub mod nav;
 pub mod level;
-pub mod team;
-pub mod slagworks;
-pub mod weapons;
+pub mod nav;
+pub mod netgame;
 pub mod prefs;
 pub mod sim;
+pub mod slagworks;
 pub mod stats;
-pub mod bots;
-pub mod netgame;
+pub mod team;
+pub mod weapons;
 
 pub use team::Team;
 

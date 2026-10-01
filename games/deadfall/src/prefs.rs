@@ -86,7 +86,12 @@ impl Prefs {
         if !self.name.trim().is_empty() {
             return self.name.trim().to_string();
         }
-        std::env::var("USERNAME").or_else(|_| std::env::var("USER")).ok().map(|n| n.chars().take(16).collect::<String>()).filter(|n| !n.is_empty()).unwrap_or_else(|| "Soldier".into())
+        std::env::var("USERNAME")
+            .or_else(|_| std::env::var("USER"))
+            .ok()
+            .map(|n| n.chars().take(16).collect::<String>())
+            .filter(|n| !n.is_empty())
+            .unwrap_or_else(|| "Soldier".into())
     }
 }
 

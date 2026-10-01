@@ -239,7 +239,12 @@ impl Renderer {
         set_camera(&view.camera(0.05, 400.));
         // The nearest fixed lights, plus a flash of light at every muzzle that just fired.
         let mut spots: Vec<&crate::level::LightSpot> = self.level.lights.iter().collect();
-        spots.sort_by(|a, b| (v3(a.pos) - view.eye).length().partial_cmp(&(v3(b.pos) - view.eye).length()).unwrap_or(std::cmp::Ordering::Equal));
+        spots.sort_by(|a, b| {
+            (v3(a.pos) - view.eye)
+                .length()
+                .partial_cmp(&(v3(b.pos) - view.eye).length())
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         let mut chosen: Vec<PointLight> = Vec::new();
         for l in self.flashes.iter().take(2) {
             if let Ok(p) = PointLight::new(l.pos, 6., [1., 0.85, 0.5], 2.5) {
@@ -325,13 +330,21 @@ impl Renderer {
                     let mut rocket = Template::new();
                     rocket.cylinder(vec3(0., -0.05, 0.), 0.04, 0.5, [0.25, 0.3, 0.2], 0., 8);
                     rocket.cone(vec3(0., 0.45, 0.), 0.045, 0., 0.15, [0.6, 0.2, 0.15], 0., 8);
-                    self.world.add(&rocket, Mat4::from_translation(pos) * Mat4::from_rotation_x(-std::f32::consts::FRAC_PI_2), Tint::NONE);
+                    self.world.add(
+                        &rocket,
+                        Mat4::from_translation(pos) * Mat4::from_rotation_x(-std::f32::consts::FRAC_PI_2),
+                        Tint::NONE,
+                    );
                     let v = View::first_person(view.eye, view.yaw, view.pitch);
                     Self::star(&mut self.add, pos, v.right(), v.up(), view.eye, 0.5, [1., 0.6, 0.2]);
                 }
                 _ => {
                     if let Some(m) = self.models.get(p.weapon as usize).and_then(|m| m.as_ref()) {
-                        self.world.add(&m.body, Mat4::from_translation(pos) * Mat4::from_rotation_y(t * 9.) * Mat4::from_rotation_x(t * 7.), Tint::NONE);
+                        self.world.add(
+                            &m.body,
+                            Mat4::from_translation(pos) * Mat4::from_rotation_y(t * 9.) * Mat4::from_rotation_x(t * 7.),
+                            Tint::NONE,
+                        );
                     }
                 }
             }
@@ -352,8 +365,21 @@ impl Renderer {
                 for k in 0..9 {
                     let a = k as f32 * 2.4 + t * 0.15;
                     let r = z.radius * (0.25 + 0.55 * ((k * 7 % 5) as f32 / 5.));
-                    let p = c + vec3(a.cos() * r * 0.7, 0.2 + (k % 3) as f32 * 0.9 + (t * 0.3 + k as f32).sin() * 0.15, a.sin() * r * 0.7);
-                    self.alpha.billboard(p, right, up, z.radius * 1.3, z.radius * 1.3, [0.72, 0.74, 0.76], 0.55 * fade, 0.);
+                    let p = c + vec3(
+                        a.cos() * r * 0.7,
+                        0.2 + (k % 3) as f32 * 0.9 + (t * 0.3 + k as f32).sin() * 0.15,
+                        a.sin() * r * 0.7,
+                    );
+                    self.alpha.billboard(
+                        p,
+                        right,
+                        up,
+                        z.radius * 1.3,
+                        z.radius * 1.3,
+                        [0.72, 0.74, 0.76],
+                        0.55 * fade,
+                        0.,
+                    );
                 }
             }
         }
@@ -362,15 +388,34 @@ impl Renderer {
         self.alpha.draw();
         for tr in &self.tracers {
             let a = tr.life / 0.07;
-            self.add.beam(tr.from, tr.to, view.eye, if tr.big { 0.06 } else { 0.025 }, [1., 0.9, 0.6], 0.0 + a * 0.15, a, 1.);
+            self.add.beam(
+                tr.from,
+                tr.to,
+                view.eye,
+                if tr.big { 0.06 } else { 0.025 },
+                [1., 0.9, 0.6],
+                0.0 + a * 0.15,
+                a,
+                1.,
+            );
         }
         for z in zones {
             if z.kind == 1 {
                 for k in 0..6 {
                     let a = k as f32 * 1.05 + t;
                     let r = z.radius * 0.6 * ((k * 5 % 6) as f32 / 6. + 0.2);
-                    let p = v3(z.pos) + vec3(a.cos() * r, 0.3 + (t * 9. + k as f32 * 2.).sin().abs() * 0.4, a.sin() * r);
-                    self.add.billboard(p, right, up, 0.8, 1.0, [1., 0.5 + 0.2 * (t * 7. + k as f32).sin().abs(), 0.1], 0.6, 1.);
+                    let p =
+                        v3(z.pos) + vec3(a.cos() * r, 0.3 + (t * 9. + k as f32 * 2.).sin().abs() * 0.4, a.sin() * r);
+                    self.add.billboard(
+                        p,
+                        right,
+                        up,
+                        0.8,
+                        1.0,
+                        [1., 0.5 + 0.2 * (t * 7. + k as f32).sin().abs(), 0.1],
+                        0.6,
+                        1.,
+                    );
                 }
             }
         }
@@ -380,10 +425,20 @@ impl Renderer {
         set_default_camera();
     }
 
-    fn draw_item(models: &[Option<WeaponModel>], world: &mut Batch, add: &mut Batch, weapon: u8, at: Vec3, t: f32, phase: f32) {
+    fn draw_item(
+        models: &[Option<WeaponModel>],
+        world: &mut Batch,
+        add: &mut Batch,
+        weapon: u8,
+        at: Vec3,
+        t: f32,
+        phase: f32,
+    ) {
         let Some(model) = models.get(weapon as usize).and_then(|m| m.as_ref()) else { return };
         let bob = (t * 2. + phase).sin() * 0.05;
-        let m = Mat4::from_translation(at + vec3(0., 0.45 + bob, 0.)) * Mat4::from_rotation_y(t * 0.8 + phase) * Mat4::from_rotation_z(0.15);
+        let m = Mat4::from_translation(at + vec3(0., 0.45 + bob, 0.))
+            * Mat4::from_rotation_y(t * 0.8 + phase)
+            * Mat4::from_rotation_z(0.15);
         world.add(&model.body, m, Tint::NONE);
         if let Some((mag, off)) = &model.mag {
             world.add(mag, m * Mat4::from_translation(*off), Tint::NONE);
@@ -396,7 +451,18 @@ impl Renderer {
 
     /// The weapon and arms of the first-person view, drawn in their own depth pass and composited on top.
     #[allow(clippy::too_many_arguments)]
-    pub fn draw_viewmodel(&mut self, view: &View, hands: &Hands, weapon: u8, team: Team, skin: u8, speed: f32, walk_phase: f32, sway: (f32, f32), hide: f32) {
+    pub fn draw_viewmodel(
+        &mut self,
+        view: &View,
+        hands: &Hands,
+        weapon: u8,
+        team: Team,
+        skin: u8,
+        speed: f32,
+        walk_phase: f32,
+        sway: (f32, f32),
+        hide: f32,
+    ) {
         let Some(model) = self.models.get(weapon as usize).and_then(|m| m.as_ref()) else { return };
         let Some(def) = weapons::get(weapon) else { return };
         let (w, h) = (screen_width() as u32, screen_height() as u32);
@@ -429,7 +495,8 @@ impl Renderer {
         let mut rot = Mat4::IDENTITY;
         // Walking bob and idle breathing, mostly gone when aiming.
         let bobk = (speed / 6.).clamp(0., 1.) * (1. - 0.85 * a);
-        pos += vec3((walk_phase).cos() * 0.012 * bobk, (walk_phase * 2.).sin().abs() * -0.014 * bobk, 0.) + vec3(0., (self.time * 1.6).sin() * 0.0025, 0.);
+        pos += vec3((walk_phase).cos() * 0.012 * bobk, (walk_phase * 2.).sin().abs() * -0.014 * bobk, 0.)
+            + vec3(0., (self.time * 1.6).sin() * 0.0025, 0.);
         // Look sway: the weapon lags behind the view.
         pos += vec3(-sway.0 * 0.9, sway.1 * 0.9, 0.) * (1. - 0.6 * a);
         // Recoil kicks the weapon back and up.
@@ -452,7 +519,13 @@ impl Renderer {
                 pos += vec3(-0.03 * s, -0.11 * s, 0.03 * s);
                 rot = Mat4::from_rotation_x(-0.35 * s) * Mat4::from_rotation_z(0.25 * s) * rot;
                 // The magazine drops out and is seated again.
-                mag_shift = if p < 0.4 { vec3(0., -0.3 * (p / 0.4), 0.) } else if p < 0.55 { vec3(0., -0.3, 0.) } else { vec3(0., -0.3 * (1. - (p - 0.55) / 0.3).clamp(0., 1.), 0.) };
+                mag_shift = if p < 0.4 {
+                    vec3(0., -0.3 * (p / 0.4), 0.)
+                } else if p < 0.55 {
+                    vec3(0., -0.3, 0.)
+                } else {
+                    vec3(0., -0.3 * (1. - (p - 0.55) / 0.3).clamp(0., 1.), 0.)
+                };
             }
             Busy::Swing => {
                 arm.swing = p;
@@ -482,7 +555,12 @@ impl Renderer {
         }
         let local = Mat4::from_translation(pos) * rot;
         let hold = Self::hold_for(weapon);
-        let key = (p.to_bits() as u64) << 32 | (a.to_bits() as u64) ^ (weapon as u64) << 8 ^ (hands.busy as u64) ^ (team.index() as u64) << 4 ^ (skin as u64) << 6;
+        let key = (p.to_bits() as u64) << 32
+            | (a.to_bits() as u64)
+                ^ (weapon as u64) << 8
+                ^ (hands.busy as u64)
+                ^ (team.index() as u64) << 4
+                ^ (skin as u64) << 6;
         let arms = match &self.arms_cache {
             Some((k, t)) if *k == key => t.clone(),
             _ => {
@@ -492,7 +570,8 @@ impl Renderer {
             }
         };
         // The viewmodel is drawn from the eye with the same angles as the world, so lighting matches.
-        let to_world = Mat4::from_translation(view.eye) * Mat4::from_rotation_y(-view.yaw) * Mat4::from_rotation_x(view.pitch);
+        let to_world =
+            Mat4::from_translation(view.eye) * Mat4::from_rotation_y(-view.yaw) * Mat4::from_rotation_x(view.pitch);
         let m = to_world * local;
         let vm_view = View { fov: 58f32.to_radians(), ..*view };
         let cam = Camera3D {
@@ -532,7 +611,17 @@ impl Renderer {
         gl_use_default_material();
         set_default_camera();
         // Composite over the screen.
-        draw_texture_ex(&rt.texture, 0., 0., WHITE, DrawTextureParams { dest_size: Some(vec2(screen_width(), screen_height())), flip_y: true, ..Default::default() });
+        draw_texture_ex(
+            &rt.texture,
+            0.,
+            0.,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(screen_width(), screen_height())),
+                flip_y: true,
+                ..Default::default()
+            },
+        );
     }
 
     /// A spiky flash instead of a flat square: two crossed beams and a hot core.

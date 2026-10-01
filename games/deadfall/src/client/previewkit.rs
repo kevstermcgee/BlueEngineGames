@@ -61,9 +61,7 @@ impl Args {
 /// 10,000/5,000 and silently clamp a larger mesh).
 pub fn window_conf(title: &str) -> macroquad::conf::Conf {
     let args: Vec<String> = std::env::args().collect();
-    let (w, h) = flag_value(&args, "--size")
-        .and_then(vesper3d::viewer::devkit::parse_size)
-        .unwrap_or((1280, 720));
+    let (w, h) = flag_value(&args, "--size").and_then(vesper3d::viewer::devkit::parse_size).unwrap_or((1280, 720));
     let mut conf = vesper3d::viewer::game_client::window_config(title);
     conf.miniquad_conf.window_width = w as i32;
     conf.miniquad_conf.window_height = h as i32;

@@ -177,7 +177,9 @@ impl MatchTracker {
             Event::Hurt { attacker, victim, damage, .. } if *attacker == me && *victim != me => {
                 self.summary.damage += *damage as u32;
             }
-            Event::Shot { shooter, hit, .. } if *shooter == me && (*hit == crate::sim::hit::BODY || *hit == crate::sim::hit::HEAD) => {
+            Event::Shot { shooter, hit, .. }
+                if *shooter == me && (*hit == crate::sim::hit::BODY || *hit == crate::sim::hit::HEAD) =>
+            {
                 self.summary.shots_hit += 1;
             }
             _ => {}
@@ -213,10 +215,24 @@ mod tests {
         for e in [kill(1, 2, true), kill(1, 3, false), kill(2, 1, false), kill(1, 4, false)] {
             t.on_event(&e);
         }
-        t.on_event(&Event::Hurt { victim: 2, attacker: 1, damage: 40, head: false, weapon: 1, from: vesper3d::math::V::ZERO });
+        t.on_event(&Event::Hurt {
+            victim: 2,
+            attacker: 1,
+            damage: 40,
+            head: false,
+            weapon: 1,
+            from: vesper3d::math::V::ZERO,
+        });
         t.shot_fired();
         t.shot_fired();
-        t.on_event(&Event::Shot { shooter: 1, weapon: 1, from: vesper3d::math::V::ZERO, to: vesper3d::math::V::ZERO, hit: 3, material: 0 });
+        t.on_event(&Event::Shot {
+            shooter: 1,
+            weapon: 1,
+            from: vesper3d::math::V::ZERO,
+            to: vesper3d::math::V::ZERO,
+            hit: 3,
+            material: 0,
+        });
         t.tick(300.);
         let mut stats = Stats::default();
         assert!(t.finish(&mut stats, Some(0), Some(0), 1_700_000_000));
@@ -234,7 +250,10 @@ mod tests {
         let mut t2 = MatchTracker::new(Some(0));
         t2.tick(60.);
         t2.finish(&mut again, Some(1), Some(0), 1_700_000_100);
-        assert_eq!((again.matches, again.losses, again.first_played, again.last_played), (2, 1, 1_700_000_000, 1_700_000_100));
+        assert_eq!(
+            (again.matches, again.losses, again.first_played, again.last_played),
+            (2, 1, 1_700_000_000, 1_700_000_100)
+        );
         std::fs::write(&path, "{ not json").unwrap();
         assert_eq!(Stats::load_from(&path), Stats::default(), "a damaged file never stops the game");
         let _ = std::fs::remove_dir_all(dir);

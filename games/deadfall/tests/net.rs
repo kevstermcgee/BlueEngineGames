@@ -24,13 +24,25 @@ struct World {
 fn world(latency: u64, jitter: u64, loss: f32, teams: &[u8], bots: bool) -> World {
     set_settings(Settings { end: EndRule::Kills { target: 500 }, bots, bot_skill: 1 });
     let net = LoopNet::new(latency, jitter, loss, 99);
-    let cfg = ServerConfig { participants: 12, countdown_seconds: 1, results_seconds: 2, auto_start_seconds: 0, seed: Some(5), ..Default::default() };
+    let cfg = ServerConfig {
+        participants: 12,
+        countdown_seconds: 1,
+        results_seconds: 2,
+        auto_start_seconds: 0,
+        seed: Some(5),
+        ..Default::default()
+    };
     let server = NetServer::new(net.endpoint(addr(0)), cfg).unwrap();
     let clients = teams
         .iter()
         .enumerate()
         .map(|(i, t)| {
-            NetClient::new(net.endpoint(addr(i as u16 + 1)), addr(0), ClientConfig { name: format!("Player {i}"), key: String::new(), choice: *t }).unwrap()
+            NetClient::new(
+                net.endpoint(addr(i as u16 + 1)),
+                addr(0),
+                ClientConfig { name: format!("Player {i}"), key: String::new(), choice: *t },
+            )
+            .unwrap()
         })
         .collect();
     World { net, server, clients, tick: 0, kills_seen: vec![0; teams.len()], max_error: 0. }
@@ -63,10 +75,13 @@ impl World {
                     let render = view.render_tick();
                     let players = view.players_at(render);
                     let mine = players.iter().find(|p| p.slot as usize == me).copied();
-                    let enemy = players.iter().filter(|p| p.slot as usize != me && p.has(deadfall::netgame::flag::ALIVE)).min_by(|a, b| {
-                        let m = mine.map_or(a.eye, |m| m.eye);
-                        (a.eye - m).length().partial_cmp(&(b.eye - m).length()).unwrap()
-                    });
+                    let enemy = players
+                        .iter()
+                        .filter(|p| p.slot as usize != me && p.has(deadfall::netgame::flag::ALIVE))
+                        .min_by(|a, b| {
+                            let m = mine.map_or(a.eye, |m| m.eye);
+                            (a.eye - m).length().partial_cmp(&(b.eye - m).length()).unwrap()
+                        });
                     let eye = view.eye().unwrap_or(mine.map_or(vesper3d::math::V::ZERO, |m| m.eye));
                     let mut input = Input { seen_tick: render.max(0.) as u16, ..Default::default() };
                     if let Some(e) = enemy {
@@ -123,7 +138,12 @@ fn two_players_on_a_laggy_lossy_network_fight_and_the_predicted_body_keeps_up() 
         let server_eye = m.players[me].eye();
         let client_eye = c.view().eye().unwrap();
         // The client is ahead by the inputs the server has not applied yet (a few ticks of walking).
-        assert!((server_eye - client_eye).length() < 2.0, "client {i}: server {:?} vs predicted {:?}", server_eye, client_eye);
+        assert!(
+            (server_eye - client_eye).length() < 2.0,
+            "client {i}: server {:?} vs predicted {:?}",
+            server_eye,
+            client_eye
+        );
         let stats = c.view().history.len();
         assert!(stats > 100, "the killcam has history: {stats} snapshots");
     }

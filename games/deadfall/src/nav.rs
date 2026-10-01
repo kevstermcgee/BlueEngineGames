@@ -44,8 +44,14 @@ impl Nav {
         let bz = (level.half_z * 2. / bucket).ceil() as usize + 2;
         let mut buckets: Vec<Vec<u32>> = vec![Vec::new(); bx * bz];
         for (i, c) in colliders.iter().enumerate() {
-            let (x0, x1) = (((c.min.0 - min_x) / bucket).floor().max(0.) as usize, ((c.max.0 - min_x) / bucket).floor().max(0.) as usize);
-            let (z0, z1) = (((c.min.2 - min_z) / bucket).floor().max(0.) as usize, ((c.max.2 - min_z) / bucket).floor().max(0.) as usize);
+            let (x0, x1) = (
+                ((c.min.0 - min_x) / bucket).floor().max(0.) as usize,
+                ((c.max.0 - min_x) / bucket).floor().max(0.) as usize,
+            );
+            let (z0, z1) = (
+                ((c.min.2 - min_z) / bucket).floor().max(0.) as usize,
+                ((c.max.2 - min_z) / bucket).floor().max(0.) as usize,
+            );
             for z in z0..=z1.min(bz - 1) {
                 for x in x0..=x1.min(bx - 1) {
                     buckets[z * bx + x].push(i as u32);
@@ -76,12 +82,23 @@ impl Nav {
                 for y in floors {
                     // Standable: nothing occupies the body there (with some margin) and it is not a tall wall top.
                     let p = V(x, y, z);
-                    let blocked = here.iter().any(|&b| colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS));
+                    let blocked = here.iter().any(|&b| {
+                        colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS)
+                    });
                     // Neighbouring buckets matter at bucket edges: test the four around too.
                     let blocked = blocked
-                        || [(CLEARANCE_RADIUS, 0.), (-CLEARANCE_RADIUS, 0.), (0., CLEARANCE_RADIUS), (0., -CLEARANCE_RADIUS)]
-                            .iter()
-                            .any(|(dx, dz)| near(x + dx, z + dz).iter().any(|&b| colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS)));
+                        || [
+                            (CLEARANCE_RADIUS, 0.),
+                            (-CLEARANCE_RADIUS, 0.),
+                            (0., CLEARANCE_RADIUS),
+                            (0., -CLEARANCE_RADIUS),
+                        ]
+                        .iter()
+                        .any(|(dx, dz)| {
+                            near(x + dx, z + dz).iter().any(|&b| {
+                                colliders[b as usize].overlaps_body(p, y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS)
+                            })
+                        });
                     if !blocked && y < 12. {
                         nodes.push(Node { ix, iz, y });
                     }
@@ -160,7 +177,11 @@ impl Nav {
                 }
                 if diagonal {
                     // Do not cut a corner: both cells beside the move must be walkable at about this height.
-                    let side = |sx: i32, sz: i32| self.column(sx, sz).iter().any(|s| (s.y - node.y).abs() <= EDGE_STEP || (s.y < node.y && node.y - s.y <= DROP));
+                    let side = |sx: i32, sz: i32| {
+                        self.column(sx, sz)
+                            .iter()
+                            .any(|s| (s.y - node.y).abs() <= EDGE_STEP || (s.y < node.y && node.y - s.y <= DROP))
+                    };
                     if !side(node.ix + dx, node.iz) || !side(node.ix, node.iz + dz) {
                         continue;
                     }

@@ -63,11 +63,26 @@ pub fn damage_arc(angle: f32, amount: f32) {
     draw_triangle(p - side, p + side, tip, Color::new(0.95, 0.15, 0.1, 0.75 * amount));
 }
 
-pub fn health_and_ammo(health: f32, armor: f32, def: Option<&WeaponDef>, mag: u16, reserve: u16, reloading: bool, grenades: usize, name: &str) {
+pub fn health_and_ammo(
+    health: f32,
+    armor: f32,
+    def: Option<&WeaponDef>,
+    mag: u16,
+    reserve: u16,
+    reloading: bool,
+    grenades: usize,
+    name: &str,
+) {
     let ui = hud::ui_scale();
     let (w, h) = (screen_width(), screen_height());
     let low = health <= 30.;
-    hud::text_outlined(&format!("{}", health.ceil() as i32), 28. * ui, h - 30. * ui, 54. * ui, if low { HEALTH_LOW } else { HEALTH_OK });
+    hud::text_outlined(
+        &format!("{}", health.ceil() as i32),
+        28. * ui,
+        h - 30. * ui,
+        54. * ui,
+        if low { HEALTH_LOW } else { HEALTH_OK },
+    );
     if armor > 0. {
         hud::text_outlined(&format!("+{}", armor.ceil() as i32), 28. * ui + 92. * ui, h - 30. * ui, 28. * ui, DIM);
     }
@@ -76,7 +91,13 @@ pub fn health_and_ammo(health: f32, armor: f32, def: Option<&WeaponDef>, mag: u1
         let throwable = matches!(d.class, weapons::Class::Grenade);
         if !melee && !throwable {
             let mag_text = if reloading { "--".to_string() } else { format!("{mag}") };
-            hud::text_right(&mag_text, w - 120. * ui, h - 30. * ui, 54. * ui, if mag == 0 && reserve == 0 { HEALTH_LOW } else { HEALTH_OK });
+            hud::text_right(
+                &mag_text,
+                w - 120. * ui,
+                h - 30. * ui,
+                54. * ui,
+                if mag == 0 && reserve == 0 { HEALTH_LOW } else { HEALTH_OK },
+            );
             hud::text_right(&format!("{reserve}"), w - 28. * ui, h - 30. * ui, 28. * ui, DIM);
         }
         hud::text_right(name, w - 28. * ui, h - 78. * ui, 20. * ui, DIM);
@@ -156,7 +177,13 @@ pub fn scope(zoom: f32, amount: f32) {
     draw_line(cx - r, cy, cx + r, cy, 1.5, line);
     draw_line(cx, cy - r, cx, cy + r, 1.5, line);
     draw_circle(cx, cy, 2., Color::new(0.9, 0.1, 0.1, amount));
-    hud::text_centered(&format!("{zoom:.0}x"), cx + r * 0.75, cy + r * 0.85, 20. * hud::ui_scale(), Color::new(1., 1., 1., 0.6 * amount));
+    hud::text_centered(
+        &format!("{zoom:.0}x"),
+        cx + r * 0.75,
+        cy + r * 0.85,
+        20. * hud::ui_scale(),
+        Color::new(1., 1., 1., 0.6 * amount),
+    );
 }
 
 /// The killcam frame: bars, who killed you with what, and the countdown.
@@ -187,7 +214,15 @@ pub fn rows(roster: &[RosterEntry], players: &[PlayerView]) -> Vec<Row> {
         .iter()
         .map(|r| {
             let p = players.iter().find(|p| p.slot == r.slot);
-            Row { slot: r.slot, name: r.name.clone(), team: r.team as usize, kills: p.map_or(0, |p| p.kills), deaths: p.map_or(0, |p| p.deaths), bot: r.bot, alive: p.is_some_and(|p| p.has(crate::netgame::flag::ALIVE)) }
+            Row {
+                slot: r.slot,
+                name: r.name.clone(),
+                team: r.team as usize,
+                kills: p.map_or(0, |p| p.kills),
+                deaths: p.map_or(0, |p| p.deaths),
+                bot: r.bot,
+                alive: p.is_some_and(|p| p.has(crate::netgame::flag::ALIVE)),
+            }
         })
         .collect()
 }

@@ -208,17 +208,37 @@ pub struct Ctx {
 pub enum Out {
     /// `pellets` bullets leave the muzzle. `punch` is the (pitch up, yaw) view kick in radians the shot is
     /// aimed with; `spread` is the random cone half-angle in degrees.
-    Shot { weapon: WeaponId, pellets: u8, punch: (f32, f32), spread: f32 },
+    Shot {
+        weapon: WeaponId,
+        pellets: u8,
+        punch: (f32, f32),
+        spread: f32,
+    },
     /// A launcher fires its projectile.
-    Launch { weapon: WeaponId, punch: (f32, f32) },
+    Launch {
+        weapon: WeaponId,
+        punch: (f32, f32),
+    },
     /// A grenade leaves the hand (`lob`: a short underarm toss).
-    Throw { weapon: WeaponId, lob: bool },
+    Throw {
+        weapon: WeaponId,
+        lob: bool,
+    },
     /// A melee strike lands now.
-    Strike { weapon: WeaponId, heavy: bool },
+    Strike {
+        weapon: WeaponId,
+        heavy: bool,
+    },
     /// The trigger was pulled on an empty weapon.
-    Dry { weapon: WeaponId },
-    ReloadStarted { weapon: WeaponId },
-    Switched { weapon: WeaponId },
+    Dry {
+        weapon: WeaponId,
+    },
+    ReloadStarted {
+        weapon: WeaponId,
+    },
+    Switched {
+        weapon: WeaponId,
+    },
 }
 
 /// The view kick after `recoil` shots of a spray: (pitch up, yaw), radians. Deterministic, so a client and the
@@ -443,7 +463,16 @@ impl Hands {
         }
     }
 
-    fn gun_tick(&mut self, inv: &mut Inventory, def: &WeaponDef, ctx: &Ctx, fire: bool, fire_edge: bool, reload_req: bool, out: &mut Vec<Out>) {
+    fn gun_tick(
+        &mut self,
+        inv: &mut Inventory,
+        def: &WeaponDef,
+        ctx: &Ctx,
+        fire: bool,
+        fire_edge: bool,
+        reload_req: bool,
+        out: &mut Vec<Out>,
+    ) {
         let sel = self.sel;
         let Some(gun) = inv.gun(sel).copied() else { return };
         // Bursts in progress continue by themselves.

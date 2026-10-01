@@ -56,13 +56,7 @@ impl Input {
     pub fn movement(&self, speed_scale: f32) -> Movement {
         let (r, f) = self.axes();
         let s = if self.held(WALK) { 0.5 } else { 1. } * speed_scale;
-        Movement {
-            forward: f * s,
-            right: r * s,
-            sprint: false,
-            jump: self.held(JUMP),
-            crouch: self.held(CROUCH),
-        }
+        Movement { forward: f * s, right: r * s, sprint: false, jump: self.held(JUMP), crouch: self.held(CROUCH) }
     }
 
     pub fn write(&self, w: &mut Writer) {
@@ -135,7 +129,10 @@ mod tests {
         input.write(&mut w);
         let bytes = w.finish();
         let back = Input::read(&mut Reader::new(&bytes)).unwrap();
-        assert_eq!((back.right, back.forward, back.buttons, back.use_seq, back.seen_tick), (-127, 64, FIRE | JUMP, 255, 65000));
+        assert_eq!(
+            (back.right, back.forward, back.buttons, back.use_seq, back.seen_tick),
+            (-127, 64, FIRE | JUMP, 255, 65000)
+        );
         assert!((back.yaw - 5.5).abs() < 0.001 && (back.pitch + 1.2).abs() < 0.001);
     }
 
@@ -144,7 +141,9 @@ mod tests {
         for len in 0..16 {
             let _ = Input::read(&mut Reader::new(&vec![0xFFu8; len]));
         }
-        let back = Input::read(&mut Reader::new(&[0x80, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0, 0, 0, 0, 0, 9, 0xFF, 0xFF])).unwrap();
+        let back =
+            Input::read(&mut Reader::new(&[0x80, 0x80, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0, 0, 0, 0, 0, 9, 0xFF, 0xFF]))
+                .unwrap();
         assert!(back.pitch.abs() <= PITCH_LIMIT && back.right >= -127 && back.switch_to <= 3);
     }
 

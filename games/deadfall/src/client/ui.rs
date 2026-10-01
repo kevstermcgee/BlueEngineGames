@@ -150,7 +150,11 @@ impl Menu {
                 }
             }
         }
-        let clicked = nav.click.then(|| rects.iter().position(|r| r.contains(nav.mouse))).flatten().filter(|i| items[*i].selectable());
+        let clicked = nav
+            .click
+            .then(|| rects.iter().position(|r| r.contains(nav.mouse)))
+            .flatten()
+            .filter(|i| items[*i].selectable());
         if let Some(i) = clicked {
             self.sel = i;
         }
@@ -171,7 +175,13 @@ impl Menu {
                 Item::Toggle(t, v) => {
                     draw_row(r, on, ui);
                     hud::text_outlined(t, r.x + 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
-                    hud::text_right(if *v { "ON" } else { "OFF" }, r.x + r.w - 18. * ui, r.y + r.h * 0.68, 26. * ui, if *v { ACCENT } else { DIM });
+                    hud::text_right(
+                        if *v { "ON" } else { "OFF" },
+                        r.x + r.w - 18. * ui,
+                        r.y + r.h * 0.68,
+                        26. * ui,
+                        if *v { ACCENT } else { DIM },
+                    );
                     if activate || (on && (nav.left || nav.right)) {
                         *v = !*v;
                         hit = Hit::Item(i);
@@ -181,7 +191,13 @@ impl Menu {
                     draw_row(r, on, ui);
                     hud::text_outlined(t, r.x + 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
                     let label = opts.get(*k).cloned().unwrap_or_default();
-                    hud::text_right(&format!("<  {label}  >"), r.x + r.w - 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
+                    hud::text_right(
+                        &format!("<  {label}  >"),
+                        r.x + r.w - 18. * ui,
+                        r.y + r.h * 0.68,
+                        26. * ui,
+                        if on { ACCENT } else { TEXT },
+                    );
                     let mut d = 0i32;
                     if on && nav.left {
                         d = -1;
@@ -211,7 +227,9 @@ impl Menu {
                     if on && nav.right {
                         *v = (*v + (*hi - *lo) * 0.05).min(*hi);
                     }
-                    if is_mouse_button_down(MouseButton::Left) && Rect::new(track.x - 6., r.y, track.w + 12., r.h).contains(nav.mouse) {
+                    if is_mouse_button_down(MouseButton::Left)
+                        && Rect::new(track.x - 6., r.y, track.w + 12., r.h).contains(nav.mouse)
+                    {
                         *v = *lo + ((nav.mouse.x - track.x) / track.w).clamp(0., 1.) * (*hi - *lo);
                     }
                     if (*v - old).abs() > f32::EPSILON {
@@ -223,7 +241,13 @@ impl Menu {
                     hud::text_outlined(t, r.x + 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
                     let caret = if on && (self.time * 2.).fract() < 0.5 { "|" } else { "" };
                     let shown = if v.is_empty() && !on { hint.to_string() } else { format!("{v}{caret}") };
-                    hud::text_right(&shown, r.x + r.w - 18. * ui, r.y + r.h * 0.68, 26. * ui, if v.is_empty() && !on { DIM } else { TEXT });
+                    hud::text_right(
+                        &shown,
+                        r.x + r.w - 18. * ui,
+                        r.y + r.h * 0.68,
+                        26. * ui,
+                        if v.is_empty() && !on { DIM } else { TEXT },
+                    );
                     if on {
                         for c in &nav.typed {
                             if v.chars().count() < 60 {

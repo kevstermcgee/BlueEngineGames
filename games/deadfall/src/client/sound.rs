@@ -45,8 +45,16 @@ pub fn pan(l: &Listener, at: V) -> f32 {
 
 pub fn surface_of(m: Material) -> Surface {
     match m {
-        Material::Concrete | Material::ConcreteDark | Material::Asphalt | Material::Plaster | Material::Brick => Surface::Concrete,
-        Material::Metal | Material::RustMetal | Material::Hazard | Material::ContainerRed | Material::ContainerBlue | Material::ContainerGreen | Material::ContainerYellow => Surface::Metal,
+        Material::Concrete | Material::ConcreteDark | Material::Asphalt | Material::Plaster | Material::Brick => {
+            Surface::Concrete
+        }
+        Material::Metal
+        | Material::RustMetal
+        | Material::Hazard
+        | Material::ContainerRed
+        | Material::ContainerBlue
+        | Material::ContainerGreen
+        | Material::ContainerYellow => Surface::Metal,
         Material::Wood => Surface::Wood,
         Material::Glass => Surface::Glass,
         Material::Gravel => Surface::Gravel,
@@ -58,7 +66,17 @@ pub fn surface_of(m: Material) -> Surface {
 impl Audio {
     pub async fn start(muted: bool, volume: f32) -> Audio {
         let bank = SoundBank::start(muted, volume, volume, audio::render).await;
-        Audio { bank, queue: Vec::new(), steps: [(0., false); 16], prev_pos: [None; 16], next_ambient: 6., clock: 0., started_ambience: false, stems: [0.; STEM_COUNT], seed: 0x9E37_79B9 }
+        Audio {
+            bank,
+            queue: Vec::new(),
+            steps: [(0., false); 16],
+            prev_pos: [None; 16],
+            next_ambient: 6.,
+            clock: 0.,
+            started_ambience: false,
+            stems: [0.; STEM_COUNT],
+            seed: 0x9E37_79B9,
+        }
     }
 
     pub async fn poll(&mut self) {

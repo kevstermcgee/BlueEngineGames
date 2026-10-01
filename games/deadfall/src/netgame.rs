@@ -1,7 +1,7 @@
 //! Deadfall as a [`NetGame`]: the layouts of what crosses the wire, how seats become players, and what a client
 //! keeps between snapshots (a replica of the world, its own predicted body and hands, and the recent past for the
 //! killcam). The network kit owns the lobby, sessions, input streaming and event delivery.
-use crate::hands::{Busy, Ctx, Gun, Hands, Inventory, Out, Sel, Seen};
+use crate::hands::{Busy, Ctx, Gun, Hands, Inventory, Out, Seen, Sel};
 use crate::input::Input;
 use crate::sim::{self, Event, Match, Phase, RosterEntry, Settings, MAX_PLAYERS};
 use crate::weapons;
@@ -251,7 +251,17 @@ fn r_ctrl(r: &mut Reader) -> WireResult<ControllerState> {
     let vertical_velocity = r.f32_within(200.)?;
     let bits = r.u8()?;
     let push = if bits & 2 != 0 { r_v(r, 200.)? } else { V::ZERO };
-    Ok(ControllerState { position, yaw: 0., pitch: 0., velocity, feet, body_height, vertical_velocity, grounded: bits & 1 != 0, push })
+    Ok(ControllerState {
+        position,
+        yaw: 0.,
+        pitch: 0.,
+        velocity,
+        feet,
+        body_height,
+        vertical_velocity,
+        grounded: bits & 1 != 0,
+        push,
+    })
 }
 
 impl Snapshot {
@@ -337,12 +347,24 @@ impl Snapshot {
             let feet = r_pos(r)?.0;
             let yaw = r_angle(r)?;
             let pitch = r_pitch(r)?;
-            players.push(PlayerView { slot, flags, eye, feet, yaw, pitch, health: r.u8()?, weapon: r.u8()?, kills: r.u8()?, deaths: r.u8()? });
+            players.push(PlayerView {
+                slot,
+                flags,
+                eye,
+                feet,
+                yaw,
+                pitch,
+                health: r.u8()?,
+                weapon: r.u8()?,
+                kills: r.u8()?,
+                deaths: r.u8()?,
+            });
         }
         let me = if r.u8()? == 1 {
             let ctrl = r_ctrl(r)?;
             let hands = r_hands(r)?;
-            let inv = Inventory { primary: r_gun(r)?, secondary: r_gun(r)?, melee: r.u8()?, grenades: [r.u8()?, r.u8()?] };
+            let inv =
+                Inventory { primary: r_gun(r)?, secondary: r_gun(r)?, melee: r.u8()?, grenades: [r.u8()?, r.u8()?] };
             Some(OwnView {
                 ctrl,
                 hands,
@@ -368,7 +390,12 @@ impl Snapshot {
         let nz = r.u8()? as usize;
         let mut zones = Vec::with_capacity(nz.min(12));
         for _ in 0..nz.min(12) {
-            zones.push(ZoneView { kind: r.u8()?, pos: r_pos(r)?, radius: r.u8()? as f32 / 4., seconds_left: r.u8()? as f32 });
+            zones.push(ZoneView {
+                kind: r.u8()?,
+                pos: r_pos(r)?,
+                radius: r.u8()? as f32 / 4.,
+                seconds_left: r.u8()? as f32,
+            });
         }
         let loot = r.u64()?;
         let nd = r.u8()? as usize;
@@ -497,7 +524,14 @@ fn read_event(r: &mut Reader) -> WireResult<Event> {
             let b = r.u8()?;
             Event::Shot { shooter, weapon, from, to, hit: b & 15, material: b >> 4 }
         }
-        2 => Event::Hurt { victim: r.u8()?, attacker: r.u8()?, damage: r.u8()?, head: r.u8()? != 0, weapon: r.u8()?, from: r_pos(r)? },
+        2 => Event::Hurt {
+            victim: r.u8()?,
+            attacker: r.u8()?,
+            damage: r.u8()?,
+            head: r.u8()? != 0,
+            weapon: r.u8()?,
+            from: r_pos(r)?,
+        },
         3 => Event::Kill { killer: r.u8()?, victim: r.u8()?, weapon: r.u8()?, head: r.u8()? != 0 },
         4 => Event::Blast { pos: r_pos(r)?, kind: r.u8()?, radius: r.u8()? as f32 / 4. },
         5 => {
@@ -642,7 +676,11 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
             set(&mut flags, p.crouched(), flag::CROUCH);
             set(&mut flags, !p.ctrl.is_grounded(), flag::AIR);
             set(&mut flags, p.hands.ads > 0.5, flag::ADS);
-            set(&mut flags, m.tick.saturating_sub(p.last_shot_tick) < 6 && p.alive && p.last_shot_tick > 0 && p.hands.recoil > 0.5, flag::FIRING);
+            set(
+                &mut flags,
+                m.tick.saturating_sub(p.last_shot_tick) < 6 && p.alive && p.last_shot_tick > 0 && p.hands.recoil > 0.5,
+                flag::FIRING,
+            );
             set(&mut flags, matches!(p.hands.busy, Busy::Reload | Busy::ShellLoad), flag::RELOAD);
             set(&mut flags, !p.human, flag::BOT);
             set(&mut flags, m.tick < p.protect_until, flag::PROTECT);
@@ -672,7 +710,11 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
             armor: p.armor,
             flash_left: if p.flash_until > m.tick { (p.flash_until - m.tick) as f32 / 60. } else { 0. },
             flash_total: p.flash_total as f32 / 60.,
-            respawn_ticks: if p.alive { 0 } else { (p.died_at + sim::RESPAWN_TICKS).saturating_sub(m.tick).min(65535) as u16 },
+            respawn_ticks: if p.alive {
+                0
+            } else {
+                (p.died_at + sim::RESPAWN_TICKS).saturating_sub(m.tick).min(65535) as u16
+            },
             killer: p.killed_by.unwrap_or(255),
             killer_weapon: p.killed_with,
             died_tick: p.died_at,
@@ -704,7 +746,12 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
         zones: m
             .zones
             .iter()
-            .map(|z| ZoneView { kind: z.kind as u8, pos: z.pos, radius: z.radius, seconds_left: z.until.saturating_sub(m.tick) as f32 / 60. })
+            .map(|z| ZoneView {
+                kind: z.kind as u8,
+                pos: z.pos,
+                radius: z.radius,
+                seconds_left: z.until.saturating_sub(m.tick) as f32 / 60.,
+            })
             .collect(),
         loot,
         dropped: m.dropped.iter().map(|d| DroppedView { id: d.id, weapon: d.gun.id, pos: d.pos }).collect(),
@@ -798,7 +845,12 @@ impl DeadfallView {
     }
 
     pub fn snapshot_at(&self, tick: f32) -> Option<&Snapshot> {
-        self.history.iter().map(|s| &s.snap).filter(|s| s.tick as f32 <= tick).last().or_else(|| self.history.front().map(|s| &s.snap))
+        self.history
+            .iter()
+            .map(|s| &s.snap)
+            .filter(|s| s.tick as f32 <= tick)
+            .last()
+            .or_else(|| self.history.front().map(|s| &s.snap))
     }
 
     pub fn name_of(&self, slot: u8) -> String {
@@ -821,7 +873,8 @@ impl DeadfallView {
         let Some(body) = self.body.as_mut() else { return };
         let speed = weapons::get(self.inv.id_in(self.hands.sel)).map_or(1., |d| d.move_speed);
         sim::step_body(body, input, speed, &world.colliders);
-        let ctx = Ctx { speed_frac: sim::speed_fraction(body), crouched: body.is_crouched(), airborne: !body.is_grounded() };
+        let ctx =
+            Ctx { speed_frac: sim::speed_fraction(body), crouched: body.is_crouched(), airborne: !body.is_grounded() };
         let outs = self.hands.tick(&mut self.inv, input, &ctx);
         // Presses the server handles (use, drop) are acknowledged here too so a replay never doubles them.
         self.hands.seen.use_ = input.use_seq;
@@ -950,7 +1003,12 @@ impl ClientView<DeadfallGame> for DeadfallView {
     }
 
     fn prediction(&self) -> PredictionStats {
-        PredictionStats { corrections: self.corrections as u64, snaps: self.snaps as u64, last_error: self.error.length(), max_error: self.max_error }
+        PredictionStats {
+            corrections: self.corrections as u64,
+            snaps: self.snaps as u64,
+            last_error: self.error.length(),
+            max_error: self.max_error,
+        }
     }
 }
 
@@ -969,7 +1027,8 @@ mod tests {
 
     #[test]
     fn a_snapshot_round_trips_and_fits_a_datagram_in_the_worst_case() {
-        let (mut m, _) = Match::new(1, &[(0, "A".into()), (1, "B".into())], Settings { bots: true, ..Default::default() });
+        let (mut m, _) =
+            Match::new(1, &[(0, "A".into()), (1, "B".into())], Settings { bots: true, ..Default::default() });
         for _ in 0..30 {
             m.step(&[None, None]);
         }
@@ -1014,7 +1073,9 @@ mod tests {
             let bytes = w.finish();
             let back = read_event(&mut Reader::new(&bytes)).unwrap();
             match (&e, &back) {
-                (Event::Shot { from, to, .. }, Event::Shot { from: f2, to: t2, .. }) => assert!((*from - *f2).length() < 0.05 && (*to - *t2).length() < 0.05),
+                (Event::Shot { from, to, .. }, Event::Shot { from: f2, to: t2, .. }) => {
+                    assert!((*from - *f2).length() < 0.05 && (*to - *t2).length() < 0.05)
+                }
                 (Event::Hurt { from, .. }, Event::Hurt { from: f2, .. }) => assert!((*from - *f2).length() < 0.05),
                 _ => assert_eq!(e, back),
             }

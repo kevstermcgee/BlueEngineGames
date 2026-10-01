@@ -11,8 +11,8 @@ use std::collections::VecDeque;
 use std::sync::{Arc, Mutex, OnceLock};
 use vesper3d::math::V;
 use vesper3d::viewer::controller::{Collider, Controller};
-use vesper3d::viewer::profile::ControllerProfile;
 use vesper3d::viewer::devkit::Rng;
+use vesper3d::viewer::profile::ControllerProfile;
 
 pub const TICK_HZ: u64 = 60;
 pub const MAX_PLAYERS: usize = 12;
@@ -64,7 +64,8 @@ impl Default for Settings {
     }
 }
 
-static SETTINGS: Mutex<Settings> = Mutex::new(Settings { end: EndRule::Kills { target: 40 }, bots: false, bot_skill: 1 });
+static SETTINGS: Mutex<Settings> =
+    Mutex::new(Settings { end: EndRule::Kills { target: 40 }, bots: false, bot_skill: 1 });
 
 /// The settings the next match uses. The network kit starts matches through a static function, so a server
 /// process says how it wants them here before its first match.
@@ -355,12 +356,8 @@ impl Match {
                 }
             }
         }
-        let loot = world
-            .level
-            .loot
-            .iter()
-            .map(|l| LootState { weapon: l.weapon, available: true, back_at: 0 })
-            .collect();
+        let loot =
+            world.level.loot.iter().map(|l| LootState { weapon: l.weapon, available: true, back_at: 0 }).collect();
         let mut m = Match {
             world,
             settings,
@@ -383,7 +380,12 @@ impl Match {
         let roster = m
             .players
             .iter()
-            .map(|p| RosterEntry { slot: p.slot as u8, team: p.team.index() as u8, bot: !p.human, name: p.name.clone() })
+            .map(|p| RosterEntry {
+                slot: p.slot as u8,
+                team: p.team.index() as u8,
+                bot: !p.human,
+                name: p.name.clone(),
+            })
             .collect();
         m.events.push(Event::Roster(roster));
         (m, slots)
@@ -413,18 +415,8 @@ impl Match {
     pub fn spawn(&mut self, slot: usize) {
         let team = self.players[slot].team;
         let spawns = &self.world.level.spawns[team.index()];
-        let enemies: Vec<V> = self
-            .players
-            .iter()
-            .filter(|p| p.alive && p.team != team)
-            .map(|p| p.feet())
-            .collect();
-        let friends: Vec<V> = self
-            .players
-            .iter()
-            .filter(|p| p.alive && p.slot != slot)
-            .map(|p| p.feet())
-            .collect();
+        let enemies: Vec<V> = self.players.iter().filter(|p| p.alive && p.team != team).map(|p| p.feet()).collect();
+        let friends: Vec<V> = self.players.iter().filter(|p| p.alive && p.slot != slot).map(|p| p.feet()).collect();
         let mut best = (f32::MIN, 0usize);
         for (i, s) in spawns.iter().enumerate() {
             let crowded = friends.iter().any(|f| (*f - s.pos).length() < 1.2);
@@ -642,7 +634,11 @@ impl Match {
 
     /// The pose of `slot` as the shooter saw it `back` ticks ago.
     fn pose_back(&self, slot: usize, back: u32) -> PoseRecord {
-        let cur = PoseRecord { eye: self.players[slot].eye(), feet: self.players[slot].ctrl.feet_height(), alive: self.players[slot].alive };
+        let cur = PoseRecord {
+            eye: self.players[slot].eye(),
+            feet: self.players[slot].ctrl.feet_height(),
+            alive: self.players[slot].alive,
+        };
         if back == 0 || self.history.is_empty() {
             return cur;
         }
@@ -659,7 +655,16 @@ impl Match {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn fire_hitscan(&mut self, slot: usize, def: &WeaponDef, weapon: WeaponId, pellets: u8, punch: (f32, f32), spread: f32, input: &Input) {
+    fn fire_hitscan(
+        &mut self,
+        slot: usize,
+        def: &WeaponDef,
+        weapon: WeaponId,
+        pellets: u8,
+        punch: (f32, f32),
+        spread: f32,
+        input: &Input,
+    ) {
         let origin = self.players[slot].eye();
         let back = self.rewind_for(input);
         let mut events_to: Option<(V, u8, u8)> = None;
@@ -737,7 +742,16 @@ impl Match {
     // ---- damage and death ---------------------------------------------------------------------------------------
 
     #[allow(clippy::too_many_arguments)]
-    pub fn damage(&mut self, victim: usize, attacker: Option<usize>, weapon: WeaponId, amount: f32, head: bool, armor_pen: f32, from: V) {
+    pub fn damage(
+        &mut self,
+        victim: usize,
+        attacker: Option<usize>,
+        weapon: WeaponId,
+        amount: f32,
+        head: bool,
+        armor_pen: f32,
+        from: V,
+    ) {
         if !self.players[victim].alive || amount <= 0. || self.phase != Phase::Live {
             return;
         }
@@ -819,12 +833,7 @@ impl Match {
                 self.scores[team] += 1;
             }
         }
-        self.events.push(Event::Kill {
-            killer: killer.map_or(255, |k| k as u8),
-            victim: victim as u8,
-            weapon,
-            head,
-        });
+        self.events.push(Event::Kill { killer: killer.map_or(255, |k| k as u8), victim: victim as u8, weapon, head });
     }
 
     fn drop_gun(&mut self, gun: Gun, at: V) {
@@ -844,7 +853,9 @@ impl Match {
             let p = &mut self.players[slot];
             match sel {
                 Sel::Primary => p.inv.primary.take(),
-                Sel::Secondary if p.inv.secondary.map(|g| g.id) != weapons::id_of(weapons::START_SIDEARM) => p.inv.secondary.take(),
+                Sel::Secondary if p.inv.secondary.map(|g| g.id) != weapons::id_of(weapons::START_SIDEARM) => {
+                    p.inv.secondary.take()
+                }
                 _ => None,
             }
         };
@@ -993,7 +1004,11 @@ impl Match {
             _ => None,
         };
         if let Some(sel) = want {
-            if p.hands.sel != sel && matches!(p.hands.busy, hands::Busy::Idle) && p.inv.id_in(sel) != 0 && sel == Sel::Primary {
+            if p.hands.sel != sel
+                && matches!(p.hands.busy, hands::Busy::Idle)
+                && p.inv.id_in(sel) != 0
+                && sel == Sel::Primary
+            {
                 p.hands.sel = sel;
                 p.hands.busy = hands::Busy::Draw;
                 p.hands.total = hands::ticks(def.draw_s);
@@ -1090,7 +1105,15 @@ impl Match {
                     if !q.alive || q.slot as u8 == p.owner && p.age < 12 {
                         continue;
                     }
-                    if hit_body(p.pos - p.vel * DT, p.vel.norm(), q.eye(), q.ctrl.feet_height(), p.vel.length() * DT + 0.2).is_some() {
+                    if hit_body(
+                        p.pos - p.vel * DT,
+                        p.vel.norm(),
+                        q.eye(),
+                        q.ctrl.feet_height(),
+                        p.vel.length() * DT + 0.2,
+                    )
+                    .is_some()
+                    {
                         boom = true;
                         break;
                     }
@@ -1156,11 +1179,25 @@ impl Match {
             }
             Effect::Smoke { radius, seconds } => {
                 self.events.push(Event::Blast { pos: p.pos, kind: 2, radius });
-                self.zones.push(Zone { kind: ZoneKind::Smoke, pos: p.pos + V(0., 0.6, 0.), radius, until: self.tick + (seconds * 60.) as u32, owner: p.owner, dps: 0. });
+                self.zones.push(Zone {
+                    kind: ZoneKind::Smoke,
+                    pos: p.pos + V(0., 0.6, 0.),
+                    radius,
+                    until: self.tick + (seconds * 60.) as u32,
+                    owner: p.owner,
+                    dps: 0.,
+                });
             }
             Effect::Fire { radius, seconds } => {
                 self.events.push(Event::Blast { pos: p.pos, kind: 3, radius });
-                self.zones.push(Zone { kind: ZoneKind::Fire, pos: p.pos, radius, until: self.tick + (seconds * 60.) as u32, owner: p.owner, dps: def.blast_damage });
+                self.zones.push(Zone {
+                    kind: ZoneKind::Fire,
+                    pos: p.pos,
+                    radius,
+                    until: self.tick + (seconds * 60.) as u32,
+                    owner: p.owner,
+                    dps: def.blast_damage,
+                });
             }
         }
         while self.zones.len() > 12 {
@@ -1207,7 +1244,9 @@ impl Match {
             // Melee is forgiving: a fat ray (three rays fanned a little) so a swing at the body connects.
             for (dy, dp) in [(0., 0.), (0.25, 0.), (-0.25, 0.), (0., 0.3)] {
                 let d = Self::aim_dir(yaw + dy, pitch + dp);
-                if let Some((t, part)) = hit_body(origin, d, p.eye(), p.ctrl.feet_height(), wall.min(best.map_or(m.reach, |b| b.0))) {
+                if let Some((t, part)) =
+                    hit_body(origin, d, p.eye(), p.ctrl.feet_height(), wall.min(best.map_or(m.reach, |b| b.0)))
+                {
                     best = Some((t, p.slot, part));
                 }
             }
@@ -1267,7 +1306,13 @@ impl Match {
 fn material_code(m: Material) -> u8 {
     match m {
         Material::Concrete | Material::ConcreteDark | Material::Asphalt | Material::Plaster | Material::Brick => 0,
-        Material::Metal | Material::RustMetal | Material::Hazard | Material::ContainerRed | Material::ContainerBlue | Material::ContainerGreen | Material::ContainerYellow => 1,
+        Material::Metal
+        | Material::RustMetal
+        | Material::Hazard
+        | Material::ContainerRed
+        | Material::ContainerBlue
+        | Material::ContainerGreen
+        | Material::ContainerYellow => 1,
         Material::Wood => 2,
         Material::Glass => 3,
         Material::Gravel | Material::Dirt | Material::Grass => 4,

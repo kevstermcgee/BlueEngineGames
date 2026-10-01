@@ -113,7 +113,6 @@ struct Session {
     over_handled: bool,
     solo: bool,
     hosting: Option<String>,
-    seen_tick: u16,
     skins: [u8; 16],
     last_alive: bool,
     sway: (f32, f32),
@@ -145,7 +144,6 @@ pub struct App {
     join_items: Vec<Item>,
     settings_items: Vec<Item>,
     results_menu: Menu,
-    pause_menu: Menu,
     vignette: Texture2D,
     play_seconds_unsaved: f32,
     // Capture and scripted runs.
@@ -215,11 +213,12 @@ impl App {
             join_items: Vec::new(),
             settings_items: Vec::new(),
             results_menu: Menu::new(),
-            pause_menu: Menu::new(),
             vignette,
             play_seconds_unsaved: 0.,
             capture_dir: flag_value(args, "--capture").map(Into::into),
-            capture_frames: flag_value(args, "--frames").map(|v| v.split(',').filter_map(|p| p.trim().parse().ok()).collect()).unwrap_or_default(),
+            capture_frames: flag_value(args, "--frames")
+                .map(|v| v.split(',').filter_map(|p| p.trim().parse().ok()).collect())
+                .unwrap_or_default(),
             frame: 0,
             quit: false,
             go_home: false,
@@ -257,7 +256,13 @@ impl App {
         let p = &self.prefs;
         let team = vec!["Ironclad".to_string(), "Nightwatch".to_string()];
         let skill = vec!["Easy".to_string(), "Normal".to_string(), "Hard".to_string()];
-        let options = |time: bool| Item::Choice(if time { "Length".into() } else { "Kills to win".into() }, target_labels(time), if time { pick(&MINUTES, p.minutes) } else { pick(&KILL_TARGETS, p.kills_target) });
+        let options = |time: bool| {
+            Item::Choice(
+                if time { "Length".into() } else { "Kills to win".into() },
+                target_labels(time),
+                if time { pick(&MINUTES, p.minutes) } else { pick(&KILL_TARGETS, p.kills_target) },
+            )
+        };
         self.solo_items = vec![
             Item::Choice("Team".into(), team.clone(), p.team as usize),
             Item::Choice("Ends".into(), end_choices(), p.end_by_time as usize),
@@ -339,7 +344,15 @@ impl App {
         }
     }
 
-    fn connect(&mut self, addr: &str, key: &str, team: u8, server: Option<LocalServer>, solo: bool, hosting: Option<String>) {
+    fn connect(
+        &mut self,
+        addr: &str,
+        key: &str,
+        team: u8,
+        server: Option<LocalServer>,
+        solo: bool,
+        hosting: Option<String>,
+    ) {
         let target = if addr.contains(':') { addr.to_string() } else { format!("{addr}:{PORT}") };
         let resolved = target.to_socket_addrs().ok().and_then(|mut a| a.next());
         let Some(address) = resolved else {
@@ -347,7 +360,8 @@ impl App {
             return;
         };
         let name = self.prefs.display_name();
-        let made = client_transport(TransportProfile::Development, address).and_then(|t| NetClient::new(t, address, ClientConfig { name, key: key.to_string(), choice: team }));
+        let made = client_transport(TransportProfile::Development, address)
+            .and_then(|t| NetClient::new(t, address, ClientConfig { name, key: key.to_string(), choice: team }));
         match made {
             Ok(client) => {
                 let skin = (std::process::id() as u8) % 4;
@@ -370,7 +384,6 @@ impl App {
                     over_handled: false,
                     solo,
                     hosting,
-                    seen_tick: 0,
                     skins,
                     last_alive: false,
                     sway: (0., 0.),
@@ -394,8 +407,18 @@ impl App {
         self.prefs.minutes = minutes;
         self.prefs.bot_skill = skill;
         self.save_prefs();
-        let settings = Settings { end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } }, bots: true, bot_skill: skill };
-        let cfg = ServerConfig { participants: 12, auto_start_seconds: 1, countdown_seconds: 3, results_seconds: 15, ..Default::default() };
+        let settings = Settings {
+            end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } },
+            bots: true,
+            bot_skill: skill,
+        };
+        let cfg = ServerConfig {
+            participants: 12,
+            auto_start_seconds: 1,
+            countdown_seconds: 3,
+            results_seconds: 15,
+            ..Default::default()
+        };
         match LocalServer::start("127.0.0.1:0", cfg, settings) {
             Ok(server) => {
                 let addr = server.addr.to_string();
@@ -419,8 +442,19 @@ impl App {
         self.prefs.bot_skill = skill;
         self.save_prefs();
         let key = self.host_key.trim().to_string();
-        let settings = Settings { end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } }, bots, bot_skill: skill };
-        let cfg = ServerConfig { participants: 12, auto_start_seconds: 0, countdown_seconds: 5, results_seconds: 20, join_key: (!key.is_empty()).then(|| key.clone()), ..Default::default() };
+        let settings = Settings {
+            end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } },
+            bots,
+            bot_skill: skill,
+        };
+        let cfg = ServerConfig {
+            participants: 12,
+            auto_start_seconds: 0,
+            countdown_seconds: 5,
+            results_seconds: 20,
+            join_key: (!key.is_empty()).then(|| key.clone()),
+            ..Default::default()
+        };
         match LocalServer::start(&format!("0.0.0.0:{port}"), cfg, settings) {
             Ok(server) => {
                 let hint = format!("Friends join: {}:{}", local_ip(), port);
@@ -446,12 +480,17 @@ impl App {
     /// One frame; true when the game should close.
     async fn frame(&mut self, now: f64) -> bool {
         let playing = self.screen == Screen::Playing && self.session.is_some();
-        let alive = playing && self.session.as_ref().is_some_and(|s| s.client.view().own.as_ref().is_some_and(|o| o.alive) && !s.over_handled);
+        let alive = playing
+            && self
+                .session
+                .as_ref()
+                .is_some_and(|s| s.client.view().own.as_ref().is_some_and(|o| o.alive) && !s.over_handled);
         self.input.begin_frame(&mut self.shell, alive, super::platform::focused());
         let dt = self.input.frame_seconds();
         self.time += dt;
         self.audio.poll().await;
-        let mut nav = Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
+        let mut nav =
+            Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
         if let Some(sc) = self.controls.script.as_mut() {
             sc.frame += 1;
             nav.accept |= sc.pressed_now("accept");
@@ -509,7 +548,13 @@ impl App {
         let eye = vec3((t).cos() * r, y, (t).sin() * r * 0.7);
         let target = vec3(0., 2., 0.);
         let d = (target - eye).normalize();
-        let view = View { eye, yaw: d.x.atan2(-d.z), pitch: d.y.asin(), roll: 0., fov: render::vfov(80., screen_width() / screen_height()) };
+        let view = View {
+            eye,
+            yaw: d.x.atan2(-d.z),
+            pitch: d.y.asin(),
+            roll: 0.,
+            fov: render::vfov(80., screen_width() / screen_height()),
+        };
         self.renderer.update(dt);
         self.renderer.draw_world(&view, &[], None, u64::MAX, &[], &[], &[], &[0; 16], dt);
         draw_rectangle(0., 0., screen_width(), screen_height(), Color::new(0., 0., 0., 0.45));
@@ -533,7 +578,14 @@ impl App {
         match screen {
             Screen::Main => {
                 self.title("team deathmatch");
-                let mut items = vec![Item::Button("Solo".into()), Item::Button("Host".into()), Item::Button("Join".into()), Item::Button("Stats".into()), Item::Button("Settings".into()), Item::Button("Quit".into())];
+                let mut items = vec![
+                    Item::Button("Solo".into()),
+                    Item::Button("Host".into()),
+                    Item::Button("Join".into()),
+                    Item::Button("Stats".into()),
+                    Item::Button("Settings".into()),
+                    Item::Button("Quit".into()),
+                ];
                 let hit = self.menu.run(nav, &mut items, cx, 210., 380., dt);
                 if let Hit::Item(i) = hit {
                     self.audio.ui(Sfx::MenuConfirm, 0.5);
@@ -673,7 +725,10 @@ impl App {
                 self.title("");
                 hud::text_centered(&message, cx, screen_height() * 0.45, 26. * ui, Color::new(1., 0.55, 0.5, 1.));
                 let mut items = vec![Item::Button("Back".into())];
-                if matches!(self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt), Hit::Item(_) | Hit::Back) {
+                if matches!(
+                    self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt),
+                    Hit::Item(_) | Hit::Back
+                ) {
                     back(self);
                 }
             }
@@ -686,7 +741,11 @@ impl App {
         let time = matches!(items.get(ends), Some(Item::Choice(_, _, 1)));
         let showing_time = matches!(items.get(target), Some(Item::Choice(l, _, _)) if l == "Length");
         if time != showing_time {
-            items[target] = Item::Choice(if time { "Length".into() } else { "Kills to win".into() }, target_labels(time), if time { pick(&MINUTES, self.prefs.minutes) } else { pick(&KILL_TARGETS, self.prefs.kills_target) });
+            items[target] = Item::Choice(
+                if time { "Length".into() } else { "Kills to win".into() },
+                target_labels(time),
+                if time { pick(&MINUTES, self.prefs.minutes) } else { pick(&KILL_TARGETS, self.prefs.kills_target) },
+            );
         }
     }
 
@@ -696,7 +755,9 @@ impl App {
         let cx = screen_width() * 0.5;
         let w = 720. * ui;
         ui::panel(cx - w * 0.5, 190. * ui, w, 430. * ui, "LIFETIME");
-        let fav = s.favourite_weapon().map_or("-".to_string(), |(k, n)| format!("{} ({n} kills)", weapons::WEAPONS.iter().find(|w| w.key == k).map_or(k, |w| w.name)));
+        let fav = s.favourite_weapon().map_or("-".to_string(), |(k, n)| {
+            format!("{} ({n} kills)", weapons::WEAPONS.iter().find(|w| w.key == k).map_or(k, |w| w.name))
+        });
         let rows = [
             ("Kills", format!("{}", s.kills)),
             ("Deaths", format!("{}", s.deaths)),
@@ -727,7 +788,8 @@ impl App {
         let dots = ".".repeat(1 + (self.time * 2.) as usize % 3);
         hud::text_centered(&format!("Connecting{dots}"), cx, screen_height() * 0.45, 30. * ui, TEXT);
         let mut items = vec![Item::Button("Cancel".into())];
-        if matches!(self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt), Hit::Item(_) | Hit::Back) {
+        if matches!(self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt), Hit::Item(_) | Hit::Back)
+        {
             self.leave();
         }
     }
@@ -759,7 +821,13 @@ impl App {
                     if !e.ready {
                         c.a = 0.7;
                     }
-                    hud::text_outlined(&format!("{}{}", e.name, if e.ready { "  (ready)" } else { "" }), x + 18. * ui, py + 70. * ui + n as f32 * 30. * ui, 22. * ui, c);
+                    hud::text_outlined(
+                        &format!("{}{}", e.name, if e.ready { "  (ready)" } else { "" }),
+                        x + 18. * ui,
+                        py + 70. * ui + n as f32 * 30. * ui,
+                        22. * ui,
+                        c,
+                    );
                     n += 1;
                 }
             }
@@ -892,7 +960,8 @@ impl App {
         let render_tick = view.render_tick();
         let positions = view.players_at(render_tick);
         let pos_of = |slot: u8| positions.iter().find(|p| p.slot == slot).map(|p| p.eye);
-        let names: Vec<(u8, String, usize)> = view.roster.iter().map(|r| (r.slot, r.name.clone(), r.team as usize)).collect();
+        let names: Vec<(u8, String, usize)> =
+            view.roster.iter().map(|r| (r.slot, r.name.clone(), r.team as usize)).collect();
         let name_of = |slot: u8| names.iter().find(|n| n.0 == slot).map_or("?".to_string(), |n| n.1.clone());
         let team_of = |slot: u8| names.iter().find(|n| n.0 == slot).map_or(0, |n| n.2);
         let my_yaw = self.controls.yaw;
@@ -905,7 +974,8 @@ impl App {
                 }
                 Event::Shot { shooter, weapon, from, to, hit: kind, material } => {
                     let mine = Some(*shooter) == me;
-                    let heavy = weapons::get(*weapon).is_some_and(|d| matches!(d.class, weapons::Class::Sniper | weapons::Class::Dmr));
+                    let heavy = weapons::get(*weapon)
+                        .is_some_and(|d| matches!(d.class, weapons::Class::Sniper | weapons::Class::Dmr));
                     self.renderer.tracer(*from, *to, heavy);
                     let key = weapons::get(*weapon).map_or("", |d| d.key);
                     if !mine {
@@ -969,8 +1039,14 @@ impl App {
                 Event::Kill { killer, victim, weapon, head } => {
                     let key = weapons::get(*weapon).map_or("world", |d| d.name);
                     let kname = if *killer == 255 { "a fall".to_string() } else { name_of(*killer) };
-                    let line = format!("{} [{}{}] {}", kname, key, if *head { ", headshot" } else { "" }, name_of(*victim));
-                    s.feed.push(Feed { text: line, age: 0., mine: Some(*killer) == me || Some(*victim) == me, team: if *killer == 255 { team_of(*victim) } else { team_of(*killer) } });
+                    let line =
+                        format!("{} [{}{}] {}", kname, key, if *head { ", headshot" } else { "" }, name_of(*victim));
+                    s.feed.push(Feed {
+                        text: line,
+                        age: 0.,
+                        mine: Some(*killer) == me || Some(*victim) == me,
+                        team: if *killer == 255 { team_of(*victim) } else { team_of(*killer) },
+                    });
                     if Some(*killer) == me && *victim != *killer {
                         s.notice = (format!("eliminated {}", name_of(*victim)), 2.2);
                         s.kills_by_me.push((*victim, 0.));
@@ -984,7 +1060,13 @@ impl App {
                     let d = (*pos - listener.pos).length();
                     match kind {
                         0 => {
-                            self.audio.at(if d < 50. { Sfx::Explosion } else { Sfx::ExplosionDistant }, *pos, &listener, 1., 160.);
+                            self.audio.at(
+                                if d < 50. { Sfx::Explosion } else { Sfx::ExplosionDistant },
+                                *pos,
+                                &listener,
+                                1.,
+                                160.,
+                            );
                             self.renderer.fx.fireball(c + vec3(0., 0.6, 0.), *radius * 0.6, 0.6, [1., 0.65, 0.25]);
                             self.renderer.fx.ring(c, Vec3::Y, 0.3, *radius, 0.45, [1., 0.8, 0.5]);
                             self.renderer.fx.sparks(c + vec3(0., 0.4, 0.), 40, 9., [1., 0.7, 0.3]);
@@ -1008,7 +1090,13 @@ impl App {
                             self.audio.at(swing, p, &listener, 0.7, 25.);
                         }
                         if *landed {
-                            self.audio.at(audio::melee_hit_for_key(key).unwrap_or(Sfx::KnifeHit), p, &listener, 0.9, 30.);
+                            self.audio.at(
+                                audio::melee_hit_for_key(key).unwrap_or(Sfx::KnifeHit),
+                                p,
+                                &listener,
+                                0.9,
+                                30.,
+                            );
                         }
                     }
                 }
@@ -1055,7 +1143,13 @@ impl App {
         let latest = view_state.latest().map(|l| l.snap.clone());
         let Some(snap) = latest else {
             self.backdrop(dt);
-            hud::text_centered("Waiting for the first snapshot...", screen_width() * 0.5, screen_height() * 0.5, 28. * hud::ui_scale(), TEXT);
+            hud::text_centered(
+                "Waiting for the first snapshot...",
+                screen_width() * 0.5,
+                screen_height() * 0.5,
+                28. * hud::ui_scale(),
+                TEXT,
+            );
             self.session = Some(s);
             return;
         };
@@ -1083,7 +1177,13 @@ impl App {
         if alive && !s.last_alive {
             if let Some(o) = &own {
                 self.controls.face(o.ctrl.yaw, 0.);
-                self.controls.sync_counters(o.hands.seen.reload, o.hands.seen.use_, o.hands.seen.melee, o.hands.seen.drop, o.hands.seen.switch);
+                self.controls.sync_counters(
+                    o.hands.seen.reload,
+                    o.hands.seen.use_,
+                    o.hands.seen.melee,
+                    o.hands.seen.drop,
+                    o.hands.seen.switch,
+                );
             }
         }
         s.last_alive = alive;
@@ -1145,15 +1245,25 @@ impl App {
             let aspect = screen_width() / screen_height();
             let base = render::vfov(render::HFOV, aspect);
             let fov = base * ads_ratio;
-            s.sway = (((self.controls.yaw - s.last_angles.0).sin()).clamp(-0.05, 0.05), (self.controls.pitch - s.last_angles.1).clamp(-0.05, 0.05));
+            s.sway = (
+                ((self.controls.yaw - s.last_angles.0).sin()).clamp(-0.05, 0.05),
+                (self.controls.pitch - s.last_angles.1).clamp(-0.05, 0.05),
+            );
             s.last_angles = (self.controls.yaw, self.controls.pitch);
             (View { eye: to_v3(eye), yaw, pitch, roll: 0., fov }, me_slot, v.hands, v.hands.weapon(&v.inv), 0., 0.)
         } else {
             // The killcam: the killer's eyes, replayed from a few seconds before the death.
             let o = own.as_ref();
-            let (killer, weapon, died, left) = o.map_or((255, 0, snap.tick, 0), |o| (o.killer, o.killer_weapon, o.died_tick, o.respawn_ticks));
+            let (killer, weapon, died, left) =
+                o.map_or((255, 0, snap.tick, 0), |o| (o.killer, o.killer_weapon, o.died_tick, o.respawn_ticks));
             if s.killcam.is_none() && o.is_some() {
-                s.killcam = Some(Killcam { started: now, elapsed0: (sim::RESPAWN_TICKS as f32 - left as f32) / 60., killer, weapon, head: false });
+                s.killcam = Some(Killcam {
+                    started: now,
+                    elapsed0: (sim::RESPAWN_TICKS as f32 - left as f32) / 60.,
+                    killer,
+                    weapon,
+                    head: false,
+                });
                 self.audio.ui(Sfx::KillcamWhoosh, 0.7);
             }
             let kc = s.killcam.as_ref();
@@ -1180,26 +1290,56 @@ impl App {
                     (e, self.controls.yaw, 0.3, Hands::default(), 0)
                 }
             };
-            let name = if killer == 255 { "the fall".to_string() } else { roster.iter().find(|r| r.slot == killer).map_or("?".into(), |r| r.name.clone()) };
+            let name = if killer == 255 {
+                "the fall".to_string()
+            } else {
+                roster.iter().find(|r| r.slot == killer).map_or("?".into(), |r| r.name.clone())
+            };
             let wname = weapons::get(weapon).map_or("", |d| d.name).to_string();
             killcam_info = Some((name, wname, (left as f32 / 60.).max(0.), false));
             let aspect = screen_width() / screen_height();
-            (View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) }, Some(killer as usize), hands, wid, 0., 0.)
+            (
+                View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) },
+                Some(killer as usize),
+                hands,
+                wid,
+                0.,
+                0.,
+            )
         };
         let (view, skip, vm_hands, vm_weapon, _, _) = cam_world;
         let skip = if alive { skip } else { skip.filter(|s| *s < 16) };
 
         // Figures.
-        let roster_team = |slot: u8| roster.iter().find(|r| r.slot == slot).map_or(crate::Team::Ironclad, |r| crate::Team::from_index(r.team as usize));
-        let figures: Vec<Figure> = players_now.iter().map(|p| Figure { slot: p.slot as usize, team: roster_team(p.slot), view: *p }).collect();
+        let roster_team = |slot: u8| {
+            roster
+                .iter()
+                .find(|r| r.slot == slot)
+                .map_or(crate::Team::Ironclad, |r| crate::Team::from_index(r.team as usize))
+        };
+        let figures: Vec<Figure> =
+            players_now.iter().map(|p| Figure { slot: p.slot as usize, team: roster_team(p.slot), view: *p }).collect();
         let v = s.client.view();
         let dropped = latest_dropped(&snap);
-        self.renderer.draw_world(&view, &figures, skip, snap.loot, &dropped.0, &snap.projectiles, &snap.zones, &s.skins, dt);
+        self.renderer.draw_world(
+            &view,
+            &figures,
+            skip,
+            snap.loot,
+            &dropped.0,
+            &snap.projectiles,
+            &snap.zones,
+            &s.skins,
+            dt,
+        );
 
         // Footsteps and ambience.
         let level = crate::level();
         let listener = Listener { pos: view.eye.into_v(), yaw: view.yaw };
-        let walkers: Vec<(usize, V, bool, bool)> = players_now.iter().map(|p| (p.slot as usize, V(p.eye.0, p.feet, p.eye.2), p.has(flag::CROUCH), p.has(flag::ALIVE))).collect();
+        let walkers: Vec<(usize, V, bool, bool)> = players_now
+            .iter()
+            .map(|p| (p.slot as usize, V(p.eye.0, p.feet, p.eye.2), p.has(flag::CROUCH), p.has(flag::ALIVE)))
+            .collect();
         self.audio.footsteps(level, &walkers, &listener, if alive { me_slot } else { None });
         self.audio.update(dt, &listener, level);
 
@@ -1217,7 +1357,8 @@ impl App {
 
         // ---- overlay ----
         let def = weapons::get(v.hands.weapon(&v.inv));
-        let scoped = def.is_some_and(|d| matches!(d.sight, weapons::Sight::Scope { .. })) && v.hands.ads > 0.92 && alive;
+        let scoped =
+            def.is_some_and(|d| matches!(d.sight, weapons::Sight::Scope { .. })) && v.hands.ads > 0.92 && alive;
         if alive {
             if let Some(d) = def {
                 if let weapons::Sight::Scope { zoom } = d.sight {
@@ -1235,12 +1376,24 @@ impl App {
                 overlay::crosshair(v.hands.recoil * 1.2 + (1. - v.hands.ads) * 2., scoped || v.hands.ads > 0.6);
                 let gun = v.inv.gun(v.hands.sel).copied();
                 let reloading = matches!(v.hands.busy, Busy::Reload | Busy::ShellLoad);
-                overlay::health_and_ammo(o.health, o.armor, def, gun.map_or(0, |g| g.mag), gun.map_or(0, |g| g.reserve), reloading, v.inv.grenades.iter().filter(|g| **g != 0).count(), def.map_or("", |d| d.name));
+                overlay::health_and_ammo(
+                    o.health,
+                    o.armor,
+                    def,
+                    gun.map_or(0, |g| g.mag),
+                    gun.map_or(0, |g| g.reserve),
+                    reloading,
+                    v.inv.grenades.iter().filter(|g| **g != 0).count(),
+                    def.map_or("", |d| d.name),
+                );
                 overlay::hit_marker(s.hit_marker.0, s.hit_marker.1);
                 for (a, t) in &s.damage {
                     overlay::damage_arc(*a, *t);
                 }
-                overlay::flash((o.flash_left / o.flash_total.max(0.01)).clamp(0., 1.).min(1.) * if o.flash_left > 0.5 { 1. } else { o.flash_left / 0.5 });
+                overlay::flash(
+                    (o.flash_left / o.flash_total.max(0.01)).clamp(0., 1.).min(1.)
+                        * if o.flash_left > 0.5 { 1. } else { o.flash_left / 0.5 },
+                );
                 if let Some(p) = pickup_prompt(&s, &snap, &v.inv, to_v(view.eye)) {
                     overlay::prompt(&p);
                 }
@@ -1263,7 +1416,14 @@ impl App {
         }
         // The pause menu (Esc): the match goes on without you.
         if self.shell.paused && !over {
-            let quit = self.shell.menu("DEADFALL", &["Move: WASD   Look: mouse   Fire: left mouse   Aim: right mouse", "Reload: R   Use: E   Crouch: Ctrl   Weapons: 1-4 / wheel   Scores: Tab", "Controller: sticks, RT fire, LT aim, A jump, B crouch, X reload"]);
+            let quit = self.shell.menu(
+                "DEADFALL",
+                &[
+                    "Move: WASD   Look: mouse   Fire: left mouse   Aim: right mouse",
+                    "Reload: R   Use: E   Crouch: Ctrl   Weapons: 1-4 / wheel   Scores: Tab",
+                    "Controller: sticks, RT fire, LT aim, A jump, B crouch, X reload",
+                ],
+            );
             if quit {
                 self.session = Some(s);
                 self.leave();
@@ -1334,7 +1494,14 @@ impl App {
         let roster = s.client.view().roster.clone();
         let rows = overlay::rows(&roster, &snap.players);
         let w = (980. * ui).min(screen_width() - 40.);
-        overlay::scoreboard(&rows, snap.scores, s.client.participant().map(|p| p as u8), (screen_width() - w) * 0.5, 130. * ui, w);
+        overlay::scoreboard(
+            &rows,
+            snap.scores,
+            s.client.participant().map(|p| p as u8),
+            (screen_width() - w) * 0.5,
+            130. * ui,
+            w,
+        );
         let mut items = vec![Item::Button("Play again".into()), Item::Button("Home".into())];
         let top = (130. + 110. + 6. * 32. + 40.) * 1.0;
         let hit = self.results_menu.run(nav, &mut items, cx, top, 360., dt);

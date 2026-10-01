@@ -9,7 +9,8 @@ use crate::weapons::{self, Class, Fire, Slot, WeaponDef};
 use vesper3d::math::V;
 use vesper3d::viewer::devkit::Rng;
 
-const NAMES: [&str; 12] = ["Rook", "Vesper", "Flint", "Mako", "Tango", "Ember", "Kestrel", "Bishop", "Nomad", "Sable", "Ranger", "Echo"];
+const NAMES: [&str; 12] =
+    ["Rook", "Vesper", "Flint", "Mako", "Tango", "Ember", "Kestrel", "Bishop", "Nomad", "Sable", "Ranger", "Echo"];
 
 pub fn name(n: usize) -> String {
     NAMES[n % NAMES.len()].to_string()
@@ -86,7 +87,7 @@ impl BotState {
             last_pos: V::ZERO,
             stuck: 0,
             jump_until: 0,
-            aim_yaw: rng.range(0., 6.28),
+            aim_yaw: rng.range(0., std::f32::consts::TAU),
             aim_pitch: 0.,
             offset: (0., 0.),
             offset_until: 0,
@@ -136,7 +137,16 @@ fn preferred_range(def: &WeaponDef) -> f32 {
 pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     let tick = m.tick;
     let me: Player = m.players[slot].clone();
-    let mut input = Input { reload_seq: b.reload_seq, switch_seq: b.switch_seq, switch_to: b.switch_to, use_seq: b.use_seq, melee_seq: b.melee_seq, drop_seq: b.drop_seq, seen_tick: tick as u16, ..Default::default() };
+    let mut input = Input {
+        reload_seq: b.reload_seq,
+        switch_seq: b.switch_seq,
+        switch_to: b.switch_to,
+        use_seq: b.use_seq,
+        melee_seq: b.melee_seq,
+        drop_seq: b.drop_seq,
+        seen_tick: tick as u16,
+        ..Default::default()
+    };
     if !me.alive {
         return input;
     }
@@ -145,7 +155,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     let world = m.world.clone();
 
     // ---- perception (every third tick, staggered) ----
-    if (tick + slot as u32) % 3 == 0 {
+    if (tick + slot as u32).is_multiple_of(3) {
         let mut best: Option<(f32, usize)> = None;
         for e in &m.players {
             if !e.alive || e.team == me.team {
@@ -209,9 +219,15 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
                     b.switch_seq = b.switch_seq.wrapping_add(1);
                 }
             }
-        } else if target.is_none() && gun.is_some_and(|g| g.mag * 2 < def.map_or(1, |d| d.mag) && g.reserve > 0) && tick % 40 == 0 {
+        } else if target.is_none()
+            && gun.is_some_and(|g| g.mag * 2 < def.map_or(1, |d| d.mag) && g.reserve > 0)
+            && tick.is_multiple_of(40)
+        {
             b.reload_seq = b.reload_seq.wrapping_add(1);
-        } else if me.hands.sel == Sel::Secondary && me.inv.primary.is_some_and(|g| g.mag + g.reserve > 0) && target.is_none() {
+        } else if me.hands.sel == Sel::Secondary
+            && me.inv.primary.is_some_and(|g| g.mag + g.reserve > 0)
+            && target.is_none()
+        {
             b.switch_to = 0;
             b.switch_seq = b.switch_seq.wrapping_add(1);
         }
@@ -255,7 +271,15 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
                 }
                 let Some(d) = weapons::get(l.weapon) else { continue };
                 let pos = world.level.loot[i].pos;
-                let score = (pos - feet).length() - if want_primary && d.slot == Slot::Primary { 50. } else if d.slot == Slot::Grenade && me.inv.grenade_count() < 2 { 10. } else { 0. } + m.rng.range(0., 15.);
+                let score = (pos - feet).length()
+                    - if want_primary && d.slot == Slot::Primary {
+                        50.
+                    } else if d.slot == Slot::Grenade && me.inv.grenade_count() < 2 {
+                        10.
+                    } else {
+                        0.
+                    }
+                    + m.rng.range(0., 15.);
                 if d.slot != Slot::Melee && pick.is_none_or(|p| score < p.0) {
                     pick = Some((score, pos));
                 }
@@ -297,7 +321,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     }
 
     // ---- stuck recovery ----
-    if tick % 15 == 0 {
+    if tick.is_multiple_of(15) {
         let moved = (feet - b.last_pos).length();
         b.last_pos = feet;
         if want_dir.length() > 0.3 && moved < 0.15 {
@@ -350,7 +374,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     if want_dir.length() > 0.05 {
         let d = want_dir.norm();
         let f = fwd(b.aim_yaw);
-        let r = V(f.2 * -1., 0., f.0); // right = (cos yaw, sin yaw) = (-f.2, f.0)
+        let r = V(-f.2, 0., f.0); // right = (cos yaw, sin yaw) = (-f.2, f.0)
         let forward = d.0 * f.0 + d.2 * f.2;
         let right = d.0 * r.0 + d.2 * r.2;
         let speed = if target.is_some() && dist_to_target < 10. && b.skill < 2 { 0.7 } else { 1. };
@@ -402,7 +426,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
             b.crouch_until = tick + 45;
         }
         // Close enough to stab and the gun is empty or awkward: quick melee.
-        if dist_to_target < 1.7 && d.class != Class::Shotgun && d.class != Class::Smg && tick % 60 == 0 {
+        if dist_to_target < 1.7 && d.class != Class::Shotgun && d.class != Class::Smg && tick.is_multiple_of(60) {
             b.melee_seq = b.melee_seq.wrapping_add(1);
         }
     }
@@ -410,7 +434,12 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     match b.grenade {
         Grenade::None => {
             if let Some(t) = target {
-                if tick >= b.next_grenade_at && me.inv.grenades[0] != 0 && (8. ..32.).contains(&dist_to_target) && me.hands.busy == Busy::Idle && m.rng.chance(0.02) {
+                if tick >= b.next_grenade_at
+                    && me.inv.grenades[0] != 0
+                    && (8. ..32.).contains(&dist_to_target)
+                    && me.hands.busy == Busy::Idle
+                    && m.rng.chance(0.02)
+                {
                     b.switch_to = 3;
                     b.switch_seq = b.switch_seq.wrapping_add(1);
                     b.grenade = Grenade::Switching(40);

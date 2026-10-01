@@ -89,7 +89,25 @@ pub struct Controls {
 
 impl Controls {
     pub fn new() -> Self {
-        Controls { script: None, yaw: 0., pitch: 0., reload_seq: 0, use_seq: 0, melee_seq: 0, drop_seq: 0, switch_seq: 0, switch_to: 0, jump_latch: false, cycle: 1, scoreboard: false, fire: false, ads: false, crouch: false, walk: false, axes: (0., 0.) }
+        Controls {
+            script: None,
+            yaw: 0.,
+            pitch: 0.,
+            reload_seq: 0,
+            use_seq: 0,
+            melee_seq: 0,
+            drop_seq: 0,
+            switch_seq: 0,
+            switch_to: 0,
+            jump_latch: false,
+            cycle: 1,
+            scoreboard: false,
+            fire: false,
+            ads: false,
+            crouch: false,
+            walk: false,
+            axes: (0., 0.),
+        }
     }
 
     /// Start a new life or match facing `yaw`, and forget held state.
@@ -116,12 +134,23 @@ impl Controls {
 
     /// Read the devices once per frame: look, presses (counters), held state.
     /// `ads_ratio` is how much narrower the aiming field of view is (1 = not aiming); mouse speed follows it.
-    pub fn frame(&mut self, input: &ClientInput, shell: &GameShell, dt: f32, prefs: &Prefs, ads_ratio: f32, has: [bool; 4]) {
+    pub fn frame(
+        &mut self,
+        input: &ClientInput,
+        shell: &GameShell,
+        dt: f32,
+        prefs: &Prefs,
+        ads_ratio: f32,
+        has: [bool; 4],
+    ) {
         if let Some(sc) = self.script.as_ref() {
             let sc = sc.clone();
             self.yaw = (self.yaw + sc.rate("turn")).rem_euclid(std::f32::consts::TAU);
             self.pitch = (self.pitch + sc.rate("pitch")).clamp(-PITCH_LIMIT, PITCH_LIMIT);
-            self.axes = (f32::from(sc.held("right")) - f32::from(sc.held("left")), f32::from(sc.held("fwd")) - f32::from(sc.held("back")));
+            self.axes = (
+                f32::from(sc.held("right")) - f32::from(sc.held("left")),
+                f32::from(sc.held("fwd")) - f32::from(sc.held("back")),
+            );
             self.fire = sc.held("fire");
             self.ads = sc.held("ads");
             self.crouch = sc.held("crouch");
@@ -160,7 +189,10 @@ impl Controls {
         let k = ads_ratio.clamp(0.1, 1.);
         let stick = input.stick_look(shell, dt);
         let mouse = [dx - stick[0], dy - stick[1]];
-        let (lx, ly) = (mouse[0] * prefs.sensitivity * k + stick[0] * prefs.stick_sensitivity * k, mouse[1] * prefs.sensitivity * k + stick[1] * prefs.stick_sensitivity * k);
+        let (lx, ly) = (
+            mouse[0] * prefs.sensitivity * k + stick[0] * prefs.stick_sensitivity * k,
+            mouse[1] * prefs.sensitivity * k + stick[1] * prefs.stick_sensitivity * k,
+        );
         self.yaw = (self.yaw + lx).rem_euclid(std::f32::consts::TAU);
         let sign = if prefs.invert_y { -1. } else { 1. };
         self.pitch = (self.pitch - ly * sign).clamp(-PITCH_LIMIT, PITCH_LIMIT);

@@ -26,7 +26,7 @@ fn stage(m: &mut Match, a: V, b: V) {
     let eye = |f: V| V(f.0, f.1 + 1.68, f.2);
     let (yaw, pitch) = facing(eye(a), eye(b) - V(0., 0.3, 0.));
     m.teleport(0, a, yaw, pitch);
-    m.teleport(1, b, yaw + 3.14, 0.);
+    m.teleport(1, b, yaw + std::f32::consts::PI, 0.);
     m.players[0].protect_until = 0;
     m.players[1].protect_until = 0;
 }
@@ -109,7 +109,8 @@ fn a_dead_player_returns_after_the_killcam_and_is_protected_for_a_moment() {
 
 #[test]
 fn walls_stop_bullets_and_teammates_cannot_hurt_each_other() {
-    let (mut m, _) = Match::new_in(arena(), 3, &[(0, "A".into()), (0, "B".into()), (1, "C".into())], Settings::default());
+    let (mut m, _) =
+        Match::new_in(arena(), 3, &[(0, "A".into()), (0, "B".into()), (1, "C".into())], Settings::default());
     // A and B are teammates; the crate in the middle of the placeholder map is between A and C.
     m.teleport(0, V(0., 0., 10.), 0., 0.);
     m.teleport(1, V(0., 0., 7.), 0., 0.);
@@ -220,7 +221,8 @@ fn a_timed_match_ends_when_the_clock_runs_out() {
 #[test]
 fn a_frag_hurts_in_the_open_and_a_wall_shelters() {
     let frag = weapons::id_of("frag").unwrap();
-    let (mut m, _) = Match::new_in(arena(), 9, &[(0, "T".into()), (1, "Open".into()), (1, "Sheltered".into())], Settings::default());
+    let (mut m, _) =
+        Match::new_in(arena(), 9, &[(0, "T".into()), (1, "Open".into()), (1, "Sheltered".into())], Settings::default());
     m.players[0].inv.grenades = [frag, 0];
     for p in &mut m.players {
         p.protect_until = 0;
@@ -262,4 +264,3 @@ fn a_frag_hurts_in_the_open_and_a_wall_shelters() {
     assert!(m.players[1].health < 100., "the open target took blast damage: {}", m.players[1].health);
     assert_eq!(m.players[2].health, 100., "the crate shelters the other");
 }
-
