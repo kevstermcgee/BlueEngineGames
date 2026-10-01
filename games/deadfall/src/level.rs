@@ -149,7 +149,10 @@ pub struct Level {
 impl Level {
     /// The engine colliders for every solid block, in block order.
     pub fn colliders(&self) -> Vec<Collider> {
-        self.blocks.iter().map(|b| Collider { min: b.min, max: b.max }).collect()
+        self.blocks
+            .iter()
+            .map(|b| Collider { min: b.min, max: b.max })
+            .collect()
     }
 
     /// Distance along the ray to the nearest block, if it is within `max`.
