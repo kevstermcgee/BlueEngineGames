@@ -4,6 +4,7 @@
 //! the server and the tests run headless. The window (renderer, menus, sound, input) is the `client` module,
 //! behind the `client` feature.
 pub mod level;
+pub mod slagworks;
 pub mod weapons;
 
 #[cfg(feature = "client")]
