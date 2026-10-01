@@ -1267,8 +1267,6 @@ impl App {
                     started: now,
                     elapsed0: (sim::RESPAWN_TICKS as f32 - left as f32) / 60.,
                     killer,
-                    weapon,
-                    head: false,
                 });
                 self.audio.ui(Sfx::KillcamWhoosh, 0.7);
             }
