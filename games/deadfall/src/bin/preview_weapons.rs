@@ -1,7 +1,9 @@
 //! `preview_weapons --what k47 --out DIR --angles 270,0,300` renders one weapon (a metre ruler under it);
 //! `--what all` renders contact sheets of all 33 (12 per sheet, camera facing each weapon's left side, labelled);
 //! `--eye` looks through the sight anchor down the bore (try `--fov 20`); `--person` adds a 1.80 m mannequin for scale, `--anchors` marks grip/support/sight/muzzle/eject, `--mag` and
-//! `--slide` draw the mag/slide displaced (reload / recoil pose) instead of at rest.
+//! `--slide` draw the mag/slide displaced (reload / recoil pose) instead of at rest. `--keys k9,k47 --cols 2` limits `--what all`
+//! to those weapons (one sheet; `--dist`, `--dx`, `--dy` set the spacing); `--stats` prints vertex counts and the build time of every
+//! model and exits.
 //!
 //! ```text
 //! xvfb-run -a -s "-screen 0 1280x720x24" target/debug/preview_weapons --what all --out /tmp/sheets
@@ -187,6 +189,20 @@ fn sheets(args: &Args) -> Vec<Shot> {
 #[macroquad::main(window)]
 async fn main() {
     let args = Args::parse();
+    if args.has("--stats") {
+        let t0 = std::time::Instant::now();
+        let models: Vec<_> =
+            weapon_models::keys().iter().map(|k| (*k, weapon_models::build(k).expect("roster key"))).collect();
+        let ms = t0.elapsed().as_secs_f32() * 1000.;
+        let mut total = 0;
+        for (k, m) in &models {
+            let n = m.assembled().verts.len();
+            total += n;
+            println!("{k:8} {n:5} verts {:5.2} m", m.length);
+        }
+        println!("{} models, {total} vertices, built in {ms:.1} ms", models.len());
+        return;
+    }
     let shots = if args.what == "all" { sheets(&args) } else { single(&args.what, &args) };
     if shots.is_empty() {
         eprintln!(
