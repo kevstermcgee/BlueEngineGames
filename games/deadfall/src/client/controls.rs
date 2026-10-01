@@ -50,6 +50,10 @@ impl Script {
         }
         Script { cues, frame: 0 }
     }
+    /// Whether a one-frame press cue fires on the current frame (menus read these: accept, up, down, back).
+    pub fn pressed_now(&self, name: &str) -> bool {
+        self.pressed(name)
+    }
     fn held(&self, name: &str) -> bool {
         self.cues.iter().any(|(n, _, a, b)| n == name && self.frame >= *a && self.frame <= *b)
     }
@@ -113,8 +117,7 @@ impl Controls {
     /// Read the devices once per frame: look, presses (counters), held state.
     /// `ads_ratio` is how much narrower the aiming field of view is (1 = not aiming); mouse speed follows it.
     pub fn frame(&mut self, input: &ClientInput, shell: &GameShell, dt: f32, prefs: &Prefs, ads_ratio: f32, has: [bool; 4]) {
-        if let Some(sc) = self.script.as_mut() {
-            sc.frame += 1;
+        if let Some(sc) = self.script.as_ref() {
             let sc = sc.clone();
             self.yaw = (self.yaw + sc.rate("turn")).rem_euclid(std::f32::consts::TAU);
             self.pitch = (self.pitch + sc.rate("pitch")).clamp(-PITCH_LIMIT, PITCH_LIMIT);

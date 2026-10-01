@@ -451,7 +451,14 @@ impl App {
         let dt = self.input.frame_seconds();
         self.time += dt;
         self.audio.poll().await;
-        let nav = Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
+        let mut nav = Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
+        if let Some(sc) = self.controls.script.as_mut() {
+            sc.frame += 1;
+            nav.accept |= sc.pressed_now("accept");
+            nav.down |= sc.pressed_now("down");
+            nav.up |= sc.pressed_now("up");
+            nav.back |= sc.pressed_now("back");
+        }
 
         if let Some(screen) = self.autostart.take() {
             match screen {

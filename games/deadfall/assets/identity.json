@@ -1,14 +1,14 @@
 {
   "title": "Deadfall",
-  "tagline": "Collect the glowing orbs and stay off the void.",
-  "controls": "WASD move, mouse look, Space jump, F5/F9 save/load, F fullscreen, Esc menu",
+  "tagline": "Team deathmatch for up to twelve players. Six against six, online or against bots.",
+  "controls": "WASD move, mouse look, left mouse fire, right mouse aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores, Esc menu; controller supported",
   "smoke_args": [
     "--capture",
     "{dir}",
     "--frames",
-    "30,90",
-    "--exit-after",
-    "100"
+    "60,180",
+    "--solo",
+    "--mute"
   ],
   "engine_revision": "d2dc7c212aeb"
 }
