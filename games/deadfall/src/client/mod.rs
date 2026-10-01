@@ -12,7 +12,6 @@ pub use anchors::WeaponAnchors;
 pub mod sound;
 pub mod controls;
 pub mod level_view;
-pub mod weapon_models;
 pub mod render;
 pub mod ui;
 pub mod overlay;
