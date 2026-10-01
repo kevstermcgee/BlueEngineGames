@@ -94,8 +94,6 @@ struct Killcam {
     started: f64,
     elapsed0: f32,
     killer: u8,
-    weapon: u8,
-    head: bool,
 }
 
 struct Session {
@@ -119,6 +117,7 @@ struct Session {
     last_angles: (f32, f32),
     my_team: usize,
     kills_by_me: Vec<(u8, f32)>,
+    died_by_headshot: bool,
 }
 
 pub struct App {
@@ -390,6 +389,7 @@ impl App {
                     last_angles: (0., 0.),
                     my_team: team as usize,
                     kills_by_me: Vec::new(),
+                    died_by_headshot: false,
                 });
                 self.screen = Screen::Connecting;
             }
@@ -1050,6 +1050,9 @@ impl App {
                         mine: Some(*killer) == me || Some(*victim) == me,
                         team: if *killer == 255 { team_of(*victim) } else { team_of(*killer) },
                     });
+                    if Some(*victim) == me {
+                        s.died_by_headshot = *head;
+                    }
                     if Some(*killer) == me && *victim != *killer {
                         s.notice = (format!("eliminated {}", name_of(*victim)), 2.2);
                         s.kills_by_me.push((*victim, 0.));
@@ -1299,7 +1302,7 @@ impl App {
                 roster.iter().find(|r| r.slot == killer).map_or("?".into(), |r| r.name.clone())
             };
             let wname = weapons::get(weapon).map_or("", |d| d.name).to_string();
-            killcam_info = Some((name, wname, (left as f32 / 60.).max(0.), false));
+            killcam_info = Some((name, wname, (left as f32 / 60.).max(0.), s.died_by_headshot));
             let aspect = screen_width() / screen_height();
             (
                 View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) },
