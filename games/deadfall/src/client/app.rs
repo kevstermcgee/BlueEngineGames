@@ -751,7 +751,7 @@ impl App {
         let s = &self.stats;
         let cx = screen_width() * 0.5;
         let w = 720. * ui;
-        ui::panel(cx - w * 0.5, 190. * ui, w, 430. * ui, "LIFETIME");
+        ui::panel(cx - w * 0.5, 190. * ui, w, 460. * ui, "LIFETIME");
         let fav = s.favourite_weapon().map_or("-".to_string(), |(k, n)| {
             format!("{} ({n} kills)", weapons::WEAPONS.iter().find(|w| w.key == k).map_or(k, |w| w.name))
         });
@@ -763,7 +763,7 @@ impl App {
             ("Accuracy", format!("{:.0}%", s.accuracy() * 100.)),
             ("Damage dealt", format!("{}", s.damage)),
             ("Matches played", format!("{}", s.matches)),
-            ("Won / lost / drawn", format!("{} / {} / {}", s.wins, s.losses, s.draws)),
+            ("Won / lost / drawn", format!("{} / {} / {}   (left early: {})", s.wins, s.losses, s.draws, s.left_early)),
             ("Time played", ui::duration(s.seconds_played)),
             ("Best kill streak", format!("{}", s.best_streak)),
             ("Most kills in a match", format!("{}", s.best_match_kills)),

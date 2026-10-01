@@ -39,6 +39,8 @@ pub struct Stats {
     pub wins: u64,
     pub losses: u64,
     pub draws: u64,
+    /// Matches you left before they ended (their kills and time still count).
+    pub left_early: u64,
     pub seconds_played: u64,
     pub best_streak: u32,
     pub best_match_kills: u32,
@@ -98,10 +100,11 @@ impl Stats {
         self.shots_hit += m.shots_hit as u64;
         self.seconds_played += m.seconds as u64;
         self.matches += 1;
-        match m.won {
-            Some(true) => self.wins += 1,
-            Some(false) => self.losses += 1,
-            None => self.draws += 1,
+        match (m.won, m.left_early) {
+            (_, true) => self.left_early += 1,
+            (Some(true), _) => self.wins += 1,
+            (Some(false), _) => self.losses += 1,
+            (None, _) => self.draws += 1,
         }
         self.best_streak = self.best_streak.max(m.best_streak);
         self.best_match_kills = self.best_match_kills.max(m.kills);
@@ -128,6 +131,8 @@ pub struct MatchSummary {
     pub best_streak: u32,
     /// `Some(true)` won, `Some(false)` lost, `None` drawn (or left early).
     pub won: Option<bool>,
+    /// The player left (or the connection dropped) before the match was decided.
+    pub left_early: bool,
     pub weapon_kills: BTreeMap<String, u32>,
 }
 
@@ -192,6 +197,7 @@ impl MatchTracker {
             return false;
         }
         self.counted = true;
+        self.summary.left_early = winner.is_none();
         self.summary.won = match (my_team, winner) {
             (Some(t), Some(w)) if w < 2 => Some(t == w),
             _ => None,
