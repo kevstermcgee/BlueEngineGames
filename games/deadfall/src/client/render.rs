@@ -482,7 +482,7 @@ impl Renderer {
         let p = hands.progress();
         let anchors = model.anchors;
         // Where the grip sits on screen at the hip and when aiming (the sight point lands on the eye).
-        let hip = vec3(0.16, -0.17, -0.32);
+        let hip = vec3(0.15, -0.14, -0.32);
         // The eye sits a little behind the sight (eye relief), so the rear sight is not a wall across the screen.
         let relief = match (def.sight, def.class) {
             (Sight::Scope { .. }, _) => 0.1,

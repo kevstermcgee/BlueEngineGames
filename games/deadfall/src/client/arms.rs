@@ -379,7 +379,8 @@ fn rest_hand(g: Vec3) -> HandPose {
 
 /// Forearms and gloved hands for the first-person view: the right hand grips at `anchors.grip`, the left at
 /// `anchors.support` (see the module docs of the design brief for the `None` cases).
-pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
+#[allow(dead_code)]
+pub fn first_person_arms_detailed(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
     let pal = Palette::new(team, skin);
     let pose = ArmPose {
         ads: f(pose.ads, 0.).clamp(0., 1.),
@@ -591,4 +592,32 @@ mod tests {
         assert!((0.17..0.27).contains(&len), "hand + cuff length {len}");
         assert!((0.07..0.14).contains(&(hi.x - lo.x)), "hand width {}", hi.x - lo.x);
     }
+}
+
+
+/// The first-person arm, kept deliberately simple: one forearm in the team's sleeve and one plain gloved hand
+/// (a rounded palm, one block of curled fingers, a thumb) on the weapon's grip. There is no second hand: the
+/// support hand is left out so nothing blocks the view or reads as awkward.
+pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
+    let pal = Palette::new(team, skin);
+    let ads = f(pose.ads, 0.).clamp(0., 1.);
+    let draw = f(pose.draw, 1.).clamp(0., 1.);
+    let g = anchors.grip;
+    let glove = pal.glove;
+    let dark = pal.glove_dark;
+    let sleeve = pal.uniform;
+    let mut t = Template::new();
+    // Palm, curled fingers in front of the grip, a thumb on the side, a cuff at the wrist.
+    blob(&mut t, g + vec3(0., 0.012, 0.012), vec3(0.040, 0.036, 0.052), glove);
+    blob(&mut t, g + vec3(0., -0.004, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
+    blob(&mut t, g + vec3(0.034, 0.024, -0.012), vec3(0.016, 0.016, 0.034), glove);
+    seg(&mut t, g + vec3(0.004, -0.030, 0.052), g + vec3(0.012, -0.058, 0.086), 0.040, 0.044, dark, 8);
+    // The forearm leaves the screen towards the lower right, lower and further out when aiming.
+    let wrist = g + vec3(0.012, -0.058, 0.086);
+    let out_dir = vec3(0.28, -0.52 - 0.35 * ads, 1.0).normalize();
+    let drop = (1. - draw) * 0.5;
+    let elbow = wrist + out_dir * 0.62 + vec3(0., -drop, 0.);
+    seg(&mut t, wrist, elbow, 0.040, 0.054, sleeve, 8);
+    let _ = (hold, skin);
+    t
 }
