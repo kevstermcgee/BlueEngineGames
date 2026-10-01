@@ -628,7 +628,7 @@ impl App {
             Screen::Host => {
                 self.title("host a game for your friends");
                 let mut items = std::mem::take(&mut self.host_items);
-                let hit = self.menu.run(nav, &mut items, cx, 190., 560., dt);
+                let hit = self.menu.run(nav, &mut items, cx, 180., 560., dt);
                 self.sync_target_row(&mut items, 3, 4);
                 if let Some(Item::Text(_, v, _)) = items.first() {
                     self.host_port = v.clone();
@@ -636,7 +636,7 @@ impl App {
                 if let Some(Item::Text(_, v, _)) = items.get(1) {
                     self.host_key = v.clone();
                 }
-                hud::text_centered("Friends need your address and this UDP port forwarded on your router (or a VPN such as Tailscale).", cx, screen_height() - 40. * ui, 18. * ui, DIM);
+                hud::text_centered("Friends need your address and this UDP port forwarded on your router (or a VPN such as Tailscale).", cx, screen_height() - 14. * ui, 17. * ui, DIM);
                 match hit {
                     Hit::Item(8) => {
                         self.audio.ui(Sfx::MenuConfirm, 0.5);

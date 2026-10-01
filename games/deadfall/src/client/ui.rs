@@ -104,7 +104,7 @@ impl Menu {
     pub fn run(&mut self, nav: &Nav, items: &mut [Item], cx: f32, top: f32, width: f32, dt: f32) -> Hit {
         self.time += dt;
         let ui = hud::ui_scale();
-        let row = 52. * ui;
+        let row = 46. * ui;
         let w = width * ui;
         let mut hit = Hit::None;
         let n = items.len();
