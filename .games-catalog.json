@@ -1079,10 +1079,11 @@
     "games/bomb-defusal",
     "games/turret-trench",
     "games/weight-balance",
-    "games/target-gallery"
+    "games/target-gallery",
+    "games/dead-air"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "3855f3fad9dd6ad62bc2b2548a1190df190b0ec3",
+  "source_revision": "ba6ede7501c6ef67deb06bcd8812ff533855f29f",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
