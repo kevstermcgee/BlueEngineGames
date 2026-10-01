@@ -744,12 +744,14 @@ impl App {
         let my_team = mine.as_ref().map_or(session.my_team as u8, |e| e.choice);
         session.my_team = my_team as usize;
         let ready = mine.as_ref().is_some_and(|e| e.ready);
-        // Team columns.
+        // Team columns, sized to the window.
         let w = 340. * ui;
+        let py = 190. * ui;
+        let ph = (screen_height() - py - 250. * ui).max(150. * ui);
         let mut counts = [0usize; 2];
         for t in 0..2 {
             let x = cx - w - 16. * ui + t as f32 * (w + 32. * ui);
-            ui::panel(x, 200. * ui, w, 300. * ui, crate::Team::from_index(t).name());
+            ui::panel(x, py, w, ph, crate::Team::from_index(t).name());
             let mut n = 0;
             if let Some(l) = &lobby {
                 for e in l.entries.iter().filter(|e| e.choice as usize == t) {
@@ -757,7 +759,7 @@ impl App {
                     if !e.ready {
                         c.a = 0.7;
                     }
-                    hud::text_outlined(&format!("{}{}", e.name, if e.ready { "  ready" } else { "" }), x + 18. * ui, 250. * ui + n as f32 * 30. * ui, 22. * ui, c);
+                    hud::text_outlined(&format!("{}{}", e.name, if e.ready { "  (ready)" } else { "" }), x + 18. * ui, py + 70. * ui + n as f32 * 30. * ui, 22. * ui, c);
                     n += 1;
                 }
             }
@@ -771,16 +773,16 @@ impl App {
             Some(l) if l.seconds_left > 0 => format!("Match starts in {}", l.seconds_left),
             _ => format!("{waiting} in the lobby. The match starts when everyone is ready."),
         };
-        hud::text_centered(&status, cx, 540. * ui, 22. * ui, TEXT);
+        hud::text_centered(&status, cx, py + ph + 30. * ui, 22. * ui, TEXT);
         if let Some(h) = &session.hosting {
-            hud::text_centered(h, cx, 574. * ui, 22. * ui, ACCENT);
+            hud::text_centered(h, cx, py + ph + 60. * ui, 22. * ui, ACCENT);
         }
         let mut items = vec![
             Item::Choice("Team".into(), vec!["Ironclad".into(), "Nightwatch".into()], my_team as usize),
             Item::Button(if ready { "Not ready".into() } else { "Ready".into() }),
             Item::Button("Leave".into()),
         ];
-        let hit = self.menu.run(nav, &mut items, cx, 610. / 1., 420., dt);
+        let hit = self.menu.run(nav, &mut items, cx, (py + ph + 80. * ui) / ui, 420., dt);
         let session = self.session.as_mut().expect("the session exists");
         match hit {
             Hit::Item(0) => {

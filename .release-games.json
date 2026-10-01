@@ -188,6 +188,13 @@
       "directory": "games/tumble-maze",
       "kind": "cargo-package",
       "binary": "tumble-maze"
+    },
+    {
+      "slug": "deadfall",
+      "name": "Deadfall",
+      "directory": "games/deadfall",
+      "kind": "cargo-package",
+      "binary": "deadfall"
     }
   ]
 }
