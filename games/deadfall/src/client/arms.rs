@@ -536,9 +536,9 @@ mod tests {
                 let pal = Palette::new(team, 0);
                 let t = first_person_arms(team, 0, &anchors(true), hold, &ArmPose::default());
                 let n = |c: Rgb| t.verts.iter().filter(|v| v.c == c).count();
-                assert!(n(pal.uniform) > 300, "sleeve colour missing");
-                assert!(n(pal.glove) > 300, "glove colour missing");
-                assert!(n(pal.glove_dark) > 100, "glove trim missing");
+                assert!(n(pal.uniform) >= 8, "sleeve colour missing");
+                assert!(n(pal.glove) >= 8, "glove colour missing");
+                assert!(n(pal.glove_dark) >= 8, "glove cuff missing");
             }
         }
     }
@@ -569,14 +569,13 @@ mod tests {
     }
 
     #[test]
-    fn reload_moves_the_support_hand_down_and_back() {
+    fn the_simple_arm_is_one_hand_and_stays_small() {
         let a = anchors(true);
-        let rest = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose::default());
-        let mid = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose { reload: 0.4, ..ArmPose::default() });
-        let low = |t: &Template| t.verts.iter().map(|v| v.p.y).fold(f32::MAX, f32::min);
-        assert!(low(&mid) < low(&rest) - 0.05);
-        let end = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose { reload: 1.0, ..ArmPose::default() });
-        assert!((low(&end) - low(&rest)).abs() < 0.02);
+        let t = first_person_arms(Team::Nightwatch, 0, &a, Hold::Rifle, &ArmPose::default());
+        assert!(t.verts.len() < 600, "{} vertices", t.verts.len());
+        // Nothing reaches the support-hand position: the left hand is deliberately absent.
+        let support = a.support.unwrap();
+        assert!(t.verts.iter().all(|v| (v.p - support).length() > 0.05), "something sits where a left hand would be");
     }
 
     #[test]
