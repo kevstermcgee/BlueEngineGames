@@ -1,6 +1,6 @@
 //! `preview_weapons --what k47 --out DIR --angles 270,0,300` renders one weapon (a metre ruler under it);
 //! `--what all` renders contact sheets of all 33 (12 per sheet, camera facing each weapon's left side, labelled);
-//! `--person` adds a 1.80 m mannequin for scale, `--anchors` marks grip/support/sight/muzzle/eject, `--mag` and
+//! `--eye` looks through the sight anchor down the bore (try `--fov 20`); `--person` adds a 1.80 m mannequin for scale, `--anchors` marks grip/support/sight/muzzle/eject, `--mag` and
 //! `--slide` draw the mag/slide displaced (reload / recoil pose) instead of at rest.
 //!
 //! ```text
@@ -107,6 +107,19 @@ fn single(key: &str, args: &Args) -> Vec<Shot> {
     if args.has("--person") {
         items.push((mannequin(), Mat4::IDENTITY));
     }
+    if args.has("--eye") {
+        // Look through the sight anchor straight down the bore: a check of `anchors.sight`.
+        let eye = grip_world + m.anchors.sight;
+        return vec![Shot {
+            name: format!("{key}-eye"),
+            items,
+            yaw: 0.,
+            at: eye - vec3(0., 0., 0.5),
+            dist: 0.5,
+            pitch: 0.,
+            labels: vec![],
+        }];
+    }
     let dist = if args.has("--dist") {
         args.dist
     } else if args.has("--person") {
@@ -165,7 +178,7 @@ fn sheets(args: &Args) -> Vec<Shot> {
             items,
             yaw: if args.has("--angles") { args.angles[0] } else { 270. },
             at: vec3(0., 0., 0.),
-            dist: if args.has("--dist") { args.dist } else { 3.3 },
+            dist: if args.has("--dist") { args.dist } else { 3.7 },
             pitch: if args.has("--pitch") { args.pitch } else { 0. },
             labels,
         });
