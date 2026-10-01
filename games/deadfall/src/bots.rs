@@ -458,10 +458,9 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
                 // Lob it a little high so it lands near the target.
                 input.pitch = (input.pitch + 0.25).clamp(-1.4, 1.4);
             } else {
+                // Releasing the trigger throws it; the hands go back to a gun by themselves afterwards.
                 fire = false;
                 b.grenade = Grenade::None;
-                b.switch_to = if me.inv.primary.is_some() { 0 } else { 1 };
-                b.switch_seq = b.switch_seq.wrapping_add(1);
             }
         }
     }
