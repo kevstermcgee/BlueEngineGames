@@ -17,13 +17,10 @@ use vesper3d::viewer::{
 };
 
 fn window() -> macroquad::conf::Conf {
-    // The kit's meshes hold up to 9000 vertices and 27000 indices: raise macroquad's draw-call capacity.
-    macroquad::conf::Conf {
-        miniquad_conf: previewkit::window_conf("Slagworks preview"),
-        draw_call_vertex_capacity: 30_000,
-        draw_call_index_capacity: 30_000,
-        ..Default::default()
-    }
+    let mut conf = previewkit::window_conf("Slagworks preview");
+    conf.draw_call_vertex_capacity = 60000;
+    conf.draw_call_index_capacity = 90000;
+    conf
 }
 
 struct Meshes {

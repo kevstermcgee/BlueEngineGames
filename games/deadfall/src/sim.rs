@@ -87,6 +87,13 @@ pub struct World {
 
 static WORLD: OnceLock<Arc<World>> = OnceLock::new();
 
+/// A world built from any level (tests and tools use small arenas; matches use [`world`]).
+pub fn world_for(level: Level) -> Arc<World> {
+    let colliders = level.colliders();
+    let nav = crate::nav::Nav::build(&level);
+    Arc::new(World { level, colliders, nav })
+}
+
 pub fn world() -> Arc<World> {
     WORLD
         .get_or_init(|| {
@@ -301,7 +308,11 @@ pub struct Match {
 impl Match {
     /// Start a match. `humans` are `(team choice, name)` in seat order; returns the match and each human's slot.
     pub fn new(seed: u64, humans: &[(u8, String)], settings: Settings) -> (Match, Vec<usize>) {
-        let world = world();
+        Self::new_in(world(), seed, humans, settings)
+    }
+
+    /// [`Match::new`] on a chosen world.
+    pub fn new_in(world: Arc<World>, seed: u64, humans: &[(u8, String)], settings: Settings) -> (Match, Vec<usize>) {
         let mut rng = Rng::new(seed);
         // Team placement: honour the choice, then move the overflow to the other side (at most six a side).
         let mut teams: Vec<usize> = humans.iter().map(|(c, _)| (*c as usize).min(1)).collect();

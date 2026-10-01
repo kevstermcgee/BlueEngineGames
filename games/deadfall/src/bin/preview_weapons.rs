@@ -14,12 +14,10 @@ use vesper3d::viewer::kit::{Template, View};
 /// The stage's window, with draw-call buffers large enough for whole weapons (macroquad's default 5000
 /// indices silently drops anything bigger).
 fn window() -> macroquad::conf::Conf {
-    macroquad::conf::Conf {
-        miniquad_conf: previewkit::window_conf("Deadfall weapon preview"),
-        draw_call_vertex_capacity: 60000,
-        draw_call_index_capacity: 90000,
-        ..Default::default()
-    }
+    let mut conf = previewkit::window_conf("Deadfall weapon preview");
+    conf.draw_call_vertex_capacity = 60000;
+    conf.draw_call_index_capacity = 90000;
+    conf
 }
 
 struct Shot {

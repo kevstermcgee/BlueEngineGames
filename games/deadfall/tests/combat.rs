@@ -1,12 +1,17 @@
 //! The rules of a fight, through the public simulation API.
 use deadfall::hands::Sel;
 use deadfall::input::{Input, FIRE};
-use deadfall::sim::{hit, EndRule, Event, Match, Phase, Settings, RESPAWN_TICKS};
+use deadfall::sim::{hit, world_for, EndRule, Event, Match, Phase, Settings, RESPAWN_TICKS};
 use deadfall::weapons;
 use vesper3d::math::V;
 
+fn arena() -> std::sync::Arc<deadfall::sim::World> {
+    static A: std::sync::OnceLock<std::sync::Arc<deadfall::sim::World>> = std::sync::OnceLock::new();
+    A.get_or_init(|| world_for(deadfall::level::placeholder())).clone()
+}
+
 fn duel(settings: Settings) -> Match {
-    let (m, slots) = Match::new(7, &[(0, "Alpha".into()), (1, "Bravo".into())], settings);
+    let (m, slots) = Match::new_in(arena(), 7, &[(0, "Alpha".into()), (1, "Bravo".into())], settings);
     assert_eq!(slots, vec![0, 1]);
     m
 }
@@ -104,7 +109,7 @@ fn a_dead_player_returns_after_the_killcam_and_is_protected_for_a_moment() {
 
 #[test]
 fn walls_stop_bullets_and_teammates_cannot_hurt_each_other() {
-    let (mut m, _) = Match::new(3, &[(0, "A".into()), (0, "B".into()), (1, "C".into())], Settings::default());
+    let (mut m, _) = Match::new_in(arena(), 3, &[(0, "A".into()), (0, "B".into()), (1, "C".into())], Settings::default());
     // A and B are teammates; the crate in the middle of the placeholder map is between A and C.
     m.teleport(0, V(0., 0., 10.), 0., 0.);
     m.teleport(1, V(0., 0., 7.), 0., 0.);
@@ -215,7 +220,7 @@ fn a_timed_match_ends_when_the_clock_runs_out() {
 #[test]
 fn a_frag_hurts_in_the_open_and_a_wall_shelters() {
     let frag = weapons::id_of("frag").unwrap();
-    let (mut m, _) = Match::new(9, &[(0, "T".into()), (1, "Open".into()), (1, "Sheltered".into())], Settings::default());
+    let (mut m, _) = Match::new_in(arena(), 9, &[(0, "T".into()), (1, "Open".into()), (1, "Sheltered".into())], Settings::default());
     m.players[0].inv.grenades = [frag, 0];
     for p in &mut m.players {
         p.protect_until = 0;
