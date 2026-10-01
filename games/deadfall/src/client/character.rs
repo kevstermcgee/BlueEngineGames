@@ -150,7 +150,7 @@ pub struct Rig {
     upper_arm: Template,
     forearm: Template,
     glove: [Template; 2],
-    thigh: Template,
+    thigh: [Template; 2],
     shin: Template,
     boot: Template,
 }
@@ -166,10 +166,10 @@ impl Rig {
             pelvis: build_pelvis(&p, team),
             torso: build_torso(&p, team),
             head: build_head(&p, team),
-            upper_arm: build_upper_arm(&p),
-            forearm: build_forearm(&p),
+            upper_arm: build_upper_arm(&p, team),
+            forearm: build_forearm(&p, team),
             glove: [glove(&p, false, 0.), glove(&p, true, 0.)],
-            thigh: build_thigh(&p),
+            thigh: [build_thigh(&p, team, 1.), build_thigh(&p, team, -1.)],
             shin: build_shin(&p, team),
             boot: build_boot(&p),
         }
@@ -184,7 +184,7 @@ impl Rig {
             ("upper_arm", self.upper_arm.verts.len(), 2),
             ("forearm", self.forearm.verts.len(), 2),
             ("glove", self.glove[0].verts.len(), 2),
-            ("thigh", self.thigh.verts.len(), 2),
+            ("thigh", self.thigh[0].verts.len(), 2),
             ("shin", self.shin.verts.len(), 2),
             ("boot", self.boot.verts.len(), 2),
         ]
@@ -199,7 +199,9 @@ impl Rig {
         self.pelvis.verts.len()
             + self.torso.verts.len()
             + self.head.verts.len()
-            + 2 * (self.upper_arm.verts.len() + self.forearm.verts.len() + self.thigh.verts.len())
+            + 2 * (self.upper_arm.verts.len() + self.forearm.verts.len())
+            + self.thigh[0].verts.len()
+            + self.thigh[1].verts.len()
             + 2 * (self.shin.verts.len() + self.boot.verts.len())
             + self.glove[0].verts.len()
             + self.glove[1].verts.len()
@@ -217,7 +219,7 @@ impl Rig {
             v.push((&self.upper_arm, w * s.uarm[i]));
             v.push((&self.forearm, w * s.farm[i]));
             v.push((&self.glove[i], w * s.hand[i]));
-            v.push((&self.thigh, w * s.thigh[i]));
+            v.push((&self.thigh[i], w * s.thigh[i]));
             v.push((&self.shin, w * s.shin[i]));
             v.push((&self.boot, w * s.boot[i]));
         }
@@ -334,17 +336,19 @@ fn elbow(s: Vec3, w: Vec3, l1: f32, l2: f32, pole: Vec3) -> Vec3 {
 // Dimensions
 // ---------------------------------------------------------------------------------------------------------
 
-const THIGH: f32 = 0.44;
-const SHIN: f32 = 0.40;
+const THIGH: f32 = 0.45;
+const SHIN: f32 = 0.41;
 const ANKLE: f32 = 0.100;
-const HIP_STAND: f32 = ANKLE + THIGH + SHIN; // 0.935
-const HIP_X: f32 = 0.10;
+const HIP_STAND: f32 = ANKLE + THIGH + SHIN; // 0.96
+const HIP_X: f32 = 0.11;
 const WAIST: f32 = 0.06; // torso pivot above the hip centre
-const SHOULDER_X: f32 = 0.18;
-const SHOULDER_Y: f32 = 0.43;
-const NECK_Y: f32 = 0.49;
-const UARM: f32 = 0.29;
+const SHOULDER_X: f32 = 0.20;
+const SHOULDER_Y: f32 = 0.455;
+const NECK_Y: f32 = 0.55;
+const UARM: f32 = 0.31;
 const FARM: f32 = 0.26;
+/// Slightly bent knees when standing: the leg reach stops this short of fully straight.
+const REACH: f32 = THIGH + SHIN - 0.05;
 
 // ---------------------------------------------------------------------------------------------------------
 // Solving the pose
@@ -428,10 +432,10 @@ impl Rig {
             // toe down as the foot leaves the ground (the ankle rises so the toe stays above it), flat in stance
             let toe = if air { 0.35 } else { (-0.34 * ph.cos() * (stride / 0.3).min(1.)).clamp(-0.22, 0.34) };
             toes[i] = toe;
-            *f = vec3(x, ANKLE + lift + 0.17 * toe.max(0.).sin(), fwd);
+            *f = vec3(x, ANKLE + lift + 0.17 * toe.max(0.).sin() + 0.10 * (-toe).max(0.).sin(), fwd);
             if !air {
                 let dz = fwd - hz;
-                let reach = 0.822f32;
+                let reach = REACH;
                 hh = hh.min(ANKLE + (reach * reach - dz * dz).max(0.01).sqrt());
             }
         }
@@ -439,11 +443,20 @@ impl Rig {
             hh = hh_base - 0.03;
         }
 
-        let pelvis = Mat4::from_translation(vec3(0., hh, hz)) * Mat4::from_rotation_x(-0.2 * c);
+        let two_handed = matches!(hold, Hold::Pistol | Hold::Smg | Hold::Rifle | Hold::Sniper | Hold::Launcher);
+        // the hips and shoulders counter-rotate in a stride (less with a weapon in both hands)
+        let gait = moving * (speed / 3.).min(1.) * if two_handed { 0.3 } else { 1. };
+        let hip_yaw = 0.07 * gait * phase.cos();
+        let pelvis =
+            Mat4::from_translation(vec3(0., hh, hz)) * Mat4::from_rotation_y(hip_yaw) * Mat4::from_rotation_x(-0.2 * c);
 
         // ---- torso: lean, twist, per-action motion ----
-        let mut lean = 0.55 * c + 0.06 * (speed / 6.).min(1.) - 0.25 * pitch + 0.10 * aim;
-        let mut twist = 0.;
+        let mut lean = 0.05 * (1. - c) + 0.55 * c + 0.07 * (speed / 6.).min(1.) - 0.25 * pitch + 0.10 * aim;
+        // shoulders turn against the hips; a bladed stance behind the weapon when aiming
+        let mut twist = -0.16 * gait * phase.cos();
+        if two_handed {
+            twist -= (0.10 + 0.20 * aim) * alive;
+        }
         if throwing > 0. {
             lean += -0.30 * smooth(0., 0.3, throwing) * (1. - smooth(0.3, 0.6, throwing))
                 + 0.4 * smooth(0.5, 0.75, throwing) * (1. - smooth(0.8, 1., throwing));
@@ -462,7 +475,13 @@ impl Rig {
             * Mat4::from_rotation_y(twist)
             * Mat4::from_rotation_x(-lean);
         let head_up = (pitch + lean + 0.2 * c).clamp(-1.0, 1.0) * alive + 0.3 * (1. - alive);
-        let head = torso * Mat4::from_translation(vec3(0., NECK_Y, 0.)) * Mat4::from_rotation_x(head_up);
+        // head onto the weapon: cheek down towards the stock, turned back to face the target
+        let cheek = if two_handed { aim * alive } else { 0. };
+        let head = torso
+            * Mat4::from_translation(vec3(0.03 * cheek, NECK_Y - 0.03 * cheek, -0.02 * cheek))
+            * Mat4::from_rotation_y(-twist * 0.85)
+            * Mat4::from_rotation_z(-0.13 * cheek)
+            * Mat4::from_rotation_x(head_up);
 
         // ---- legs: IK in the sagittal plane ----
         let mut thigh = [Mat4::IDENTITY; 2];
@@ -497,7 +516,6 @@ impl Rig {
         let mut mount = Mat4::IDENTITY;
         let mut have_mount = false;
 
-        let two_handed = matches!(hold, Hold::Pistol | Hold::Smg | Hold::Rifle | Hold::Sniper | Hold::Launcher);
         if two_handed || matches!(hold, Hold::Grenade | Hold::Melee) {
             let bob = 0.008 * moving * (2. * phase).sin();
             let droop = -0.10 * (1. - aim) - 0.35 * smooth(4.5, 6.5, speed) * (1. - aim);
@@ -545,10 +563,10 @@ impl Rig {
                 }
                 _ => {
                     let (hip_off, aim_off) = match hold {
-                        Hold::Pistol => (vec3(-0.15, -0.32, -0.30), vec3(-0.17, -0.10, -0.46)),
-                        Hold::Smg => (vec3(-0.12, -0.30, -0.22), vec3(-0.14, -0.06, -0.27)),
-                        Hold::Rifle => (vec3(-0.12, -0.30, -0.22), vec3(-0.12, -0.05, -0.27)),
-                        Hold::Sniper => (vec3(-0.12, -0.31, -0.22), vec3(-0.11, -0.04, -0.27)),
+                        Hold::Pistol => (vec3(-0.15, -0.32, -0.30), vec3(-0.17, 0.0, -0.46)),
+                        Hold::Smg => (vec3(-0.12, -0.30, -0.22), vec3(-0.12, 0.02, -0.28)),
+                        Hold::Rifle => (vec3(-0.12, -0.30, -0.22), vec3(-0.11, 0.03, -0.28)),
+                        Hold::Sniper => (vec3(-0.12, -0.31, -0.22), vec3(-0.10, 0.03, -0.28)),
                         _ => (vec3(-0.05, -0.17, -0.22), vec3(-0.03, -0.11, -0.25)), // launcher on the shoulder
                     };
                     let mut off = hip_off.lerp(aim_off, aim);
@@ -622,9 +640,9 @@ impl Rig {
                 // free arm, forward kinematics
                 let ph = phase + i as f32 * std::f32::consts::PI;
                 let amp = moving * (0.15 + 0.11 * speed).min(0.75) * (1. - 0.5 * c);
-                let mut a = amp * ph.cos();
-                let mut flex = 0.25 + moving * 0.04 * speed + 0.3 * a.max(0.);
-                let mut out = 0.10;
+                let mut a = -amp * ph.cos(); // the arm swings against the same-side leg
+                let mut flex = 0.25 + moving * (0.04 * speed + 0.55 * smooth(2.5, 6., speed)) + 0.3 * a.max(0.);
+                let mut out = 0.13;
                 if air {
                     a = 0.5;
                     flex = 0.6;
@@ -697,12 +715,14 @@ fn obox(t: &mut Template, center: Vec3, rot: Quat, half: Vec3, c: Rgb) {
     t.append(&b.transformed(Mat4::from_rotation_translation(rot, center)));
 }
 
-/// A cone/frustum standing on `base`, squashed along Z by `zs` (elliptical section).
-#[allow(clippy::too_many_arguments)]
-fn econe(t: &mut Template, base: Vec3, rb: f32, rt: f32, h: f32, zs: f32, c: Rgb, sides: usize) {
-    let mut b = Template::new();
-    b.cone(Vec3::ZERO, rb, rt, h, c, 0., sides);
-    t.append(&b.transformed(Mat4::from_translation(base) * Mat4::from_scale(vec3(1., 1., zs))));
+/// A flat strap (width `hw` along X, thickness `ht`) running from `a` to `b`.
+fn strap(t: &mut Template, a: Vec3, b: Vec3, hw: f32, ht: f32, c: Rgb) {
+    let d = b - a;
+    let len = d.length();
+    if len < 1e-5 {
+        return;
+    }
+    obox(t, (a + b) * 0.5, Quat::from_rotation_arc(Vec3::Z, d / len), vec3(hw, ht, len * 0.5 + 0.004), c);
 }
 
 fn bx(t: &mut Template, cx: f32, cy: f32, cz: f32, hx: f32, hy: f32, hz: f32, c: Rgb) {
@@ -716,28 +736,125 @@ fn bx2(t: &mut Template, cx: f32, cy: f32, cz: f32, hx: f32, hy: f32, hz: f32, c
     bx(t, -cx, cy, cz, hx, hy, hz, c);
 }
 
+fn ball(t: &mut Template, cx: f32, cy: f32, cz: f32, rx: f32, ry: f32, rz: f32, c: Rgb, segs: usize) {
+    t.ball(vec3(cx, cy, cz), vec3(rx, ry, rz), c, 0., segs, (segs / 2).max(4));
+}
+
+/// A smooth lofted surface: elliptical sections `[y, cx, cz, rx, rz]` (height, centre, half-widths), with
+/// normals taken from the surface itself. Rings may be listed top-down or bottom-up. `caps` closes both ends.
+fn loft(t: &mut Template, rings: &[[f32; 5]], c: Rgb, sides: usize, caps: bool) {
+    let mut rs: Vec<[f32; 5]> = rings.to_vec();
+    if rs[0][0] > rs[rs.len() - 1][0] {
+        rs.reverse();
+    }
+    let base = t.verts.len();
+    let w = sides + 1;
+    let pt = |j: usize, i: usize| {
+        let r = rs[j];
+        let a = i as f32 / sides as f32 * std::f32::consts::TAU;
+        vec3(r[1] + r[3] * a.cos(), r[0], r[2] + r[4] * a.sin())
+    };
+    for j in 0..rs.len() {
+        for i in 0..=sides {
+            let a = i as f32 / sides as f32 * std::f32::consts::TAU;
+            let r = rs[j];
+            let da = vec3(-r[3] * a.sin(), 0., r[4] * a.cos());
+            let dy = pt((j + 1).min(rs.len() - 1), i) - pt(j.saturating_sub(1), i);
+            let mut n = dy.cross(da).normalize_or_zero();
+            if n == Vec3::ZERO {
+                n = if j == 0 { -Vec3::Y } else { Vec3::Y };
+            }
+            t.verts.push(vertex(pt(j, i), n, c));
+        }
+    }
+    for j in 0..rs.len() - 1 {
+        for i in 0..sides {
+            let a = (base + j * w + i) as u16;
+            let w = w as u16;
+            t.idx.extend_from_slice(&[a + w, a, a + w + 1, a + w + 1, a, a + 1]);
+        }
+    }
+    if caps {
+        for (j, up) in [(0usize, false), (rs.len() - 1, true)] {
+            let r = rs[j];
+            if r[3] < 0.002 {
+                continue;
+            }
+            let nrm = if up { Vec3::Y } else { -Vec3::Y };
+            let hub = t.verts.len() as u16;
+            t.verts.push(vertex(vec3(r[1], r[0], r[2]), nrm, c));
+            for i in 0..=sides {
+                t.verts.push(vertex(pt(j, i), nrm, c));
+            }
+            for i in 0..sides as u16 {
+                if up {
+                    t.idx.extend_from_slice(&[hub, hub + 2 + i, hub + 1 + i]);
+                } else {
+                    t.idx.extend_from_slice(&[hub, hub + 1 + i, hub + 2 + i]);
+                }
+            }
+        }
+    }
+}
+
+fn vertex(p: Vec3, n: Vec3, c: Rgb) -> vesper3d::viewer::kit::Vert {
+    vesper3d::viewer::kit::Vert { p, n, c, e: 0., a: 1. }
+}
+
+/// A loft laid along the character's forward axis: ring `y` becomes distance forward (towards -Z), `cz` the height.
+fn loft_fwd(t: &mut Template, rings: &[[f32; 5]], c: Rgb, sides: usize) {
+    let mut s = Template::new();
+    loft(&mut s, rings, c, sides, true);
+    t.append(&s.transformed(basis(Vec3::X, -Vec3::Z, Vec3::Y)));
+}
+
 fn build_pelvis(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    bx(&mut t, 0., -0.03, 0., 0.160, 0.085, 0.098, p.trousers);
-    // belt with buckle and pouches
-    bx(&mut t, 0., 0.058, 0., 0.166, 0.026, 0.106, p.strap);
-    bx(&mut t, 0., 0.058, -0.108, 0.024, 0.02, 0.005, p.metal);
-    bx2(&mut t, 0.088, 0.040, -0.118, 0.038, 0.045, 0.022, p.vest);
-    bx2(&mut t, 0.088, 0.078, -0.118, 0.040, 0.008, 0.024, p.vest_dark);
-    bx(&mut t, 0., 0.040, 0.122, 0.07, 0.04, 0.03, p.vest);
-    bx(&mut t, -0.178, 0.0, 0.04, 0.024, 0.06, 0.05, p.vest_dark);
+    // hips and seat
+    loft(
+        &mut t,
+        &[
+            [-0.15, 0., 0.0, 0.12, 0.085],
+            [-0.10, 0., 0.006, 0.172, 0.112],
+            [-0.03, 0., 0.008, 0.190, 0.122],
+            [0.04, 0., 0.0, 0.182, 0.115],
+            [0.075, 0., 0.0, 0.174, 0.110],
+        ],
+        p.trousers,
+        16,
+        false,
+    );
+    // belt, buckle, pouches, holster
+    loft(&mut t, &[[0.022, 0., 0., 0.191, 0.124], [0.074, 0., 0., 0.191, 0.124]], p.strap, 16, false);
+    bx(&mut t, 0., 0.048, -0.124, 0.027, 0.023, 0.007, p.metal);
+    bx2(&mut t, 0.098, 0.040, -0.128, 0.036, 0.046, 0.024, p.vest);
+    bx2(&mut t, 0.098, 0.082, -0.128, 0.038, 0.010, 0.026, p.vest_dark);
+    bx(&mut t, 0., 0.036, 0.130, 0.075, 0.042, 0.03, p.vest);
+    bx(&mut t, 0., 0.080, 0.130, 0.077, 0.009, 0.032, p.vest_dark);
     match team {
         Team::Ironclad => {
-            // canteen on the right hip
-            let mut can = Template::new();
-            can.cylinder(Vec3::ZERO, 0.045, 0.14, [0.30, 0.33, 0.16], 0., 10);
-            t.append(&can.transformed(Mat4::from_translation(vec3(0.185, -0.08, 0.05))));
-            bx(&mut t, 0.185, 0.07, 0.05, 0.04, 0.012, 0.045, p.vest_dark);
+            // tan canteen on the right hip, holster pouch on the left
+            loft(
+                &mut t,
+                &[
+                    [-0.115, 0.205, 0.07, 0.030, 0.05],
+                    [-0.03, 0.205, 0.07, 0.036, 0.062],
+                    [0.045, 0.205, 0.07, 0.030, 0.052],
+                ],
+                p.vest,
+                10,
+                true,
+            );
+            bx(&mut t, 0.205, 0.058, 0.07, 0.020, 0.015, 0.02, p.metal);
+            bx(&mut t, 0.200, -0.03, 0.07, 0.039, 0.012, 0.066, p.vest_dark);
+            bx(&mut t, -0.197, -0.02, 0.01, 0.026, 0.085, 0.05, p.vest_dark);
+            bx(&mut t, -0.197, 0.07, 0.01, 0.028, 0.012, 0.052, p.strap);
         }
         Team::Nightwatch => {
-            // drop-leg holster panel
-            bx(&mut t, 0.175, -0.10, 0.0, 0.016, 0.09, 0.05, p.vest_dark);
-            bx(&mut t, 0.175, -0.19, 0.0, 0.02, 0.012, 0.055, p.plate);
+            // left utility pouch, radio pouch
+            bx(&mut t, -0.197, 0.0, 0.03, 0.026, 0.065, 0.055, p.vest_dark);
+            bx(&mut t, -0.197, 0.07, 0.03, 0.028, 0.012, 0.057, p.plate);
+            bx(&mut t, 0.197, -0.005, 0.07, 0.024, 0.05, 0.045, p.vest_dark);
         }
     }
     t
@@ -745,44 +862,97 @@ fn build_pelvis(p: &Palette, team: Team) -> Template {
 
 fn build_torso(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    // shirt: waist, chest, shoulders, collar
-    bx(&mut t, 0., 0.10, 0., 0.142, 0.10, 0.092, p.uniform);
-    bx(&mut t, 0., 0.33, 0., 0.158, 0.14, 0.096, p.uniform);
-    bx(&mut t, 0., 0.435, 0., 0.172, 0.05, 0.090, p.uniform);
-    bx(&mut t, 0., 0.485, 0., 0.065, 0.014, 0.06, p.uniform);
-    // vest body
-    bx(&mut t, 0., 0.305, 0., 0.166, 0.165, 0.105, p.vest);
-    // shoulder straps over the shoulders
-    bx2(&mut t, 0.098, 0.468, 0., 0.045, 0.012, 0.104, p.vest);
-    bx2(&mut t, 0.098, 0.482, 0., 0.030, 0.004, 0.092, p.vest_dark);
+    // the shirt: waist, V-taper to the chest, shoulder line, trapezius slope into the neck
+    loft(
+        &mut t,
+        &[
+            [-0.06, 0., 0., 0.172, 0.112],
+            [0.05, 0., 0.0, 0.168, 0.110],
+            [0.15, 0., -0.004, 0.186, 0.118],
+            [0.25, 0., -0.008, 0.215, 0.134],
+            [0.33, 0., -0.010, 0.230, 0.141],
+            [0.41, 0., -0.006, 0.236, 0.130],
+            [0.45, 0., 0.0, 0.205, 0.112],
+            [0.480, 0., 0.0, 0.130, 0.086],
+            [0.505, 0., 0.0, 0.078, 0.070],
+            [0.512, 0., 0.0, 0.066, 0.064],
+        ],
+        p.uniform,
+        18,
+        false,
+    );
+    // plate carrier body and cummerbund
+    loft(
+        &mut t,
+        &[[0.03, 0., 0., 0.184, 0.122], [0.20, 0., -0.003, 0.208, 0.140], [0.37, 0., -0.008, 0.246, 0.155]],
+        p.vest,
+        18,
+        false,
+    );
+    loft(&mut t, &[[0.03, 0., 0., 0.187, 0.126], [0.14, 0., -0.002, 0.200, 0.134]], p.vest_dark, 18, false);
+    // front and back plates (bevelled)
+    let plate = |t: &mut Template, z: f32, h: f32, c: Rgb| {
+        bx(t, 0., 0.245, z, 0.152, h, 0.020, c);
+        bx(t, 0., 0.245 + h, z * 0.99, 0.125, 0.012, 0.018, c);
+        bx(t, 0., 0.245 - h - 0.002, z * 0.99, 0.12, 0.014, 0.018, c);
+    };
+    plate(&mut t, -0.164, 0.125, p.plate);
+    plate(&mut t, 0.164, 0.125, mul(p.plate, 0.9));
+    // shoulder straps: front, over the trapezius, back
+    for s in [1., -1.] {
+        let x = 0.125 * s;
+        let pts = [
+            vec3(x, 0.325, -0.155),
+            vec3(x, 0.455, -0.082),
+            vec3(x, 0.490, 0.0),
+            vec3(x, 0.455, 0.082),
+            vec3(x, 0.325, 0.156),
+        ];
+        for k in 0..4 {
+            strap(&mut t, pts[k], pts[k + 1], 0.034, 0.008, p.vest);
+        }
+        // shoulder pad
+        bx(&mut t, s * 0.17, 0.452, 0., 0.03, 0.01, 0.075, p.vest_dark);
+    }
     match team {
         Team::Ironclad => {
-            // load-bearing vest: four double magazine pouches, flaps, webbing rows, back plate
+            // load-bearing vest: four double magazine pouches, chest pockets, webbing, back plate, pack, bedroll
             for k in 0..4 {
-                let x = -0.105 + 0.07 * k as f32;
-                bx(&mut t, x, 0.19, -0.128, 0.031, 0.06, 0.026, p.vest);
-                bx(&mut t, x, 0.245, -0.131, 0.034, 0.012, 0.028, p.vest_dark);
-                bx(&mut t, x, 0.225, -0.156, 0.007, 0.012, 0.004, p.metal);
+                let x = -0.108 + 0.072 * k as f32;
+                bx(&mut t, x, 0.175, -0.172, 0.031, 0.062, 0.026, p.vest);
+                bx(&mut t, x, 0.232, -0.176, 0.034, 0.013, 0.028, p.vest_dark);
+                bx(&mut t, x, 0.212, -0.204, 0.007, 0.012, 0.004, p.metal);
             }
-            bx(&mut t, 0., 0.36, -0.115, 0.13, 0.055, 0.015, p.vest_dark); // chest panel
-            bx2(&mut t, 0.07, 0.36, -0.13, 0.04, 0.035, 0.014, p.vest); // chest pockets
-            bx(&mut t, 0., 0.31, 0.118, 0.13, 0.14, 0.018, p.plate);
-            bx2(&mut t, 0.105, 0.17, 0.135, 0.036, 0.05, 0.03, p.vest); // rear pouches
-            bx(&mut t, 0., 0.44, 0.14, 0.11, 0.04, 0.045, p.strap); // rolled blanket on top
+            bx(&mut t, 0., 0.32, -0.170, 0.16, 0.012, 0.02, p.vest_dark); // webbing row
+            bx2(&mut t, 0.11, 0.37, -0.176, 0.04, 0.032, 0.016, p.vest_dark); // chest pockets
+            bx(&mut t, 0.0, 0.09, -0.152, 0.10, 0.035, 0.022, p.vest); // utility pouch
+            bx(&mut t, 0.0, 0.16, 0.20, 0.115, 0.10, 0.05, p.vest); // small pack
+            bx(&mut t, 0.0, 0.265, 0.205, 0.11, 0.015, 0.052, p.vest_dark);
+            bx(&mut t, 0.0, 0.16, 0.255, 0.08, 0.07, 0.006, p.vest_dark);
+            // bedroll across the top
+            let mut roll = Template::new();
+            loft(&mut roll, &[[-0.19, 0., 0., 0.052, 0.052], [0.19, 0., 0., 0.052, 0.052]], p.strap, 10, true);
+            t.append(&roll.transformed(
+                Mat4::from_translation(vec3(0., 0.375, 0.2)) * Mat4::from_rotation_z(std::f32::consts::FRAC_PI_2),
+            ));
+            bx2(&mut t, 0.1, 0.375, 0.2, 0.012, 0.056, 0.056, p.vest_dark);
         }
         Team::Nightwatch => {
-            // plate carrier: big plates, cummerbund pouches, radio and assault pack
-            bx(&mut t, 0., 0.355, -0.114, 0.118, 0.128, 0.018, p.plate);
-            bx(&mut t, 0., 0.355, -0.130, 0.095, 0.105, 0.004, p.vest_dark);
-            for k in 0..3 {
-                let x = -0.075 + 0.075 * k as f32;
-                bx(&mut t, x, 0.165, -0.125, 0.032, 0.05, 0.02, p.vest_dark);
+            // plate carrier: pouches on the cummerbund, admin panel, radio, hydration / assault pack
+            for k in 0..4 {
+                let x = -0.108 + 0.072 * k as f32;
+                bx(&mut t, x, 0.145, -0.172, 0.030, 0.052, 0.024, p.vest_dark);
+                bx(&mut t, x, 0.192, -0.175, 0.032, 0.010, 0.026, p.plate);
             }
-            bx2(&mut t, 0.172, 0.22, -0.02, 0.02, 0.06, 0.05, p.vest_dark);
-            bx(&mut t, -0.12, 0.47, -0.05, 0.025, 0.05, 0.03, p.vest_dark); // radio
-            bx(&mut t, 0., 0.33, 0.14, 0.115, 0.15, 0.05, p.plate); // assault pack
-            bx(&mut t, 0., 0.33, 0.194, 0.09, 0.11, 0.008, p.vest_dark);
-            bx(&mut t, 0., 0.50, 0.14, 0.06, 0.014, 0.04, p.vest_dark);
+            bx(&mut t, 0., 0.055, -0.150, 0.075, 0.035, 0.022, p.vest_dark); // utility pouch
+            bx(&mut t, 0., 0.40, -0.172, 0.08, 0.02, 0.016, p.vest_dark); // admin panel
+            bx(&mut t, -0.15, 0.47, -0.02, 0.026, 0.045, 0.032, p.vest_dark); // radio
+            bx(&mut t, -0.15, 0.56, -0.02, 0.004, 0.06, 0.004, p.metal);
+            bx(&mut t, 0., 0.30, 0.215, 0.125, 0.15, 0.058, p.plate); // assault pack
+            bx(&mut t, 0., 0.30, 0.276, 0.10, 0.12, 0.006, p.vest_dark);
+            bx(&mut t, 0., 0.455, 0.215, 0.10, 0.02, 0.06, p.vest_dark); // lid
+            bx2(&mut t, 0.14, 0.30, 0.215, 0.012, 0.12, 0.05, p.vest_dark);
+            bx2(&mut t, 0.07, 0.40, 0.268, 0.008, 0.03, 0.006, p.metal);
         }
     }
     t
@@ -790,136 +960,270 @@ fn build_torso(p: &Palette, team: Team) -> Template {
 
 fn build_head(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    // pivot is the top of the neck; the skull centre is 0.115 above it
+    // pivot is the top of the neck (under the jaw); the skull centre is 0.115 above it
     let neck_c = if team == Team::Nightwatch { p.vest_dark } else { p.skin_dark };
-    let mut neck = Template::new();
-    neck.cylinder(vec3(0., -0.035, 0.), 0.046, 0.09, neck_c, 0., 10);
-    t.append(&neck);
+    loft(
+        &mut t,
+        &[[-0.085, 0., 0.006, 0.062, 0.060], [0.0, 0., 0.0, 0.050, 0.050], [0.05, 0., -0.01, 0.050, 0.052]],
+        neck_c,
+        12,
+        false,
+    );
     let sk = 0.115;
-    t.ball(vec3(0., sk, 0.004), vec3(0.078, 0.10, 0.092), p.skin, 0., 14, 10);
-    // jaw and chin
-    bx(&mut t, 0., sk - 0.078, -0.028, 0.055, 0.022, 0.052, p.skin);
-    // nose, brow, eyes
-    bx(&mut t, 0., sk - 0.012, -0.094, 0.012, 0.022, 0.012, p.skin);
-    bx(&mut t, 0., sk + 0.034, -0.086, 0.060, 0.006, 0.006, mul(p.skin, 0.6));
-    bx2(&mut t, 0.033, sk + 0.012, -0.086, 0.011, 0.006, 0.005, [0.08, 0.08, 0.10]);
-    // ears
-    t.ball(vec3(0.080, sk - 0.005, 0.012), vec3(0.012, 0.027, 0.02), p.skin_dark, 0., 8, 6);
-    t.ball(vec3(-0.080, sk - 0.005, 0.012), vec3(0.012, 0.027, 0.02), p.skin_dark, 0., 8, 6);
+    // skull, cheeks, jaw wedge and chin
+    ball(&mut t, 0., sk, 0.006, 0.078, 0.100, 0.093, p.skin, 16);
+    ball(&mut t, 0., sk - 0.052, -0.016, 0.066, 0.056, 0.074, p.skin, 14);
+    ball(&mut t, 0., sk - 0.084, -0.052, 0.034, 0.024, 0.030, p.skin, 10);
+    // brow, nose, mouth, eyes, ears
+    ball(&mut t, 0., sk + 0.030, -0.080, 0.064, 0.014, 0.020, mul(p.skin, 0.88), 10);
+    obox(&mut t, vec3(0., sk - 0.016, -0.094), Quat::from_rotation_x(0.25), vec3(0.010, 0.024, 0.012), p.skin);
+    ball(&mut t, 0., sk - 0.040, -0.104, 0.014, 0.010, 0.012, p.skin, 6);
+    bx(&mut t, 0., sk - 0.066, -0.082, 0.024, 0.004, 0.006, mul(p.skin, 0.6));
+    bx2(&mut t, 0.032, sk + 0.010, -0.083, 0.011, 0.006, 0.005, [0.08, 0.08, 0.10]);
+    ball(&mut t, 0.079, sk - 0.008, 0.012, 0.011, 0.026, 0.019, p.skin_dark, 8);
+    ball(&mut t, -0.079, sk - 0.008, 0.012, 0.011, 0.026, 0.019, p.skin_dark, 8);
 
-    // ---- helmet: stacked frusta (an elliptical dome), rim, back skirt, ear guards, chin strap ----
-    let hb = 0.175; // rim height above the pivot
-    let zs = 1.14;
+    // ---- helmet: an elliptical dome of smooth rings, rim, nape cover, ear flaps, chin strap, mount ----
+    let hb = 0.158; // rim height above the pivot
+    let (rx, rz, cz, hh) = (0.108, 0.128, 0.010, 0.110);
     let h = p.helmet;
-    econe(&mut t, vec3(0., hb, 0.01), 0.128, 0.128, 0.022, zs, mul(h, 0.78), 14); // rim
-    econe(&mut t, vec3(0., hb + 0.022, 0.01), 0.128, 0.120, 0.035, zs, h, 14);
-    econe(&mut t, vec3(0., hb + 0.057, 0.01), 0.120, 0.100, 0.035, zs, h, 14);
-    econe(&mut t, vec3(0., hb + 0.092, 0.01), 0.100, 0.066, 0.03, zs, h, 14);
-    econe(&mut t, vec3(0., hb + 0.122, 0.01), 0.066, 0.030, 0.018, zs, h, 14);
-    bx(&mut t, 0., hb - 0.028, 0.128, 0.098, 0.030, 0.014, mul(h, 0.9)); // neck skirt at the back
-    bx2(&mut t, 0.122, hb - 0.03, 0.03, 0.006, 0.030, 0.05, mul(h, 0.9)); // ear guards
-                                                                          // chin strap
-    let strap = p.strap;
-    bx2(&mut t, 0.079, sk - 0.02, -0.02, 0.005, 0.075, 0.009, strap);
-    bx(&mut t, 0., sk - 0.095, -0.062, 0.05, 0.007, 0.012, strap);
-    bx2(&mut t, 0.055, sk - 0.095, -0.04, 0.007, 0.007, 0.03, strap);
+    let dome = |k: f32| -> [f32; 5] {
+        // k in 0..=1 round the quarter ellipse
+        let a = k * std::f32::consts::FRAC_PI_2;
+        let s = (a.cos()).max(0.0);
+        [hb + hh * a.sin(), 0., cz, rx * s, rz * s]
+    };
+    let ks = [0.0, 0.12, 0.26, 0.42, 0.58, 0.74, 0.88, 1.0];
+    let shell: Vec<[f32; 5]> = ks.iter().map(|&k| dome(k)).collect();
+    loft(&mut t, &shell, h, 18, true);
+    // rim and nape cover, ear flaps
+    loft(
+        &mut t,
+        &[[hb - 0.012, 0., cz, rx + 0.006, rz + 0.006], [hb + 0.014, 0., cz, rx + 0.006, rz + 0.006]],
+        mul(h, 0.8),
+        18,
+        false,
+    );
+    bx(&mut t, 0., hb - 0.030, 0.118, 0.085, 0.032, 0.012, mul(h, 0.9));
+    bx2(&mut t, 0.106, hb - 0.046, 0.045, 0.006, 0.024, 0.036, mul(h, 0.9));
+    // chin strap and cheek straps
+    let st = p.strap;
+    bx2(&mut t, 0.081, sk - 0.02, -0.02, 0.004, 0.06, 0.007, st);
+    bx(&mut t, 0., sk - 0.092, -0.056, 0.045, 0.006, 0.010, st);
+    bx2(&mut t, 0.045, sk - 0.090, -0.040, 0.006, 0.006, 0.026, st);
+    // front mount plate
+    bx(&mut t, 0., hb + 0.05, -0.128, 0.032, 0.026, 0.008, p.metal);
 
     match team {
         Team::Ironclad => {
-            // tan net cover: a band round the shell and four arches over the crown, plus goggles on the front
-            econe(&mut t, vec3(0., hb + 0.026, 0.01), 0.131, 0.124, 0.014, zs, p.net, 14);
+            // tan net band round the shell and arches over the crown; goggles pushed up on the front
+            loft(
+                &mut t,
+                &[[hb + 0.018, 0., cz, rx + 0.004, rz + 0.004], [hb + 0.04, 0., cz, rx * 0.985, rz * 0.985]],
+                p.net,
+                18,
+                false,
+            );
             for (dx, dz) in [(1., 0.), (0., 1.), (0.7, 0.7), (0.7, -0.7)] {
-                arch(&mut t, hb, dx, dz, p.net);
+                arch(&mut t, (hb, rx, rz, cz, hh), dx, dz, p.net);
             }
-            bx(&mut t, 0., hb + 0.05, -0.143, 0.065, 0.009, 0.006, p.strap); // goggle strap over the shell
-            bx2(&mut t, 0.03, hb + 0.05, -0.147, 0.026, 0.019, 0.01, [0.10, 0.10, 0.11]);
-            bx2(&mut t, 0.03, hb + 0.05, -0.154, 0.020, 0.014, 0.004, [0.85, 0.62, 0.15]);
+            bx(&mut t, 0., hb + 0.055, -0.133, 0.052, 0.008, 0.005, p.strap);
+            bx2(&mut t, 0.028, hb + 0.050, -0.142, 0.021, 0.015, 0.008, [0.10, 0.10, 0.11]);
+            bx2(&mut t, 0.028, hb + 0.050, -0.149, 0.016, 0.011, 0.004, [0.85, 0.62, 0.15]);
         }
         Team::Nightwatch => {
-            // neck gaiter over the lower face, slim dark glasses, helmet accessory rail
-            bx(&mut t, 0., sk - 0.052, -0.058, 0.066, 0.040, 0.034, p.vest_dark);
-            bx(&mut t, 0., sk - 0.028, -0.078, 0.052, 0.012, 0.016, p.vest_dark);
-            bx(&mut t, 0., sk + 0.012, -0.092, 0.058, 0.012, 0.006, [0.03, 0.03, 0.04]);
-            bx2(&mut t, 0.03, sk + 0.012, -0.096, 0.022, 0.011, 0.003, [0.12, 0.16, 0.22]);
-            bx(&mut t, 0., hb + 0.075, -0.098, 0.03, 0.012, 0.02, p.plate); // NVG mount
-            bx(&mut t, 0., hb + 0.05, -0.136, 0.05, 0.008, 0.005, p.plate);
+            // neck gaiter over the lower face, dark glasses, NVG mount and rails
+            loft(
+                &mut t,
+                &[
+                    [-0.045, 0., -0.004, 0.057, 0.061],
+                    [0.0, 0., -0.012, 0.067, 0.078],
+                    [0.050, 0., -0.030, 0.066, 0.074],
+                    [0.082, 0., -0.036, 0.052, 0.062],
+                ],
+                p.vest_dark,
+                14,
+                false,
+            );
+            bx(&mut t, 0., sk + 0.010, -0.090, 0.060, 0.012, 0.005, [0.03, 0.03, 0.04]);
+            bx2(&mut t, 0.030, sk + 0.010, -0.094, 0.023, 0.012, 0.003, [0.12, 0.16, 0.22]);
+            bx(&mut t, 0., hb + 0.07, -0.122, 0.028, 0.02, 0.022, p.plate); // NVG mount
+            bx(&mut t, 0., hb + 0.07, -0.145, 0.018, 0.012, 0.008, [0.04, 0.05, 0.05]);
+            bx2(&mut t, 0.108, hb + 0.012, 0.0, 0.007, 0.012, 0.06, p.plate); // rails
         }
     }
     t
 }
 
 /// A net strap over the crown: short boxes following the dome, in the vertical plane given by (dx, dz).
-fn arch(t: &mut Template, hb: f32, dx: f32, dz: f32, c: Rgb) {
+fn arch(t: &mut Template, dome: (f32, f32, f32, f32, f32), dx: f32, dz: f32, c: Rgb) {
+    let (hb, rx, rz, cz, hh) = dome;
     let dir = vec2(dx, dz).normalize();
-    let n = 6;
+    let n = 7;
     let pt = |k: usize| {
         let a = k as f32 / n as f32 * std::f32::consts::PI;
-        let r = 0.130 + 0.004;
-        let zs = 1.0 + 0.14 * dir.y.abs();
-        // a point on the dome: radius 0.128 at the rim, height 0.14 above it
-        let ring = (a.cos() * r) * vec2(dir.x, dir.y * zs);
-        vec3(ring.x, hb + 0.022 + a.sin() * 0.122, 0.01 + ring.y)
+        let ring = vec2(a.cos() * (rx + 0.004) * dir.x, a.cos() * (rz + 0.004) * dir.y);
+        vec3(ring.x, hb + 0.03 + a.sin() * (hh + 0.002 - 0.03).max(0.05) * 1.0, cz + ring.y)
     };
     for k in 0..n {
         let (a, b) = (pt(k), pt(k + 1));
-        let mid = (a + b) * 0.5;
-        let d = b - a;
-        let len = d.length();
-        let rot = Quat::from_rotation_arc(Vec3::Z, d / len);
-        obox(t, mid, rot, vec3(0.008, 0.004, len * 0.5 + 0.002), c);
+        strap(t, a, b, 0.008, 0.004, c);
     }
 }
 
-fn build_upper_arm(p: &Palette) -> Template {
+fn build_upper_arm(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    t.ball(Vec3::ZERO, vec3(0.056, 0.056, 0.056), p.uniform, 0., 10, 8);
-    t.cone(vec3(0., -UARM, 0.), 0.040, 0.046, UARM, p.uniform, 0., 10);
-    t.ball(vec3(0., -UARM, 0.), vec3(0.04, 0.04, 0.04), p.uniform, 0., 8, 6);
+    let u = p.uniform;
+    let pad = if team == Team::Ironclad { p.vest } else { p.vest_dark };
+    ball(&mut t, 0., -0.004, 0., 0.069, 0.070, 0.066, u, 12); // deltoid
+    loft(
+        &mut t,
+        &[
+            [-0.02, 0., 0., 0.060, 0.060],
+            [-0.09, 0., -0.003, 0.061, 0.065],
+            [-0.17, 0., 0., 0.053, 0.054],
+            [-UARM, 0., 0., 0.043, 0.043],
+        ],
+        u,
+        12,
+        false,
+    );
+    // rolled sleeve fold and a patch
+    loft(&mut t, &[[-0.165, 0., 0., 0.055, 0.056], [-0.19, 0., 0., 0.054, 0.055]], mul(u, 0.82), 12, false);
+    ball(&mut t, 0., -UARM, 0.004, 0.046, 0.046, 0.046, u, 10); // elbow
+    bx(&mut t, 0.063, -0.08, 0., 0.004, 0.025, 0.022, pad);
     t
 }
 
-fn build_forearm(p: &Palette) -> Template {
+fn build_forearm(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    t.ball(Vec3::ZERO, vec3(0.041, 0.041, 0.041), p.uniform, 0., 8, 6);
-    t.cone(vec3(0., -FARM + 0.04, 0.), 0.033, 0.041, FARM - 0.04, p.uniform, 0., 10);
-    // the glove's gauntlet over the cuff
-    t.cone(vec3(0., -FARM - 0.02, 0.), 0.034, 0.038, 0.075, p.glove, 0., 10);
-    t.cone(vec3(0., -FARM + 0.04, 0.), 0.040, 0.040, 0.012, p.glove_dark, 0., 10);
+    let u = p.uniform;
+    let pad = if team == Team::Ironclad { p.vest } else { p.vest_dark };
+    loft(
+        &mut t,
+        &[
+            [0.0, 0., 0., 0.044, 0.044],
+            [-0.05, 0., 0., 0.047, 0.047],
+            [-0.13, 0., 0., 0.042, 0.040],
+            [-0.21, 0., 0., 0.034, 0.033],
+            [-FARM + 0.01, 0., 0., 0.031, 0.031],
+        ],
+        u,
+        12,
+        false,
+    );
+    ball(&mut t, 0., 0., 0.032, 0.036, 0.036, 0.032, pad, 8); // elbow pad
+                                                              // the glove's gauntlet over the cuff
+    t.cone(vec3(0., -FARM - 0.02, 0.), 0.034, 0.038, 0.075, p.glove, 0., 12);
+    t.cone(vec3(0., -FARM + 0.04, 0.), 0.040, 0.040, 0.012, p.glove_dark, 0., 12);
     t
 }
 
-fn build_thigh(p: &Palette) -> Template {
+fn build_thigh(p: &Palette, team: Team, side: f32) -> Template {
     let mut t = Template::new();
-    t.ball(Vec3::ZERO, vec3(0.08, 0.08, 0.08), p.trousers, 0., 10, 8);
-    t.cone(vec3(0., -THIGH, 0.), 0.060, 0.078, THIGH, p.trousers, 0., 10);
-    // cargo pocket
-    bx(&mut t, 0.072, -0.22, -0.01, 0.014, 0.065, 0.048, mul(p.trousers, 0.85));
-    bx(&mut t, -0.072, -0.22, -0.01, 0.014, 0.065, 0.048, mul(p.trousers, 0.85));
+    let tr = p.trousers;
+    ball(&mut t, 0., 0., 0., 0.098, 0.098, 0.100, tr, 12); // hip joint
+    loft(
+        &mut t,
+        &[
+            [-0.03, 0., 0., 0.099, 0.102],
+            [-0.12, 0., 0.0, 0.097, 0.100],
+            [-0.26, 0., -0.002, 0.085, 0.088],
+            [-0.37, 0., -0.004, 0.073, 0.075],
+            [-THIGH, 0., 0., 0.065, 0.065],
+        ],
+        tr,
+        14,
+        false,
+    );
+    // cargo pocket on the outer side with a flap, and a seam fold
+    let pk = mul(tr, 0.86);
+    bx(&mut t, 0.097 * side, -0.215, -0.012, 0.016, 0.065, 0.050, pk);
+    bx(&mut t, 0.105 * side, -0.165, -0.012, 0.011, 0.014, 0.052, mul(tr, 0.7));
+    if team == Team::Nightwatch && side > 0. {
+        // drop-leg holster
+        bx(&mut t, 0.115, -0.19, 0.0, 0.016, 0.095, 0.052, p.vest_dark);
+        bx(&mut t, 0.115, -0.30, 0.0, 0.020, 0.012, 0.056, p.plate);
+        bx(&mut t, 0.115, -0.10, 0.0, 0.020, 0.012, 0.056, p.strap);
+    }
     t
 }
 
 fn build_shin(p: &Palette, team: Team) -> Template {
     let mut t = Template::new();
-    t.ball(Vec3::ZERO, vec3(0.062, 0.062, 0.062), p.trousers, 0., 8, 6);
-    t.cone(vec3(0., -SHIN, 0.), 0.052, 0.060, SHIN, p.trousers, 0., 10);
+    let tr = p.trousers;
+    ball(&mut t, 0., 0., 0., 0.069, 0.069, 0.069, tr, 10); // knee
+    loft(
+        &mut t,
+        &[
+            [-0.02, 0., 0., 0.068, 0.069],
+            [-0.12, 0., 0.012, 0.064, 0.074],
+            [-0.21, 0., 0.010, 0.058, 0.065],
+            [-0.28, 0., 0.0, 0.049, 0.051],
+            [-0.32, 0., 0.0, 0.050, 0.050],
+        ],
+        tr,
+        14,
+        false,
+    );
     // knee pad
     let pad = if team == Team::Ironclad { p.vest } else { p.vest_dark };
-    bx(&mut t, 0., 0.0, -0.058, 0.056, 0.062, 0.022, pad);
-    bx(&mut t, 0., 0.0, -0.078, 0.042, 0.048, 0.005, mul(pad, 0.8));
-    // bloused cuff
-    t.cone(vec3(0., -SHIN - 0.0, 0.), 0.062, 0.056, 0.05, p.trousers, 0., 10);
+    ball(&mut t, 0., -0.005, -0.062, 0.054, 0.064, 0.030, pad, 10);
+    ball(&mut t, 0., -0.005, -0.084, 0.039, 0.047, 0.010, mul(pad, 0.8), 8);
+    // bloused cuff over the boot top
+    loft(
+        &mut t,
+        &[
+            [-0.25, 0., 0., 0.051, 0.051],
+            [-0.305, 0., 0., 0.068, 0.070],
+            [-0.348, 0., 0., 0.067, 0.069],
+            [-0.352, 0., 0., 0.057, 0.059],
+        ],
+        mul(tr, 0.93),
+        14,
+        false,
+    );
     t
 }
 
 fn build_boot(p: &Palette) -> Template {
     let mut t = Template::new();
-    // shaft up the leg, foot forward (-Z); the ankle joint is the origin
-    t.cone(vec3(0., -0.06, 0.), 0.064, 0.060, 0.19, p.boot, 0., 10);
-    bx(&mut t, 0., -0.052, -0.06, 0.058, 0.038, 0.128, p.boot);
-    t.ball(vec3(0., -0.052, -0.165), vec3(0.055, 0.04, 0.05), p.boot, 0., 8, 6); // toe cap
-    bx(&mut t, 0., -0.085, -0.06, 0.061, 0.011, 0.14, p.sole);
-    bx(&mut t, 0., -0.072, 0.048, 0.06, 0.016, 0.022, p.sole); // heel block
-    bx(&mut t, 0., 0.03, -0.055, 0.03, 0.01, 0.01, mul(p.boot, 0.75)); // lacing
+    // the ankle joint is the origin; the sole's underside is 0.10 below it, toe towards -Z
+    loft(
+        &mut t,
+        &[[-0.06, 0., 0.0, 0.056, 0.060], [0.0, 0., 0.0, 0.054, 0.058], [0.10, 0., 0.0, 0.058, 0.060]],
+        p.boot,
+        12,
+        false,
+    );
+    // foot: heel, arch, ball of the foot, toe box (stations from the heel forward, then along -Z)
+    let foot: [[f32; 5]; 7] = [
+        [-0.092, 0., -0.052, 0.040, 0.036],
+        [-0.065, 0., -0.050, 0.052, 0.042],
+        [0.0, 0., -0.052, 0.054, 0.040],
+        [0.07, 0., -0.058, 0.057, 0.034],
+        [0.14, 0., -0.062, 0.057, 0.030],
+        [0.20, 0., -0.066, 0.046, 0.026],
+        [0.222, 0., -0.068, 0.020, 0.016],
+    ];
+    loft_fwd(&mut t, &foot, p.boot, 12);
+    // toe cap
+    let cap = mul(p.boot, 0.8);
+    ball(&mut t, 0., -0.062, -0.17, 0.052, 0.030, 0.050, cap, 10);
+    // thick sole with a heel block
+    let sole: [[f32; 5]; 6] = [
+        [-0.094, 0., -0.085, 0.040, 0.014],
+        [-0.075, 0., -0.085, 0.056, 0.015],
+        [0.0, 0., -0.085, 0.060, 0.015],
+        [0.12, 0., -0.085, 0.062, 0.015],
+        [0.205, 0., -0.085, 0.052, 0.014],
+        [0.230, 0., -0.085, 0.024, 0.010],
+    ];
+    loft_fwd(&mut t, &sole, p.sole, 10);
+    bx(&mut t, 0., -0.078, 0.060, 0.056, 0.020, 0.030, mul(p.sole, 1.2));
+    // laces, tongue and a pull tab
+    bx(&mut t, 0., 0.0, -0.050, 0.026, 0.040, 0.012, mul(p.boot, 0.75));
+    bx(&mut t, 0., 0.10, 0.045, 0.014, 0.014, 0.008, mul(p.boot, 0.7));
     t
 }
 
@@ -1004,7 +1308,7 @@ mod tests {
             for skin in 0..=3u8 {
                 let rig = Rig::new(team, skin);
                 assert!(rig.vertex_count() > 500);
-                assert!(rig.vertex_count() <= 6000, "{} vertices", rig.vertex_count());
+                assert!(rig.vertex_count() <= 9000, "{} vertices", rig.vertex_count());
             }
         }
         // out-of-range skin is clamped rather than panicking
@@ -1020,8 +1324,34 @@ mod tests {
             assert!(batch.vertex_count() >= rig.vertex_count());
             let (lo, hi) = bounds(&rig, &Pose::default());
             assert!(lo.y >= -0.01, "feet below ground: {}", lo.y);
-            assert!(hi.y <= 1.9 && hi.y > 1.72, "standing height {}", hi.y);
+            assert!(hi.y <= 1.86 && hi.y > 1.74, "standing height {}", hi.y);
             assert!(lo.x > -0.33 && hi.x < 0.33 && lo.z > -0.33 && hi.z < 0.33, "footprint {lo} {hi}");
+        }
+    }
+
+    #[test]
+    fn the_body_is_stocky_not_spindly() {
+        // shoulders about 0.5 m across, a thigh and a torso that fill the game's hit volumes
+        for team in Team::ALL {
+            let rig = Rig::new(team, 0);
+            let s = rig.solve(&Pose::default());
+            let span = |parts: &[(&Template, Mat4)], y0: f32, y1: f32| {
+                let (mut lo, mut hi) = (1e9f32, -1e9f32);
+                for (t, m) in parts {
+                    for v in &t.verts {
+                        let p = m.transform_point3(v.p);
+                        if p.y >= y0 && p.y <= y1 {
+                            lo = lo.min(p.x);
+                            hi = hi.max(p.x);
+                        }
+                    }
+                }
+                hi - lo
+            };
+            let shoulders = span(&rig.parts(Vec3::ZERO, 0., &Pose::default()), 1.38, 1.50);
+            assert!(shoulders > 0.46 && shoulders < 0.62, "shoulder width {shoulders}");
+            let thigh = span(&[(&rig.thigh[0], s.thigh[0])], 0.85, 0.95);
+            assert!(thigh > 0.16, "thigh width {thigh}");
         }
     }
 
@@ -1043,7 +1373,7 @@ mod tests {
         for team in Team::ALL {
             let rig = Rig::new(team, 2);
             let (lo, hi) = bounds(&rig, &Pose { crouch: 1., ..Pose::default() });
-            assert!(hi.y > 1.0 && hi.y < 1.25, "crouched top {}", hi.y);
+            assert!(hi.y > 1.05 && hi.y < 1.22, "crouched top {}", hi.y);
             assert!(lo.y >= -0.015);
         }
     }
