@@ -480,11 +480,8 @@ impl App {
     /// One frame; true when the game should close.
     async fn frame(&mut self, now: f64) -> bool {
         let playing = self.screen == Screen::Playing && self.session.is_some();
-        let alive = playing
-            && self
-                .session
-                .as_ref()
-                .is_some_and(|s| s.client.view().own.as_ref().is_some_and(|o| o.alive) && !s.over_handled);
+        // The cursor stays captured for the whole match (killcam included) and is released for the results.
+        let alive = playing && self.session.as_ref().is_some_and(|s| !s.over_handled && s.client.view().latest().is_some_and(|l| !l.snap.over));
         self.input.begin_frame(&mut self.shell, alive, super::platform::focused());
         let dt = self.input.frame_seconds();
         self.time += dt;
@@ -1332,6 +1329,22 @@ impl App {
             &s.skins,
             dt,
         );
+
+        // Names above teammates.
+        if alive {
+            let ui = hud::ui_scale();
+            for f in &figures {
+                if f.team.index() == s.my_team && Some(f.slot) != me_slot && f.view.has(flag::ALIVE) {
+                    let head = vec3(f.view.eye.0, f.view.eye.1 + 0.35, f.view.eye.2);
+                    if (head - view.eye).length() < 45. && crate::level().line_of_sight(to_v(view.eye), to_v(head)) {
+                        if let Some(p) = view.project(head, screen_width(), screen_height()) {
+                            let name = roster.iter().find(|r| r.slot as usize == f.slot).map_or("", |r| r.name.as_str());
+                            hud::text_centered(name, p.x, p.y, 16. * ui, Color::new(0.6, 0.85, 0.6, 0.85));
+                        }
+                    }
+                }
+            }
+        }
 
         // Footsteps and ambience.
         let level = crate::level();
