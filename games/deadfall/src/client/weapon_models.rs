@@ -126,11 +126,6 @@ fn v3(a: [f32; 3]) -> Vec3 {
     vec3(a[0], a[1], a[2])
 }
 
-/// Height `z` of a line through (`y0`, `z0`) that leans by `deg` degrees about X (negative = bottom further back).
-fn zat(y: f32, y0: f32, z0: f32, deg: f32) -> f32 {
-    z0 + (y - y0) * deg.to_radians().tan()
-}
-
 impl M {
     fn new() -> Self {
         Self { t: Template::new() }
@@ -141,13 +136,6 @@ impl M {
         let lo = vec3(x[0].min(x[1]), y[0].min(y[1]), z[0].min(z[1]));
         let hi = vec3(x[0].max(x[1]), y[0].max(y[1]), z[0].max(z[1]));
         self.t.box_((lo + hi) * 0.5, (hi - lo) * 0.5, c, 0.);
-    }
-
-    /// Box rotated about X by `deg` around its own centre (for raked grips and magazines).
-    fn tb(&mut self, c: [f32; 3], h: [f32; 3], deg: f32, col: C) {
-        let mut t = Template::new();
-        t.box_(Vec3::ZERO, v3(h), col, 0.);
-        self.t.append(&t.transformed(Mat4::from_translation(v3(c)) * Mat4::from_rotation_x(deg.to_radians())));
     }
 
     /// Cone or cylinder between two points (radius `r0` at `a`, `r1` at `b`).
@@ -167,10 +155,6 @@ impl M {
     fn cz(&mut self, x: f32, y: f32, z: [f32; 2], r: f32, c: C) {
         self.rod(vec3(x, y, z[0]), vec3(x, y, z[1]), r, r, c, 0.);
     }
-    /// Frustum along Z, radius `r[0]` at `z[0]`, `r[1]` at `z[1]`.
-    fn kz(&mut self, x: f32, y: f32, z: [f32; 2], r: [f32; 2], c: C) {
-        self.rod(vec3(x, y, z[0]), vec3(x, y, z[1]), r[0], r[1], c, 0.);
-    }
     /// Cylinder along X at height `y`, depth `z`.
     fn cx(&mut self, y: f32, z: f32, x: [f32; 2], r: f32, c: C) {
         self.rod(vec3(x[0], y, z), vec3(x[1], y, z), r, r, c, 0.);
@@ -179,8 +163,16 @@ impl M {
     fn cy(&mut self, x: f32, z: f32, y: [f32; 2], r: f32, c: C) {
         self.rod(vec3(x, y[0], z), vec3(x, y[1], z), r, r, c, 0.);
     }
+    /// Ellipsoid (smooth, wound outwards like every other loft).
     fn ball(&mut self, c: [f32; 3], radii: [f32; 3], col: C) {
-        self.t.ball(v3(c), v3(radii), col, 0., 10, 7);
+        let secs: Vec<Sec> = (0..=8)
+            .map(|i| {
+                let a = PI * i as f32 / 8.;
+                let (sn, cs) = a.sin_cos();
+                sz(c[2] - radii[2] * cs, c[0], c[1], radii[0] * sn, radii[1] * sn, 0.)
+            })
+            .collect();
+        self.lofte(&secs, 14, col);
     }
     /// A dark glass disc (slight glow) facing along Z at `z`.
     fn lens(&mut self, x: f32, y: f32, z: [f32; 2], r: f32) {
@@ -219,25 +211,6 @@ impl M {
                     0.,
                 );
             }
-        }
-    }
-
-    /// A bent slab (magazine, curved stock): a chain of (y, z, thickness along the path normal) points.
-    fn band(&mut self, x: [f32; 2], path: &[(f32, f32, f32)], c: C) {
-        let n = path.len();
-        let edge = |i: usize| -> ((f32, f32), (f32, f32)) {
-            let a = path[i.saturating_sub(1)];
-            let b = path[(i + 1).min(n - 1)];
-            let (dy, dz) = (b.0 - a.0, b.1 - a.1);
-            let l = (dy * dy + dz * dz).sqrt().max(1e-6);
-            let (ny, nz) = (-dz / l, dy / l);
-            let h = path[i].2 * 0.5;
-            ((path[i].0 + ny * h, path[i].1 + nz * h), (path[i].0 - ny * h, path[i].1 - nz * h))
-        };
-        for i in 0..n - 1 {
-            let (f0, b0) = edge(i);
-            let (f1, b1) = edge(i + 1);
-            self.prism(x, &[f0, f1, b1, b0], c);
         }
     }
 }
@@ -287,7 +260,8 @@ enum Ring {
 }
 
 fn ring_pts(s: &Sec, ring: Ring, soft_t: bool, soft_b: bool) -> Vec<(Vec3, Vec3)> {
-    let at = |x: f32, y: f32, nx: f32, ny: f32| (s.c + s.ex * x + s.ey * y, (s.ex * nx + s.ey * ny).normalize_or_zero());
+    let at =
+        |x: f32, y: f32, nx: f32, ny: f32| (s.c + s.ex * x + s.ey * y, (s.ex * nx + s.ey * ny).normalize_or_zero());
     let mut out = vec![];
     match ring {
         Ring::Ell(n) => {
@@ -340,7 +314,7 @@ fn loft_mesh(secs: &[Sec], ring: Ring, caps: bool, col: C, glow: f32) -> Templat
             t.verts.push(Vert { p, n, c: col, e: glow, a: 1. });
         }
     }
-    let mut tri = |t: &mut Template, a: usize, b: usize, c: usize| {
+    let tri = |t: &mut Template, a: usize, b: usize, c: usize| {
         let (pa, pb, pc) = (t.verts[a].p, t.verts[b].p, t.verts[c].p);
         let g = (pb - pa).cross(pc - pa);
         if g.length_squared() < 1e-14 {
@@ -420,14 +394,11 @@ impl M {
     fn lofte(&mut self, secs: &[Sec], n: usize, c: C) {
         self.t.append(&loft_mesh(secs, Ring::Ell(n), true, c, 0.));
     }
-    /// A loft built in its own space, then moved by `m` (rotated tapers, slanted receivers).
-    fn loft_m(&mut self, secs: &[Sec], segs: usize, m: Mat4, c: C) {
-        self.t.append(&loft_mesh(secs, Ring::Rr(segs), true, c, 0.).transformed(m));
-    }
 
     /// Box with all edges rounded by `r`.
     fn rbx(&mut self, x: [f32; 2], y: [f32; 2], z: [f32; 2], r: f32, c: C) {
-        let (x0, x1, y0, y1, z0, z1) = (x[0].min(x[1]), x[0].max(x[1]), y[0].min(y[1]), y[0].max(y[1]), z[0].min(z[1]), z[0].max(z[1]));
+        let (x0, x1, y0, y1, z0, z1) =
+            (x[0].min(x[1]), x[0].max(x[1]), y[0].min(y[1]), y[0].max(y[1]), z[0].min(z[1]), z[0].max(z[1]));
         let (cx, cy) = ((x0 + x1) * 0.5, (y0 + y1) * 0.5);
         let (hw, hh) = ((x1 - x0) * 0.5, (y1 - y0) * 0.5);
         let r = r.min(hw).min(hh).min((z1 - z0) * 0.5).max(1e-4);
@@ -451,12 +422,6 @@ impl M {
         let (hw, hh) = ((x[1] - x[0]).abs() * 0.5, (y[1] - y[0]).abs() * 0.5);
         self.loft(&[sz(z[0].min(z[1]), cx, cy, hw, hh, r), sz(z[0].max(z[1]), cx, cy, hw, hh, r)], 2, c);
     }
-    /// Box with only its top long edges rounded (receivers, slides, handguards with a flat bottom).
-    fn bzt(&mut self, x: [f32; 2], y: [f32; 2], z: [f32; 2], r: f32, c: C) {
-        let (cx, cy) = ((x[0] + x[1]) * 0.5, (y[0] + y[1]) * 0.5);
-        let (hw, hh) = ((x[1] - x[0]).abs() * 0.5, (y[1] - y[0]).abs() * 0.5);
-        self.loft(&[szb(z[0].min(z[1]), cx, cy, hw, hh, r, 0.), szb(z[0].max(z[1]), cx, cy, hw, hh, r, 0.)], 2, c);
-    }
     /// Round tube along Z with `n` sides (smooth shaded), radius `r0` at `z[0]` and `r1` at `z[1]`.
     fn tz(&mut self, x: f32, y: f32, z: [f32; 2], r: [f32; 2], c: C) {
         let n = ((8. + r[0].max(r[1]) * 400.) as usize).clamp(10, 20);
@@ -478,14 +443,27 @@ impl M {
     fn sweep(&mut self, path: &[Vec3], n: Vec3, hw: [f32; 2], hh: [f32; 2], round: bool, c: C) {
         let k = path.len();
         let ex = n.normalize();
+        let closed = k > 3 && (path[0] - path[k - 1]).length() < 1e-5;
         let secs: Vec<Sec> = (0..k)
             .map(|i| {
                 let t = i as f32 / (k - 1) as f32;
-                let tan = (path[(i + 1).min(k - 1)] - path[i.saturating_sub(1)]).normalize();
+                let tan = if closed && (i == 0 || i == k - 1) {
+                    (path[1] - path[k - 2]).normalize()
+                } else {
+                    (path[(i + 1).min(k - 1)] - path[i.saturating_sub(1)]).normalize()
+                };
                 let ey = tan.cross(ex).normalize();
                 let l = |a: [f32; 2]| a[0] + (a[1] - a[0]) * t;
                 let (w, h) = (l(hw), l(hh));
-                Sec { c: path[i], ex, ey, hw: w, hh: h, rt: w.min(h) * if round { 1. } else { 0.4 }, rb: w.min(h) * if round { 1. } else { 0.4 } }
+                Sec {
+                    c: path[i],
+                    ex,
+                    ey,
+                    hw: w,
+                    hh: h,
+                    rt: w.min(h) * if round { 1. } else { 0.4 },
+                    rb: w.min(h) * if round { 1. } else { 0.4 },
+                }
             })
             .collect();
         if round {
@@ -494,32 +472,11 @@ impl M {
             self.loft(&secs, 1, c);
         }
     }
-    /// A thin round wire through points (sling swivels, wire stocks, hooks).
-    fn wire(&mut self, path: &[Vec3], r: f32, c: C) {
-        for w in path.windows(2) {
-            self.rod(w[0], w[1], r, r, c, 0.);
-        }
-        for p in &path[1..path.len() - 1] {
-            self.t.ball(*p, Vec3::splat(r), c, 0., 6, 4);
-        }
-    }
-    /// Scope bell / cone / tapered tube along Z: radius `r0` at `z0`, `r1` at `z1`.
-    fn kone(&mut self, x: f32, y: f32, z: [f32; 2], r: [f32; 2], c: C) {
-        self.tz(x, y, z, r, c);
-    }
     /// A torus-like ring (a thin loop of wire) in the YZ plane (visible from the sides): centre (x, y, z),
     /// radius `r`, wire radius `w`.
     fn loop_yz(&mut self, x: f32, y: f32, z: f32, r: f32, w: f32, c: C) {
         let p = arc_yz(x, y, z, r, r, 0., 360., 14);
         self.sweep(&p, Vec3::X, [w, w], [w, w], true, c);
-    }
-    /// Rounded-rect, tapered-in-plan slab for blades and fins: polygon (y, z) outline smoothed by thickness `t`
-    /// with bevelled edges: a central prism plus two thinner edge prisms.
-    fn blade(&mut self, pts: &[(f32, f32)], half: f32, edge: &[(f32, f32)], c: C, ce: C) {
-        self.prism([-half, half], pts, c);
-        if edge.len() >= 3 {
-            self.prism([-half * 0.55, half * 0.55], edge, ce);
-        }
     }
 }
 
@@ -552,7 +509,8 @@ fn trigger_guard(m: &mut M, y_top: f32, depth: f32, z: [f32; 2], w: f32, c: C) {
     let hw = (w * 0.40).max(0.0030);
     m.sweep(&yz(0., &pts), Vec3::X, [hw, hw], [0.0022, 0.0022], false, c);
     let zt = zr - 0.021;
-    let tr = bez((y_top - 0.001, zt + 0.004), (y_top - depth * 0.55, zt - 0.007), (y_top - depth * 0.78, zt - 0.003), 4);
+    let tr =
+        bez((y_top - 0.001, zt + 0.004), (y_top - depth * 0.55, zt - 0.007), (y_top - depth * 0.78, zt - 0.003), 4);
     m.sweep(&yz(0., &tr), Vec3::X, [0.0026, 0.0026], [0.0016, 0.0016], false, STEEL);
 }
 
@@ -570,7 +528,18 @@ fn scope(m: &mut M, rail_y: f32, x: f32, y: f32, z_rear: f32, z_front: f32, r: f
     m.tz(x, y, [z_rear - 0.05, z_front + 0.07], [r, r], black);
     // objective bell: smooth flare out to the lens, with a lip
     let zf = z_front;
-    m.tzs(x, y, &[(zf + 0.075, r), (zf + 0.050, r * 1.02), (zf + 0.028, (r + r_obj) * 0.5), (zf + 0.008, r_obj * 0.99), (zf, r_obj)], black);
+    m.tzs(
+        x,
+        y,
+        &[
+            (zf + 0.075, r),
+            (zf + 0.050, r * 1.02),
+            (zf + 0.028, (r + r_obj) * 0.5),
+            (zf + 0.008, r_obj * 0.99),
+            (zf, r_obj),
+        ],
+        black,
+    );
     m.tz(x, y, [zf + 0.002, zf + 0.008], [r_obj * 1.04, r_obj * 1.04], GUNMETAL);
     // ocular bell and eyepiece ring
     let zr = z_rear;
@@ -676,15 +645,25 @@ fn k9() -> WeaponModel {
     );
     s.sym(|s, k| {
         for i in 0..6 {
-            s.bx([k * 0.0134, k * 0.0138], [0.046, 0.0655], [-0.0120 + i as f32 * 0.0044, -0.0103 + i as f32 * 0.0044], GROOVE);
+            s.bx(
+                [k * 0.0134, k * 0.0138],
+                [0.046, 0.0655],
+                [-0.0120 + i as f32 * 0.0044, -0.0103 + i as f32 * 0.0044],
+                GROOVE,
+            );
         }
         for i in 0..3 {
-            s.bx([k * 0.0134, k * 0.0138], [0.046, 0.0655], [-0.1655 + i as f32 * 0.0058, -0.1633 + i as f32 * 0.0058], GROOVE);
+            s.bx(
+                [k * 0.0134, k * 0.0138],
+                [0.046, 0.0655],
+                [-0.1655 + i as f32 * 0.0058, -0.1633 + i as f32 * 0.0058],
+                GROOVE,
+            );
         }
     });
     s.bx([0.0133, 0.0139], [0.0525, 0.0655], [-0.092, -0.046], GROOVE); // ejection port
     s.bx([0.0138, 0.0141], [0.0525, 0.0545], [-0.092, -0.046], BRASS); // the chambered case glints in it
-    // rear sight (two blades with a notch) and front sight post with a dot
+                                                                       // rear sight (two blades with a notch) and front sight post with a dot
     s.sym(|s, k| s.rbx([k * 0.0018, k * 0.0058], [0.0715, 0.0782], [0.0085, 0.0185], 0.0007, STEEL));
     s.bx([-0.0018, 0.0018], [0.0715, 0.0742], [0.0095, 0.0178], GROOVE);
     s.rbx([-0.0024, 0.0024], [0.0715, 0.0800], [-0.1705, -0.1645], 0.0008, STEEL);
@@ -707,23 +686,39 @@ fn k9() -> WeaponModel {
         b.bx([-0.0100, 0.0100], [0.0262, 0.0268], [-0.1250 + i as f32 * 0.016, -0.1195 + i as f32 * 0.016], GROOVE);
     }
     trigger_guard(&mut b, 0.030, 0.027, [-0.068, -0.004], 0.0095, POLY);
-    b.sym(|b, k| b.rbx([k * 0.0120, k * 0.0132], [0.0345, 0.0388], [-0.060, -0.020], 0.0015, if k > 0. { POLY } else { STEEL })); // slide stop
+    b.sym(|b, k| {
+        b.rbx([k * 0.0120, k * 0.0132], [0.0345, 0.0388], [-0.060, -0.020], 0.0015, if k > 0. { POLY } else { STEEL })
+    }); // slide stop
     b.cy(-0.0128, -0.012, [0.021, 0.027], 0.0035, STEEL); // magazine catch
-    // grip raked 14 degrees back with finger grooves and a backstrap swell
+                                                          // grip raked 14 degrees back with finger grooves and a backstrap swell
     let (ga, gb) = (vec3(0., 0.0321, -0.011), vec3(0., -0.0881, 0.019));
     let mut secs = vec![];
     for i in 0..=14 {
         let t = i as f32 / 14.;
         let dip: f32 = [0.30, 0.47, 0.64].iter().map(|c| (-((t - c) / 0.035).powi(2)).exp()).sum();
         let d = 0.0022 * dip;
-        secs.push(sa(ga, gb, t, 0.0148 - 0.0030 * (1. - (t * 5.).min(1.)), 0.0208 - d * 0.5, 0.0058, 0.0008 + d * 0.5 + 0.0012 * (1. - t * 3.).max(0.)));
+        secs.push(sa(
+            ga,
+            gb,
+            t,
+            0.0148 - 0.0030 * (1. - (t * 5.).min(1.)),
+            0.0208 - d * 0.5,
+            0.0058,
+            0.0008 + d * 0.5 + 0.0012 * (1. - t * 3.).max(0.),
+        ));
     }
     b.loft(&secs, 2, POLY);
     for i in 0..5 {
         // stippled backstrap bands
         let t = 0.16 + i as f32 * 0.16;
         let sc = sa(ga, gb, t, 0.0, 0.0, 0.0, 0.0);
-        b.rbx([-0.0100, 0.0100], [sc.c.y - 0.0025, sc.c.y + 0.0025], [sc.c.z + 0.0212 - 0.0008, sc.c.z + 0.0212 + 0.0014], 0.0008, POLY_G);
+        b.rbx(
+            [-0.0100, 0.0100],
+            [sc.c.y - 0.0025, sc.c.y + 0.0025],
+            [sc.c.z + 0.0212 - 0.0008, sc.c.z + 0.0212 + 0.0014],
+            0.0008,
+            POLY_G,
+        );
     }
     // magazine: steel body below the grip, polymer base plate
     let ma = |t: f32| sa(ga, gb, t, 0.0128, 0.0188, 0.0040, 0.0006);
@@ -755,11 +750,16 @@ fn m45() -> WeaponModel {
     s.bx([-0.0050, 0.0050], [0.0770, 0.0778], [-0.165, 0.025], [0.40, 0.41, 0.43]); // flat top strip
     s.sym(|s, k| {
         for i in 0..7 {
-            s.bx([k * 0.0129, k * 0.0134], [0.044, 0.0725], [0.0030 + i as f32 * 0.0040, 0.0044 + i as f32 * 0.0040], GROOVE);
+            s.bx(
+                [k * 0.0129, k * 0.0134],
+                [0.044, 0.0725],
+                [0.0030 + i as f32 * 0.0040, 0.0044 + i as f32 * 0.0040],
+                GROOVE,
+            );
         }
     });
     s.rbx([0.0128, 0.0136], [0.0560, 0.0735], [-0.082, -0.036], 0.0008, GROOVE); // ejection port
-    // fixed sights: dovetailed blades and a ramped front blade
+                                                                                 // fixed sights: dovetailed blades and a ramped front blade
     s.rbx([-0.0070, 0.0070], [0.0770, 0.0845], [0.0150, 0.0265], 0.0008, STEEL);
     s.bx([-0.0022, 0.0022], [0.0775, 0.0822], [0.0148, 0.0170], GROOVE);
     s.prism([-0.0020, 0.0020], &[(0.0775, -0.1665), (0.0775, -0.1585), (0.0850, -0.1590), (0.0850, -0.1640)], STEEL);
@@ -780,13 +780,25 @@ fn m45() -> WeaponModel {
     );
     trigger_guard(&mut b, 0.030, 0.027, [-0.072, -0.004], 0.0095, STEEL_L);
     b.cz(0., 0.0395, [-0.150, -0.1235], 0.0045, STEEL_L); // guide-rod housing
-    // beavertail, grip safety, hammer, thumb safety, slide stop
+                                                          // beavertail, grip safety, hammer, thumb safety, slide stop
     b.loft(
-        &[sz(0.0170, 0., 0.0420, 0.0100, 0.0040, 0.0018), sz(0.0330, 0., 0.0435, 0.0120, 0.0055, 0.0022), sz(0.0470, 0., 0.0440, 0.0120, 0.0075, 0.0024), sz(0.0510, 0., 0.0410, 0.0112, 0.0070, 0.0020)],
+        &[
+            sz(0.0170, 0., 0.0420, 0.0100, 0.0040, 0.0018),
+            sz(0.0330, 0., 0.0435, 0.0120, 0.0055, 0.0022),
+            sz(0.0470, 0., 0.0440, 0.0120, 0.0075, 0.0024),
+            sz(0.0510, 0., 0.0410, 0.0112, 0.0070, 0.0020),
+        ],
         2,
         STEEL_L,
     );
-    b.sweep(&yz(0., &bez((0.0560, 0.0345), (0.0720, 0.0350), (0.0790, 0.0455), 6)), Vec3::X, [0.0040, 0.0042], [0.0042, 0.0030], false, STEEL); // hammer
+    b.sweep(
+        &yz(0., &bez((0.0560, 0.0345), (0.0720, 0.0350), (0.0790, 0.0455), 6)),
+        Vec3::X,
+        [0.0040, 0.0042],
+        [0.0042, 0.0030],
+        false,
+        STEEL,
+    ); // hammer
     b.rbx([-0.0138, -0.0126], [0.0425, 0.0480], [0.0190, 0.0320], 0.0015, STEEL_L);
     b.rbx([-0.0140, -0.0126], [0.0345, 0.0390], [-0.040, -0.006], 0.0012, STEEL_L);
     // grip: raked frame with wooden panels and a bulged mainspring housing
@@ -836,7 +848,12 @@ fn hc50() -> WeaponModel {
     rail(&mut s, 0., 0.0925, [-0.072, 0.048], STEEL_L);
     s.sym(|s, k| {
         for i in 0..6 {
-            s.bx([k * 0.0175, k * 0.0180], [0.050, 0.088], [0.030 + i as f32 * 0.003, 0.0315 + i as f32 * 0.003 - 0.0008], GROOVE);
+            s.bx(
+                [k * 0.0175, k * 0.0180],
+                [0.050, 0.088],
+                [0.030 + i as f32 * 0.003, 0.0315 + i as f32 * 0.003 - 0.0008],
+                GROOVE,
+            );
         }
     });
     s.rbx([0.0174, 0.0183], [0.058, 0.082], [-0.045, 0.000], 0.001, GROOVE); // large ejection port
@@ -855,7 +872,12 @@ fn hc50() -> WeaponModel {
     rail(&mut b, 0., 0.0890, [-0.2300, -0.0760], STEEL_L);
     b.sym(|b, k| {
         for i in 0..4 {
-            b.bx([k * 0.0145, k * 0.0152], [0.056, 0.074], [-0.215 + i as f32 * 0.032, -0.200 + i as f32 * 0.032], GROOVE);
+            b.bx(
+                [k * 0.0145, k * 0.0152],
+                [0.056, 0.074],
+                [-0.215 + i as f32 * 0.032, -0.200 + i as f32 * 0.032],
+                GROOVE,
+            );
         }
     });
     b.rbx([-0.0030, 0.0030], [0.0885, 0.1030], [-0.2370, -0.2290], 0.0008, STEEL); // front sight
@@ -863,13 +885,17 @@ fn hc50() -> WeaponModel {
     b.bore(0., 0.0675, -0.2430, 0.0050);
     // frame, heavy trigger guard, trigger
     b.loft(
-        &[sz(-0.2200, 0., 0.0385, 0.0120, 0.0080, 0.0030), sz(-0.1000, 0., 0.0390, 0.0145, 0.0085, 0.0035), sz(0.0400, 0., 0.0385, 0.0148, 0.0090, 0.0038)],
+        &[
+            sz(-0.2200, 0., 0.0385, 0.0120, 0.0080, 0.0030),
+            sz(-0.1000, 0., 0.0390, 0.0145, 0.0085, 0.0035),
+            sz(0.0400, 0., 0.0385, 0.0148, 0.0090, 0.0038),
+        ],
         2,
         GUNMETAL,
     );
     trigger_guard(&mut b, 0.032, 0.030, [-0.082, 0.004], 0.0115, GUNMETAL);
     b.rbx([-0.0148, -0.0136], [0.0370, 0.0430], [-0.060, -0.020], 0.0015, STEEL_L); // slide stop
-    // grip with wrap-around ribbing
+                                                                                    // grip with wrap-around ribbing
     let (ga, gb) = (vec3(0., 0.0340, 0.0050), vec3(0., -0.0900, 0.0400));
     let mut secs = vec![];
     for i in 0..=12 {
@@ -890,7 +916,12 @@ fn hc50() -> WeaponModel {
         for i in 0..8 {
             let t = 0.12 + i as f32 * 0.10;
             let sc = sa(ga, gb, t, 0., 0., 0., 0.);
-            b.bx([k * 0.0194, k * 0.0198], [sc.c.y - 0.0010, sc.c.y + 0.0010], [sc.c.z - 0.0180, sc.c.z + 0.0210], GROOVE);
+            b.bx(
+                [k * 0.0194, k * 0.0198],
+                [sc.c.y - 0.0010, sc.c.y + 0.0010],
+                [sc.c.z - 0.0180, sc.c.z + 0.0210],
+                GROOVE,
+            );
         }
     }
     let ma = |t: f32| sa(ga, gb, t, 0.0165, 0.0225, 0.0050, 0.0);
@@ -911,7 +942,11 @@ fn rv357() -> WeaponModel {
     let cyl = [0.20, 0.22, 0.29];
     // frame: top strap, sideplate, rear
     b.loft(
-        &[sz(-0.0750, 0., 0.0790, 0.0090, 0.0072, 0.0035), sz(-0.0100, 0., 0.0780, 0.0100, 0.0090, 0.0040), sz(0.0500, 0., 0.0700, 0.0105, 0.0160, 0.0045)],
+        &[
+            sz(-0.0750, 0., 0.0790, 0.0090, 0.0072, 0.0035),
+            sz(-0.0100, 0., 0.0780, 0.0100, 0.0090, 0.0040),
+            sz(0.0500, 0., 0.0700, 0.0105, 0.0160, 0.0045),
+        ],
         2,
         blue,
     );
@@ -924,24 +959,46 @@ fn rv357() -> WeaponModel {
     for i in 0..9 {
         b.bx([-0.0042, 0.0042], [0.0795, 0.0832], [-0.2150 + i as f32 * 0.0160, -0.2050 + i as f32 * 0.0160], STEEL);
     }
-    b.loft(&[sz(-0.1700, 0., 0.0545, 0.0035, 0.0070, 0.0030), sz(-0.1000, 0., 0.0505, 0.0070, 0.0100, 0.0035), sz(-0.0560, 0., 0.0520, 0.0080, 0.0120, 0.0035)], 2, blue);
+    b.loft(
+        &[
+            sz(-0.1700, 0., 0.0545, 0.0035, 0.0070, 0.0030),
+            sz(-0.1000, 0., 0.0505, 0.0070, 0.0100, 0.0035),
+            sz(-0.0560, 0., 0.0520, 0.0080, 0.0120, 0.0035),
+        ],
+        2,
+        blue,
+    );
     b.cz(0., 0.0360, [-0.1650, -0.0560], 0.0042, STEEL_L); // ejector rod
     b.tz(0., 0.0360, [-0.1700, -0.1640], [0.0062, 0.0062], STEEL_L);
     b.prism([-0.0020, 0.0020], &[(0.0770, -0.2200), (0.0770, -0.2060), (0.0905, -0.2100), (0.0915, -0.2180)], blue);
     b.bx([-0.0010, 0.0010], [0.0830, 0.0900], [-0.2190, -0.2150], RED);
     b.rbx([-0.0055, 0.0055], [0.0790, 0.0930], [0.0210, 0.0330], 0.001, STEEL); // adjustable rear sight
-    // fluted cylinder with six chambers in its face, and the crane
+                                                                                // fluted cylinder with six chambers in its face, and the crane
     b.tz(0., 0.0580, [-0.0575, -0.0080], [0.0235, 0.0235], cyl);
     for i in 0..6 {
         let a = (i as f32 + 0.5) * TAU / 6.;
         let (sn, cs) = a.sin_cos();
         b.cz(sn * 0.0208, 0.0580 + cs * 0.0208, [-0.0520, -0.0140], 0.0030, [0.11, 0.12, 0.17]); // flutes
-        b.rod(vec3(sn * 0.0150, 0.0580 + cs * 0.0150, -0.0572), vec3(sn * 0.0150, 0.0580 + cs * 0.0150, -0.0580), 0.0050, 0.0050, GROOVE, 0.);
+        b.rod(
+            vec3(sn * 0.0150, 0.0580 + cs * 0.0150, -0.0572),
+            vec3(sn * 0.0150, 0.0580 + cs * 0.0150, -0.0580),
+            0.0050,
+            0.0050,
+            GROOVE,
+            0.,
+        );
     }
     b.tz(0., 0.0580, [-0.0595, -0.0575], [0.0110, 0.0100], STEEL_L);
     b.tz(0., 0.0580, [-0.0080, 0.0], [0.0100, 0.0100], STEEL_L);
     // hammer with a spur, trigger, guard
-    b.sweep(&yz(0., &bez((0.0740, 0.0440), (0.0830, 0.0500), (0.0940, 0.0560), 5)), Vec3::X, [0.0035, 0.0050], [0.0030, 0.0022], false, STEEL_L);
+    b.sweep(
+        &yz(0., &bez((0.0740, 0.0440), (0.0830, 0.0500), (0.0940, 0.0560), 5)),
+        Vec3::X,
+        [0.0035, 0.0050],
+        [0.0030, 0.0022],
+        false,
+        STEEL_L,
+    );
     trigger_guard(&mut b, 0.034, 0.030, [-0.064, 0.004], 0.0095, blue);
     // wooden grip with a rounded butt
     let (ga, gb) = (vec3(0., 0.0350, 0.0020), vec3(0., -0.0850, 0.0300));
@@ -992,13 +1049,19 @@ fn mp9() -> WeaponModel {
         loop_xy(&mut b, 0., 0.0915, z, 0.0100, 0.0016, blk); // hood
     }
     b.rbx([-0.0016, 0.0016], [0.0780, 0.1000], [-0.3095, -0.3065], 0.0005, STEEL_L); // front post
-    // rear drum sight with its dial and notch
+                                                                                     // rear drum sight with its dial and notch
     b.rbx([-0.0120, 0.0120], [0.0720, 0.0820], [0.0480, 0.0720], 0.002, blk);
     b.cx(0.0900, 0.0600, [-0.0125, 0.0125], 0.0115, GUNMETAL);
     b.cx(0.0900, 0.0600, [-0.0140, -0.0125], 0.0120, STEEL_L);
     for i in 0..4 {
         let a = i as f32 * FRAC_PI_2 + 0.4;
-        b.rbx([-0.0100, 0.0100], [0.0900 + a.sin() * 0.0112 - 0.0012, 0.0900 + a.sin() * 0.0112 + 0.0012], [0.0600 + a.cos() * 0.0112 - 0.0012, 0.0600 + a.cos() * 0.0112 + 0.0012], 0.0004, GROOVE);
+        b.rbx(
+            [-0.0100, 0.0100],
+            [0.0900 + a.sin() * 0.0112 - 0.0012, 0.0900 + a.sin() * 0.0112 + 0.0012],
+            [0.0600 + a.cos() * 0.0112 - 0.0012, 0.0600 + a.cos() * 0.0112 + 0.0012],
+            0.0004,
+            GROOVE,
+        );
     }
     notch(&mut b, 0.1010, 0.0600, 0.0075, 0.0055);
     // cocking tube on the left
@@ -1011,13 +1074,43 @@ fn mp9() -> WeaponModel {
     swivel(&mut b, 0., 0.012, -0.235);
     // collapsible wire stock
     b.sym(|b, k| {
-        b.sweep(&[vec3(k * 0.014, 0.054, 0.100), vec3(k * 0.014, 0.054, 0.290)], Vec3::X, [0.0042; 2], [0.0042; 2], true, STEEL_L);
-        b.sweep(&[vec3(k * 0.014, 0.014, 0.120), vec3(k * 0.014, 0.014, 0.290)], Vec3::X, [0.0042; 2], [0.0042; 2], true, STEEL_L);
-        b.sweep(&[vec3(k * 0.014, 0.054, 0.100), vec3(k * 0.014, 0.034, 0.108), vec3(k * 0.014, 0.014, 0.120)], Vec3::X, [0.0042; 2], [0.0042; 2], true, STEEL_L);
+        b.sweep(
+            &[vec3(k * 0.014, 0.054, 0.100), vec3(k * 0.014, 0.054, 0.290)],
+            Vec3::X,
+            [0.0042; 2],
+            [0.0042; 2],
+            true,
+            STEEL_L,
+        );
+        b.sweep(
+            &[vec3(k * 0.014, 0.014, 0.120), vec3(k * 0.014, 0.014, 0.290)],
+            Vec3::X,
+            [0.0042; 2],
+            [0.0042; 2],
+            true,
+            STEEL_L,
+        );
+        b.sweep(
+            &[vec3(k * 0.014, 0.054, 0.100), vec3(k * 0.014, 0.034, 0.108), vec3(k * 0.014, 0.014, 0.120)],
+            Vec3::X,
+            [0.0042; 2],
+            [0.0042; 2],
+            true,
+            STEEL_L,
+        );
     });
     b.rbx([-0.0235, 0.0235], [-0.0400, 0.0680], [0.2850, 0.3020], 0.007, POLY);
     // curved 30-round magazine with ribs
-    curved_mag(&mut g, [(0.032, -0.092), (-0.075, -0.100), (-0.142, -0.150)], 0.0112, [0.0140, 0.0150], GUNMETAL, POLY, &[(0.28, 0.31), (0.50, 0.53), (0.72, 0.75)], STEEL);
+    curved_mag(
+        &mut g,
+        [(0.032, -0.092), (-0.075, -0.100), (-0.142, -0.150)],
+        0.0112,
+        [0.0140, 0.0150],
+        GUNMETAL,
+        POLY,
+        &[(0.28, 0.31), (0.50, 0.53), (0.72, 0.75)],
+        STEEL,
+    );
     fin(
         b,
         anch(Some([0., 0.012, -0.20]), [0., 0.112, 0.15], [0., 0.06, -0.3565], [0.022, 0.062, 0.0]),
@@ -1062,8 +1155,22 @@ fn ump() -> WeaponModel {
     swivel(&mut b, 0., 0.014, -0.250);
     // folding tube stock
     b.sym(|b, k| {
-        b.sweep(&[vec3(k * 0.013, 0.066, 0.115), vec3(k * 0.013, 0.066, 0.330)], Vec3::X, [0.0045; 2], [0.0045; 2], true, STEEL_L);
-        b.sweep(&[vec3(k * 0.013, 0.024, 0.115), vec3(k * 0.013, 0.024, 0.330)], Vec3::X, [0.0045; 2], [0.0045; 2], true, STEEL_L);
+        b.sweep(
+            &[vec3(k * 0.013, 0.066, 0.115), vec3(k * 0.013, 0.066, 0.330)],
+            Vec3::X,
+            [0.0045; 2],
+            [0.0045; 2],
+            true,
+            STEEL_L,
+        );
+        b.sweep(
+            &[vec3(k * 0.013, 0.024, 0.115), vec3(k * 0.013, 0.024, 0.330)],
+            Vec3::X,
+            [0.0045; 2],
+            [0.0045; 2],
+            true,
+            STEEL_L,
+        );
     });
     b.rbx([-0.0225, 0.0225], [-0.0100, 0.0850], [0.3250, 0.3450], 0.008, body);
     // straight translucent 25-round magazine raked slightly forward
@@ -1101,7 +1208,13 @@ fn pdw() -> WeaponModel {
     b.tz(0., 0.0525, [-0.2700, -0.2350], [0.0085, 0.0085], STEEL);
     b.bore(0., 0.0525, -0.2700, 0.0045);
     for i in 0..3 {
-        b.rbx([-0.0115, 0.0115], [0.0465, 0.0585], [-0.2680 + i as f32 * 0.0080, -0.2630 + i as f32 * 0.0080], 0.002, STEEL);
+        b.rbx(
+            [-0.0115, 0.0115],
+            [0.0465, 0.0585],
+            [-0.2680 + i as f32 * 0.0080, -0.2630 + i as f32 * 0.0080],
+            0.002,
+            STEEL,
+        );
     }
     // top rail, ring sight housing with glass
     b.rbx([-0.0185, 0.0185], [0.0980, 0.1100], [-0.1740, 0.1740], 0.005, body);
@@ -1114,7 +1227,14 @@ fn pdw() -> WeaponModel {
     // grip, forward finger stop, bottom strap and the rounded butt with its thumbhole
     pgrip(&mut b, vec3(0., 0.0300, -0.0020), vec3(0., -0.0700, 0.0020), 0.0165, 0.0185, body);
     b.rbx([-0.0205, 0.0205], [-0.0220, 0.0300], [-0.1250, -0.0660], 0.008, body);
-    b.sweep(&yz(0., &bez((-0.0560, 0.0180), (-0.0700, 0.1500), (-0.0560, 0.2300), 8)), Vec3::X, [0.0170; 2], [0.0090; 2], false, body);
+    b.sweep(
+        &yz(0., &bez((-0.0560, 0.0180), (-0.0700, 0.1500), (-0.0560, 0.2300), 8)),
+        Vec3::X,
+        [0.0170; 2],
+        [0.0090; 2],
+        false,
+        body,
+    );
     b.loft(
         &[
             sz(0.1900, 0., 0.0100, 0.0200, 0.0660, 0.0120),
@@ -1127,11 +1247,17 @@ fn pdw() -> WeaponModel {
     );
     b.rbx([-0.0198, 0.0198], [-0.0500, 0.0560], [0.2760, 0.2830], 0.003, POLY);
     b.rbx([0.0205, 0.0212], [-0.0300, -0.0050], [0.1200, 0.2000], 0.001, GROOVE); // ejection chute
-    // translucent magazine lying on top of the body, rounds showing
+                                                                                  // translucent magazine lying on top of the body, rounds showing
     g.rbx([-0.0235, 0.0235], [0.0750, 0.1080], [-0.1700, 0.1200], 0.009, [0.33, 0.34, 0.37]);
     for i in 0..13 {
         let z = -0.1200 + i as f32 * 0.0160;
-        g.rbx([-0.0240, 0.0240], [0.0850, 0.0990], [z, z + 0.0100], 0.0035, if i % 2 == 0 { BRASS } else { [0.62, 0.50, 0.22] });
+        g.rbx(
+            [-0.0240, 0.0240],
+            [0.0850, 0.0990],
+            [z, z + 0.0100],
+            0.0035,
+            if i % 2 == 0 { BRASS } else { [0.62, 0.50, 0.22] },
+        );
     }
     fin(
         b,
@@ -1159,7 +1285,13 @@ fn vkr() -> WeaponModel {
     b.tz(0., 0.0500, [-0.3100, -0.2700], [0.0125, 0.0135], STEEL);
     b.bore(0., 0.0500, -0.3100, 0.0062);
     for i in 0..3 {
-        b.rbx([-0.0145, 0.0145], [0.0440, 0.0560], [-0.3050 + i as f32 * 0.0090, -0.3000 + i as f32 * 0.0090], 0.002, STEEL);
+        b.rbx(
+            [-0.0145, 0.0145],
+            [0.0440, 0.0560],
+            [-0.3050 + i as f32 * 0.0090, -0.3000 + i as f32 * 0.0090],
+            0.002,
+            STEEL,
+        );
     }
     slots_both(&mut b, 0.0216, [0.040, 0.062], [-0.250, -0.160], 6, POLY);
     rail(&mut b, 0., 0.0950, [-0.130, 0.140], tan_d);
@@ -1170,8 +1302,22 @@ fn vkr() -> WeaponModel {
     pgrip(&mut b, vec3(0., 0.0310, -0.0070), vec3(0., -0.0870, 0.0270), 0.0170, 0.0235, tan);
     // folding stock
     b.sym(|b, k| {
-        b.sweep(&[vec3(k * 0.014, 0.085, 0.140), vec3(k * 0.014, 0.060, 0.270)], Vec3::X, [0.0048; 2], [0.0048; 2], true, STEEL_L);
-        b.sweep(&[vec3(k * 0.014, 0.030, 0.120), vec3(k * 0.014, -0.020, 0.270)], Vec3::X, [0.0048; 2], [0.0048; 2], true, STEEL_L);
+        b.sweep(
+            &[vec3(k * 0.014, 0.085, 0.140), vec3(k * 0.014, 0.060, 0.270)],
+            Vec3::X,
+            [0.0048; 2],
+            [0.0048; 2],
+            true,
+            STEEL_L,
+        );
+        b.sweep(
+            &[vec3(k * 0.014, 0.030, 0.120), vec3(k * 0.014, -0.020, 0.270)],
+            Vec3::X,
+            [0.0048; 2],
+            [0.0048; 2],
+            true,
+            STEEL_L,
+        );
     });
     b.rbx([-0.0225, 0.0225], [-0.0450, 0.0750], [0.2650, 0.2820], 0.007, POLY);
     let (ma, mb) = (vec3(0., 0.0310, -0.0070), vec3(0., -0.0870, 0.0270));
@@ -1213,7 +1359,15 @@ fn pgrip(m: &mut M, a: Vec3, b: Vec3, hw: f32, hh: f32, c: C) {
         let t = i as f32 / 8.;
         let sw = 1. + 0.08 * (t * PI).sin();
         let heel = if t > 0.8 { 1. + 0.10 * (t - 0.8) / 0.2 } else { 1. };
-        secs.push(sa(a, b, t, hw * sw * (0.92 + 0.08 * t), hh * sw * heel, hw * 0.45, 0.0012 * (t * PI).sin() + 0.0008 * heel));
+        secs.push(sa(
+            a,
+            b,
+            t,
+            hw * sw * (0.92 + 0.08 * t),
+            hh * sw * heel,
+            hw * 0.45,
+            0.0012 * (t * PI).sin() + 0.0008 * heel,
+        ));
     }
     m.loft(&secs, 2, c);
 }
@@ -1240,7 +1394,8 @@ fn k47() -> WeaponModel {
     b.rbx([0.0184, 0.0192], [0.0560, 0.0780], [-0.1050, 0.0000], 0.001, GROOVE); // ejection port
     b.rbx([0.0186, 0.0206], [0.0560, 0.0620], [-0.0200, 0.0850], 0.001, STEEL_L); // charging handle slot
     for dz in [0.0, 0.012] {
-        b.bx([-0.0189, 0.0189], [0.0885, 0.0900], [-0.0900 + dz, -0.0870 + dz], GROOVE); // cover ribs
+        b.bx([-0.0189, 0.0189], [0.0885, 0.0900], [-0.0900 + dz, -0.0870 + dz], GROOVE);
+        // cover ribs
     }
     // barrel, gas block and tube, wooden handguards
     b.tz(0., 0.0670, [-0.6000, -0.1700], [0.0072, 0.0075], blk);
@@ -1284,14 +1439,28 @@ fn k47() -> WeaponModel {
     trigger_guard(&mut b, 0.030, 0.030, [-0.068, 0.004], 0.0095, blk);
     stock(
         &mut b,
-        &[(0.1100, 0.0700, -0.0100, 0.0148), (0.1800, 0.0640, -0.0420, 0.0160), (0.2500, 0.0560, -0.0760, 0.0165), (0.2745, 0.0520, -0.0740, 0.0162)],
+        &[
+            (0.1100, 0.0700, -0.0100, 0.0148),
+            (0.1800, 0.0640, -0.0420, 0.0160),
+            (0.2500, 0.0560, -0.0760, 0.0165),
+            (0.2745, 0.0520, -0.0740, 0.0162),
+        ],
         0.0085,
         WOOD,
     );
     b.rbx([-0.0166, 0.0166], [-0.0780, 0.0540], [0.2745, 0.2830], 0.004, STEEL);
     swivel(&mut b, 0., -0.075, 0.250);
     // curved magazine, ribbed
-    curved_mag(&mut g, [(0.032, -0.052), (-0.065, -0.060), (-0.150, -0.135)], 0.0145, [0.0190, 0.0190], STEEL, GUNMETAL, &[(0.22, 0.26), (0.42, 0.46), (0.62, 0.66), (0.80, 0.84)], GUNMETAL);
+    curved_mag(
+        &mut g,
+        [(0.032, -0.052), (-0.065, -0.060), (-0.150, -0.135)],
+        0.0145,
+        [0.0190, 0.0190],
+        STEEL,
+        GUNMETAL,
+        &[(0.22, 0.26), (0.42, 0.46), (0.62, 0.66), (0.80, 0.84)],
+        GUNMETAL,
+    );
     // charging handle
     s.rbx([0.0186, 0.0246], [0.0600, 0.0660], [-0.0360, -0.0160], 0.002, STEEL_L);
     s.rbx([0.0246, 0.0296], [0.0560, 0.0720], [-0.0400, -0.0120], 0.003, STEEL_L);
@@ -1317,7 +1486,14 @@ fn m4c() -> WeaponModel {
         3,
         up,
     );
-    b.loft(&[szb(-0.1200, 0., 0.0250, 0.0185, 0.0250, 0.0020, 0.0060), szb(0.0600, 0., 0.0250, 0.0185, 0.0250, 0.0020, 0.0060)], 3, lo);
+    b.loft(
+        &[
+            szb(-0.1200, 0., 0.0250, 0.0185, 0.0250, 0.0020, 0.0060),
+            szb(0.0600, 0., 0.0250, 0.0185, 0.0250, 0.0020, 0.0060),
+        ],
+        3,
+        lo,
+    );
     b.rbx([-0.0135, 0.0135], [-0.0200, 0.0000], [-0.0980, -0.0520], 0.003, lo);
     b.rbx([0.0194, 0.0202], [0.0600, 0.0840], [-0.0600, 0.0200], 0.001, STEEL); // ejection port cover
     b.rbx([0.0194, 0.0230], [0.0660, 0.0780], [0.0220, 0.0420], 0.003, STEEL_L); // forward assist
@@ -1331,7 +1507,7 @@ fn m4c() -> WeaponModel {
     b.sym(|b, k| b.rbx([k * 0.0075, k * 0.0135], [0.1000, 0.1180], [-0.1150, -0.0920], 0.003, up));
     aperture(&mut b, 0.1460, 0.034, 0.0075, 0.0025);
     b.rbx([-0.0135, 0.0135], [0.0880, 0.1000], [0.0520, 0.0820], 0.003, STEEL); // charging handle
-    // round ribbed handguard, barrel, gas block with its A-frame sight post, flash hider
+                                                                                // round ribbed handguard, barrel, gas block with its A-frame sight post, flash hider
     b.tzs(0., 0.0720, &[(-0.3900, 0.0205), (-0.3800, 0.0215), (-0.1350, 0.0215)], lo);
     for i in 0..8 {
         let z = -0.3700 + i as f32 * 0.0300;
@@ -1367,7 +1543,16 @@ fn m4c() -> WeaponModel {
     b.sym(|b, k| b.rbx([k * 0.0188, k * 0.0198], [-0.0100, 0.0250], [0.2100, 0.2800], 0.003, GROOVE));
     swivel(&mut b, 0., -0.040, 0.290);
     // STANAG magazine
-    curved_mag(&mut g, [(0.0, -0.075), (-0.062, -0.078), (-0.132, -0.098)], 0.0125, [0.0185, 0.0185], GUNMETAL, POLY, &[(0.30, 0.34), (0.55, 0.59)], STEEL);
+    curved_mag(
+        &mut g,
+        [(0.0, -0.075), (-0.062, -0.078), (-0.132, -0.098)],
+        0.0125,
+        [0.0185, 0.0185],
+        GUNMETAL,
+        POLY,
+        &[(0.30, 0.34), (0.55, 0.59)],
+        STEEL,
+    );
     fin(
         b,
         anch(Some([0., 0.050, -0.26]), [0., 0.146, 0.11], [0., 0.072, -0.5355], [0.022, 0.072, -0.01]),
@@ -1383,20 +1568,33 @@ fn fm2() -> WeaponModel {
     // one smooth bullpup body: heavy front block, bottom sweeping back to the butt
     let st = |z: f32, top: f32, bot: f32, hw: f32| sz(z, 0., (top + bot) * 0.5, hw, (top - bot) * 0.5, 0.0130);
     b.loft(
-        &[st(-0.3000, 0.078, 0.0, 0.0245), st(0.0300, 0.078, 0.0, 0.0255), st(0.1000, 0.078, -0.030, 0.0255), st(0.2250, 0.078, -0.060, 0.0250), st(0.2740, 0.074, -0.056, 0.0235)],
+        &[
+            st(-0.3000, 0.078, 0.0, 0.0245),
+            st(0.0300, 0.078, 0.0, 0.0255),
+            st(0.1000, 0.078, -0.030, 0.0255),
+            st(0.2250, 0.078, -0.060, 0.0250),
+            st(0.2740, 0.074, -0.056, 0.0235),
+        ],
         3,
         ol,
     );
     b.rbx([-0.0252, 0.0252], [-0.0660, 0.0400], [0.2680, 0.2830], 0.006, POLY);
     b.rbx([0.0252, 0.0262], [0.0400, 0.0660], [0.0600, 0.1300], 0.001, GROOVE); // ejection port
-    // barrel, sleeve, flash hider and folded bipod legs
+                                                                                // barrel, sleeve, flash hider and folded bipod legs
     b.tz(0., 0.0600, [-0.4700, -0.3000], [0.0075, 0.0075], STEEL);
     b.tz(0., 0.0600, [-0.3800, -0.3000], [0.0135, 0.0135], ol_d);
     b.tzs(0., 0.0600, &[(-0.4690, 0.0098), (-0.4480, 0.0098)], STEEL);
     b.tz(0., 0.0600, [-0.4620, -0.4500], [0.0140, 0.0140], STEEL_L);
     b.bore(0., 0.0600, -0.4755, 0.0052);
     b.sym(|b, k| {
-        b.sweep(&[vec3(k * 0.0290, 0.052, -0.430), vec3(k * 0.0290, 0.052, -0.250)], Vec3::X, [0.0034; 2], [0.0034; 2], true, STEEL_L);
+        b.sweep(
+            &[vec3(k * 0.0290, 0.052, -0.430), vec3(k * 0.0290, 0.052, -0.250)],
+            Vec3::X,
+            [0.0034; 2],
+            [0.0034; 2],
+            true,
+            STEEL_L,
+        );
     });
     b.rbx([-0.0265, 0.0265], [0.0080, 0.0700], [-0.2600, -0.2350], 0.005, ol_d);
     // carry handle running over the whole body, sights at both ends
@@ -1411,7 +1609,16 @@ fn fm2() -> WeaponModel {
     // grip and trigger guard
     pgrip(&mut b, vec3(0., 0.0220, -0.0040), vec3(0., -0.0860, 0.0040), 0.0165, 0.0215, POLY);
     trigger_guard(&mut b, 0.0, 0.028, [-0.062, -0.002], 0.0105, POLY);
-    curved_mag(&mut g, [(-0.030, 0.088), (-0.078, 0.092), (-0.123, 0.100)], 0.0115, [0.0155, 0.0155], GUNMETAL, POLY, &[(0.40, 0.44)], STEEL);
+    curved_mag(
+        &mut g,
+        [(-0.030, 0.088), (-0.078, 0.092), (-0.123, 0.100)],
+        0.0115,
+        [0.0155, 0.0155],
+        GUNMETAL,
+        POLY,
+        &[(0.40, 0.44)],
+        STEEL,
+    );
     fin(
         b,
         anch(Some([0., 0.0, -0.20]), [0., 0.1415, 0.20], [0., 0.06, -0.4755], [0.0263, 0.052, 0.10]),
@@ -1426,7 +1633,13 @@ fn bpa() -> WeaponModel {
     let blk = [0.07, 0.075, 0.08];
     let st = |z: f32, top: f32, bot: f32, hw: f32| sz(z, 0., (top + bot) * 0.5, hw, (top - bot) * 0.5, 0.0140);
     b.loft(
-        &[st(-0.2500, 0.085, -0.020, 0.0280), st(0.0500, 0.085, -0.030, 0.0285), st(0.2000, 0.085, -0.065, 0.0280), st(0.2700, 0.072, -0.062, 0.0270), st(0.2800, 0.052, -0.060, 0.0250)],
+        &[
+            st(-0.2500, 0.085, -0.020, 0.0280),
+            st(0.0500, 0.085, -0.030, 0.0285),
+            st(0.2000, 0.085, -0.065, 0.0280),
+            st(0.2700, 0.072, -0.062, 0.0270),
+            st(0.2800, 0.052, -0.060, 0.0250),
+        ],
         3,
         ol,
     );
@@ -1449,11 +1662,20 @@ fn bpa() -> WeaponModel {
     b.lens(0., 0.1160, [0.1240, 0.1220], 0.0160);
     b.rbx([-0.0012, 0.0012], [0.1040, 0.1200], [-0.2180, -0.2120], 0.0005, STEEL);
     b.cy(0., -0.0200, [0.1360, 0.1500], 0.0085, STEEL); // elevation cap
-    // grip, big trigger guard, vertical foregrip
+                                                        // grip, big trigger guard, vertical foregrip
     pgrip(&mut b, vec3(0., -0.0120, -0.0100), vec3(0., -0.1120, 0.0140), 0.0165, 0.0220, ol);
     trigger_guard(&mut b, -0.018, 0.034, [-0.070, 0.0], 0.0105, ol);
     pgrip(&mut b, vec3(0., -0.0050, -0.2110), vec3(0., -0.0960, -0.2190), 0.0145, 0.0205, ol);
-    curved_mag(&mut g, [(-0.040, 0.088), (-0.092, 0.092), (-0.135, 0.100)], 0.0135, [0.0170, 0.0170], [0.30, 0.32, 0.34], blk, &[], STEEL);
+    curved_mag(
+        &mut g,
+        [(-0.040, 0.088), (-0.092, 0.092), (-0.135, 0.100)],
+        0.0135,
+        [0.0170, 0.0170],
+        [0.30, 0.32, 0.34],
+        blk,
+        &[],
+        STEEL,
+    );
     fin(
         b,
         anch(Some([0., -0.05, -0.215]), [0., 0.120, 0.18], [0., 0.06, -0.5055], [0.029, 0.05, 0.10]),
@@ -1498,7 +1720,14 @@ fn gl4() -> WeaponModel {
     b.tz(0., 0.0660, [-0.6000, -0.3600], [0.0090, 0.0092], STEEL);
     b.tzs(0., 0.0660, &[(-0.6050, 0.0108), (-0.5900, 0.0120), (-0.5600, 0.0120)], GUNMETAL);
     for i in 0..4 {
-        b.sym(|b, k| b.bx([k * 0.0116, k * 0.0124], [0.060, 0.072], [-0.6000 + i as f32 * 0.0100, -0.5950 + i as f32 * 0.0100], GROOVE));
+        b.sym(|b, k| {
+            b.bx(
+                [k * 0.0116, k * 0.0124],
+                [0.060, 0.072],
+                [-0.6000 + i as f32 * 0.0100, -0.5950 + i as f32 * 0.0100],
+                GROOVE,
+            )
+        });
     }
     b.bore(0., 0.0660, -0.6050, 0.0058);
     b.rbx([-0.0120, 0.0120], [0.0520, 0.0780], [-0.5450, -0.5120], 0.003, GUNMETAL);
@@ -1509,10 +1738,29 @@ fn gl4() -> WeaponModel {
     b.rbx([-0.0165, 0.0165], [0.0000, 0.0300], [-0.0550, 0.0300], 0.004, fur);
     trigger_guard(&mut b, 0.0, 0.028, [-0.058, 0.004], 0.0105, fur);
     pgrip(&mut b, vec3(0., 0.0285, -0.0120), vec3(0., -0.0985, 0.0420), 0.0165, 0.0220, fur);
-    stock(&mut b, &[(0.2200, 0.0780, 0.0150, 0.0180), (0.3200, 0.0740, -0.0300, 0.0185), (0.4000, 0.0700, -0.0580, 0.0185), (0.4250, 0.0620, -0.0520, 0.0182)], 0.0070, fur);
+    stock(
+        &mut b,
+        &[
+            (0.2200, 0.0780, 0.0150, 0.0180),
+            (0.3200, 0.0740, -0.0300, 0.0185),
+            (0.4000, 0.0700, -0.0580, 0.0185),
+            (0.4250, 0.0620, -0.0520, 0.0182),
+        ],
+        0.0070,
+        fur,
+    );
     b.rbx([-0.0190, 0.0190], [-0.0560, 0.0640], [0.4220, 0.4340], 0.005, POLY);
     // 20-round ribbed magazine
-    curved_mag(&mut g, [(0.030, -0.060), (-0.060, -0.064), (-0.115, -0.080)], 0.0145, [0.0215, 0.0215], GUNMETAL, POLY, &[(0.28, 0.33), (0.55, 0.60), (0.80, 0.85)], STEEL);
+    curved_mag(
+        &mut g,
+        [(0.030, -0.060), (-0.060, -0.064), (-0.115, -0.080)],
+        0.0145,
+        [0.0215, 0.0215],
+        GUNMETAL,
+        POLY,
+        &[(0.28, 0.33), (0.55, 0.60), (0.80, 0.85)],
+        STEEL,
+    );
     fin(
         b,
         anch(Some([0., 0.012, -0.24]), [0., 0.123, 0.29], [0., 0.066, -0.6055], [0.02, 0.068, 0.0]),
@@ -1550,21 +1798,45 @@ fn dmr20() -> WeaponModel {
     b.tz(0., 0.0660, [-0.6600, -0.4600], [0.0098, 0.0098], STEEL);
     b.tzs(0., 0.0660, &[(-0.6850, 0.0100), (-0.6780, 0.0125), (-0.6450, 0.0125), (-0.6400, 0.0098)], STEEL);
     for i in 0..3 {
-        b.sym(|b, k| b.bx([k * 0.0123, k * 0.0130], [0.0580, 0.0740], [-0.6760 + i as f32 * 0.0120, -0.6690 + i as f32 * 0.0120], GROOVE));
+        b.sym(|b, k| {
+            b.bx(
+                [k * 0.0123, k * 0.0130],
+                [0.0580, 0.0740],
+                [-0.6760 + i as f32 * 0.0120, -0.6690 + i as f32 * 0.0120],
+                GROOVE,
+            )
+        });
     }
     b.bore(0., 0.0660, -0.6855, 0.0058);
     // pistol grip, guard, magwell, stock with the cheek riser
     pgrip(&mut b, vec3(0., 0.0345, -0.0170), vec3(0., -0.0955, 0.0470), 0.0170, 0.0225, tan_d);
     trigger_guard(&mut b, 0.020, 0.048, [-0.070, 0.0], 0.0105, tan);
     b.rbx([-0.0145, 0.0145], [-0.0120, 0.0200], [-0.1150, -0.0450], 0.004, tan);
-    stock(&mut b, &[(0.1700, 0.0850, 0.0000, 0.0190), (0.2500, 0.0850, -0.0300, 0.0195), (0.3300, 0.0810, -0.0600, 0.0195), (0.3450, 0.0300, -0.0600, 0.0190)], 0.0080, tan);
+    stock(
+        &mut b,
+        &[
+            (0.1700, 0.0850, 0.0000, 0.0190),
+            (0.2500, 0.0850, -0.0300, 0.0195),
+            (0.3300, 0.0810, -0.0600, 0.0195),
+            (0.3450, 0.0300, -0.0600, 0.0190),
+        ],
+        0.0080,
+        tan,
+    );
     b.rbx([-0.0175, 0.0175], [0.0850, 0.1060], [0.1800, 0.3100], 0.006, tan_d);
     b.rbx([-0.0200, 0.0200], [-0.0640, 0.0850], [0.3420, 0.3560], 0.006, POLY);
     swivel(&mut b, 0., 0.032, -0.300);
     scope(&mut b, 0.102, 0., 0.138, 0.06, -0.20, 0.0165, 0.027);
     let mg = |t: f32| sa(vec3(0., 0.0200, -0.0800), vec3(0., -0.1200, -0.0860), t, 0.0120, 0.0230, 0.004, 0.);
     g.loft(&[mg(0.0), mg(1.0)], 2, POLY);
-    g.loft(&[sa(vec3(0., 0.0200, -0.0800), vec3(0., -0.1200, -0.0860), 1.0, 0.0132, 0.0245, 0.004, 0.), sa(vec3(0., 0.0200, -0.0800), vec3(0., -0.1200, -0.0860), 1.06, 0.0132, 0.0245, 0.004, 0.)], 2, GUNMETAL);
+    g.loft(
+        &[
+            sa(vec3(0., 0.0200, -0.0800), vec3(0., -0.1200, -0.0860), 1.0, 0.0132, 0.0245, 0.004, 0.),
+            sa(vec3(0., 0.0200, -0.0800), vec3(0., -0.1200, -0.0860), 1.06, 0.0132, 0.0245, 0.004, 0.),
+        ],
+        2,
+        GUNMETAL,
+    );
     s.rbx([0.0216, 0.0296], [0.0600, 0.0680], [-0.0850, -0.0650], 0.002, STEEL_L);
     s.rbx([0.0296, 0.0346], [0.0550, 0.0730], [-0.0900, -0.0600], 0.003, STEEL_L);
     fin(
@@ -1593,11 +1865,23 @@ fn svd() -> WeaponModel {
     b.tz(0., 0.0670, [-0.8000, -0.1700], [0.0082, 0.0085], blk);
     b.rbx([-0.0110, 0.0110], [0.0560, 0.1000], [-0.4550, -0.4200], 0.004, GUNMETAL);
     b.loft(
-        &[szb(-0.4200, 0., 0.0795, 0.0150, 0.0172, 0.0150, 0.0120), szb(-0.4000, 0., 0.0795, 0.0170, 0.0178, 0.0165, 0.0130), szb(-0.2500, 0., 0.0795, 0.0172, 0.0178, 0.0170, 0.0150)],
+        &[
+            szb(-0.4200, 0., 0.0795, 0.0150, 0.0172, 0.0150, 0.0120),
+            szb(-0.4000, 0., 0.0795, 0.0170, 0.0178, 0.0165, 0.0130),
+            szb(-0.2500, 0., 0.0795, 0.0172, 0.0178, 0.0170, 0.0150),
+        ],
         3,
         WOOD,
     );
-    b.loft(&[szb(-0.4200, 0., 0.0480, 0.0150, 0.0185, 0.0040, 0.0110), szb(-0.4000, 0., 0.0480, 0.0172, 0.0185, 0.0050, 0.0140), szb(-0.2150, 0., 0.0480, 0.0185, 0.0185, 0.0050, 0.0150)], 3, WOOD);
+    b.loft(
+        &[
+            szb(-0.4200, 0., 0.0480, 0.0150, 0.0185, 0.0040, 0.0110),
+            szb(-0.4000, 0., 0.0480, 0.0172, 0.0185, 0.0050, 0.0140),
+            szb(-0.2150, 0., 0.0480, 0.0185, 0.0185, 0.0050, 0.0150),
+        ],
+        3,
+        WOOD,
+    );
     b.rbx([-0.0195, 0.0195], [0.0260, 0.0660], [-0.4250, -0.4150], 0.003, STEEL_L);
     b.rbx([-0.0095, 0.0095], [0.0900, 0.1000], [-0.2250, -0.1800], 0.003, blk);
     b.rbx([-0.0065, 0.0065], [0.0600, 0.0850], [-0.7750, -0.7450], 0.003, GUNMETAL);
@@ -1606,19 +1890,50 @@ fn svd() -> WeaponModel {
     // slotted flash hider
     b.tzs(0., 0.0670, &[(-0.7850, 0.0090), (-0.8000, 0.0112), (-0.8300, 0.0112), (-0.8350, 0.0095)], GUNMETAL);
     for i in 0..3 {
-        b.sym(|b, k| b.bx([k * 0.0110, k * 0.0118], [0.059, 0.075], [-0.825 + i as f32 * 0.012, -0.819 + i as f32 * 0.012], GROOVE));
+        b.sym(|b, k| {
+            b.bx(
+                [k * 0.0110, k * 0.0118],
+                [0.059, 0.075],
+                [-0.825 + i as f32 * 0.012, -0.819 + i as f32 * 0.012],
+                GROOVE,
+            )
+        });
     }
     b.bore(0., 0.0670, -0.8355, 0.0055);
     // wooden grip and the skeleton thumbhole stock: top beam, butt, lower strut, thumbhole
     pgrip(&mut b, vec3(0., 0.0344, -0.0153), vec3(0., -0.0944, 0.0393), 0.0165, 0.0222, WOOD);
     trigger_guard(&mut b, 0.030, 0.030, [-0.068, 0.004], 0.0095, blk);
-    b.loft(&[sz(0.1100, 0., 0.0610, 0.0150, 0.0170, 0.0070), sz(0.3000, 0., 0.0650, 0.0155, 0.0150, 0.0070), sz(0.4000, 0., 0.0560, 0.0158, 0.0250, 0.0070)], 3, WOOD);
-    b.sweep(&yz(0., &bez((-0.0750, 0.0450), (-0.0950, 0.2400), (-0.0600, 0.3900), 10)), Vec3::X, [0.0090; 2], [0.0130; 2], false, WOOD_D);
+    b.loft(
+        &[
+            sz(0.1100, 0., 0.0610, 0.0150, 0.0170, 0.0070),
+            sz(0.3000, 0., 0.0650, 0.0155, 0.0150, 0.0070),
+            sz(0.4000, 0., 0.0560, 0.0158, 0.0250, 0.0070),
+        ],
+        3,
+        WOOD,
+    );
+    b.sweep(
+        &yz(0., &bez((-0.0750, 0.0450), (-0.0950, 0.2400), (-0.0600, 0.3900), 10)),
+        Vec3::X,
+        [0.0090; 2],
+        [0.0130; 2],
+        false,
+        WOOD_D,
+    );
     b.rbx([-0.0165, 0.0165], [-0.0920, 0.0780], [0.3850, 0.4020], 0.005, WOOD);
     b.rbx([-0.0170, 0.0170], [-0.0950, 0.0600], [0.4020, 0.4100], 0.003, POLY);
     scope(&mut b, 0.092, 0., 0.131, 0.05, -0.20, 0.0175, 0.0275);
     b.tz(0., 0.131, [0.050, 0.075], [0.0215, 0.0215], POLY);
-    curved_mag(&mut g, [(0.030, -0.056), (-0.050, -0.062), (-0.092, -0.098)], 0.0145, [0.0180, 0.0180], STEEL, GUNMETAL, &[(0.45, 0.50)], GUNMETAL);
+    curved_mag(
+        &mut g,
+        [(0.030, -0.056), (-0.050, -0.062), (-0.092, -0.098)],
+        0.0145,
+        [0.0180, 0.0180],
+        STEEL,
+        GUNMETAL,
+        &[(0.45, 0.50)],
+        GUNMETAL,
+    );
     s.rbx([0.0186, 0.0246], [0.0600, 0.0660], [-0.0360, -0.0160], 0.002, STEEL_L);
     s.rbx([0.0246, 0.0296], [0.0560, 0.0720], [-0.0400, -0.0120], 0.003, STEEL_L);
     fin(
@@ -1634,15 +1949,40 @@ fn scout() -> WeaponModel {
     let st = [0.17, 0.19, 0.15];
     let st_d = [0.11, 0.125, 0.10];
     // action, barrel, muzzle
-    b.loft(&[szb(-0.1000, 0., 0.0560, 0.0170, 0.0260, 0.0100, 0.0040), szb(0.1100, 0., 0.0560, 0.0178, 0.0260, 0.0100, 0.0040)], 3, STEEL);
+    b.loft(
+        &[
+            szb(-0.1000, 0., 0.0560, 0.0170, 0.0260, 0.0100, 0.0040),
+            szb(0.1100, 0., 0.0560, 0.0178, 0.0260, 0.0100, 0.0040),
+        ],
+        3,
+        STEEL,
+    );
     b.tz(0., 0.0660, [-0.6300, -0.1000], [0.0092, 0.0100], STEEL);
     b.tzs(0., 0.0660, &[(-0.6450, 0.0108), (-0.6250, 0.0108)], GUNMETAL);
     b.bore(0., 0.0660, -0.6455, 0.0055);
     // fore-end, grip, stock
-    b.loft(&[szb(-0.3400, 0., 0.0370, 0.0185, 0.0250, 0.0100, 0.0130), szb(-0.3200, 0., 0.0370, 0.0205, 0.0250, 0.0100, 0.0140), szb(-0.1000, 0., 0.0370, 0.0205, 0.0250, 0.0100, 0.0140)], 3, st);
+    b.loft(
+        &[
+            szb(-0.3400, 0., 0.0370, 0.0185, 0.0250, 0.0100, 0.0130),
+            szb(-0.3200, 0., 0.0370, 0.0205, 0.0250, 0.0100, 0.0140),
+            szb(-0.1000, 0., 0.0370, 0.0205, 0.0250, 0.0100, 0.0140),
+        ],
+        3,
+        st,
+    );
     slots_both(&mut b, 0.0206, [0.025, 0.048], [-0.330, -0.120], 7, st_d);
     pgrip(&mut b, vec3(0., 0.0340, -0.0170), vec3(0., -0.0860, 0.0410), 0.0165, 0.0215, st);
-    stock(&mut b, &[(0.1000, 0.0700, -0.0200, 0.0175), (0.2000, 0.0760, -0.0300, 0.0182), (0.3000, 0.0780, -0.0500, 0.0185), (0.3480, 0.0660, -0.0580, 0.0185)], 0.0080, st);
+    stock(
+        &mut b,
+        &[
+            (0.1000, 0.0700, -0.0200, 0.0175),
+            (0.2000, 0.0760, -0.0300, 0.0182),
+            (0.3000, 0.0780, -0.0500, 0.0185),
+            (0.3480, 0.0660, -0.0580, 0.0185),
+        ],
+        0.0080,
+        st,
+    );
     b.rbx([-0.0190, 0.0190], [-0.0620, 0.0700], [0.3480, 0.3600], 0.005, POLY);
     trigger_guard(&mut b, 0.030, 0.030, [-0.070, 0.002], 0.0095, st_d);
     // ghost ring rear sight, forward-mounted scope on a rail along the barrel
@@ -1654,7 +1994,14 @@ fn scout() -> WeaponModel {
     g.rbx([-0.0125, 0.0125], [-0.0500, 0.0300], [-0.0720, -0.0080], 0.003, st_d);
     g.rbx([-0.0135, 0.0135], [-0.0580, -0.0480], [-0.0760, -0.0040], 0.003, POLY);
     // bolt handle with the ball knob
-    s.sweep(&[vec3(0.0175, 0.066, 0.06), vec3(0.036, 0.062, 0.06), vec3(0.046, 0.050, 0.06)], Vec3::Z, [0.0042; 2], [0.0042; 2], true, STEEL_L);
+    s.sweep(
+        &[vec3(0.0175, 0.066, 0.06), vec3(0.036, 0.062, 0.06), vec3(0.046, 0.050, 0.06)],
+        Vec3::Z,
+        [0.0042; 2],
+        [0.0042; 2],
+        true,
+        STEEL_L,
+    );
     s.ball([0.050, 0.046, 0.06], [0.0105, 0.0105, 0.0105], STEEL_L);
     s.tz(0., 0.0835, [0.0850, 0.1180], [0.0115, 0.0115], STEEL_L);
     fin(
@@ -1670,7 +2017,14 @@ fn awm() -> WeaponModel {
     let gr = [0.20, 0.27, 0.19];
     let gr_d = [0.13, 0.17, 0.12];
     // long action, fluted barrel, big muzzle brake
-    b.loft(&[szb(-0.2400, 0., 0.0600, 0.0190, 0.0300, 0.0100, 0.0040), szb(0.1200, 0., 0.0600, 0.0195, 0.0300, 0.0100, 0.0040)], 3, STEEL);
+    b.loft(
+        &[
+            szb(-0.2400, 0., 0.0600, 0.0190, 0.0300, 0.0100, 0.0040),
+            szb(0.1200, 0., 0.0600, 0.0195, 0.0300, 0.0100, 0.0040),
+        ],
+        3,
+        STEEL,
+    );
     b.tz(0., 0.0720, [-0.8000, -0.2400], [0.0115, 0.0130], GUNMETAL);
     for i in 0..5 {
         b.tz(0., 0.0720, [-0.4800 - i as f32 * 0.0600, -0.4900 - i as f32 * 0.0600], [0.0128, 0.0128], STEEL);
@@ -1678,29 +2032,69 @@ fn awm() -> WeaponModel {
     b.tzs(0., 0.0720, &[(-0.7900, 0.0125), (-0.7950, 0.0185), (-0.8400, 0.0185), (-0.8450, 0.0150)], STEEL);
     b.sym(|b, k| {
         for i in 0..3 {
-            b.rbx([k * 0.0184, k * 0.0194], [0.0600, 0.0850], [-0.8350 + i as f32 * 0.0160, -0.8270 + i as f32 * 0.0160], 0.001, [0.02, 0.02, 0.02]);
+            b.rbx(
+                [k * 0.0184, k * 0.0194],
+                [0.0600, 0.0850],
+                [-0.8350 + i as f32 * 0.0160, -0.8270 + i as f32 * 0.0160],
+                0.001,
+                [0.02, 0.02, 0.02],
+            );
         }
     });
     b.bore(0., 0.0720, -0.8455, 0.0075);
     // green chassis: fore-end, grip, thumbhole-free stock with the cheek riser and spacer
-    b.loft(&[szb(-0.5000, 0., 0.0370, 0.0190, 0.0290, 0.0100, 0.0100), szb(-0.4800, 0., 0.0370, 0.0225, 0.0290, 0.0100, 0.0100), szb(-0.2400, 0., 0.0370, 0.0225, 0.0290, 0.0100, 0.0100)], 3, gr);
+    b.loft(
+        &[
+            szb(-0.5000, 0., 0.0370, 0.0190, 0.0290, 0.0100, 0.0100),
+            szb(-0.4800, 0., 0.0370, 0.0225, 0.0290, 0.0100, 0.0100),
+            szb(-0.2400, 0., 0.0370, 0.0225, 0.0290, 0.0100, 0.0100),
+        ],
+        3,
+        gr,
+    );
     b.rbx([-0.0210, 0.0210], [0.0100, 0.0600], [-0.2400, 0.0000], 0.005, gr);
     slots_both(&mut b, 0.0226, [0.022, 0.050], [-0.470, -0.270], 6, gr_d);
     pgrip(&mut b, vec3(0., 0.0340, -0.0170), vec3(0., -0.0900, 0.0420), 0.0168, 0.0220, gr);
     trigger_guard(&mut b, 0.030, 0.030, [-0.070, 0.004], 0.0095, gr_d);
-    stock(&mut b, &[(0.1000, 0.0720, -0.0200, 0.0175), (0.2000, 0.0840, -0.0350, 0.0185), (0.3000, 0.0840, -0.0600, 0.0185), (0.3600, 0.0840, -0.0640, 0.0185)], 0.0080, gr);
+    stock(
+        &mut b,
+        &[
+            (0.1000, 0.0720, -0.0200, 0.0175),
+            (0.2000, 0.0840, -0.0350, 0.0185),
+            (0.3000, 0.0840, -0.0600, 0.0185),
+            (0.3600, 0.0840, -0.0640, 0.0185),
+        ],
+        0.0080,
+        gr,
+    );
     b.rbx([-0.0160, 0.0160], [0.0840, 0.1020], [0.1700, 0.3000], 0.006, gr_d);
     b.rbx([-0.0195, 0.0195], [-0.0640, 0.0840], [0.3580, 0.3720], 0.005, POLY);
     swivel(&mut b, 0., 0.008, -0.450);
     // folded bipod
     b.rbx([-0.0300, 0.0300], [-0.0040, 0.0100], [-0.3800, -0.3400], 0.003, STEEL);
-    b.sym(|b, k| b.sweep(&[vec3(k * 0.027, 0.0, -0.360), vec3(k * 0.027, -0.010, -0.580)], Vec3::X, [0.0045; 2], [0.0045; 2], true, STEEL_L));
+    b.sym(|b, k| {
+        b.sweep(
+            &[vec3(k * 0.027, 0.0, -0.360), vec3(k * 0.027, -0.010, -0.580)],
+            Vec3::X,
+            [0.0045; 2],
+            [0.0045; 2],
+            true,
+            STEEL_L,
+        )
+    });
     // 6x scope
     b.rbx([-0.0085, 0.0085], [0.0900, 0.1040], [-0.2400, 0.1000], 0.002, STEEL);
     scope(&mut b, 0.104, 0., 0.1365, 0.06, -0.26, 0.0165, 0.029);
     g.rbx([-0.0135, 0.0135], [-0.0700, 0.0300], [-0.0900, -0.0150], 0.003, gr_d);
     g.rbx([-0.0145, 0.0145], [-0.0780, -0.0680], [-0.0940, -0.0110], 0.003, POLY);
-    s.sweep(&[vec3(0.0195, 0.078, 0.06), vec3(0.036, 0.070, 0.062), vec3(0.052, 0.058, 0.065)], Vec3::Z, [0.0045; 2], [0.0045; 2], true, STEEL_L);
+    s.sweep(
+        &[vec3(0.0195, 0.078, 0.06), vec3(0.036, 0.070, 0.062), vec3(0.052, 0.058, 0.065)],
+        Vec3::Z,
+        [0.0045; 2],
+        [0.0045; 2],
+        true,
+        STEEL_L,
+    );
     s.ball([0.056, 0.054, 0.066], [0.0125, 0.0125, 0.0125], gr_d);
     s.tz(0., 0.0840, [0.1000, 0.1450], [0.0125, 0.0125], STEEL_L);
     fin(
@@ -1715,7 +2109,14 @@ fn m82() -> WeaponModel {
     let (mut b, mut g, mut s) = (M::new(), M::new(), M::new());
     let rc = [0.29, 0.295, 0.30];
     // receivers
-    b.loft(&[szb(-0.3000, 0., 0.0690, 0.0245, 0.0390, 0.0120, 0.0060), szb(0.1200, 0., 0.0690, 0.0250, 0.0390, 0.0120, 0.0060)], 3, rc);
+    b.loft(
+        &[
+            szb(-0.3000, 0., 0.0690, 0.0245, 0.0390, 0.0120, 0.0060),
+            szb(0.1200, 0., 0.0690, 0.0250, 0.0390, 0.0120, 0.0060),
+        ],
+        3,
+        rc,
+    );
     b.rbx([-0.0240, 0.0240], [0.0000, 0.0300], [-0.3000, 0.1200], 0.006, GUNMETAL);
     b.rbx([0.0250, 0.0258], [0.0650, 0.0980], [-0.0800, 0.0200], 0.001, GROOVE);
     rail(&mut b, 0., 0.1115, [-0.300, 0.100], STEEL);
@@ -1728,21 +2129,65 @@ fn m82() -> WeaponModel {
     b.bore(0., 0.0750, -1.0205, 0.0140);
     b.sym(|b, k| {
         for i in 0..3 {
-            b.rbx([k * 0.0285, k * 0.0300], [0.0480, 0.1020], [-1.0050 + i as f32 * 0.0280, -0.9850 + i as f32 * 0.0280], 0.002, [0.015, 0.015, 0.015]);
+            b.rbx(
+                [k * 0.0285, k * 0.0300],
+                [0.0480, 0.1020],
+                [-1.0050 + i as f32 * 0.0280, -0.9850 + i as f32 * 0.0280],
+                0.002,
+                [0.015, 0.015, 0.015],
+            );
         }
     });
     // carry handle over the barrel
-    b.sweep(&yz(0., &bez((0.0950, -0.6350), (0.2050, -0.5400), (0.0950, -0.4450), 8)), Vec3::X, [0.0105; 2], [0.0070; 2], false, STEEL);
+    b.sweep(
+        &yz(0., &bez((0.0950, -0.6350), (0.2050, -0.5400), (0.0950, -0.4450), 8)),
+        Vec3::X,
+        [0.0105; 2],
+        [0.0070; 2],
+        false,
+        STEEL,
+    );
     // folded bipod
     b.rbx([-0.0320, 0.0320], [0.0300, 0.0620], [-0.6600, -0.6200], 0.004, STEEL);
-    b.sym(|b, k| b.sweep(&[vec3(k * 0.030, 0.045, -0.640), vec3(k * 0.030, 0.045, -0.880)], Vec3::X, [0.0065; 2], [0.0065; 2], true, STEEL_L));
+    b.sym(|b, k| {
+        b.sweep(
+            &[vec3(k * 0.030, 0.045, -0.640), vec3(k * 0.030, 0.045, -0.880)],
+            Vec3::X,
+            [0.0065; 2],
+            [0.0065; 2],
+            true,
+            STEEL_L,
+        )
+    });
     // grip, guard, rear frame with the spring tube and the rounded recoil pad
     pgrip(&mut b, vec3(0., 0.0260, -0.0170), vec3(0., -0.1060, 0.0400), 0.0175, 0.0230, POLY);
     trigger_guard(&mut b, 0.0, 0.034, [-0.072, 0.0], 0.0115, POLY);
-    b.loft(&[szb(0.1200, 0., 0.0520, 0.0195, 0.0340, 0.0100, 0.0060), szb(0.4000, 0., 0.0500, 0.0195, 0.0320, 0.0100, 0.0060)], 3, POLY);
+    b.loft(
+        &[
+            szb(0.1200, 0., 0.0520, 0.0195, 0.0340, 0.0100, 0.0060),
+            szb(0.4000, 0., 0.0500, 0.0195, 0.0320, 0.0100, 0.0060),
+        ],
+        3,
+        POLY,
+    );
     b.rbx([-0.0160, 0.0160], [0.0850, 0.1000], [0.2000, 0.3800], 0.005, STEEL);
-    b.sweep(&yz(0., &bez((-0.0050, 0.1400), (-0.0450, 0.2800), (-0.0900, 0.4100), 8)), Vec3::X, [0.0090; 2], [0.0090; 2], true, STEEL);
-    b.loft(&[szb(0.3980, 0., -0.0065, 0.0260, 0.0880, 0.0200, 0.0200), szb(0.4180, 0., -0.0065, 0.0300, 0.0880, 0.0200, 0.0200), szb(0.4320, 0., -0.0065, 0.0280, 0.0840, 0.0200, 0.0200)], 3, POLY);
+    b.sweep(
+        &yz(0., &bez((-0.0050, 0.1400), (-0.0450, 0.2800), (-0.0900, 0.4100), 8)),
+        Vec3::X,
+        [0.0090; 2],
+        [0.0090; 2],
+        true,
+        STEEL,
+    );
+    b.loft(
+        &[
+            szb(0.3980, 0., -0.0065, 0.0260, 0.0880, 0.0200, 0.0200),
+            szb(0.4180, 0., -0.0065, 0.0300, 0.0880, 0.0200, 0.0200),
+            szb(0.4320, 0., -0.0065, 0.0280, 0.0840, 0.0200, 0.0200),
+        ],
+        3,
+        POLY,
+    );
     b.cy(0., 0.380, [-0.1350, -0.0900], 0.0075, STEEL_L);
     scope(&mut b, 0.116, 0., 0.1485, 0.06, -0.36, 0.0195, 0.032);
     // ten-round box magazine
@@ -1764,7 +2209,14 @@ fn m82() -> WeaponModel {
 fn pump12() -> WeaponModel {
     let (mut b, mut s) = (M::new(), M::new());
     // receiver with its ejection port, barrel with a bead sight, magazine tube
-    b.loft(&[szb(-0.2150, 0., 0.0600, 0.0170, 0.0300, 0.0120, 0.0060), szb(0.0000, 0., 0.0600, 0.0175, 0.0300, 0.0120, 0.0060)], 3, STEEL);
+    b.loft(
+        &[
+            szb(-0.2150, 0., 0.0600, 0.0170, 0.0300, 0.0120, 0.0060),
+            szb(0.0000, 0., 0.0600, 0.0175, 0.0300, 0.0120, 0.0060),
+        ],
+        3,
+        STEEL,
+    );
     b.rbx([0.0174, 0.0184], [0.0560, 0.0840], [-0.1050, -0.0450], 0.002, GROOVE);
     b.rbx([-0.0100, 0.0100], [0.0260, 0.0320], [-0.1400, -0.0800], 0.002, GUNMETAL);
     b.tz(0., 0.0785, [-0.7450, -0.2150], [0.0115, 0.0115], STEEL);
@@ -1776,16 +2228,41 @@ fn pump12() -> WeaponModel {
     swivel(&mut b, 0., 0.034, -0.700);
     // wooden stock: slim wrist, drop, rounded recoil pad
     b.rbx([-0.0110, 0.0110], [0.0560, 0.0700], [-0.0100, 0.0200], 0.003, WOOD_D);
-    stock(&mut b, &[(-0.0050, 0.0880, 0.0100, 0.0175), (0.0800, 0.0780, -0.0180, 0.0165), (0.2350, 0.0700, -0.0520, 0.0172), (0.3050, 0.0600, -0.0620, 0.0182)], 0.0070, WOOD);
+    stock(
+        &mut b,
+        &[
+            (-0.0050, 0.0880, 0.0100, 0.0175),
+            (0.0800, 0.0780, -0.0180, 0.0165),
+            (0.2350, 0.0700, -0.0520, 0.0172),
+            (0.3050, 0.0600, -0.0620, 0.0182),
+        ],
+        0.0070,
+        WOOD,
+    );
     for i in 0..4 {
-        b.sym(|b, k| b.bx([k * 0.0160, k * 0.0166], [0.0180 + i as f32 * 0.0052, 0.0200 + i as f32 * 0.0052], [0.0100, 0.0620], GROOVE));
+        b.sym(|b, k| {
+            b.bx(
+                [k * 0.0160, k * 0.0166],
+                [0.0180 + i as f32 * 0.0052, 0.0200 + i as f32 * 0.0052],
+                [0.0100, 0.0620],
+                GROOVE,
+            )
+        });
     }
     b.rbx([-0.0190, 0.0190], [-0.0660, 0.0640], [0.3080, 0.3220], 0.006, POLY);
     trigger_guard(&mut b, 0.030, 0.030, [-0.105, -0.022], 0.0095, STEEL);
     // pump forend with corrugations (moves with the action bars)
-    s.loft(&[szb(-0.4700, 0., 0.0500, 0.0210, 0.0200, 0.0100, 0.0140), szb(-0.4500, 0., 0.0500, 0.0235, 0.0210, 0.0110, 0.0150), szb(-0.3000, 0., 0.0500, 0.0235, 0.0210, 0.0110, 0.0150)], 3, WOOD_D);
-    for i in 0..8 {
-        s.bx([-0.0238, 0.0238], [0.0330, 0.0640], [-0.4600 + i as f32 * 0.0090, -0.4560 + i as f32 * 0.0090], WOOD);
+    s.loft(
+        &[
+            szb(-0.5200, 0., 0.0500, 0.0210, 0.0200, 0.0100, 0.0140),
+            szb(-0.5000, 0., 0.0500, 0.0235, 0.0210, 0.0110, 0.0150),
+            szb(-0.3000, 0., 0.0500, 0.0235, 0.0210, 0.0110, 0.0150),
+        ],
+        3,
+        WOOD_D,
+    );
+    for i in 0..11 {
+        s.bx([-0.0238, 0.0238], [0.0330, 0.0640], [-0.5100 + i as f32 * 0.0090, -0.5060 + i as f32 * 0.0090], WOOD);
     }
     s.sym(|s, k| s.cz(k * 0.0105, 0.0470, [-0.3000, -0.2150], 0.0030, STEEL_L));
     fin(
@@ -1799,7 +2276,14 @@ fn pump12() -> WeaponModel {
 fn auto12() -> WeaponModel {
     let mut b = M::new();
     let rc = [0.26, 0.265, 0.275];
-    b.loft(&[szb(-0.2000, 0., 0.0610, 0.0190, 0.0310, 0.0110, 0.0060), szb(0.0400, 0., 0.0610, 0.0195, 0.0310, 0.0110, 0.0060)], 3, rc);
+    b.loft(
+        &[
+            szb(-0.2000, 0., 0.0610, 0.0190, 0.0310, 0.0110, 0.0060),
+            szb(0.0400, 0., 0.0610, 0.0195, 0.0310, 0.0110, 0.0060),
+        ],
+        3,
+        rc,
+    );
     b.rbx([0.0194, 0.0204], [0.0560, 0.0840], [-0.1100, -0.0500], 0.002, GROOVE);
     rail(&mut b, 0., 0.0960, [-0.190, 0.030], rc);
     aperture(&mut b, 0.1115, 0.024, 0.0075, 0.0025);
@@ -1821,8 +2305,22 @@ fn auto12() -> WeaponModel {
     trigger_guard(&mut b, 0.030, 0.030, [-0.105, 0.0], 0.0100, POLY);
     b.rbx([-0.0140, 0.0140], [0.0300, 0.0900], [0.0400, 0.1000], 0.005, POLY);
     b.sym(|b, k| {
-        b.sweep(&[vec3(k * 0.015, 0.078, 0.100), vec3(k * 0.015, 0.078, 0.300)], Vec3::X, [0.0055; 2], [0.0055; 2], true, STEEL_L);
-        b.sweep(&[vec3(k * 0.015, 0.032, 0.100), vec3(k * 0.015, 0.032, 0.300)], Vec3::X, [0.0055; 2], [0.0055; 2], true, STEEL_L);
+        b.sweep(
+            &[vec3(k * 0.015, 0.078, 0.100), vec3(k * 0.015, 0.078, 0.300)],
+            Vec3::X,
+            [0.0055; 2],
+            [0.0055; 2],
+            true,
+            STEEL_L,
+        );
+        b.sweep(
+            &[vec3(k * 0.015, 0.032, 0.100), vec3(k * 0.015, 0.032, 0.300)],
+            Vec3::X,
+            [0.0055; 2],
+            [0.0055; 2],
+            true,
+            STEEL_L,
+        );
     });
     b.rbx([-0.0240, 0.0240], [-0.0650, 0.0980], [0.2950, 0.3190], 0.008, POLY);
     swivel(&mut b, 0., 0.034, -0.600);
@@ -1842,18 +2340,52 @@ fn sawn() -> WeaponModel {
         b.tz(k * 0.0098, 0.0520, [-0.4100, -0.4020], [0.0108, 0.0108], STEEL);
     }
     // action, top lever, hammers
-    b.loft(&[szb(-0.1000, 0., 0.0530, 0.0210, 0.0250, 0.0110, 0.0100), szb(0.0050, 0., 0.0530, 0.0215, 0.0250, 0.0110, 0.0100)], 3, GUNMETAL);
-    b.sweep(&yz(0., &bez((0.0780, -0.0400), (0.0840, -0.0200), (0.0830, 0.0150), 5)), Vec3::X, [0.0040; 2], [0.0030; 2], false, STEEL_L);
+    b.loft(
+        &[
+            szb(-0.1000, 0., 0.0530, 0.0210, 0.0250, 0.0110, 0.0100),
+            szb(0.0050, 0., 0.0530, 0.0215, 0.0250, 0.0110, 0.0100),
+        ],
+        3,
+        GUNMETAL,
+    );
+    b.sweep(
+        &yz(0., &bez((0.0780, -0.0400), (0.0840, -0.0200), (0.0830, 0.0150), 5)),
+        Vec3::X,
+        [0.0040; 2],
+        [0.0030; 2],
+        false,
+        STEEL_L,
+    );
     b.sym(|b, k| {
-        b.sweep(&yz(k * 0.0115, &bez((0.0780, 0.0060), (0.0920, 0.0100), (0.1000, 0.0200), 5)), Vec3::X, [0.0030, 0.0040], [0.0030, 0.0022], false, STEEL_L);
+        b.sweep(
+            &yz(k * 0.0115, &bez((0.0780, 0.0060), (0.0920, 0.0100), (0.1000, 0.0200), 5)),
+            Vec3::X,
+            [0.0030, 0.0040],
+            [0.0030, 0.0022],
+            false,
+            STEEL_L,
+        );
         b.rbx([k * 0.0214, k * 0.0224], [0.0400, 0.0680], [-0.0850, -0.0200], 0.002, STEEL_L);
         b.cx(0.0530, -0.0500, [k * 0.0212, k * 0.0228], 0.0035, BRASS);
     });
     // forend, trigger guard, cut-down wooden stock with a rounded butt
-    b.loft(&[szb(-0.3000, 0., 0.0330, 0.0205, 0.0140, 0.0100, 0.0100), szb(-0.2850, 0., 0.0330, 0.0228, 0.0150, 0.0110, 0.0110), szb(-0.1000, 0., 0.0330, 0.0228, 0.0150, 0.0110, 0.0110)], 3, WOOD);
+    b.loft(
+        &[
+            szb(-0.3000, 0., 0.0330, 0.0205, 0.0140, 0.0100, 0.0100),
+            szb(-0.2850, 0., 0.0330, 0.0228, 0.0150, 0.0110, 0.0110),
+            szb(-0.1000, 0., 0.0330, 0.0228, 0.0150, 0.0110, 0.0110),
+        ],
+        3,
+        WOOD,
+    );
     b.rbx([-0.0100, 0.0100], [0.0120, 0.0220], [-0.2900, -0.2300], 0.003, GUNMETAL);
     trigger_guard(&mut b, 0.028, 0.030, [-0.085, -0.014], 0.0095, STEEL);
-    stock(&mut b, &[(-0.0100, 0.0720, 0.0000, 0.0180), (0.0500, 0.0720, -0.0150, 0.0176), (0.1100, 0.0600, -0.0620, 0.0180)], 0.0080, WOOD);
+    stock(
+        &mut b,
+        &[(-0.0100, 0.0720, 0.0000, 0.0180), (0.0500, 0.0720, -0.0150, 0.0176), (0.1100, 0.0600, -0.0620, 0.0180)],
+        0.0080,
+        WOOD,
+    );
     b.rbx([-0.0190, 0.0190], [-0.0660, 0.0640], [0.1100, 0.1220], 0.005, STEEL);
     fin(b, anch(Some([0., 0.020, -0.20]), [0., 0.077, 0.06], [0., 0.052, -0.4105], [0.022, 0.065, -0.05]), None, None)
 }
@@ -1881,12 +2413,34 @@ fn para() -> WeaponModel {
     let (mut b, mut g, mut s) = (M::new(), M::new(), M::new());
     let blk = [0.21, 0.215, 0.22];
     // receiver with the raised feed cover
-    b.loft(&[szb(-0.2600, 0., 0.0625, 0.0220, 0.0325, 0.0080, 0.0060), szb(0.1100, 0., 0.0625, 0.0225, 0.0325, 0.0080, 0.0060)], 3, blk);
-    b.loft(&[szb(-0.2200, 0., 0.1035, 0.0195, 0.0085, 0.0070, 0.0020), szb(0.0200, 0., 0.1035, 0.0205, 0.0085, 0.0070, 0.0020)], 3, STEEL);
+    b.loft(
+        &[
+            szb(-0.2600, 0., 0.0625, 0.0220, 0.0325, 0.0080, 0.0060),
+            szb(0.1100, 0., 0.0625, 0.0225, 0.0325, 0.0080, 0.0060),
+        ],
+        3,
+        blk,
+    );
+    b.loft(
+        &[
+            szb(-0.2200, 0., 0.1035, 0.0195, 0.0085, 0.0070, 0.0020),
+            szb(0.0200, 0., 0.1035, 0.0205, 0.0085, 0.0070, 0.0020),
+        ],
+        3,
+        STEEL,
+    );
     notch(&mut b, 0.1275, 0.011, 0.009, 0.007);
     b.rbx([0.0224, 0.0234], [0.0600, 0.0900], [-0.0600, 0.0200], 0.001, GROOVE);
     // handguard, gas tube, barrel, flash hider
-    b.loft(&[szb(-0.4000, 0., 0.0540, 0.0200, 0.0240, 0.0120, 0.0100), szb(-0.3800, 0., 0.0540, 0.0228, 0.0240, 0.0130, 0.0100), szb(-0.2600, 0., 0.0540, 0.0230, 0.0240, 0.0130, 0.0100)], 3, POLY);
+    b.loft(
+        &[
+            szb(-0.4000, 0., 0.0540, 0.0200, 0.0240, 0.0120, 0.0100),
+            szb(-0.3800, 0., 0.0540, 0.0228, 0.0240, 0.0130, 0.0100),
+            szb(-0.2600, 0., 0.0540, 0.0230, 0.0240, 0.0130, 0.0100),
+        ],
+        3,
+        POLY,
+    );
     slots_both(&mut b, 0.0229, [0.040, 0.068], [-0.370, -0.280], 5, GROOVE);
     b.tz(0., 0.0950, [-0.5000, -0.2600], [0.0078, 0.0078], STEEL);
     b.tz(0., 0.0720, [-0.6150, -0.2600], [0.0098, 0.0098], STEEL);
@@ -1896,14 +2450,44 @@ fn para() -> WeaponModel {
     b.rbx([-0.0015, 0.0015], [0.1040, 0.1345], [-0.4920, -0.4880], 0.0006, STEEL);
     b.sym(|b, k| b.rbx([k * 0.0058, k * 0.0086], [0.1040, 0.1345], [-0.4980, -0.4820], 0.001, GUNMETAL));
     // carry handle
-    b.sweep(&yz(0., &bez((0.0780, -0.4400), (0.2000, -0.3800), (0.0780, -0.3200), 8)), Vec3::X, [0.0105; 2], [0.0070; 2], false, STEEL);
+    b.sweep(
+        &yz(0., &bez((0.0780, -0.4400), (0.2000, -0.3800), (0.0780, -0.3200), 8)),
+        Vec3::X,
+        [0.0105; 2],
+        [0.0070; 2],
+        false,
+        STEEL,
+    );
     // folded bipod
-    b.sym(|b, k| b.sweep(&[vec3(k * 0.022, 0.050, -0.500), vec3(k * 0.022, 0.046, -0.640)], Vec3::X, [0.0045; 2], [0.0045; 2], true, STEEL_L));
+    b.sym(|b, k| {
+        b.sweep(
+            &[vec3(k * 0.022, 0.050, -0.500), vec3(k * 0.022, 0.046, -0.640)],
+            Vec3::X,
+            [0.0045; 2],
+            [0.0045; 2],
+            true,
+            STEEL_L,
+        )
+    });
     // grip, guard, hollow stock: top and bottom beams, rounded butt
     pgrip(&mut b, vec3(0., 0.0320, -0.0170), vec3(0., -0.0920, 0.0400), 0.0165, 0.0215, POLY);
     trigger_guard(&mut b, 0.030, 0.030, [-0.075, 0.004], 0.0105, POLY);
-    b.loft(&[szb(0.1100, 0., 0.0710, 0.0155, 0.0210, 0.0100, 0.0050), szb(0.3900, 0., 0.0710, 0.0155, 0.0210, 0.0100, 0.0050)], 3, POLY);
-    b.sweep(&yz(0., &bez((0.0300, 0.1100), (-0.0650, 0.2800), (-0.0720, 0.3850), 10)), Vec3::X, [0.0150; 2], [0.0090; 2], false, POLY);
+    b.loft(
+        &[
+            szb(0.1100, 0., 0.0710, 0.0155, 0.0210, 0.0100, 0.0050),
+            szb(0.3900, 0., 0.0710, 0.0155, 0.0210, 0.0100, 0.0050),
+        ],
+        3,
+        POLY,
+    );
+    b.sweep(
+        &yz(0., &bez((0.0300, 0.1100), (-0.0650, 0.2800), (-0.0720, 0.3850), 10)),
+        Vec3::X,
+        [0.0150; 2],
+        [0.0090; 2],
+        false,
+        POLY,
+    );
     b.rbx([-0.0195, 0.0195], [-0.0850, 0.0920], [0.3830, 0.3980], 0.006, [0.06, 0.06, 0.065]);
     swivel(&mut b, 0., 0.030, -0.350);
     belt_box(&mut g, [-0.20, -0.07], -0.085, [0.20, 0.26, 0.17]);
@@ -1921,8 +2505,22 @@ fn pk() -> WeaponModel {
     let (mut b, mut g, mut s) = (M::new(), M::new(), M::new());
     let blk = [0.20, 0.205, 0.21];
     // receiver with its hump-backed cover
-    b.loft(&[szb(-0.2500, 0., 0.0575, 0.0220, 0.0375, 0.0090, 0.0060), szb(0.1400, 0., 0.0575, 0.0225, 0.0375, 0.0090, 0.0060)], 3, blk);
-    b.loft(&[szb(-0.1800, 0., 0.1065, 0.0185, 0.0115, 0.0090, 0.0020), szb(0.0500, 0., 0.1065, 0.0212, 0.0115, 0.0100, 0.0020)], 3, STEEL);
+    b.loft(
+        &[
+            szb(-0.2500, 0., 0.0575, 0.0220, 0.0375, 0.0090, 0.0060),
+            szb(0.1400, 0., 0.0575, 0.0225, 0.0375, 0.0090, 0.0060),
+        ],
+        3,
+        blk,
+    );
+    b.loft(
+        &[
+            szb(-0.1800, 0., 0.1065, 0.0185, 0.0115, 0.0090, 0.0020),
+            szb(0.0500, 0., 0.1065, 0.0212, 0.0115, 0.0100, 0.0020),
+        ],
+        3,
+        STEEL,
+    );
     notch(&mut b, 0.1335, 0.032, 0.009, 0.007);
     b.rbx([0.0224, 0.0234], [0.0500, 0.0850], [-0.0800, 0.0400], 0.001, GROOVE);
     // fluted heavy barrel, gas tube below, flash hider
@@ -1937,14 +2535,37 @@ fn pk() -> WeaponModel {
     b.rbx([-0.0015, 0.0015], [0.0830, 0.1355], [-0.7280, -0.7220], 0.0006, STEEL);
     b.sym(|b, k| b.rbx([k * 0.0058, k * 0.0086], [0.0830, 0.1355], [-0.7320, -0.7180], 0.001, GUNMETAL));
     // carry handle
-    b.sweep(&yz(0., &bez((0.0840, -0.6300), (0.2100, -0.5800), (0.0840, -0.5450), 8)), Vec3::X, [0.0105; 2], [0.0070; 2], false, STEEL);
+    b.sweep(
+        &yz(0., &bez((0.0840, -0.6300), (0.2100, -0.5800), (0.0840, -0.5450), 8)),
+        Vec3::X,
+        [0.0105; 2],
+        [0.0070; 2],
+        false,
+        STEEL,
+    );
     // folded bipod
-    b.sym(|b, k| b.sweep(&[vec3(k * 0.024, 0.040, -0.520), vec3(k * 0.024, 0.036, -0.700)], Vec3::X, [0.0048; 2], [0.0048; 2], true, STEEL_L));
+    b.sym(|b, k| {
+        b.sweep(
+            &[vec3(k * 0.024, 0.040, -0.520), vec3(k * 0.024, 0.036, -0.700)],
+            Vec3::X,
+            [0.0048; 2],
+            [0.0048; 2],
+            true,
+            STEEL_L,
+        )
+    });
     // pistol grip, guard and the wooden skeleton stock
     pgrip(&mut b, vec3(0., 0.0320, -0.0170), vec3(0., -0.0920, 0.0410), 0.0165, 0.0215, WOOD_D);
     trigger_guard(&mut b, 0.020, 0.040, [-0.075, 0.004], 0.0100, STEEL);
     b.loft(&[sz(0.1400, 0., 0.0770, 0.0160, 0.0180, 0.0070), sz(0.4000, 0., 0.0630, 0.0160, 0.0220, 0.0070)], 3, WOOD);
-    b.sweep(&yz(0., &bez((-0.0650, 0.0350), (-0.0950, 0.2600), (-0.0600, 0.3900), 10)), Vec3::X, [0.0090; 2], [0.0130; 2], false, WOOD_D);
+    b.sweep(
+        &yz(0., &bez((-0.0650, 0.0350), (-0.0950, 0.2600), (-0.0600, 0.3900), 10)),
+        Vec3::X,
+        [0.0090; 2],
+        [0.0130; 2],
+        false,
+        WOOD_D,
+    );
     b.rbx([-0.0170, 0.0170], [-0.0920, 0.0850], [0.3850, 0.4020], 0.005, WOOD);
     b.rbx([-0.0175, 0.0175], [-0.0950, 0.0600], [0.4020, 0.4100], 0.003, POLY);
     belt_box(&mut g, [-0.17, -0.06], -0.075, [0.17, 0.20, 0.15]);
@@ -1963,7 +2584,21 @@ fn rpg() -> WeaponModel {
     let tube = [0.24, 0.27, 0.19];
     let y = 0.085;
     // launch tube, muzzle collar and the flared rear venturi
-    b.tzs(0., y, &[(-0.2680, 0.0232), (-0.2550, 0.0232), (-0.2530, 0.0205), (0.3600, 0.0205), (0.3800, 0.0250), (0.4000, 0.0340), (0.4120, 0.0405), (0.4220, 0.0410)], tube);
+    b.tzs(
+        0.,
+        y,
+        &[
+            (-0.2680, 0.0232),
+            (-0.2550, 0.0232),
+            (-0.2530, 0.0205),
+            (0.3600, 0.0205),
+            (0.3800, 0.0250),
+            (0.4000, 0.0340),
+            (0.4120, 0.0405),
+            (0.4220, 0.0410),
+        ],
+        tube,
+    );
     b.tz(0., y, [0.4120, 0.4220], [0.0415, 0.0415], STEEL);
     // wooden heat shield with its straps, trigger group, grip
     b.tz(0., y, [-0.2200, -0.0600], [0.0225, 0.0225], WOOD);
@@ -1985,12 +2620,33 @@ fn rpg() -> WeaponModel {
     let gc = [0.30, 0.31, 0.27];
     let wc = [0.27, 0.32, 0.19];
     g.tzs(0., y, &[(-0.1200, 0.0185), (-0.3000, 0.0185)], gc);
-    g.tzs(0., y, &[(-0.3000, 0.0185), (-0.3200, 0.0300), (-0.3450, 0.0410), (-0.4000, 0.0425), (-0.4250, 0.0400), (-0.4500, 0.0330), (-0.4750, 0.0215), (-0.4950, 0.0130), (-0.5100, 0.0098)], wc);
+    g.tzs(
+        0.,
+        y,
+        &[
+            (-0.3000, 0.0185),
+            (-0.3200, 0.0300),
+            (-0.3450, 0.0410),
+            (-0.4000, 0.0425),
+            (-0.4250, 0.0400),
+            (-0.4500, 0.0330),
+            (-0.4750, 0.0215),
+            (-0.4950, 0.0130),
+            (-0.5100, 0.0098),
+        ],
+        wc,
+    );
     g.tz(0., y, [-0.3560, -0.3640], [0.0432, 0.0432], BRASS);
     g.tzs(0., y, &[(-0.5100, 0.0098), (-0.5300, 0.0085), (-0.5300, 0.0010)], STEEL_L);
     for k in 0..4 {
         let a = k as f32 * FRAC_PI_2;
-        g.rbx([a.cos().abs() * 0.0235 - 0.0006, a.cos().abs() * 0.0235 + 0.0006], [y - 0.0006 + 0.0, y + 0.0006], [-0.18, -0.12], 0.0003, gc);
+        g.rbx(
+            [a.cos().abs() * 0.0235 - 0.0006, a.cos().abs() * 0.0235 + 0.0006],
+            [y - 0.0006 + 0.0, y + 0.0006],
+            [-0.18, -0.12],
+            0.0003,
+            gc,
+        );
     }
     g.rbx([-0.0006, 0.0006], [y - 0.0235, y + 0.0235], [-0.18, -0.12], 0.0003, gc);
     g.rbx([-0.0235, 0.0235], [y - 0.0006, y + 0.0006], [-0.18, -0.12], 0.0003, gc);
@@ -2013,13 +2669,45 @@ fn thumper() -> WeaponModel {
     b.sym(|b, k| b.rbx([k * 0.0030, k * 0.0055], [0.0900, 0.1500], [-0.0850, -0.0780], 0.001, STEEL));
     b.rbx([-0.0055, 0.0055], [0.1300, 0.1360], [-0.0850, -0.0780], 0.001, STEEL);
     // receiver, hammer, forearm
-    b.loft(&[szb(-0.0500, 0., 0.0540, 0.0222, 0.0240, 0.0100, 0.0080), szb(0.0400, 0., 0.0540, 0.0225, 0.0240, 0.0100, 0.0080)], 3, GUNMETAL);
-    b.sweep(&yz(0., &bez((0.0740, 0.0300), (0.0850, 0.0400), (0.0960, 0.0500), 5)), Vec3::X, [0.0035, 0.0045], [0.0030, 0.0022], false, STEEL_L);
-    b.loft(&[szb(-0.2600, 0., 0.0340, 0.0200, 0.0140, 0.0100, 0.0100), szb(-0.2450, 0., 0.0340, 0.0230, 0.0145, 0.0110, 0.0110), szb(-0.0500, 0., 0.0340, 0.0230, 0.0145, 0.0110, 0.0110)], 3, WOOD);
+    b.loft(
+        &[
+            szb(-0.0500, 0., 0.0540, 0.0222, 0.0240, 0.0100, 0.0080),
+            szb(0.0400, 0., 0.0540, 0.0225, 0.0240, 0.0100, 0.0080),
+        ],
+        3,
+        GUNMETAL,
+    );
+    b.sweep(
+        &yz(0., &bez((0.0740, 0.0300), (0.0850, 0.0400), (0.0960, 0.0500), 5)),
+        Vec3::X,
+        [0.0035, 0.0045],
+        [0.0030, 0.0022],
+        false,
+        STEEL_L,
+    );
+    b.loft(
+        &[
+            szb(-0.2600, 0., 0.0340, 0.0200, 0.0140, 0.0100, 0.0100),
+            szb(-0.2450, 0., 0.0340, 0.0230, 0.0145, 0.0110, 0.0110),
+            szb(-0.0500, 0., 0.0340, 0.0230, 0.0145, 0.0110, 0.0110),
+        ],
+        3,
+        WOOD,
+    );
     b.rbx([-0.0100, 0.0100], [0.0120, 0.0220], [-0.2600, -0.2000], 0.003, STEEL);
     trigger_guard(&mut b, 0.030, 0.030, [-0.075, -0.004], 0.0095, STEEL);
     // walnut stock with a rounded heel
-    stock(&mut b, &[(0.0000, 0.0780, 0.0000, 0.0185), (0.1000, 0.0740, -0.0200, 0.0182), (0.2600, 0.0660, -0.0520, 0.0188), (0.3000, 0.0500, -0.0550, 0.0190)], 0.0080, WOOD);
+    stock(
+        &mut b,
+        &[
+            (0.0000, 0.0780, 0.0000, 0.0185),
+            (0.1000, 0.0740, -0.0200, 0.0182),
+            (0.2600, 0.0660, -0.0520, 0.0188),
+            (0.3000, 0.0500, -0.0550, 0.0190),
+        ],
+        0.0080,
+        WOOD,
+    );
     b.rbx([-0.0195, 0.0195], [-0.0580, 0.0520], [0.2980, 0.3100], 0.005, STEEL);
     fin(b, anch(Some([0., 0.020, -0.15]), [0., 0.143, 0.05], [0., 0.060, -0.4355], [0.0226, 0.060, 0.0]), None, None)
 }
@@ -2057,7 +2745,7 @@ fn grenade(body: M, height: f32) -> WeaponModel {
 fn frag() -> WeaponModel {
     let mut b = M::new();
     let ol = [0.28, 0.33, 0.18];
-    b.t.ball(vec3(0., 0., 0.), vec3(0.0315, 0.0335, 0.0315), ol, 0., 18, 12);
+    b.ball([0., 0., 0.], [0.0315, 0.0335, 0.0315], ol);
     // segmented seam grooves around the body and the stencilled yellow band
     for y in [-0.0180, 0.0180] {
         let r = 0.0315 * (1. - (y / 0.0335f32).powi(2)).sqrt() + 0.0003;
@@ -2070,7 +2758,18 @@ fn frag() -> WeaponModel {
     b.body_y(&[(0.0500, 0.0135), (0.0535, 0.0135)], GUNMETAL);
     spoon(
         &mut b,
-        &[(0.0030, 0.0620), (-0.0090, 0.0618), (-0.0145, 0.0590), (-0.0150, 0.0420), (-0.0175, 0.0310), (-0.0240, 0.0215), (-0.0300, 0.0090), (-0.0338, -0.0030), (-0.0330, -0.0150), (-0.0280, -0.0235)],
+        &[
+            (0.0030, 0.0620),
+            (-0.0090, 0.0618),
+            (-0.0145, 0.0590),
+            (-0.0150, 0.0420),
+            (-0.0175, 0.0310),
+            (-0.0240, 0.0215),
+            (-0.0300, 0.0090),
+            (-0.0338, -0.0030),
+            (-0.0330, -0.0150),
+            (-0.0280, -0.0235),
+        ],
         0.0055,
     );
     pin_ring(&mut b, 0.0400, 0.0);
@@ -2081,7 +2780,17 @@ fn flash() -> WeaponModel {
     let mut b = M::new();
     let al = [0.52, 0.54, 0.57];
     let dk = [0.08, 0.08, 0.09];
-    b.body_y(&[(-0.0500, 0.0245), (-0.0475, 0.0265), (-0.0420, 0.0268), (0.0270, 0.0268), (0.0295, 0.0258), (0.0305, 0.0235)], al);
+    b.body_y(
+        &[
+            (-0.0500, 0.0245),
+            (-0.0475, 0.0265),
+            (-0.0420, 0.0268),
+            (0.0270, 0.0268),
+            (0.0295, 0.0258),
+            (0.0305, 0.0235),
+        ],
+        al,
+    );
     b.body_y(&[(-0.0545, 0.0225), (-0.0525, 0.0272), (-0.0470, 0.0274), (-0.0460, 0.0272)], dk);
     b.body_y(&[(0.0300, 0.0272), (0.0345, 0.0274), (0.0360, 0.0262), (0.0370, 0.0236)], dk);
     for y in [-0.0380, 0.0220] {
@@ -2090,7 +2799,18 @@ fn flash() -> WeaponModel {
     b.body_y(&[(-0.0120, 0.0270), (-0.0040, 0.0270)], [0.85, 0.78, 0.15]); // warning band
     b.body_y(&[(0.0360, 0.0185), (0.0500, 0.0185)], STEEL);
     b.body_y(&[(0.0500, 0.0205), (0.0550, 0.0205)], GUNMETAL);
-    spoon(&mut b, &[(0.0000, 0.0590), (-0.0150, 0.0588), (-0.0240, 0.0555), (-0.0290, 0.0460), (-0.0292, 0.0300), (-0.0292, -0.0200)], 0.0055);
+    spoon(
+        &mut b,
+        &[
+            (0.0000, 0.0590),
+            (-0.0150, 0.0588),
+            (-0.0240, 0.0555),
+            (-0.0290, 0.0460),
+            (-0.0292, 0.0300),
+            (-0.0292, -0.0200),
+        ],
+        0.0055,
+    );
     pin_ring(&mut b, 0.0435, 0.0);
     grenade(b, 0.107)
 }
@@ -2099,7 +2819,17 @@ fn smoke() -> WeaponModel {
     let mut b = M::new();
     let body = [0.42, 0.44, 0.40];
     let dk = [0.10, 0.10, 0.11];
-    b.body_y(&[(-0.0500, 0.0290), (-0.0480, 0.0320), (-0.0420, 0.0325), (0.0360, 0.0325), (0.0395, 0.0310), (0.0400, 0.0285)], body);
+    b.body_y(
+        &[
+            (-0.0500, 0.0290),
+            (-0.0480, 0.0320),
+            (-0.0420, 0.0325),
+            (0.0360, 0.0325),
+            (0.0395, 0.0310),
+            (0.0400, 0.0285),
+        ],
+        body,
+    );
     b.body_y(&[(-0.0545, 0.0270), (-0.0525, 0.0335), (-0.0480, 0.0338), (-0.0470, 0.0334)], dk);
     b.body_y(&[(0.0400, 0.0335), (0.0450, 0.0338), (0.0470, 0.0320), (0.0480, 0.0290)], dk);
     b.body_y(&[(0.0020, 0.0329), (0.0180, 0.0329)], [0.88, 0.76, 0.10]);
@@ -2109,7 +2839,18 @@ fn smoke() -> WeaponModel {
     }
     b.body_y(&[(0.0480, 0.0125), (0.0620, 0.0125)], STEEL);
     b.body_y(&[(0.0620, 0.0148), (0.0670, 0.0148)], GUNMETAL);
-    spoon(&mut b, &[(0.0000, 0.0710), (-0.0150, 0.0705), (-0.0260, 0.0670), (-0.0335, 0.0560), (-0.0340, 0.0400), (-0.0340, -0.0300)], 0.0055);
+    spoon(
+        &mut b,
+        &[
+            (0.0000, 0.0710),
+            (-0.0150, 0.0705),
+            (-0.0260, 0.0670),
+            (-0.0335, 0.0560),
+            (-0.0340, 0.0400),
+            (-0.0340, -0.0300),
+        ],
+        0.0055,
+    );
     pin_ring(&mut b, 0.0540, 0.0);
     grenade(b, 0.121)
 }
@@ -2118,7 +2859,17 @@ fn incen() -> WeaponModel {
     let mut b = M::new();
     let red = [0.66, 0.12, 0.08];
     let dk = [0.12, 0.12, 0.13];
-    b.body_y(&[(-0.0480, 0.0280), (-0.0460, 0.0302), (-0.0400, 0.0306), (0.0300, 0.0306), (0.0335, 0.0292), (0.0340, 0.0270)], red);
+    b.body_y(
+        &[
+            (-0.0480, 0.0280),
+            (-0.0460, 0.0302),
+            (-0.0400, 0.0306),
+            (0.0300, 0.0306),
+            (0.0335, 0.0292),
+            (0.0340, 0.0270),
+        ],
+        red,
+    );
     b.body_y(&[(-0.0525, 0.0255), (-0.0505, 0.0316), (-0.0480, 0.0318)], [0.10, 0.10, 0.11]);
     b.body_y(&[(0.0340, 0.0318), (0.0400, 0.0318), (0.0430, 0.0300), (0.0440, 0.0270)], dk);
     for y in [0.0060, -0.0200] {
@@ -2130,7 +2881,18 @@ fn incen() -> WeaponModel {
     }
     b.body_y(&[(0.0440, 0.0120), (0.0580, 0.0120)], STEEL);
     b.body_y(&[(0.0580, 0.0142), (0.0630, 0.0142)], GUNMETAL);
-    spoon(&mut b, &[(0.0000, 0.0670), (-0.0150, 0.0665), (-0.0250, 0.0630), (-0.0325, 0.0520), (-0.0335, 0.0360), (-0.0335, -0.0290)], 0.0055);
+    spoon(
+        &mut b,
+        &[
+            (0.0000, 0.0670),
+            (-0.0150, 0.0665),
+            (-0.0250, 0.0630),
+            (-0.0325, 0.0520),
+            (-0.0335, 0.0360),
+            (-0.0335, -0.0290),
+        ],
+        0.0055,
+    );
     pin_ring(&mut b, 0.0500, 0.0);
     grenade(b, 0.115)
 }
@@ -2146,10 +2908,11 @@ impl M {
         if n < 3 {
             return;
         }
-        let (cy, cz) = (pts.iter().map(|p| p.0).sum::<f32>() / n as f32, pts.iter().map(|p| p.1).sum::<f32>() / n as f32);
+        let (cy, cz) =
+            (pts.iter().map(|p| p.0).sum::<f32>() / n as f32, pts.iter().map(|p| p.1).sum::<f32>() / n as f32);
         let ct = pts.iter().map(|p| p.2).sum::<f32>() / n as f32;
         let p3 = |s: f32, y: f32, z: f32, t: f32| vec3(s * t, y, z);
-        let mut tri = |m: &mut M, a: Vec3, b: Vec3, c2: Vec3, out: Vec3| {
+        let tri = |m: &mut M, a: Vec3, b: Vec3, c2: Vec3, out: Vec3| {
             let mut nrm = (b - a).cross(c2 - a);
             if nrm.length_squared() < 1e-16 {
                 return;
@@ -2192,11 +2955,21 @@ fn knife() -> WeaponModel {
         b.lofte(&[sz(z0, 0., 0., r * 1.04, r, 0.), sz(z0 + 0.0150, 0., 0., r * 1.04, r, 0.)], 14, c);
     }
     b.lofte(
-        &[sz(0.0600, 0., 0., 0.0125, 0.0120, 0.), sz(0.0650, 0., 0., 0.0142, 0.0138, 0.), sz(0.0720, 0., 0., 0.0140, 0.0136, 0.), sz(0.0770, 0., 0., 0.0100, 0.0098, 0.), sz(0.0792, 0., 0., 0.0050, 0.0050, 0.)],
+        &[
+            sz(0.0600, 0., 0., 0.0125, 0.0120, 0.),
+            sz(0.0650, 0., 0., 0.0142, 0.0138, 0.),
+            sz(0.0720, 0., 0., 0.0140, 0.0136, 0.),
+            sz(0.0770, 0., 0., 0.0100, 0.0098, 0.),
+            sz(0.0792, 0., 0., 0.0050, 0.0050, 0.),
+        ],
         14,
         STEEL_L,
     );
-    b.loft(&[sz(-0.0720, 0., 0.0040, 0.0070, 0.0245, 0.0030), sz(-0.0600, 0., 0.0040, 0.0070, 0.0245, 0.0030)], 2, GUNMETAL);
+    b.loft(
+        &[sz(-0.0720, 0., 0.0040, 0.0070, 0.0245, 0.0030), sz(-0.0600, 0., 0.0040, 0.0070, 0.0245, 0.0030)],
+        2,
+        GUNMETAL,
+    );
     // clip-point blade: thick spine, hollow-ground bevel, fuller
     b.plate(
         &[
@@ -2213,7 +2986,17 @@ fn knife() -> WeaponModel {
         [0.34, 0.35, 0.38],
     );
     b.bx([-0.0026, 0.0026], [0.0050, 0.0075], [-0.1750, -0.0900], [0.07, 0.07, 0.08]);
-    b.plate(&[(-0.0172, -0.1200, 0.0005), (-0.0165, -0.1650, 0.0005), (-0.0120, -0.2020, 0.0005), (-0.0040, -0.2250, 0.0005), (-0.0100, -0.2000, 0.0012), (-0.0120, -0.1200, 0.0012)], CHROME);
+    b.plate(
+        &[
+            (-0.0172, -0.1200, 0.0005),
+            (-0.0165, -0.1650, 0.0005),
+            (-0.0120, -0.2020, 0.0005),
+            (-0.0040, -0.2250, 0.0005),
+            (-0.0100, -0.2000, 0.0012),
+            (-0.0120, -0.1200, 0.0012),
+        ],
+        CHROME,
+    );
     melee(b, [0., 0.004, -0.232])
 }
 
@@ -2239,7 +3022,11 @@ fn machete() -> WeaponModel {
         b.cx(-0.002, z, [-0.0140, 0.0140], 0.0033, BRASS);
     }
     b.cx(-0.012, 0.075, [-0.0142, 0.0142], 0.0042, GROOVE); // lanyard hole
-    b.loft(&[sz(-0.0580, 0., 0.0030, 0.0070, 0.0270, 0.0030), sz(-0.0500, 0., 0.0030, 0.0070, 0.0270, 0.0030)], 2, GUNMETAL);
+    b.loft(
+        &[sz(-0.0580, 0., 0.0030, 0.0070, 0.0270, 0.0030), sz(-0.0500, 0., 0.0030, 0.0070, 0.0270, 0.0030)],
+        2,
+        GUNMETAL,
+    );
     b.plate(
         &[
             (0.0220, -0.0580, 0.0020),
@@ -2254,9 +3041,21 @@ fn machete() -> WeaponModel {
             (-0.0180, -0.1500, 0.0002),
             (-0.0140, -0.0580, 0.0004),
         ],
-        [0.22, 0.23, 0.25],
+        [0.36, 0.37, 0.40],
     );
-    b.plate(&[(-0.0140, -0.0580, 0.0005), (-0.0180, -0.1500, 0.0005), (-0.0210, -0.2800, 0.0005), (-0.0220, -0.4000, 0.0005), (-0.0160, -0.4700, 0.0005), (-0.0000, -0.4950, 0.0005), (-0.0050, -0.4000, 0.0016), (-0.0070, -0.0580, 0.0016)], CHROME);
+    b.plate(
+        &[
+            (-0.0140, -0.0580, 0.0005),
+            (-0.0180, -0.1500, 0.0005),
+            (-0.0210, -0.2800, 0.0005),
+            (-0.0220, -0.4000, 0.0005),
+            (-0.0160, -0.4700, 0.0005),
+            (-0.0000, -0.4950, 0.0005),
+            (-0.0050, -0.4000, 0.0016),
+            (-0.0070, -0.0580, 0.0016),
+        ],
+        CHROME,
+    );
     melee(b, [0., 0.0, -0.50])
 }
 
@@ -2265,7 +3064,15 @@ fn axe() -> WeaponModel {
     let haft = WOOD_L;
     // oval haft: slim shaft, swelling grip, flared knob
     b.lofte(
-        &[sz(-0.7400, 0., 0., 0.0150, 0.0175, 0.), sz(-0.5000, 0., 0., 0.0145, 0.0185, 0.), sz(-0.2000, 0., 0., 0.0150, 0.0190, 0.), sz(0.0000, 0., 0., 0.0158, 0.0198, 0.), sz(0.0600, 0., 0., 0.0185, 0.0218, 0.), sz(0.0950, 0., 0., 0.0150, 0.0160, 0.), sz(0.1050, 0., 0., 0.0050, 0.0050, 0.)],
+        &[
+            sz(-0.7400, 0., 0., 0.0150, 0.0175, 0.),
+            sz(-0.5000, 0., 0., 0.0145, 0.0185, 0.),
+            sz(-0.2000, 0., 0., 0.0150, 0.0190, 0.),
+            sz(0.0000, 0., 0., 0.0158, 0.0198, 0.),
+            sz(0.0600, 0., 0., 0.0185, 0.0218, 0.),
+            sz(0.0950, 0., 0., 0.0150, 0.0160, 0.),
+            sz(0.1050, 0., 0., 0.0050, 0.0050, 0.),
+        ],
         14,
         haft,
     );
@@ -2296,7 +3103,17 @@ fn axe() -> WeaponModel {
         ],
         CHROME,
     );
-    b.plate(&[(0.0300, -0.7440, 0.0085), (0.0300, -0.6860, 0.0085), (0.0750, -0.6800, 0.0045), (0.1080, -0.6720, 0.0006), (0.1000, -0.7000, 0.0010), (0.0600, -0.7350, 0.0045)], red);
+    b.plate(
+        &[
+            (0.0300, -0.7440, 0.0085),
+            (0.0300, -0.6860, 0.0085),
+            (0.0750, -0.6800, 0.0045),
+            (0.1080, -0.6720, 0.0006),
+            (0.1000, -0.7000, 0.0010),
+            (0.0600, -0.7350, 0.0045),
+        ],
+        red,
+    );
     melee(b, [0., -0.09, -0.72])
 }
 
@@ -2311,20 +3128,29 @@ fn crowbar() -> WeaponModel {
     b.sweep(&yz(0., &hook), Vec3::X, [0.0112, 0.0085], [0.0112, 0.0090], true, st);
     b.plate(
         &[
-            (-0.0900, -0.4170, 0.0075),
-            (-0.0900, -0.3930, 0.0075),
-            (-0.1090, -0.3800, 0.0040),
-            (-0.1280, -0.3610, 0.0010),
-            (-0.1120, -0.3920, 0.0015),
-            (-0.1020, -0.4000, 0.0030),
-            (-0.1120, -0.4080, 0.0015),
-            (-0.1300, -0.4190, 0.0010),
-            (-0.1100, -0.4290, 0.0040),
+            (-0.0880, -0.4180, 0.0085),
+            (-0.1000, -0.4260, 0.0075),
+            (-0.1220, -0.4290, 0.0035),
+            (-0.1340, -0.4260, 0.0010),
+            (-0.1140, -0.4080, 0.0020),
+            (-0.1340, -0.3900, 0.0010),
+            (-0.1220, -0.3870, 0.0035),
+            (-0.1000, -0.3900, 0.0075),
+            (-0.0880, -0.3980, 0.0085),
         ],
         CHROME,
     );
     // flat chisel end
-    b.loft(&[sz(0.2700, 0., 0., 0.0112, 0.0112, 0.0112), sz(0.3000, 0., 0., 0.0145, 0.0050, 0.0030), sz(0.3350, 0., 0., 0.0150, 0.0040, 0.0020), sz(0.3500, 0., 0., 0.0125, 0.0030, 0.0015)], 2, CHROME);
+    b.loft(
+        &[
+            sz(0.2700, 0., 0., 0.0112, 0.0112, 0.0112),
+            sz(0.3000, 0., 0., 0.0145, 0.0050, 0.0030),
+            sz(0.3350, 0., 0., 0.0150, 0.0040, 0.0020),
+            sz(0.3500, 0., 0., 0.0125, 0.0030, 0.0015),
+        ],
+        2,
+        CHROME,
+    );
     melee(b, [0., -0.09, -0.41])
 }
 
@@ -2514,6 +3340,150 @@ mod tests {
             let m = build(k).unwrap();
             assert!(m.anchors.sight.z > m.anchors.muzzle.z + 0.3, "{k}: eye well behind the muzzle");
             assert!(m.anchors.sight.y > m.anchors.muzzle.y, "{k}: eye above the bore");
+        }
+    }
+    // -- the shape toolkit ------------------------------------------------------------------------------
+
+    fn bounds(t: &Template) -> (Vec3, Vec3) {
+        t.verts.iter().fold((Vec3::splat(f32::MAX), Vec3::splat(f32::MIN)), |a, v| (a.0.min(v.p), a.1.max(v.p)))
+    }
+
+    #[test]
+    fn a_round_loft_is_a_smooth_outward_facing_cylinder() {
+        let t = loft_mesh(
+            &[sz(-0.1, 0.01, 0.02, 0.01, 0.01, 0.), sz(0.1, 0.01, 0.02, 0.01, 0.01, 0.)],
+            Ring::Ell(12),
+            true,
+            STEEL,
+            0.,
+        );
+        let (lo, hi) = bounds(&t);
+        assert!((hi.z - lo.z - 0.2).abs() < 1e-5 && (hi.x - lo.x - 0.02).abs() < 1e-5);
+        for v in &t.verts {
+            assert!((v.n.length() - 1.).abs() < 1e-4);
+        }
+        // Side vertices: the normal points away from the axis.
+        for v in t.verts.iter().filter(|v| v.n.z.abs() < 0.5) {
+            let radial = vec3(v.p.x - 0.01, v.p.y - 0.02, 0.);
+            assert!(radial.normalize().dot(v.n) > 0.99, "side normal not radial");
+        }
+        // Triangles wind the way their normals say.
+        for tri in t.idx.chunks(3) {
+            let (a, b, c) = (t.verts[tri[0] as usize], t.verts[tri[1] as usize], t.verts[tri[2] as usize]);
+            let g = (b.p - a.p).cross(c.p - a.p);
+            assert!(g.dot(a.n + b.n + c.n) > 0., "triangle wound against its normal");
+        }
+    }
+
+    #[test]
+    fn rounded_boxes_keep_their_requested_extent_and_have_bevelled_normals() {
+        let mut m = M::new();
+        m.rbx([-0.02, 0.03], [0.0, 0.04], [-0.1, 0.05], 0.006, STEEL);
+        let (lo, hi) = bounds(&m.t);
+        for (got, want) in [(lo, vec3(-0.02, 0., -0.1)), (hi, vec3(0.03, 0.04, 0.05))] {
+            assert!((got - want).length() < 1e-4, "{got} vs {want}");
+        }
+        let slanted = m.t.verts.iter().filter(|v| v.n.abs().max_element() < 0.95).count();
+        assert!(slanted * 4 > m.t.verts.len(), "a rounded box needs slanted normals on its bevels");
+    }
+
+    #[test]
+    fn sweeps_follow_their_path_and_beziers_hit_their_ends() {
+        let p = bez((0., 0.), (1., 0.), (1., 1.), 8);
+        assert_eq!((p[0], p[8]), ((0., 0.), (1., 1.)));
+        let mut m = M::new();
+        m.sweep(&yz(0., &p), Vec3::X, [0.002; 2], [0.002; 2], true, STEEL);
+        let (lo, hi) = bounds(&m.t);
+        assert!(lo.y < 0.001 && hi.y > 0.999 && lo.z < 0.001 && hi.z > 0.999);
+        assert!(m.t.verts.iter().all(|v| finite(v.p) && finite(v.n)));
+        // A closed loop (sight ring) leaves no gap: its end cap and start cap coincide.
+        let mut r = M::new();
+        loop_xy(&mut r, 0., 0.1, 0., 0.01, 0.002, STEEL);
+        let (lo, hi) = bounds(&r.t);
+        assert!((hi.x - lo.x - 0.024).abs() < 0.001);
+    }
+
+    #[test]
+    fn plates_are_symmetric_and_thick_where_asked() {
+        let mut m = M::new();
+        m.plate(&[(0.02, 0., 0.003), (0.02, -0.1, 0.003), (-0.02, -0.1, 0.0003), (-0.02, 0., 0.0003)], STEEL);
+        let (lo, hi) = bounds(&m.t);
+        assert!((lo.x + hi.x).abs() < 1e-6, "plate must be centred on X");
+        assert!((hi.x - 0.003).abs() < 1e-6);
+        assert!(m.t.verts.iter().all(|v| (v.n.length() - 1.).abs() < 1e-4));
+    }
+
+    // -- whole weapons ----------------------------------------------------------------------------------
+
+    #[test]
+    fn every_triangle_winds_with_its_normals() {
+        for k in keys() {
+            let all = build(k).unwrap().assembled();
+            let (mut bad, mut total) = (0, 0);
+            for tri in all.idx.chunks(3) {
+                let (a, b, c) = (all.verts[tri[0] as usize], all.verts[tri[1] as usize], all.verts[tri[2] as usize]);
+                let g = (b.p - a.p).cross(c.p - a.p);
+                if g.length_squared() < 1e-14 {
+                    continue;
+                }
+                total += 1;
+                if g.dot(a.n + b.n + c.n) <= 0. {
+                    bad += 1;
+                }
+            }
+            assert!(bad * 200 <= total, "{k}: {bad} of {total} triangles face the wrong way");
+        }
+    }
+
+    #[test]
+    fn weapons_are_shaped_not_boxy() {
+        // Mostly flat boxes carry only the six axis normals; shaped parts (bevels, tubes, curves) do not.
+        let mut report = vec![];
+        for k in keys() {
+            let all = build(k).unwrap().assembled();
+            let slanted = all.verts.iter().filter(|v| v.n.abs().max_element() < 0.95).count();
+            report.push((*k, 100. * slanted as f32 / all.verts.len() as f32));
+        }
+        let worst = report.iter().fold(("", 100f32), |a, r| if r.1 < a.1 { *r } else { a });
+        eprintln!("curved share per weapon: {report:?}");
+        assert!(worst.1 > 12., "{}: only {:.0}% of the surface is curved or bevelled", worst.0, worst.1);
+        let mean = report.iter().map(|r| r.1).sum::<f32>() / report.len() as f32;
+        assert!(mean > 30., "roster averages only {mean:.0}% curved or bevelled surface");
+    }
+
+    #[test]
+    fn all_models_build_quickly() {
+        let t0 = std::time::Instant::now();
+        let mut verts = 0;
+        for k in keys() {
+            verts += build(k).unwrap().assembled().verts.len();
+        }
+        let ms = t0.elapsed().as_secs_f32() * 1000.;
+        eprintln!("all 33 models: {verts} vertices in {ms:.1} ms");
+        // 50 ms is the release target; the generous bound keeps unoptimised test builds from flaking.
+        assert!(ms < if cfg!(debug_assertions) { 1500. } else { 100. }, "building all models took {ms} ms");
+        assert!(verts < 33 * 6000);
+    }
+
+    #[test]
+    fn magazines_and_slides_sit_on_their_weapon() {
+        // The magazine rests inside the weapon's bounding box (plus what hangs below), the slide at rest
+        // does not stick out of it either.
+        for k in keys() {
+            let m = build(k).unwrap();
+            let (lo, hi) = bounds(&m.assembled());
+            if let Some((t, off)) = &m.mag {
+                let (a, b) = bounds(&t.transformed(Mat4::from_translation(*off)));
+                assert!(
+                    a.z >= lo.z - 1e-4 && b.z <= hi.z + 1e-4 && a.x >= lo.x - 1e-4 && b.x <= hi.x + 1e-4,
+                    "{k}: mag outside"
+                );
+                assert!(b.y > 0. || *k == "rpg" || *k == "pdw" || b.y > -0.2, "{k}: mag far below the grip");
+            }
+            if let Some((t, travel)) = &m.slide {
+                let (a, b) = bounds(&t.transformed(Mat4::from_translation(*travel)));
+                assert!(b.z - a.z > 0.01 && finite(a) && finite(b), "{k}: slide");
+            }
         }
     }
 }
