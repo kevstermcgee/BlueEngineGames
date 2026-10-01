@@ -569,13 +569,26 @@ mod tests {
     }
 
     #[test]
-    fn the_simple_arm_is_one_hand_and_stays_small() {
+    fn both_hands_are_there_and_the_arms_stay_small() {
         let a = anchors(true);
+        for hold in Hold::ALL {
+            let t = first_person_arms(Team::Nightwatch, 0, &a, hold, &ArmPose::default());
+            assert!(t.verts.len() < 1400, "{hold:?}: {} vertices", t.verts.len());
+        }
         let t = first_person_arms(Team::Nightwatch, 0, &a, Hold::Rifle, &ArmPose::default());
-        assert!(t.verts.len() < 600, "{} vertices", t.verts.len());
-        // Nothing reaches the support-hand position: the left hand is deliberately absent.
         let support = a.support.unwrap();
-        assert!(t.verts.iter().all(|v| (v.p - support).length() > 0.05), "something sits where a left hand would be");
+        assert!(t.verts.iter().any(|v| (v.p - support).length() < 0.06), "the left hand sits on the handguard");
+    }
+
+    #[test]
+    fn reload_takes_the_left_hand_down_and_back() {
+        let a = anchors(true);
+        let rest = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose::default());
+        let mid = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose { reload: 0.5, ..ArmPose::default() });
+        let low = |t: &Template| t.verts.iter().map(|v| v.p.y).fold(f32::MAX, f32::min);
+        assert!(low(&mid) < low(&rest) - 0.03);
+        let end = first_person_arms(Team::Ironclad, 0, &a, Hold::Rifle, &ArmPose { reload: 1.0, ..ArmPose::default() });
+        assert!((low(&end) - low(&rest)).abs() < 0.02);
     }
 
     #[test]
@@ -594,29 +607,53 @@ mod tests {
 }
 
 
-/// The first-person arm, kept deliberately simple: one forearm in the team's sleeve and one plain gloved hand
-/// (a rounded palm, one block of curled fingers, a thumb) on the weapon's grip. There is no second hand: the
-/// support hand is left out so nothing blocks the view or reads as awkward.
-pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
+/// One plain gloved hand: a rounded palm, a block of curled fingers, a thumb, a cuff. `side` is +1 for the right hand,
+/// -1 for the left; `palm_up` turns it to cup something from below.
+fn simple_hand(t: &mut Template, at: Vec3, side: f32, palm_up: bool, glove: Rgb, dark: Rgb) {
+    let up = if palm_up { -1. } else { 1. };
+    blob(t, at + vec3(0., 0.012 * up, 0.012), vec3(0.040, 0.036, 0.052), glove);
+    blob(t, at + vec3(0., -0.004 * up, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
+    blob(t, at + vec3(0.034 * side, 0.024 * up, -0.012), vec3(0.016, 0.016, 0.034), glove);
+    seg(t, at + vec3(0.004 * side, -0.030 * up, 0.052), at + vec3(0.012 * side, -0.058 * up, 0.086), 0.040, 0.044, dark, 8);
+}
+
+/// One forearm from the wrist out of the screen towards the camera.
+fn simple_sleeve(t: &mut Template, wrist: Vec3, dir: Vec3, colour: Rgb) {
+    seg(t, wrist, wrist + dir.normalize() * 0.62, 0.040, 0.054, colour, 8);
+}
+
+/// The first-person arms, kept deliberately simple: plain gloved hands (rounded palm, one block of curled fingers,
+/// a thumb) with a tapered sleeve each, in the team's colours. The right hand holds the grip; the left supports under
+/// the handguard, cups the pistol grip, takes the grenade pin, and goes to the magazine on a reload.
+pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, _hold: Hold, pose: &ArmPose) -> Template {
     let pal = Palette::new(team, skin);
     let ads = f(pose.ads, 0.).clamp(0., 1.);
     let draw = f(pose.draw, 1.).clamp(0., 1.);
+    let reload = f(pose.reload, 0.).clamp(0., 1.);
     let g = anchors.grip;
-    let glove = pal.glove;
-    let dark = pal.glove_dark;
-    let sleeve = pal.uniform;
+    let (glove, dark, sleeve) = (pal.glove, pal.glove_dark, pal.uniform);
     let mut t = Template::new();
-    // Palm, curled fingers in front of the grip, a thumb on the side, a cuff at the wrist.
-    blob(&mut t, g + vec3(0., 0.012, 0.012), vec3(0.040, 0.036, 0.052), glove);
-    blob(&mut t, g + vec3(0., -0.004, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
-    blob(&mut t, g + vec3(0.034, 0.024, -0.012), vec3(0.016, 0.016, 0.034), glove);
-    seg(&mut t, g + vec3(0.004, -0.030, 0.052), g + vec3(0.012, -0.058, 0.086), 0.040, 0.044, dark, 8);
-    // The forearm leaves the screen towards the lower right, lower and further out when aiming.
-    let wrist = g + vec3(0.012, -0.058, 0.086);
-    let out_dir = vec3(0.28, -0.52 - 0.35 * ads, 1.0).normalize();
     let drop = (1. - draw) * 0.5;
-    let elbow = wrist + out_dir * 0.62 + vec3(0., -drop, 0.);
-    seg(&mut t, wrist, elbow, 0.040, 0.054, sleeve, 8);
-    let _ = (hold, skin);
+
+    // Right hand and forearm.
+    simple_hand(&mut t, g, 1., false, glove, dark);
+    let wrist = g + vec3(0.012, -0.058, 0.086);
+    simple_sleeve(&mut t, wrist, vec3(0.28, -0.52 - 0.35 * ads, 1.0) + vec3(0., -drop, 0.), sleeve);
+
+    // Left hand: only on the big, two-handed weapons (the ones with a support point: rifles, shotguns, snipers,
+    // launchers). Pistols, grenades and knives are held in one hand.
+    let Some(support) = anchors.support else { return t };
+    let mut pos = support + vec3(0., -0.02, 0.01);
+    let mut reach = vec3(-0.30, -0.55 - 0.3 * ads, 1.0);
+    if reload > 0. {
+        // Down and back to the magazine, then up again to the handguard.
+        let r = (reload * std::f32::consts::PI).sin();
+        let mag = g + vec3(-0.01, -0.13, -0.02);
+        pos = pos.lerp(mag + vec3(0., -0.08, 0.08), r);
+        reach += vec3(0., -0.3 * r, 0.);
+    }
+    pos += vec3(0., -drop, 0.);
+    simple_hand(&mut t, pos, -1., true, glove, dark);
+    simple_sleeve(&mut t, pos + vec3(-0.012, -0.058, 0.086), reach, sleeve);
     t
 }
