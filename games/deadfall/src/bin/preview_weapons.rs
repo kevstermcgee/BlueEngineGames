@@ -91,7 +91,7 @@ fn single(key: &str, args: &Args) -> Vec<Shot> {
         parts.append(&t.transformed(Mat4::from_translation(*travel * k)));
     }
     let (lo, hi) = bounds(&parts);
-    let grip_world = if args.has("--person") { vec3(0.22, 1.2, -0.15) } else { vec3(0., 1.0, 0.) };
+    let grip_world = if args.has("--person") { vec3(0.30, 1.25, -0.30) } else { vec3(0., 1.0, 0.) };
     let mut items = vec![(previewkit::floor(6.), Mat4::IDENTITY), (parts, Mat4::from_translation(grip_world))];
     if args.has("--anchors") {
         items.push((anchor_marks(&m), Mat4::from_translation(grip_world)));
