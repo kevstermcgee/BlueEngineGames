@@ -1,0 +1,14 @@
+{
+  "title": "Dead Air",
+  "tagline": "Keep the Hollow Pine relay station broadcasting until dawn. Something out there answers back.",
+  "controls": "WASD move, mouse look, Shift sneak, T flashlight, LMB fire, E interact, J journal, F5/F9 save/load, F fullscreen, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100"
+  ],
+  "engine_revision": "a9fd6cef133f"
+}

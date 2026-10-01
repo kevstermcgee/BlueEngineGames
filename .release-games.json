@@ -195,6 +195,13 @@
       "directory": "games/deadfall",
       "kind": "cargo-package",
       "binary": "deadfall"
+    },
+    {
+      "slug": "dead-air",
+      "name": "Dead Air",
+      "directory": "games/dead-air",
+      "kind": "cargo-package",
+      "binary": "dead_air"
     }
   ]
 }
