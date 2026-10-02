@@ -25,6 +25,52 @@ pub fn v3(v: V) -> Vec3 {
 /// Horizontal field of view of the normal view, degrees.
 pub const HFOV: f32 = 90.;
 
+/// Presentation state follows predicted speed, with a continuous stride phase and damped look sway.
+#[derive(Default)]
+pub struct ViewMotion {
+    pub speed: f32,
+    pub phase: f32,
+    pub sway: (f32, f32),
+}
+
+impl ViewMotion {
+    pub fn update(&mut self, speed: f32, angles: (f32, f32), previous: (f32, f32), dt: f32) {
+        let dt = dt.max(0.0001);
+        let k = 1. - (-dt * 14.).exp();
+        self.speed += (speed - self.speed) * k;
+        self.phase = (self.phase + self.speed * 1.5 * dt).rem_euclid(std::f32::consts::TAU);
+        let target = (
+            ((angles.0 - previous.0).sin() / dt * 0.012).clamp(-0.025, 0.025),
+            ((angles.1 - previous.1) / dt * 0.012).clamp(-0.025, 0.025),
+        );
+        self.sway.0 += (target.0 - self.sway.0) * k;
+        self.sway.1 += (target.1 - self.sway.1) * k;
+    }
+}
+
+fn smooth(t: f32) -> f32 {
+    let t = t.clamp(0., 1.);
+    t * t * (3. - 2. * t)
+}
+
+/// Return to the same grip at both ends; peak contact is at the simulation's 40% impact point.
+pub fn melee_motion(progress: f32, heavy: bool) -> (Vec3, Vec3) {
+    let p = progress.clamp(0., 1.);
+    let (wind, strike) = if p < 0.18 {
+        (smooth(p / 0.18), 0.)
+    } else if p < 0.4 {
+        let k = smooth((p - 0.18) / 0.22);
+        (1. - k, k)
+    } else {
+        (0., 1. - smooth((p - 0.4) / 0.6))
+    };
+    let power = if heavy { 1.25 } else { 1. };
+    (
+        (vec3(0.035, 0.025, 0.045) * wind + vec3(-0.13, -0.025, -0.15) * strike) * power,
+        vec3(-0.25 * wind + 0.25 * strike, 0.18 * wind - 0.55 * strike, -0.20 * wind + 0.55 * strike) * power,
+    )
+}
+
 /// Vertical field of view (radians) that gives `hfov_deg` horizontally on a window of this shape.
 pub fn vfov(hfov_deg: f32, aspect: f32) -> f32 {
     2. * ((hfov_deg.to_radians() * 0.5).tan() / aspect.max(0.5)).atan()
@@ -462,6 +508,7 @@ impl Renderer {
         walk_phase: f32,
         sway: (f32, f32),
         hide: f32,
+        tick_fraction: f32,
     ) {
         let Some(model) = self.models.get(weapon as usize).and_then(|m| m.as_ref()) else { return };
         let Some(def) = weapons::get(weapon) else { return };
@@ -479,10 +526,14 @@ impl Renderer {
 
         let ads = hands.ads;
         let a = ads * ads * (3. - 2. * ads);
-        let p = hands.progress();
+        let p = if hands.total == 0 {
+            0.
+        } else {
+            (hands.progress() + tick_fraction.clamp(0., 1.) / hands.total as f32).min(1.)
+        };
         let anchors = model.anchors;
         // Where the grip sits on screen at the hip and when aiming (the sight point lands on the eye).
-        let hip = vec3(0.15, -0.14, -0.32);
+        let hip = if def.class == Class::Melee { vec3(0.18, -0.17, -0.38) } else { vec3(0.15, -0.14, -0.32) };
         // The eye sits a little behind the sight (eye relief), so the rear sight is not a wall across the screen.
         let relief = match (def.sight, def.class) {
             (Sight::Scope { .. }, _) => 0.1,
@@ -492,10 +543,15 @@ impl Renderer {
         };
         let aimed = -anchors.sight + vec3(0., 0., -relief);
         let mut pos = hip.lerp(aimed, a);
-        let mut rot = Mat4::IDENTITY;
+        // Lift the blade across the view instead of pointing its thin edge straight at the camera.
+        let mut rot = if def.class == Class::Melee {
+            Mat4::from_rotation_x(0.65) * Mat4::from_rotation_z(0.85)
+        } else {
+            Mat4::IDENTITY
+        };
         // Walking bob and idle breathing, mostly gone when aiming.
         let bobk = (speed / 6.).clamp(0., 1.) * (1. - 0.85 * a);
-        pos += vec3((walk_phase).cos() * 0.012 * bobk, (walk_phase * 2.).sin().abs() * -0.014 * bobk, 0.)
+        pos += vec3(walk_phase.cos() * 0.009 * bobk, (walk_phase * 2.).cos() * 0.006 * bobk, 0.)
             + vec3(0., (self.time * 1.6).sin() * 0.0025, 0.);
         // Look sway: the weapon lags behind the view.
         pos += vec3(-sway.0 * 0.9, sway.1 * 0.9, 0.) * (1. - 0.6 * a);
@@ -529,10 +585,12 @@ impl Renderer {
             }
             Busy::Swing => {
                 arm.swing = p;
-                let s = (p * std::f32::consts::PI).sin();
-                pos += vec3(-0.12 * s, -0.02 * s, -0.08 * s);
-                let sweep = -1.0 + 2.2 * p;
-                rot = Mat4::from_rotation_z(sweep * 0.8) * Mat4::from_rotation_y(-0.5 * s) * rot;
+                let (offset, angles) = melee_motion(p, hands.heavy);
+                pos += offset;
+                rot = Mat4::from_rotation_z(angles.z)
+                    * Mat4::from_rotation_y(angles.y)
+                    * Mat4::from_rotation_x(angles.x)
+                    * rot;
             }
             Busy::Throw => {
                 arm.throwing = p;
@@ -555,7 +613,10 @@ impl Renderer {
         }
         let local = Mat4::from_translation(pos) * rot;
         let hold = Self::hold_for(weapon);
-        let key = (p.to_bits() as u64) << 32
+        // The simple arms only deform on draw/reload. Bob and melee move their shared transform;
+        // do not rebuild identical glove geometry every frame of a swing or replay.
+        let arm_progress = if matches!(hands.busy, Busy::Draw | Busy::Reload | Busy::ShellLoad) { p } else { 0. };
+        let key = (arm_progress.to_bits() as u64) << 32
             | (a.to_bits() as u64)
                 ^ (weapon as u64) << 8
                 ^ (hands.busy as u64)
@@ -636,5 +697,62 @@ impl Renderer {
 
     pub fn vignette(&self) -> Texture2D {
         hud::make_vignette()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn changing_speed_never_resets_stride_and_stopping_eases_out() {
+        let mut m = ViewMotion::default();
+        for _ in 0..120 {
+            m.update(6., (0., 0.), (0., 0.), 1. / 60.);
+        }
+        let phase = m.phase;
+        m.update(0., (0., 0.), (0., 0.), 1. / 60.);
+        let advance = (m.phase - phase).rem_euclid(std::f32::consts::TAU);
+        assert!(advance > 0. && advance < 0.16);
+        assert!(m.speed > 0. && m.speed < 6.);
+        for _ in 0..120 {
+            m.update(0., (0., 0.), (0., 0.), 1. / 60.);
+        }
+        assert!(m.speed < 0.001);
+    }
+
+    #[test]
+    fn look_sway_is_consistent_at_different_frame_rates_and_across_yaw_wrap() {
+        let run = |fps: u32| {
+            let mut m = ViewMotion::default();
+            let mut previous = (std::f32::consts::TAU - 0.1, 0.);
+            for i in 1..=fps {
+                let angles =
+                    ((std::f32::consts::TAU - 0.1 + i as f32 / fps as f32).rem_euclid(std::f32::consts::TAU), 0.);
+                m.update(0., angles, previous, 1. / fps as f32);
+                previous = angles;
+            }
+            m.sway.0
+        };
+        assert!((run(30) - run(144)).abs() < 0.0001);
+        assert!((run(60) - 0.012).abs() < 0.0001);
+    }
+
+    #[test]
+    fn melee_has_no_pose_jump_and_contacts_at_the_simulated_impact() {
+        for heavy in [false, true] {
+            assert_eq!(melee_motion(0., heavy), (Vec3::ZERO, Vec3::ZERO));
+            assert_eq!(melee_motion(1., heavy), (Vec3::ZERO, Vec3::ZERO));
+            let (contact, _) = melee_motion(0.4, heavy);
+            for i in 0..=100 {
+                let (p, r) = melee_motion(i as f32 / 100., heavy);
+                assert!(p.is_finite() && r.is_finite());
+                assert!(p.z >= contact.z - 0.001);
+                if i > 0 {
+                    let (prev_p, prev_r) = melee_motion((i - 1) as f32 / 100., heavy);
+                    assert!((p - prev_p).length() < 0.03 && (r - prev_r).length() < 0.15);
+                }
+            }
+        }
     }
 }

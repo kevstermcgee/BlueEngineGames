@@ -3,7 +3,7 @@
 //! ```text
 //! preview_chars --what team0|team1 [--pose stand|walk|run|crouch|aim|dead|reload|throw|melee] [--hold rifle] [--skin 0]
 //! preview_chars --what lineup [--dist 40]        both teams side by side
-//! preview_chars --what arms0|arms1 [--hold rifle|pistol|..] [--t 0.4] [--ads 1] [--fp]
+//! preview_chars --what arms0|arms1 [--weapon knife] [--swing 0.4] [--ads 1] [--fp]
 //! ```
 //! Angles go through `--angles`; `--fp` frames the arms as the player sees them (eye at the origin, FOV 70).
 use deadfall::client::arms::{first_person_arms, ArmPose};
@@ -208,9 +208,19 @@ async fn main() {
         println!("{} arm vertices, hold {:?}", arms.verts.len(), hold);
         let fp = args.has("--fp");
         // Same placement as the game's viewmodel: hip position, or the sight point on the eye.
-        let hip = vec3(0.16, -0.17, -0.32);
+        let hip = if hold == Hold::Melee { vec3(0.18, -0.17, -0.38) } else { vec3(0.15, -0.14, -0.32) };
         let aimed = -anchors.sight + vec3(0., 0., -0.4);
-        let place = if fp { Mat4::from_translation(hip.lerp(aimed, ads)) } else { Mat4::IDENTITY };
+        let mut place = if fp { Mat4::from_translation(hip.lerp(aimed, ads)) } else { Mat4::IDENTITY };
+        if hold == Hold::Melee {
+            let (offset, angles) = deadfall::client::render::melee_motion(pose.swing, args.has("--heavy"));
+            place = place
+                * Mat4::from_translation(offset)
+                * Mat4::from_rotation_z(angles.z)
+                * Mat4::from_rotation_y(angles.y)
+                * Mat4::from_rotation_x(angles.x)
+                * Mat4::from_rotation_x(0.65)
+                * Mat4::from_rotation_z(0.85);
+        }
         if let (Some(m), Some(sp)) = (&real, anchors.support) {
             let (mut lo, mut hi) = (Vec3::splat(9.), Vec3::splat(-9.));
             for v in m.assembled().verts.iter().filter(|v| (v.p.z - sp.z).abs() < 0.03) {

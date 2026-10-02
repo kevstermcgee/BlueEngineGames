@@ -94,6 +94,8 @@ struct Killcam {
     started: f64,
     elapsed0: f32,
     killer: u8,
+    from: f32,
+    last_tick: f32,
 }
 
 struct Session {
@@ -113,7 +115,7 @@ struct Session {
     hosting: Option<String>,
     skins: [u8; 16],
     last_alive: bool,
-    sway: (f32, f32),
+    motion: render::ViewMotion,
     last_angles: (f32, f32),
     my_team: usize,
     kills_by_me: Vec<(u8, f32)>,
@@ -385,7 +387,7 @@ impl App {
                     hosting,
                     skins,
                     last_alive: false,
-                    sway: (0., 0.),
+                    motion: render::ViewMotion::default(),
                     last_angles: (0., 0.),
                     my_team: team as usize,
                     kills_by_me: Vec::new(),
@@ -481,8 +483,16 @@ impl App {
     async fn frame(&mut self, now: f64) -> bool {
         let playing = self.screen == Screen::Playing && self.session.is_some();
         // The cursor stays captured for the whole match (killcam included) and is released for the results.
-        let alive = playing && self.session.as_ref().is_some_and(|s| !s.over_handled && s.client.view().latest().is_some_and(|l| !l.snap.over));
+        let alive = playing
+            && self
+                .session
+                .as_ref()
+                .is_some_and(|s| !s.over_handled && s.client.view().latest().is_some_and(|l| !l.snap.over));
         self.input.begin_frame(&mut self.shell, alive, super::platform::focused());
+        // Explicit scripted captures must keep playing when launched in a hidden Windows window.
+        if self.capture_dir.is_some() && (self.controls.script.is_some() || self.autopilot) {
+            self.shell.paused = false;
+        }
         let dt = self.input.frame_seconds();
         self.time += dt;
         self.audio.poll().await;
@@ -941,6 +951,7 @@ impl App {
 
     fn handle_events(&mut self, events: Vec<Event>) {
         let Some(s) = self.session.as_mut() else { return };
+        s.client.view_mut().remember_events(&events);
         let me = s.client.participant().map(|p| p as u8);
         s.tracker.me = me;
         for e in &events {
@@ -970,6 +981,20 @@ impl App {
         let my_yaw = self.controls.yaw;
         for e in &events {
             s.tracker.on_event(e);
+            // During a replay, combat effects come from history, not the ongoing match.
+            if s.client.view().own.as_ref().is_some_and(|o| !o.alive)
+                && matches!(
+                    e,
+                    Event::Shot { .. }
+                        | Event::Hurt { .. }
+                        | Event::Blast { .. }
+                        | Event::Strike { .. }
+                        | Event::Launch { .. }
+                        | Event::Throw { .. }
+                )
+            {
+                continue;
+            }
             match e {
                 Event::Roster(entries) => {
                     // Kept by the view from here on.
@@ -1181,8 +1206,11 @@ impl App {
         }
         // Start facing where the server put us.
         if alive && !s.last_alive {
+            s.killcam = None;
+            s.motion = render::ViewMotion::default();
             if let Some(o) = &own {
                 self.controls.face(o.ctrl.yaw, 0.);
+                s.last_angles = (self.controls.yaw, self.controls.pitch);
                 self.controls.sync_counters(
                     o.hands.seen.reload,
                     o.hands.seen.use_,
@@ -1235,12 +1263,13 @@ impl App {
         // ---- the camera ----
         let view_state = s.client.view();
         let roster = view_state.roster.clone();
-        let players_now = view_state.players_at(render_tick);
+        let mut scene_tick = render_tick;
+        let mut replay_progress = 0.;
         let mut killcam_info: Option<(String, String, f32, bool)> = None;
         let cam_world: (View, Option<usize>, Hands, u8, f32, f32) = if alive {
             let own = own.as_ref().expect("alive implies own");
             let v = s.client.view();
-            let eye = v.eye().unwrap_or(own.ctrl.position);
+            let eye = v.eye_at(s.acc / TICK).unwrap_or(own.ctrl.position);
             let def = weapons::get(v.hands.weapon(&v.inv));
             let punch = def.map_or((0., 0.), |d| crate::hands::punch(d, v.hands.recoil));
             let mut yaw = self.controls.yaw + punch.1;
@@ -1251,10 +1280,15 @@ impl App {
             let aspect = screen_width() / screen_height();
             let base = render::vfov(render::HFOV, aspect);
             let fov = base * ads_ratio;
-            s.sway = (
-                ((self.controls.yaw - s.last_angles.0).sin()).clamp(-0.05, 0.05),
-                (self.controls.pitch - s.last_angles.1).clamp(-0.05, 0.05),
-            );
+            let speed = v.body.as_ref().map_or(0., |b| {
+                if b.is_grounded() {
+                    let vel = b.velocity();
+                    vel.0.hypot(vel.2)
+                } else {
+                    0.
+                }
+            });
+            s.motion.update(speed, (self.controls.yaw, self.controls.pitch), s.last_angles, dt);
             s.last_angles = (self.controls.yaw, self.controls.pitch);
             (View { eye: to_v3(eye), yaw, pitch, roll: 0., fov }, me_slot, v.hands, v.hands.weapon(&v.inv), 0., 0.)
         } else {
@@ -1263,34 +1297,64 @@ impl App {
             let (killer, weapon, died, left) =
                 o.map_or((255, 0, snap.tick, 0), |o| (o.killer, o.killer_weapon, o.died_tick, o.respawn_ticks));
             if s.killcam.is_none() && o.is_some() {
+                let first = s.client.view().history.front().map_or(died, |s| s.snap.tick);
+                let from = died.saturating_sub(240).max(first.min(died)) as f32;
                 s.killcam = Some(Killcam {
                     started: now,
                     elapsed0: (sim::RESPAWN_TICKS as f32 - left as f32) / 60.,
                     killer,
+                    from,
+                    last_tick: from - 1.,
                 });
+                self.renderer.clear_match();
+                self.renderer.muzzle_flash = 0.;
                 self.audio.ui(Sfx::KillcamWhoosh, 0.7);
             }
             let kc = s.killcam.as_ref();
             let elapsed = kc.map_or(0., |k| k.elapsed0 + (now - k.started) as f32);
-            let replay = died as f32 - 4. * 60. + elapsed * 60.;
+            let from = kc.map_or(died as f32, |k| k.from);
+            let end = died as f32 + 45.;
+            let replay = (from + elapsed * 60.).min(end);
             let v = s.client.view();
             let newest = v.latest().map_or(snap.tick as f32, |l| l.snap.tick as f32) - 3.;
             let at = replay.min(newest);
+            scene_tick = at;
+            replay_progress = ((at - from) / (end - from).max(1.)).clamp(0., 1.);
             let ps = v.players_at(at);
             let killer_view = ps.iter().find(|p| p.slot == killer).copied();
             let (eye, yaw, pitch, hands, wid) = match killer_view {
                 Some(kv) => {
                     let mut h = Hands::default();
                     h.ads = if kv.has(flag::ADS) { 1. } else { 0. };
+                    h.recoil = if kv.has(flag::FIRING) { 1.5 } else { 0. };
                     if kv.has(flag::RELOAD) {
                         h.busy = Busy::Reload;
                         h.total = 100;
                         h.left = 50;
                     }
+                    if let Some((tick, Event::Strike { heavy, weapon, .. })) =
+                        v.replay_events.iter().rev().find(|(tick, event)| {
+                            *tick as f32 <= at && matches!(event, Event::Strike { attacker, .. } if *attacker == killer)
+                        })
+                    {
+                        if let Some(melee) = weapons::get(*weapon).and_then(|d| d.melee) {
+                            let duration = if *heavy { melee.heavy_s } else { melee.light_s };
+                            let progress = 0.4 + (at - *tick as f32) / (duration * 60.);
+                            if progress < 1. && kv.weapon == *weapon {
+                                h.busy = Busy::Swing;
+                                h.heavy = *heavy;
+                                h.total = 1000;
+                                h.left = ((1. - progress) * 1000.) as u16;
+                            }
+                        }
+                    }
                     (kv.eye, kv.yaw, kv.pitch, h, kv.weapon)
                 }
                 None => {
-                    let e = own.as_ref().map_or(V::ZERO, |o| o.ctrl.position);
+                    let e = ps
+                        .iter()
+                        .find(|p| Some(p.slot as usize) == me_slot)
+                        .map_or_else(|| own.as_ref().map_or(V::ZERO, |o| o.ctrl.position), |p| p.eye);
                     (e, self.controls.yaw, 0.3, Hands::default(), 0)
                 }
             };
@@ -1302,8 +1366,9 @@ impl App {
             let wname = weapons::get(weapon).map_or("", |d| d.name).to_string();
             killcam_info = Some((name, wname, (left as f32 / 60.).max(0.), s.died_by_headshot));
             let aspect = screen_width() / screen_height();
+            let ads_ratio = weapons::get(wid).map_or(1., |d| 1. + (d.ads_fov / 90. - 1.) * hands.ads);
             (
-                View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) },
+                View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) * ads_ratio },
                 Some(killer as usize),
                 hands,
                 wid,
@@ -1313,6 +1378,45 @@ impl App {
         };
         let (view, skip, vm_hands, vm_weapon, _, _) = cam_world;
         let skip = if alive { skip } else { skip.filter(|s| *s < 16) };
+
+        // The camera, soldiers, weapons on the floor, projectiles and zones all share this timeline.
+        let v = s.client.view();
+        let players_now = v.players_at(scene_tick);
+        let scene_snap = if alive { &snap } else { v.snapshot_at(scene_tick).unwrap_or(&snap) };
+        if let Some(kc) = s.killcam.as_mut() {
+            if !alive {
+                let listener = Listener { pos: to_v(view.eye), yaw: view.yaw };
+                for (_, event) in
+                    v.replay_events.iter().filter(|(tick, _)| *tick as f32 > kc.last_tick && *tick as f32 <= scene_tick)
+                {
+                    match event {
+                        Event::Shot { shooter, weapon, from, to, .. } => {
+                            let heavy = weapons::get(*weapon)
+                                .is_some_and(|d| matches!(d.class, weapons::Class::Sniper | weapons::Class::Dmr));
+                            self.renderer.tracer(*from, *to, heavy);
+                            self.renderer.flash(*from);
+                            if *shooter == kc.killer {
+                                self.renderer.muzzle_flash = 0.06;
+                            }
+                            if let Some(sfx) = weapons::get(*weapon).and_then(|d| audio::shot_for_key(d.key)) {
+                                self.audio.at(sfx, *from, &listener, 0.8, 120.);
+                            }
+                        }
+                        Event::Blast { pos, radius, kind: 0 } => {
+                            self.renderer.fx.fireball(to_v3(*pos), *radius * 0.6, 0.6, [1., 0.65, 0.25]);
+                            self.audio.at(Sfx::Explosion, *pos, &listener, 0.8, 160.);
+                        }
+                        Event::Strike { attacker, heavy, .. } => {
+                            if *attacker == kc.killer {
+                                self.audio.ui(if *heavy { Sfx::HeavySwing } else { Sfx::KnifeSwing }, 0.6);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                kc.last_tick = scene_tick;
+            }
+        }
 
         // Figures.
         let roster_team = |slot: u8| {
@@ -1324,15 +1428,15 @@ impl App {
         let figures: Vec<Figure> =
             players_now.iter().map(|p| Figure { slot: p.slot as usize, team: roster_team(p.slot), view: *p }).collect();
         let v = s.client.view();
-        let dropped = latest_dropped(&snap);
+        let dropped = latest_dropped(scene_snap);
         self.renderer.draw_world(
             &view,
             &figures,
             skip,
-            snap.loot,
+            scene_snap.loot,
             &dropped.0,
-            &snap.projectiles,
-            &snap.zones,
+            &scene_snap.projectiles,
+            &scene_snap.zones,
             &s.skins,
             dt,
         );
@@ -1345,11 +1449,16 @@ impl App {
                     let head = vec3(f.view.eye.0, f.view.eye.1 + 0.35, f.view.eye.2);
                     if (head - view.eye).length() < 45. && crate::level().line_of_sight(to_v(view.eye), to_v(head)) {
                         if let Some(p) = view.project(head, screen_width(), screen_height()) {
-                            let name = roster.iter().find(|r| r.slot as usize == f.slot).map_or("", |r| r.name.as_str());
+                            let name =
+                                roster.iter().find(|r| r.slot as usize == f.slot).map_or("", |r| r.name.as_str());
                             hud::text_centered(name, p.x, p.y, 16. * ui, Color::new(0.6, 0.85, 0.6, 0.85));
                         }
                     }
                 }
+            }
+        } else if vm_hands.ads > 0.92 {
+            if let Some(weapons::WeaponDef { sight: weapons::Sight::Scope { zoom }, .. }) = weapons::get(vm_weapon) {
+                overlay::scope(*zoom, 1.);
             }
         }
 
@@ -1365,14 +1474,24 @@ impl App {
 
         // Weapon in hand.
         if alive {
-            let speed = own.as_ref().map_or(0., |o| (o.ctrl.velocity.0.powi(2) + o.ctrl.velocity.2.powi(2)).sqrt());
             let team = crate::Team::from_index(s.my_team);
             let skin = s.skins[me_slot.unwrap_or(0).min(15)];
-            let phase = self.time * (speed * 1.5).max(0.);
-            self.renderer.draw_viewmodel(&view, &vm_hands, vm_weapon, team, skin, speed, phase, s.sway, 0.);
+            self.renderer.draw_viewmodel(
+                &view,
+                &vm_hands,
+                vm_weapon,
+                team,
+                skin,
+                s.motion.speed,
+                s.motion.phase,
+                s.motion.sway,
+                0.,
+                s.acc / TICK,
+            );
         } else if let Some(k) = s.killcam.as_ref() {
             let team = roster_team(k.killer);
-            self.renderer.draw_viewmodel(&view, &vm_hands, vm_weapon, team, 1, 0., 0., (0., 0.), 0.);
+            let skin = s.skins[(k.killer as usize).min(15)];
+            self.renderer.draw_viewmodel(&view, &vm_hands, vm_weapon, team, skin, 0., 0., (0., 0.), 0., 0.);
         }
 
         // ---- overlay ----
@@ -1388,7 +1507,7 @@ impl App {
         }
         if self.controls.scoreboard || over {
             // The scoreboard is drawn below.
-        } else {
+        } else if alive {
             overlay::score_strip(&snap, s.my_team);
         }
         if let Some(o) = own.as_ref() {
@@ -1422,10 +1541,12 @@ impl App {
         if s.notice.1 > 0. && alive {
             overlay::notice(&s.notice.0, s.notice.1);
         }
-        overlay::killfeed(&s.feed);
+        if alive {
+            overlay::killfeed(&s.feed);
+        }
         if let Some((name, weapon, left, head)) = &killcam_info {
             if !over {
-                overlay::killcam(name, weapon, *left, *head);
+                overlay::killcam(name, weapon, *left, *head, replay_progress);
             }
         }
         if self.controls.scoreboard || over {

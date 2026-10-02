@@ -1,5 +1,4 @@
 //! The rules of a fight, through the public simulation API.
-use deadfall::hands::Sel;
 use deadfall::input::{Input, FIRE};
 use deadfall::sim::{hit, world_for, EndRule, Event, Match, Phase, Settings, RESPAWN_TICKS};
 use deadfall::weapons;

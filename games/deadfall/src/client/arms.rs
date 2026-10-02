@@ -285,6 +285,8 @@ fn forearm(pal: &Palette, hp: &HandPose, left: bool, elbow_dir: Vec3) -> Templat
     seg(&mut t, p1, p2, 0.0325, 0.0375, u, 10);
     seg(&mut t, p2, p3, 0.0375, 0.041, u, 10);
     seg(&mut t, p3, p4, 0.041, 0.043, u, 10);
+    t.ball(p1, Vec3::splat(0.0325), u, 0., 8, 6);
+    t.ball(p2, Vec3::splat(0.0375), u, 0., 8, 6);
     t.ball(p3, Vec3::splat(0.041), u, 0., 8, 6);
     // elastic cuff and the gathered edge above it
     let dark = shade(u, 0.78);
@@ -380,7 +382,13 @@ fn rest_hand(g: Vec3) -> HandPose {
 /// Forearms and gloved hands for the first-person view: the right hand grips at `anchors.grip`, the left at
 /// `anchors.support` (see the module docs of the design brief for the `None` cases).
 #[allow(dead_code)]
-pub fn first_person_arms_detailed(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
+pub fn first_person_arms_detailed(
+    team: Team,
+    skin: u8,
+    anchors: &WeaponAnchors,
+    hold: Hold,
+    pose: &ArmPose,
+) -> Template {
     let pal = Palette::new(team, skin);
     let pose = ArmPose {
         ads: f(pose.ads, 0.).clamp(0., 1.),
@@ -573,7 +581,8 @@ mod tests {
         let a = anchors(true);
         for hold in Hold::ALL {
             let t = first_person_arms(Team::Nightwatch, 0, &a, hold, &ArmPose::default());
-            assert!(t.verts.len() < 1400, "{hold:?}: {} vertices", t.verts.len());
+            let budget = if hold == Hold::Melee { 6500 } else { 1400 };
+            assert!(t.verts.len() < budget, "{hold:?}: {} vertices", t.verts.len());
         }
         let t = first_person_arms(Team::Nightwatch, 0, &a, Hold::Rifle, &ArmPose::default());
         let support = a.support.unwrap();
@@ -606,7 +615,6 @@ mod tests {
     }
 }
 
-
 /// One plain gloved hand: a rounded palm, a block of curled fingers, a thumb, a cuff. `side` is +1 for the right hand,
 /// -1 for the left; `palm_up` turns it to cup something from below.
 fn simple_hand(t: &mut Template, at: Vec3, side: f32, palm_up: bool, glove: Rgb, dark: Rgb) {
@@ -614,7 +622,15 @@ fn simple_hand(t: &mut Template, at: Vec3, side: f32, palm_up: bool, glove: Rgb,
     blob(t, at + vec3(0., 0.012 * up, 0.012), vec3(0.040, 0.036, 0.052), glove);
     blob(t, at + vec3(0., -0.004 * up, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
     blob(t, at + vec3(0.034 * side, 0.024 * up, -0.012), vec3(0.016, 0.016, 0.034), glove);
-    seg(t, at + vec3(0.004 * side, -0.030 * up, 0.052), at + vec3(0.012 * side, -0.058 * up, 0.086), 0.040, 0.044, dark, 8);
+    seg(
+        t,
+        at + vec3(0.004 * side, -0.030 * up, 0.052),
+        at + vec3(0.012 * side, -0.058 * up, 0.086),
+        0.040,
+        0.044,
+        dark,
+        8,
+    );
 }
 
 /// One forearm from the wrist out of the screen towards the camera.
@@ -622,10 +638,10 @@ fn simple_sleeve(t: &mut Template, wrist: Vec3, dir: Vec3, colour: Rgb) {
     seg(t, wrist, wrist + dir.normalize() * 0.62, 0.040, 0.054, colour, 8);
 }
 
-/// The first-person arms, kept deliberately simple: plain gloved hands (rounded palm, one block of curled fingers,
-/// a thumb) with a tapered sleeve each, in the team's colours. The right hand holds the grip; the left supports under
+/// The first-person arms: articulated fingers for the exposed knife grip, plain gloves for firearms,
+/// with tapered sleeves in the team's colours. The right hand holds the grip; the left supports under
 /// the handguard, cups the pistol grip, takes the grenade pin, and goes to the magazine on a reload.
-pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, _hold: Hold, pose: &ArmPose) -> Template {
+pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
     let pal = Palette::new(team, skin);
     let ads = f(pose.ads, 0.).clamp(0., 1.);
     let draw = f(pose.draw, 1.).clamp(0., 1.);
@@ -636,6 +652,16 @@ pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, _hold: H
     let drop = (1. - draw) * 0.5;
 
     // Right hand and forearm.
+    if hold == Hold::Melee {
+        // Fingers lie across the handle along Z and curl around its cross section.
+        // Keep the thumb on the guard side and the wrist below the palm in a hammer grip.
+        let hp =
+            HandPose::gripping(g, vec3(0.65, -0.75, 0.), -Vec3::Z, false, Fist::grip(1.05, [0.15, 0.12, 0.20, 0.55]));
+        let r = Mat4::from_translation(hp.pos) * orient(hp.z, hp.thumb, false);
+        t.append(&hand(&pal, false, &hp.fist).transformed(r));
+        t.append(&forearm(&pal, &hp, false, vec3(0.30, -0.55 - drop, 1.)));
+        return t;
+    }
     simple_hand(&mut t, g, 1., false, glove, dark);
     let wrist = g + vec3(0.012, -0.058, 0.086);
     simple_sleeve(&mut t, wrist, vec3(0.28, -0.52 - 0.35 * ads, 1.0) + vec3(0., -drop, 0.), sleeve);

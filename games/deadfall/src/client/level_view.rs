@@ -662,9 +662,16 @@ fn build_decor(d: &Decor) -> Template {
     match d.kind {
         DecorKind::Tree => {
             let bark = [0.30, 0.21, 0.13];
-            t.cone(Vec3::ZERO, 0.30, 0.17, 3.2, bark, 0., 7);
-            for (a, y) in [(0.6, 2.4), (3.4, 2.9), (5.0, 2.0)] {
-                leaf(&mut t, vec3(0., y, 0.), a, 0.9, 1.1, 0.07, bark);
+            t.cone(Vec3::ZERO, 0.32, 0.27, 3.2, bark, 0., 10);
+            // Round, tapering branches grow into the crown. Flat leaf-shaped brown wedges looked carved.
+            for (a, y) in [(0.6_f32, 2.4), (3.4, 2.9), (5.0, 2.0)] {
+                let base = vec3(0., y, 0.);
+                let delta = vec3(a.cos() * 1.1, 1.0, a.sin() * 1.1);
+                let mut branch = Template::new();
+                branch.cone(Vec3::ZERO, 0.13, 0.045, delta.length(), mulc(bark, 0.94), 0., 7);
+                t.append(&branch.transformed(
+                    Mat4::from_translation(base) * Mat4::from_quat(Quat::from_rotation_arc(Vec3::Y, delta.normalize())),
+                ));
             }
             let greens =
                 [[0.17, 0.36, 0.12], [0.22, 0.44, 0.15], [0.26, 0.48, 0.17], [0.15, 0.32, 0.12], [0.30, 0.50, 0.20]];
@@ -676,7 +683,7 @@ fn build_decor(d: &Decor) -> Template {
             blob(&mut t, vec3(-0.3, 3.3, 1.1), vec3(1.2, 0.9, 1.2), pick(4));
         }
         DecorKind::Pine => {
-            t.cone(Vec3::ZERO, 0.24, 0.14, 2.4, [0.28, 0.19, 0.12], 0., 6);
+            t.cone(Vec3::ZERO, 0.25, 0.21, 3.2, [0.28, 0.19, 0.12], 0., 9);
             let layers = [
                 (1.0, 1.9, 2.1, [0.10, 0.27, 0.15]),
                 (2.4, 1.5, 1.9, [0.12, 0.31, 0.17]),
@@ -1262,11 +1269,27 @@ pub fn overcast_afternoon() -> Look {
 }
 
 /// Builds the meshes for `level`.
+fn tree_collision_block(b: &Block, decor: &[Decor]) -> bool {
+    b.material == Material::Wood
+        && decor.iter().any(|d| {
+            if !matches!(d.kind, DecorKind::Tree | DecorKind::Pine) {
+                return false;
+            }
+            let r = if d.kind == DecorKind::Pine { 0.2 } else { 0.26 } * d.scale;
+            let expected_min = vec3(d.pos.0 - r, d.pos.1, d.pos.2 - r);
+            let expected_max = vec3(d.pos.0 + r, d.pos.1 + 3.2 * d.scale, d.pos.2 + r);
+            (vec3(b.min.0, b.min.1, b.min.2) - expected_min).length() < 0.001
+                && (vec3(b.max.0, b.max.1, b.max.2) - expected_max).length() < 0.001
+        })
+}
+
 pub fn build(level: &Level) -> LevelScene {
     let mut solid = Acc::new();
     let mut glass = Template::new();
     for b in &level.blocks {
-        if b.material == Material::Water {
+        // The tree mesh supplies its bark. Drawing the solid box as well adds plank/furniture detail
+        // across the trunk; retain the block in the level for collision, bullets and navigation.
+        if b.material == Material::Water || tree_collision_block(b, &level.decor) {
             continue;
         }
         add_block(&mut solid, &mut glass, b);
@@ -1307,4 +1330,26 @@ pub fn build(level: &Level) -> LevelScene {
         }
     }
     LevelScene { solid: solid.finish(), glass, decor: decor.finish(), sky, look, lights, light_pos }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_tree_collision_boxes_are_replaced_by_their_trunk_meshes() {
+        let level = crate::slagworks::build();
+        let trees = level.decor.iter().filter(|d| matches!(d.kind, DecorKind::Tree | DecorKind::Pine)).count();
+        let hidden = level.blocks.iter().filter(|b| tree_collision_block(b, &level.decor)).count();
+        assert_eq!(hidden, trees);
+        assert!(hidden > 10);
+        assert!(
+            level.blocks.iter().any(|b| b.material == Material::Wood && !tree_collision_block(b, &level.decor)),
+            "furniture and crates must still render"
+        );
+        for d in level.decor.iter().filter(|d| matches!(d.kind, DecorKind::Tree | DecorKind::Pine)) {
+            let mesh = build_decor(d);
+            assert!(!mesh.verts.is_empty() && mesh.verts.iter().all(|v| v.p.is_finite()));
+        }
+    }
 }

@@ -187,16 +187,32 @@ pub fn scope(zoom: f32, amount: f32) {
 }
 
 /// The killcam frame: bars, who killed you with what, and the countdown.
-pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool) {
+pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool, progress: f32) {
     let ui = hud::ui_scale();
     let (w, h) = (screen_width(), screen_height());
-    let bar = h * 0.09;
+    let bar = (h * 0.075).max(48. * ui);
     draw_rectangle(0., 0., w, bar, Color::new(0., 0., 0., 0.85));
     draw_rectangle(0., h - bar, w, bar, Color::new(0., 0., 0., 0.85));
     let how = if headshot { format!("{weapon}  (headshot)") } else { weapon.to_string() };
-    hud::text_centered(&format!("KILLED BY {}", killer.to_uppercase()), w * 0.5, bar * 0.66, 28. * ui, TEXT);
+    let label =
+        if killer == "the fall" { "ELIMINATED".to_string() } else { format!("KILLED BY {}", killer.to_uppercase()) };
+    hud::text_centered(&label, w * 0.5, bar * 0.66, 24. * ui, TEXT);
+    hud::text_outlined(
+        if progress < 1. { "REPLAY" } else { "REPLAY COMPLETE" },
+        24. * ui,
+        bar * 0.66,
+        15. * ui,
+        ACCENT,
+    );
+    draw_rectangle(0., bar - 2. * ui, w * progress.clamp(0., 1.), 2. * ui, ACCENT);
     hud::text_centered(&how, w * 0.5, h - bar * 0.34, 22. * ui, DIM);
-    hud::text_right(&format!("{}", seconds_left.ceil() as i32), w - 30. * ui, h - bar * 0.3, 40. * ui, ACCENT);
+    hud::text_right(
+        &format!("RESPAWN IN {}", seconds_left.ceil() as i32),
+        w - 24. * ui,
+        h - bar * 0.34,
+        18. * ui,
+        ACCENT,
+    );
 }
 
 pub struct Row {

@@ -29,7 +29,8 @@ use DecorKind as D;
 use Material as M;
 
 /// Height of a ground patch above the dirt base, per layer, so coplanar patches never z-fight.
-const L_GRASS: f32 = 0.012;
+// Planted beds sit above the surrounding paving instead of being hidden beneath it.
+const L_GRASS: f32 = 0.055;
 const L_GRAVEL: f32 = 0.018;
 const L_ASPH: f32 = 0.024;
 const L_CONC: f32 = 0.030;
@@ -72,6 +73,33 @@ struct Map {
     flip: f32,
     seed: u32,
     scatter: Vec<(DecorKind, [f32; 4], u32, f32, f32)>,
+}
+
+/// Outdoor growth needs exposed soil. Check its footprint as well as its centre so leaves do not
+/// spill out of slabs, props or indoor floors; explicit potted plants are handled separately.
+fn plant_ground(blocks: &[crate::level::Block], x: f32, z: f32, margin: f32) -> Option<f32> {
+    let natural = |m| matches!(m, M::Dirt | M::Grass | M::Gravel);
+    let ground = blocks
+        .iter()
+        .filter(|b| {
+            natural(b.material)
+                && b.max.1 <= 0.1
+                && x - margin >= b.min.0
+                && x + margin <= b.max.0
+                && z - margin >= b.min.2
+                && z + margin <= b.max.2
+        })
+        .map(|b| b.max.1)
+        .fold(0., f32::max);
+    for b in blocks {
+        if x + margin <= b.min.0 || x - margin >= b.max.0 || z + margin <= b.min.2 || z - margin >= b.max.2 {
+            continue;
+        }
+        if b.max.1 > 0.1 || (!natural(b.material) && b.max.1 >= ground) {
+            return None;
+        }
+    }
+    Some(ground)
 }
 
 impl Map {
@@ -949,20 +977,28 @@ impl Map {
                 let z = rect[1] + self.rnd() * (rect[3] - rect[1]);
                 let yaw = self.rnd() * std::f32::consts::TAU;
                 let s = lo + self.rnd() * (hi - lo);
-                if self.b.level.blocks.iter().any(|b| {
-                    let inside_xz =
-                        x > b.min.0 - 0.35 && x < b.max.0 + 0.35 && z > b.min.2 - 0.35 && z < b.max.2 + 0.35;
-                    let body = b.max.1 > 0.1 && b.min.1 < 1.8;
-                    let cover = b.min.1 >= 1.9;
-                    inside_xz && (body || cover)
-                }) {
-                    continue;
+                let margin = if kind == D::Bush { 1.1 * s } else { 0.35 * s };
+                if let Some(y) = plant_ground(&self.b.level.blocks, x, z, margin) {
+                    self.b.decor(kind, V(x, y + 0.003, z), yaw, s);
                 }
-                self.b.decor(kind, V(x, 0.02, z), yaw, s);
             }
         }
         // Things that stand on the ground rest on whatever thin patch is under them.
         let blocks = self.b.level.blocks.clone();
+        // Apply the same rule to hand-placed weeds, too: flowers never sprout from intact concrete.
+        self.b.level.decor.retain_mut(|d| {
+            if !matches!(d.kind, D::Weeds | D::GrassTuft | D::Bush) {
+                return true;
+            }
+            let margin = if d.kind == D::Bush { 1.1 * d.scale } else { 0.35 * d.scale };
+            match plant_ground(&blocks, d.pos.0, d.pos.2, margin) {
+                Some(y) => {
+                    d.pos.1 = y + 0.003;
+                    true
+                }
+                None => false,
+            }
+        });
         let ground = |x: f32, z: f32, y: f32| {
             blocks
                 .iter()
@@ -1025,6 +1061,32 @@ mod level_tests {
     use vesper3d::viewer::controller::{Collider, CROUCH_HEIGHT, RADIUS, STANDING_HEIGHT};
 
     const CELL: f32 = 0.25;
+
+    #[test]
+    fn outdoor_plants_are_rooted_in_soil_including_their_footprints() {
+        let level = build();
+        let mut count = 0;
+        for d in &level.decor {
+            if matches!(d.kind, D::Weeds | D::GrassTuft | D::Bush) {
+                count += 1;
+                let margin = if d.kind == D::Bush { 1.1 * d.scale } else { 0.35 * d.scale };
+                let ground =
+                    plant_ground(&level.blocks, d.pos.0, d.pos.2, margin).expect("plant on paved or blocked ground");
+                assert!((d.pos.1 - ground - 0.003).abs() < 0.001);
+            }
+        }
+        assert!(count > 30, "retain the overgrown outdoor areas: {count} plants");
+        let slab = Block { min: V(0., 0., 0.), max: V(2., 0.04, 2.), material: M::Concrete };
+        assert!(plant_ground(&[slab], 1., 1., 0.3).is_none());
+        assert!(
+            plant_ground(&[slab], -0.1, 1., 0.3).is_none(),
+            "a root beside a slab is not enough if its leaves overlap it"
+        );
+        assert_eq!(plant_ground(&[slab], -1., 1., 0.3), Some(0.));
+        let bed = Block { min: V(0.5, 0., 0.5), max: V(1.5, L_GRASS, 1.5), material: M::Grass };
+        assert_eq!(plant_ground(&[slab, bed], 1., 1., 0.3), Some(L_GRASS));
+        assert_eq!(plant_ground(&[slab, bed], 0.6, 1., 0.3), None, "the plant footprint must fit within the soil bed");
+    }
 
     /// A walkability model that follows the engine `Controller`: a body of 0.23 radius and 1.8 height, steps up
     /// anything whose top is within 0.221 above the feet, falls when unsupported.

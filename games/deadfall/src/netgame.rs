@@ -784,6 +784,9 @@ pub struct DeadfallView {
     pub history: VecDeque<Stamped>,
     pub roster: Vec<RosterEntry>,
     pub body: Option<Controller>,
+    previous_eye: Option<V>,
+    /// Effects received with each snapshot, retained alongside the killcam world history.
+    pub replay_events: VecDeque<(u32, Event)>,
     pub hands: Hands,
     pub inv: Inventory,
     pub own: Option<OwnView>,
@@ -817,16 +820,9 @@ impl DeadfallView {
 
     /// Everyone as they were at server tick `tick`, interpolated between the snapshots around it.
     pub fn players_at(&self, tick: f32) -> Vec<PlayerView> {
-        let mut before: Option<&Snapshot> = None;
-        let mut after: Option<&Snapshot> = None;
-        for s in self.history.iter().map(|s| &s.snap) {
-            if s.tick as f32 <= tick {
-                before = Some(s);
-            } else {
-                after = Some(s);
-                break;
-            }
-        }
+        let i = self.history.partition_point(|s| s.snap.tick as f32 <= tick);
+        let before = i.checked_sub(1).map(|i| &self.history[i].snap);
+        let after = self.history.get(i).map(|s| &s.snap);
         match (before, after) {
             (Some(a), Some(b)) => {
                 let t = ((tick - a.tick as f32) / (b.tick - a.tick).max(1) as f32).clamp(0., 1.);
@@ -845,12 +841,8 @@ impl DeadfallView {
     }
 
     pub fn snapshot_at(&self, tick: f32) -> Option<&Snapshot> {
-        self.history
-            .iter()
-            .map(|s| &s.snap)
-            .filter(|s| s.tick as f32 <= tick)
-            .last()
-            .or_else(|| self.history.front().map(|s| &s.snap))
+        let i = self.history.partition_point(|s| s.snap.tick as f32 <= tick);
+        self.history.get(i.saturating_sub(1)).map(|s| &s.snap)
     }
 
     pub fn name_of(&self, slot: u8) -> String {
@@ -868,9 +860,26 @@ impl DeadfallView {
         self.body.as_ref().map(|b| b.position + self.error)
     }
 
+    /// Interpolate fixed movement ticks for presentation only; prediction stays authoritative.
+    pub fn eye_at(&self, fraction: f32) -> Option<V> {
+        self.body
+            .as_ref()
+            .map(|b| self.previous_eye.unwrap_or(b.position).lerp(b.position, fraction.clamp(0., 1.)) + self.error)
+    }
+
+    pub fn remember_events(&mut self, events: &[Event]) {
+        let tick = self.latest().map_or(0, |s| s.snap.tick);
+        self.replay_events.extend(events.iter().cloned().map(|e| (tick, e)));
+        let cutoff = tick.saturating_sub((HISTORY_SECONDS * 60.) as u32);
+        while self.replay_events.front().is_some_and(|e| e.0 < cutoff) {
+            self.replay_events.pop_front();
+        }
+    }
+
     fn apply_input(&mut self, input: &Input, emit: bool) {
         let world = sim::world();
         let Some(body) = self.body.as_mut() else { return };
+        self.previous_eye = Some(body.position);
         let speed = weapons::get(self.inv.id_in(self.hands.sel)).map_or(1., |d| d.move_speed);
         sim::step_body(body, input, speed, &world.colliders);
         let ctx =
@@ -903,13 +912,16 @@ fn lerp_player(a: &PlayerView, b: &PlayerView, t: f32) -> PlayerView {
         }
         x + d * t
     };
-    let snap = (b.eye - a.eye).length() > 6.; // a respawn: do not slide across the map
+    // A death or respawn happens at its snapshot, never halfway through the preceding interval.
+    if a.has(flag::ALIVE) != b.has(flag::ALIVE) || (b.eye - a.eye).length() > 6. {
+        return if t < 1. { *a } else { *b };
+    }
     PlayerView {
-        eye: if snap { b.eye } else { a.eye.lerp(b.eye, t) },
-        feet: if snap { b.feet } else { a.feet + (b.feet - a.feet) * t },
+        eye: a.eye.lerp(b.eye, t),
+        feet: a.feet + (b.feet - a.feet) * t,
         yaw: d(a.yaw, b.yaw),
         pitch: a.pitch + (b.pitch - a.pitch) * t,
-        ..if t < 0.5 { *a } else { *b }
+        ..if t < 1. { *a } else { *b }
     }
 }
 
@@ -919,6 +931,8 @@ impl ClientView<DeadfallGame> for DeadfallView {
             history: VecDeque::new(),
             roster: Vec::new(),
             body: None,
+            previous_eye: None,
+            replay_events: VecDeque::new(),
             hands: Hands::default(),
             inv: Inventory::default(),
             own: None,
@@ -947,6 +961,7 @@ impl ClientView<DeadfallGame> for DeadfallView {
             return;
         };
         let before = self.body.as_ref().map(|b| b.position);
+        let previous_eye = self.previous_eye;
         let body = self.body.get_or_insert_with(|| sim::new_body(V::ZERO, 0.));
         body.restore_network_state(&own.ctrl);
         body.yaw = self.last_input.yaw;
@@ -971,9 +986,11 @@ impl ClientView<DeadfallGame> for DeadfallView {
                     }
                     self.error = e;
                 }
+                self.previous_eye = Some(if e.length() > 3. { new } else { previous_eye.unwrap_or(old) + new - old });
             }
         } else {
             self.error = V::ZERO;
+            self.previous_eye = self.body.as_ref().map(|b| b.position);
             if own.alive {
                 // Autopilot: the server drives, the camera simply follows.
                 self.last_input.yaw = own.ctrl.yaw;
@@ -1024,6 +1041,64 @@ pub fn describe(s: &Settings) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn replay_interpolates_the_recorded_victim_and_keeps_death_at_its_tick() {
+        let (m, _) = Match::new(1, &[(0, "A".into()), (1, "B".into())], Settings { bots: false, ..Default::default() });
+        let mut a = snapshot_of(&m, Some(0));
+        a.tick = 100;
+        a.players[0].eye = V(0., 1.68, 0.);
+        let mut b = a.clone();
+        b.tick = 110;
+        b.players[0].eye = V(1., 1.68, 0.);
+        let mut dead = b.clone();
+        dead.tick = 120;
+        dead.players[0].flags &= !flag::ALIVE;
+        let mut live = dead.clone();
+        live.tick = 600;
+        live.players[0].flags |= flag::ALIVE;
+        live.players[0].eye = V(40., 1.68, 40.);
+        let mut v = <DeadfallView as ClientView<DeadfallGame>>::new();
+        for snap in [a, b, dead, live] {
+            v.history.push_back(Stamped { at: 0., snap });
+        }
+        assert!((v.players_at(105.)[0].eye.0 - 0.5).abs() < 0.001);
+        assert!(v.players_at(119.9)[0].has(flag::ALIVE), "do not hide the victim before the fatal shot");
+        assert!(!v.players_at(120.)[0].has(flag::ALIVE));
+        assert!(!v.players_at(599.9)[0].has(flag::ALIVE), "do not pull a later respawn into the replay");
+        assert_eq!(v.snapshot_at(105.).unwrap().tick, 100);
+        assert_eq!(v.snapshot_at(120.).unwrap().tick, 120);
+    }
+
+    #[test]
+    fn the_local_camera_moves_smoothly_between_prediction_ticks_without_mutating_them() {
+        let (m, _) = Match::new(1, &[(0, "A".into())], Settings { bots: false, ..Default::default() });
+        let s = snapshot_of(&m, Some(0));
+        let mut v = <DeadfallView as ClientView<DeadfallGame>>::new();
+        v.on_snapshot(&s, Some(0), &[], 0.);
+        let start = v.eye().unwrap();
+        v.on_input(&Input { forward: 127, ..Default::default() });
+        let end = v.eye().unwrap();
+        assert!((end - start).length() > 0.001);
+        assert!((v.eye_at(0.).unwrap() - start).length() < 0.001);
+        assert!((v.eye_at(0.5).unwrap() - start.lerp(end, 0.5)).length() < 0.001);
+        assert_eq!(v.eye().unwrap(), end);
+        assert_eq!(v.eye_at(1.).unwrap(), end);
+    }
+
+    #[test]
+    fn replay_effects_expire_with_world_history() {
+        let (m, _) = Match::new(1, &[(0, "A".into())], Settings { bots: false, ..Default::default() });
+        let mut s = snapshot_of(&m, Some(0));
+        let mut v = <DeadfallView as ClientView<DeadfallGame>>::new();
+        v.on_snapshot(&s, Some(0), &[], 0.);
+        v.remember_events(&[Event::Kill { killer: 1, victim: 0, weapon: 1, head: false }]);
+        assert_eq!(v.replay_events.len(), 1);
+        s.tick = (HISTORY_SECONDS * 60.) as u32 + 1;
+        v.on_snapshot(&s, Some(0), &[], 15.);
+        v.remember_events(&[]);
+        assert!(v.replay_events.is_empty());
+    }
 
     #[test]
     fn a_snapshot_round_trips_and_fits_a_datagram_in_the_worst_case() {
