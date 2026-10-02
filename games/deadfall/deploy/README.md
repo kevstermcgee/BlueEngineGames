@@ -21,7 +21,7 @@ Spooky Kart is running on this box, either stop it or move Deadfall to another r
 
 * in `deadfall-hub.service` change `--listen 0.0.0.0:4100 --base-port 4100` to `--listen 0.0.0.0:4200 --base-port 4200`;
 * in `deadfall-portmap.service` change `seq 4100 4107` to `seq 4200 4207`;
-* tell players the port: put `deadfall.duckdns.org:4200` in `server.txt` next to the game (see step 7), or change
+* tell players the port: put `deadfall-kevin.duckdns.org:4200` in `server.txt` next to the game (see step 7), or change
   `DEFAULT_HUB` in `src/hub_client.rs` before building the client.
 
 The hub refuses to start with a clear message if its port is taken. Check what is listening with
@@ -30,7 +30,7 @@ The hub refuses to start with a clear message if its port is taken. Check what i
 ## 1. DuckDNS name (free, once)
 
 1. Sign in at <https://www.duckdns.org> (a Google, GitHub or similar account).
-2. Add a sub-domain, e.g. `deadfall` (the name becomes `deadfall.duckdns.org`). If you pick another name, change
+2. Add a sub-domain, e.g. `deadfall-kevin` (the name becomes `deadfall-kevin.duckdns.org`). If you pick another name, change
    `DEFAULT_HUB` in `src/hub_client.rs` (the one place the name is written) before the next game release, or use
    `server.txt`.
 3. Copy your **token** from the top of the DuckDNS page. It is a secret: it can repoint your name.
@@ -40,7 +40,7 @@ The hub refuses to start with a clear message if its port is taken. Check what i
 ```sh
 mkdir -p ~/.config/deadfall
 cat > ~/.config/deadfall/duckdns.env <<'EOT'
-DOMAIN=deadfall
+DOMAIN=deadfall-kevin
 TOKEN=paste-your-token-here
 EOT
 chmod 600 ~/.config/deadfall/duckdns.env
@@ -89,8 +89,8 @@ systemctl --user status deadfall-hub deadfall-portmap.timer deadfall-ddns.timer
 journalctl --user -u deadfall-hub -n 30            # "Deadfall hub on 0.0.0.0:4100 ... Public room is up on port 4101"
 ss -lunp | grep -E ':41(0[0-9])\b'                 # 4100 (hub) and 4101 (Public) listening; each player room adds one
 python3 ~/deadfall/blue_portmap.py status --port 4100   # router mapping and the public IPv4 (repeat for 4101..4107)
-journalctl --user -u deadfall-ddns -n 5            # "DuckDNS: deadfall.duckdns.org updated"
-getent hosts deadfall.duckdns.org                  # should print your public IP
+journalctl --user -u deadfall-ddns -n 5            # "DuckDNS: deadfall-kevin.duckdns.org updated"
+getent hosts deadfall-kevin.duckdns.org                  # should print your public IP
 ```
 
 Then, from a different network (a phone hotspot, or your cousin): start the game, Play Online. The Public room should be
@@ -114,7 +114,7 @@ Rooms, players and limits are changed in the `ExecStart` line of `deadfall-hub.s
 
 ## 7. Pointing a game at a different hub (testing, or a different port)
 
-The game uses `deadfall.duckdns.org:4100` unless a file called `server.txt` sits next to the game executable. Its first
+The game uses `deadfall-kevin.duckdns.org:4100` unless a file called `server.txt` sits next to the game executable. Its first
 line is the hub, as `host` or `host:port` (a LAN test: `192.168.1.20`). Delete the file to go back to the default.
 
 ## Stopping and removing

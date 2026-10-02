@@ -26,7 +26,7 @@ pub use crate::hub::{sanitize_name, NameError, RoomState, MAX_NAME_CHARS};
 
 /// Where the public hub lives. The one place this is written down; `deploy/README.md` explains how to point it at the
 /// real DuckDNS name. A `server.txt` next to the executable overrides it without a rebuild.
-pub const DEFAULT_HUB: &str = "deadfall.duckdns.org:4100";
+pub const DEFAULT_HUB: &str = "deadfall-kevin.duckdns.org:4100";
 /// The override file, next to the executable: the first line is the hub address (`host` or `host:port`).
 pub const OVERRIDE_FILE: &str = "server.txt";
 /// Resend an unanswered request this often.
