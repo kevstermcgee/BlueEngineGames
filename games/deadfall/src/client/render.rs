@@ -12,9 +12,15 @@ use crate::team::Team;
 use crate::weapons::{self, Class, Sight};
 use macroquad::prelude::*;
 use macroquad::texture::{render_target_ex, RenderTarget, RenderTargetParams};
+use std::cell::Cell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use vesper3d::math::V;
-use vesper3d::viewer::kit::{hud, Batch, Fx, Materials, PointLight, Template, Tint, View};
+use vesper3d::viewer::kit::{
+    hud,
+    shadow::{fit_light_box, LightBox},
+    Batch, Fx, Materials, PointLight, ShadowQuality, Shadows, Template, Tint, View,
+};
 
 type KitMesh = macroquad::prelude::Mesh;
 
@@ -111,17 +117,100 @@ struct Flash {
     life: f32,
 }
 
+/// The shadow box follows the camera: half-width in metres, depth along the light, map side in texels.
+/// 30 m each side at 2048 texels is 2.9 cm per texel: a soldier's shadow and a crate's edge come out clean (1024
+/// texels over 36 m was visibly stair-stepped); the cost is the geometry drawn twice, not the map size.
+const SHADOW_HALF: f32 = 30.;
+const SHADOW_DEPTH: f32 = 80.;
+const SHADOW_RES: u32 = 2048;
+/// The box centre sits this far ahead of the eye along the view, so the shadows you can see get the texels.
+const SHADOW_AHEAD: f32 = 10.;
+/// Blobs and light-only work are skipped beyond this distance from the eye, metres.
+const BLOB_RANGE: f32 = 45.;
+/// Radius of the soft contact shadow under a soldier, and under a weapon lying on the ground, metres.
+const BLOB_SOLDIER: f32 = 0.85;
+const BLOB_ITEM: f32 = 0.4;
+
+/// A baked mesh and its world-space bounds, so the shadow pass can skip what the light box cannot see.
+struct Part {
+    mesh: KitMesh,
+    min: Vec3,
+    max: Vec3,
+}
+
+impl Part {
+    fn bake(templates: &[Template]) -> Vec<Part> {
+        templates
+            .iter()
+            .flat_map(|t| t.to_meshes())
+            .map(|mesh| {
+                let (mut min, mut max) = (Vec3::splat(f32::MAX), Vec3::splat(f32::MIN));
+                for v in &mesh.vertices {
+                    min = min.min(v.position);
+                    max = max.max(v.position);
+                }
+                Part { mesh, min, max }
+            })
+            .collect()
+    }
+
+    /// Whether any of this part can fall inside the shadow map (the box is orthographic, so the corners of the
+    /// bounds project to the exact extent). Parts in front of the near plane or past the far plane are out.
+    fn in_light_box(&self, light: &LightBox) -> bool {
+        let res = light.resolution as f32;
+        let (mut lo, mut hi) = (Vec3::splat(f32::MAX), Vec3::splat(f32::MIN));
+        for i in 0..8u32 {
+            let p = vec3(
+                if i & 1 == 0 { self.min.x } else { self.max.x },
+                if i & 2 == 0 { self.min.y } else { self.max.y },
+                if i & 4 == 0 { self.min.z } else { self.max.z },
+            );
+            let q = light.to_map(p);
+            lo = lo.min(q);
+            hi = hi.max(q);
+        }
+        hi.x >= 0. && lo.x <= res && hi.y >= 0. && lo.y <= res && hi.z >= 0. && lo.z <= 1.
+    }
+}
+
+/// Tops of everything a soldier could stand on, as `[min x, min z, max x, max z, top]`, for the contact shadows.
+fn floor_tops(level: &Level) -> Vec<[f32; 5]> {
+    level
+        .blocks
+        .iter()
+        .filter(|b| b.material != crate::level::Material::Water)
+        .map(|b| [b.min.0, b.min.2, b.max.0, b.max.2, b.max.1])
+        .collect()
+}
+
+/// The floor under `(x, z)` for something whose feet are at `feet_y`: the highest top at or just above the feet
+/// (so a second floor is found from the second floor and a roof is ignored from the ground). A point over no
+/// block reads far below, which drops the blob.
+fn floor_below(tops: &[[f32; 5]], x: f32, z: f32, feet_y: f32) -> f32 {
+    let limit = feet_y + 0.2;
+    tops.iter()
+        .filter(|t| x >= t[0] && x <= t[2] && z >= t[1] && z <= t[3] && t[4] <= limit)
+        .fold(feet_y - 100., |best, t| best.max(t[4]))
+}
+
 pub struct Renderer {
     pub materials: Materials,
     pub scene: LevelScene,
-    static_meshes: Vec<KitMesh>,
-    decor_meshes: Vec<KitMesh>,
+    /// Flat ground: drawn, never cast (see `LevelScene::ground`).
+    ground_meshes: Vec<KitMesh>,
+    static_meshes: Vec<Part>,
+    decor_meshes: Vec<Part>,
     glass_meshes: Vec<KitMesh>,
     sky_meshes: Vec<KitMesh>,
     level: Level,
     rigs: Vec<Rig>,
     models: Vec<Option<WeaponModel>>,
     pub world: Batch,
+    /// The local player's own body: not drawn in first person, but it still casts a shadow at Full.
+    hidden: Batch,
+    pub shadows: Shadows,
+    /// The feet height the next blob is for; the ground lookup reads it (the helper only passes x and z).
+    blob_feet: Rc<Cell<f32>>,
     pub alpha: Batch,
     pub add: Batch,
     pub fx: Fx,
@@ -138,10 +227,17 @@ impl Renderer {
     pub fn new(level: &Level) -> Renderer {
         let scene = level_view::build(level);
         let to_meshes = |ts: &[Template]| ts.iter().flat_map(|t| t.to_meshes()).collect::<Vec<_>>();
-        let static_meshes = to_meshes(&scene.solid);
-        let decor_meshes = to_meshes(&scene.decor);
+        let ground_meshes = to_meshes(&scene.ground);
+        let static_meshes = Part::bake(&scene.solid);
+        let decor_meshes = Part::bake(&scene.decor);
         let glass_meshes = scene.glass.to_meshes();
         let sky_meshes = scene.sky.to_meshes();
+        let mut shadows =
+            Shadows::new(ShadowQuality::default()).with_resolution(SHADOW_RES).with_range(SHADOW_HALF, SHADOW_DEPTH);
+        let tops = floor_tops(level);
+        let blob_feet = Rc::new(Cell::new(0.));
+        let feet = blob_feet.clone();
+        shadows.set_ground(move |x, z| floor_below(&tops, x, z, feet.get()));
         let mut rigs = Vec::new();
         for team in Team::ALL {
             for skin in 0..4 {
@@ -155,6 +251,7 @@ impl Renderer {
         Renderer {
             materials: Materials::load().expect("the materials failed to compile"),
             scene,
+            ground_meshes,
             static_meshes,
             decor_meshes,
             glass_meshes,
@@ -163,6 +260,9 @@ impl Renderer {
             rigs,
             models,
             world: Batch::new(),
+            hidden: Batch::new(),
+            shadows,
+            blob_feet,
             alpha: Batch::new(),
             add: Batch::new(),
             fx: Fx::new(7),
@@ -174,6 +274,11 @@ impl Renderer {
             muzzle_flash: 0.,
             arms_cache: None,
         }
+    }
+
+    /// Switch the shadow tier (Settings and `--shadows`). Full falls back to Simple if the map cannot be made.
+    pub fn set_shadows(&mut self, quality: ShadowQuality) {
+        self.shadows.set_quality(quality);
     }
 
     pub fn model(&self, weapon: u8) -> Option<&WeaponModel> {
@@ -274,55 +379,24 @@ impl Renderer {
         dt: f32,
     ) {
         self.animate(figures, dt);
-        let look = &self.scene.look;
+        let look = self.scene.look;
         clear_background(look.clear_color());
-        // Sky: drawn with the camera at the origin, no depth.
-        set_camera(&view.sky_camera());
-        gl_use_material(&self.materials.sky);
-        for m in &self.sky_meshes {
-            draw_mesh(m);
-        }
-        set_camera(&view.camera(0.05, 400.));
-        // The nearest fixed lights, plus a flash of light at every muzzle that just fired.
-        let mut spots: Vec<&crate::level::LightSpot> = self.level.lights.iter().collect();
-        spots.sort_by(|a, b| {
-            (v3(a.pos) - view.eye)
-                .length()
-                .partial_cmp(&(v3(b.pos) - view.eye).length())
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        let mut chosen: Vec<PointLight> = Vec::new();
-        for l in self.flashes.iter().take(2) {
-            if let Ok(p) = PointLight::new(l.pos, 6., [1., 0.85, 0.5], 2.5) {
-                chosen.push(p);
-            }
-        }
-        for s in spots.into_iter().take(4) {
-            if let Ok(p) = PointLight::new(v3(s.pos), s.radius, s.rgb, s.intensity) {
-                chosen.push(p);
-            }
-        }
-        chosen.truncate(4);
-        self.materials.set_scene(look, view.eye, self.time, 0.);
-        let _ = self.materials.set_point_lights(&chosen);
-        gl_use_material(&self.materials.world);
-        for m in &self.static_meshes {
-            draw_mesh(m);
-        }
-        for m in &self.decor_meshes {
-            draw_mesh(m);
-        }
-        // Glass panes are opaque (the engine's blended material has no depth test), drawn with the world.
-        for m in &self.glass_meshes {
-            draw_mesh(m);
-        }
+        // Shadows first (they only read CPU geometry): the box follows the camera, a little ahead of it, and the
+        // dynamic batches are filled before the pass draws them.
+        let ahead = vec3(view.yaw.sin(), 0., -view.yaw.cos()) * SHADOW_AHEAD;
+        let focus = vec3(view.eye.x + ahead.x, (view.eye.y - 1.5).max(0.), view.eye.z + ahead.z);
+        self.shadows.begin_frame(&look, focus);
         // Dynamic geometry.
         self.world.clear();
+        self.hidden.clear();
         self.alpha.clear();
         self.add.clear();
         let t = self.time;
+        let casting = self.shadows.casting();
         for f in figures {
-            if Some(f.slot) == skip_slot {
+            // The local player's body is not drawn in first person; it only casts (a shadow, never a reflection).
+            let own = Some(f.slot) == skip_slot;
+            if own && !casting && self.shadows.quality() != ShadowQuality::Simple {
                 continue;
             }
             let skin = skins[f.slot.min(15)].min(3);
@@ -347,17 +421,25 @@ impl Renderer {
             let feet = vec3(f.view.eye.0, f.view.feet, f.view.eye.2);
             let protected = f.view.has(flag::PROTECT);
             let tint = if protected { Tint::flash(0.15 + 0.1 * (t * 12.).sin().abs()) } else { Tint::NONE };
-            rig.draw(&mut self.world, feet, f.view.yaw, &pose, tint);
+            if feet.distance(view.eye) < BLOB_RANGE {
+                self.blob_feet.set(feet.y);
+                self.shadows.blob(feet, BLOB_SOLDIER);
+            }
+            if own && !casting {
+                continue;
+            }
+            let body = if own { &mut self.hidden } else { &mut self.world };
+            rig.draw(body, feet, f.view.yaw, &pose, tint);
             if let Some(model) = self.models.get(weapon as usize).and_then(|m| m.as_ref()) {
                 let mount = rig.weapon_mount(feet, f.view.yaw, &pose);
-                self.world.add(&model.body, mount, Tint::NONE);
+                body.add(&model.body, mount, Tint::NONE);
                 if let Some((mag, at)) = &model.mag {
-                    self.world.add(mag, mount * Mat4::from_translation(*at), Tint::NONE);
+                    body.add(mag, mount * Mat4::from_translation(*at), Tint::NONE);
                 }
                 if let Some((slide, _)) = &model.slide {
-                    self.world.add(slide, mount, Tint::NONE);
+                    body.add(slide, mount, Tint::NONE);
                 }
-                if mem.fire > 0.6 && f.view.has(flag::ALIVE) {
+                if !own && mem.fire > 0.6 && f.view.has(flag::ALIVE) {
                     let muzzle = mount.transform_point3(model.anchors.muzzle);
                     let v = View::first_person(view.eye, view.yaw, view.pitch);
                     Self::star(&mut self.add, muzzle, v.right(), v.up(), view.eye, 0.28, [1., 0.75, 0.35]);
@@ -367,10 +449,18 @@ impl Renderer {
         // Loot and dropped weapons, turning slowly above the floor.
         for (i, l) in self.level.loot.iter().enumerate() {
             if i < 64 && loot & (1 << i) != 0 {
+                if v3(l.pos).distance(view.eye) < BLOB_RANGE {
+                    self.blob_feet.set(l.pos.1);
+                    self.shadows.blob(v3(l.pos), BLOB_ITEM);
+                }
                 Self::draw_item(&self.models, &mut self.world, &mut self.add, l.weapon, v3(l.pos), t, i as f32);
             }
         }
         for d in dropped {
+            if v3(d.pos).distance(view.eye) < BLOB_RANGE {
+                self.blob_feet.set(d.pos.1);
+                self.shadows.blob(v3(d.pos), BLOB_ITEM);
+            }
             Self::draw_item(&self.models, &mut self.world, &mut self.add, d.weapon, v3(d.pos), t, d.id as f32);
         }
         for p in projectiles {
@@ -399,6 +489,63 @@ impl Renderer {
                 }
             }
         }
+        // The shadow pass draws what the main pass draws below, minus the flat ground (a receiver only), the
+        // glass, the sky and everything translucent; parts whose bounds miss the light box are skipped.
+        if self.shadows.casting() {
+            let light = fit_light_box(look.key_direction, focus, SHADOW_HALF, SHADOW_DEPTH, SHADOW_RES);
+            self.shadows.cast(|| {
+                for part in self.static_meshes.iter().chain(&self.decor_meshes) {
+                    if part.in_light_box(&light) {
+                        draw_mesh(&part.mesh);
+                    }
+                }
+                self.world.draw();
+                self.hidden.draw();
+            });
+        }
+        // Sky: drawn with the camera at the origin, no depth.
+        set_camera(&view.sky_camera());
+        gl_use_material(&self.materials.sky);
+        for m in &self.sky_meshes {
+            draw_mesh(m);
+        }
+        set_camera(&view.camera(0.05, 400.));
+        // The nearest fixed lights, plus a flash of light at every muzzle that just fired.
+        let mut spots: Vec<&crate::level::LightSpot> = self.level.lights.iter().collect();
+        spots.sort_by(|a, b| {
+            (v3(a.pos) - view.eye)
+                .length()
+                .partial_cmp(&(v3(b.pos) - view.eye).length())
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        let mut chosen: Vec<PointLight> = Vec::new();
+        for l in self.flashes.iter().take(2) {
+            if let Ok(p) = PointLight::new(l.pos, 6., [1., 0.85, 0.5], 2.5) {
+                chosen.push(p);
+            }
+        }
+        for s in spots.into_iter().take(4) {
+            if let Ok(p) = PointLight::new(v3(s.pos), s.radius, s.rgb, s.intensity) {
+                chosen.push(p);
+            }
+        }
+        chosen.truncate(4);
+        self.materials.set_scene(&look, view.eye, self.time, 0.);
+        let _ = self.materials.set_point_lights(&chosen);
+        self.shadows.apply(&self.materials);
+        gl_use_material(&self.materials.world);
+        for m in &self.ground_meshes {
+            draw_mesh(m);
+        }
+        for part in self.static_meshes.iter().chain(&self.decor_meshes) {
+            draw_mesh(&part.mesh);
+        }
+        // Glass panes are opaque (the engine's blended material has no depth test), drawn with the world.
+        for m in &self.glass_meshes {
+            draw_mesh(m);
+        }
+        // Contact shadows sit on the ground and under the floor-standing actors, after the static world.
+        self.shadows.draw_decals(&self.materials);
         gl_use_material(&self.materials.world);
         self.world.draw();
         // Translucent: glass, smoke, then additive light.
@@ -754,5 +901,39 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn contact_shadows_find_the_floor_under_the_feet_not_the_roof_above() {
+        let level = crate::slagworks::build();
+        let tops = floor_tops(&level);
+        // Open yard: the ground slab (top at 0) or a paving patch a few centimetres above it.
+        let yard = floor_below(&tops, 0., 24., 0.);
+        assert!((0. ..0.07).contains(&yard), "{yard}");
+        // Standing on a roof finds the roof; standing under it finds the ground, not the roof overhead.
+        let roof = level
+            .blocks
+            .iter()
+            .find(|b| b.max.1 > 5. && b.max.1 - b.min.1 < 0.6 && b.max.0 - b.min.0 > 6.)
+            .expect("a roof sheet");
+        let (x, z) = ((roof.min.0 + roof.max.0) * 0.5, (roof.min.2 + roof.max.2) * 0.5);
+        assert!((floor_below(&tops, x, z, roof.max.1) - roof.max.1).abs() < 1e-4);
+        assert!(floor_below(&tops, x, z, 0.) < 0.2);
+        // Off the map there is no floor at all, so the blob is dropped.
+        assert!(floor_below(&tops, 500., 500., 0.) < -50.);
+    }
+
+    #[test]
+    fn parts_outside_the_light_box_are_skipped_and_parts_inside_are_kept() {
+        let mut near = Template::new();
+        near.box_(vec3(2., 1., 3.), vec3(1., 1., 1.), [0.5; 3], 0.);
+        let mut far = Template::new();
+        far.box_(vec3(500., 1., 500.), vec3(1., 1., 1.), [0.5; 3], 0.);
+        let parts = Part::bake(&[near, far]);
+        assert_eq!(parts.len(), 2);
+        let light = fit_light_box(super::level_view::overcast_afternoon().key_direction, Vec3::ZERO, 30., 80., 2048);
+        assert!(parts[0].in_light_box(&light));
+        assert!(!parts[1].in_light_box(&light));
+        assert!(parts[0].min.x < 2. && parts[0].max.x > 2.);
     }
 }

@@ -6,13 +6,20 @@
 //! preview_level --what walk  --out DIR --at x,y,z --angles 0,90 [--pitch 0]            # eye-height view, FOV 90
 //! preview_level --what lanes --out DIR                                                 # the view from each base's spawns
 //! ```
+//! `--shadows off|simple|full` draws through the game's own renderer instead (shadows, blobs and soldiers as in a match),
+//! with `--men x:z:yaw,x:z:yaw[:y]` standing soldiers on the map (slots 0.., alternating teams, `y` is the floor height)
+//! and `--repeat N` frames per view (default 3; the average time of the later ones is printed).
 //! `--cut H` leaves out every block that starts above H metres (roofs), to see into buildings from above.
 use deadfall::client::level_view::{self, LevelScene};
 use deadfall::client::previewkit::{self, Args};
+use deadfall::client::render::{Figure, Renderer};
+use deadfall::netgame::{flag, PlayerView};
 use deadfall::slagworks;
+use deadfall::team::Team;
 use macroquad::prelude::*;
+use vesper3d::math::V;
 use vesper3d::viewer::{
-    devkit::flag_value,
+    devkit::{flag_value, ShadowQuality},
     kit::{Materials, View},
 };
 
@@ -118,10 +125,16 @@ async fn main() {
     // Thin the haze for far views (`--fog 0.0008`); the default for the top views is almost none.
     let default_fog = if matches!(args.what.as_str(), "top" | "tiles" | "") { 0.0008 } else { scene.look.fog_density };
     scene.look.fog_density = flag_value(&args.raw, "--fog").and_then(|v| v.parse().ok()).unwrap_or(default_fog);
+    if let Some(quality) = ShadowQuality::from_flag(&args.raw).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(2)
+    }) {
+        return game_path(&args, &level, quality).await;
+    }
     let mats = Materials::load().expect("the materials failed to compile");
     let meshes = Meshes {
         sky: scene.sky.to_meshes(),
-        solid: scene.solid.iter().flat_map(|t| t.to_meshes()).collect(),
+        solid: scene.ground.iter().chain(&scene.solid).flat_map(|t| t.to_meshes()).collect(),
         decor: scene.decor.iter().flat_map(|t| t.to_meshes()).collect(),
         glass: scene.glass.to_meshes(),
     };
@@ -139,5 +152,66 @@ async fn main() {
             }
         }
         next_frame().await;
+    }
+}
+
+/// The game's own `Renderer`: what a match draws, with soldiers placed by `--men`.
+async fn game_path(args: &Args, level: &deadfall::level::Level, quality: ShadowQuality) {
+    let mut renderer = Renderer::new(level);
+    renderer.set_shadows(quality);
+    let figures: Vec<Figure> = flag_value(&args.raw, "--men")
+        .map(|v| {
+            v.split(',')
+                .enumerate()
+                .filter_map(|(i, m)| {
+                    let n: Vec<f32> = m.split(':').filter_map(|p| p.parse().ok()).collect();
+                    (n.len() >= 3).then(|| {
+                        let y = n.get(3).copied().unwrap_or(0.);
+                        Figure {
+                            slot: i,
+                            team: Team::from_index(i % 2),
+                            view: PlayerView {
+                                slot: i as u8,
+                                flags: flag::ALIVE,
+                                eye: V(n[0], y + 1.68, n[1]),
+                                yaw: n[2].to_radians(),
+                                health: 100,
+                                weapon: 3 + i as u8,
+                                feet: y,
+                                ..Default::default()
+                            },
+                        }
+                    })
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let repeat: u32 = flag_value(&args.raw, "--repeat").and_then(|v| v.parse().ok()).unwrap_or(3).max(2);
+    let views = plan(args, level);
+    for (name, view) in &views {
+        let mut later = std::time::Duration::ZERO;
+        for f in 0..repeat {
+            let started = std::time::Instant::now();
+            renderer.update(1. / 60.);
+            renderer.draw_world(view, &figures, None, 0, &[], &[], &[], &[0; 16], 1. / 60.);
+            if f + 1 == repeat {
+                if let Some(out) = &args.out {
+                    previewkit::shot(out, name);
+                }
+            }
+            if f > 0 {
+                later += started.elapsed();
+            }
+            next_frame().await;
+        }
+        eprintln!(
+            "{name}: {:.1} ms per frame (software GL, {} {})",
+            later.as_secs_f64() * 1000. / (repeat - 1) as f64,
+            quality.label(),
+            figures.len()
+        );
+        if args.out.is_none() {
+            break;
+        }
     }
 }

@@ -26,11 +26,16 @@ type Rgb = [f32; 3];
 
 /// Everything needed to draw the map.
 pub struct LevelScene {
-    /// Opaque block geometry, each under 9000 vertices.
+    /// Opaque block geometry that stands up from the ground (walls, roofs, containers, crates), each part
+    /// under 9000 vertices and sorted by place on the map (see `Grid`). These cast shadows.
     pub solid: Vec<Template>,
+    /// Receivers only, drawn with `solid` but never cast into the shadow map: the flat ground (the dirt slab,
+    /// paving, grass and gravel patches, the mottling; the slab is 140 m wide and would fill the map with a plane
+    /// the ground already is), low ground cover (tufts, weeds, puddles) and the far scenery beyond the wall.
+    pub ground: Vec<Template>,
     /// Window panes (opaque, sky-coloured; draw with the world material, see the module note).
     pub glass: Template,
-    /// Plants, props, landmarks and the scenery outside the wall.
+    /// Plants, props, landmarks and the trees just outside the wall, sorted by place like `solid`. These cast.
     pub decor: Vec<Template>,
     /// The sky dome, clouds and distant silhouettes (draw first, with the sky camera).
     pub sky: Template,
@@ -144,20 +149,46 @@ impl Acc {
     }
 }
 
+/// Geometry sorted into square cells of the ground, so each baked mesh covers a small patch of the map and the
+/// shadow pass can skip the patches the light box does not reach.
+struct Grid {
+    cells: std::collections::BTreeMap<(i32, i32), Acc>,
+}
+impl Grid {
+    /// Cell side, metres: a fraction of the shadow box, so a mesh is mostly inside or mostly outside it.
+    const CELL: f32 = 20.;
+    fn new() -> Self {
+        Self { cells: std::collections::BTreeMap::new() }
+    }
+    fn at(&mut self, x: f32, z: f32) -> &mut Acc {
+        let key = ((x / Self::CELL).floor() as i32, (z / Self::CELL).floor() as i32);
+        self.cells.entry(key).or_insert_with(Acc::new)
+    }
+    fn finish(self) -> Vec<Template> {
+        self.cells.into_values().flat_map(|a| a.finish()).collect()
+    }
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // blocks
 
-fn add_block(acc: &mut Acc, glass: &mut Template, b: &Block) {
+/// A flat patch or slab that lies on the ground (see [`LevelScene::ground`]).
+fn is_ground_slab(b: &Block) -> bool {
+    let size = vec3(b.max.0 - b.min.0, b.max.1 - b.min.1, b.max.2 - b.min.2);
+    size.y <= 0.07 && (size.x > 1.5 || size.z > 1.5) || b.material == Material::Dirt && size.x > 50.
+}
+
+fn add_block(acc: &mut Acc, ground: &mut Acc, glass: &mut Template, b: &Block) {
     let (mn, mx) = (vec3(b.min.0, b.min.1, b.min.2), vec3(b.max.0, b.max.1, b.max.2));
     let size = mx - mn;
     let c = (mn + mx) * 0.5;
     let half = size * 0.5;
     let k = hash(c.x, c.y, c.z);
     let base = base_colour(b.material);
-    let t = acc.t();
     let long_x = size.x >= size.z;
-    // Ground patches and slabs: a coloured top, speckled when large.
-    if size.y <= 0.07 && (size.x > 1.5 || size.z > 1.5) || b.material == Material::Dirt && size.x > 50. {
+    // Ground patches and slabs: a coloured top, speckled when large. These go in the receivers-only list.
+    if is_ground_slab(b) {
+        let t = ground.t();
         let top = vary(base, k, 0.05);
         t.box_top(c, half, mulc(top, 0.8), top, 0.);
         if size.x * size.z > 20. && b.material != Material::Dirt {
@@ -168,6 +199,7 @@ fn add_block(acc: &mut Acc, glass: &mut Template, b: &Block) {
         }
         return;
     }
+    let t = acc.t();
     match b.material {
         Material::Glass => {
             glass_pane(acc, glass, mn, mx);
@@ -1207,7 +1239,9 @@ fn silhouettes(t: &mut Template, fog: Rgb) {
 
 /// The scenery beyond the perimeter wall: a ring of tall trees and dark pines so the upper floors and
 /// catwalks look out over something, plus a few low factory roofs.
-fn outside(level: &Level, acc: &mut Acc) {
+/// The scenery beyond the wall. Trees close to the wall can shade the yard and go in `near` (which casts);
+/// the rest is too far to matter and joins the receivers-only `far`.
+fn outside(level: &Level, near: &mut Grid, far: &mut Acc) {
     let (hx, hz) = (level.half_x, level.half_z);
     for i in 0..170 {
         let f = i as f32 / 170.;
@@ -1234,7 +1268,12 @@ fn outside(level: &Level, acc: &mut Acc) {
         let k = hash(x, z, 5.);
         let s = 1.6 + 1.6 * k;
         let kind = if k > 0.55 { DecorKind::Pine } else { DecorKind::Tree };
-        acc.t().append(&build_decor(&Decor { kind, pos: vesper3d::math::V(x, -0.05, z), yaw: k * 6., scale: s }));
+        let tree = build_decor(&Decor { kind, pos: vesper3d::math::V(x, -0.05, z), yaw: k * 6., scale: s });
+        if off < 14. {
+            near.at(x, z).t().append(&tree);
+        } else {
+            far.t().append(&tree);
+        }
     }
     // A few low factory roofs with stacks, further out.
     for i in 0..9 {
@@ -1242,9 +1281,9 @@ fn outside(level: &Level, acc: &mut Acc) {
         let (x, z) = (a.cos() * (hx + 70.), a.sin() * (hz + 62.));
         let k = hash(x, z, 1.);
         let col = [0.45 + 0.1 * k, 0.47, 0.5];
-        acc.t().box_(vec3(x, 4., z), vec3(16. + 10. * k, 4., 10. + 8. * k), col, 0.);
-        acc.t().box_(vec3(x, 8.3, z), vec3(14. + 10. * k, 0.3, 9. + 8. * k), mulc(col, 0.8), 0.);
-        acc.t().cone(vec3(x + 12., 0., z), 1.6, 1.1, 22. + 8. * k, [0.5, 0.3, 0.24], 0., 7);
+        far.t().box_(vec3(x, 4., z), vec3(16. + 10. * k, 4., 10. + 8. * k), col, 0.);
+        far.t().box_(vec3(x, 8.3, z), vec3(14. + 10. * k, 0.3, 9. + 8. * k), mulc(col, 0.8), 0.);
+        far.t().cone(vec3(x + 12., 0., z), 1.6, 1.1, 22. + 8. * k, [0.5, 0.3, 0.24], 0., 7);
     }
 }
 
@@ -1284,7 +1323,8 @@ fn tree_collision_block(b: &Block, decor: &[Decor]) -> bool {
 }
 
 pub fn build(level: &Level) -> LevelScene {
-    let mut solid = Acc::new();
+    let mut solid = Grid::new();
+    let mut ground = Acc::new();
     let mut glass = Template::new();
     for b in &level.blocks {
         // The tree mesh supplies its bark. Drawing the solid box as well adds plank/furniture detail
@@ -1292,9 +1332,10 @@ pub fn build(level: &Level) -> LevelScene {
         if b.material == Material::Water || tree_collision_block(b, &level.decor) {
             continue;
         }
-        add_block(&mut solid, &mut glass, b);
+        let c = vec3(b.min.0 + b.max.0, 0., b.min.2 + b.max.2) * 0.5;
+        add_block(solid.at(c.x, c.z), &mut ground, &mut glass, b);
     }
-    solid.t().append(&ground_outer());
+    ground.t().append(&ground_outer());
     // Mottled ground where no patch covers the dirt: lighter dust, darker damp, a little green.
     let dirt = base_colour(Material::Dirt);
     for i in 0..260 {
@@ -1302,20 +1343,30 @@ pub fn build(level: &Level) -> LevelScene {
         let w = 1.5 + 3.5 * hash(i as f32, 3., 21.);
         let tone = hash(i as f32, 4., 21.);
         let col = if tone < 0.15 { mix(dirt, [0.30, 0.38, 0.18], 0.5) } else { mulc(dirt, 0.82 + 0.4 * tone) };
-        quad_y(solid.t(), x, x + w, z, z + w * (0.5 + hash(i as f32, 5., 21.)), 0.003 + i as f32 * 0.00001, col);
+        quad_y(ground.t(), x, x + w, z, z + w * (0.5 + hash(i as f32, 5., 21.)), 0.003 + i as f32 * 0.00001, col);
     }
-    let mut decor = Acc::new();
+    let mut decor = Grid::new();
     for d in &level.decor {
         let local = build_decor(d);
-        decor.t().append(&local);
+        // Ground cover lies flat and is too small to shadow anything: receivers only.
+        if matches!(d.kind, DecorKind::GrassTuft | DecorKind::Weeds | DecorKind::Puddle) {
+            ground.t().append(&local);
+        } else {
+            decor.at(d.pos.0, d.pos.2).t().append(&local);
+        }
     }
-    outside(level, &mut decor);
+    outside(level, &mut decor, &mut ground);
     // Ceiling fixtures under the indoor lights (not the street lamps, which have their own heads).
     let lamp_posts: Vec<_> = level.decor.iter().filter(|d| d.kind == DecorKind::LampPost).collect();
     for l in &level.lights {
         let near_post = lamp_posts.iter().any(|d| (d.pos.0 - l.pos.0).hypot(d.pos.2 - l.pos.2) < 1.5);
         if !near_post && l.pos.1 >= 2.4 && l.rgb[2] > 0.5 {
-            decor.t().box_(vec3(l.pos.0, l.pos.1 + 0.3, l.pos.2), vec3(0.4, 0.03, 0.14), [1., 0.95, 0.8], 1.);
+            decor.at(l.pos.0, l.pos.2).t().box_(
+                vec3(l.pos.0, l.pos.1 + 0.3, l.pos.2),
+                vec3(0.4, 0.03, 0.14),
+                [1., 0.95, 0.8],
+                1.,
+            );
         }
     }
     let look = overcast_afternoon();
@@ -1329,7 +1380,16 @@ pub fn build(level: &Level) -> LevelScene {
             light_pos.push(p);
         }
     }
-    LevelScene { solid: solid.finish(), glass, decor: decor.finish(), sky, look, lights, light_pos }
+    LevelScene {
+        solid: solid.finish(),
+        ground: ground.finish(),
+        glass,
+        decor: decor.finish(),
+        sky,
+        look,
+        lights,
+        light_pos,
+    }
 }
 
 #[cfg(test)]
@@ -1351,5 +1411,22 @@ mod tests {
             let mesh = build_decor(d);
             assert!(!mesh.verts.is_empty() && mesh.verts.iter().all(|v| v.p.is_finite()));
         }
+    }
+
+    #[test]
+    fn flat_ground_and_far_scenery_never_cast_but_walls_and_trees_do() {
+        let level = crate::slagworks::build();
+        let scene = build(&level);
+        let reach = |parts: &[Template]| {
+            parts.iter().flat_map(|t| t.verts.iter()).map(|v| v.p.x.abs().max(v.p.z.abs())).fold(0f32, f32::max)
+        };
+        // The 140 m dirt slab and the 660 m outer ground are receivers only.
+        assert!(reach(&scene.ground) > 300.);
+        assert!(reach(&scene.solid) < 100. && reach(&scene.decor) < 100.);
+        // Everything that stands up still casts.
+        assert!(scene.solid.iter().flat_map(|t| t.verts.iter()).any(|v| v.p.y > 8.));
+        assert!(scene.decor.iter().map(|t| t.verts.len()).sum::<usize>() > 20_000);
+        // No flat slab slipped into the casters: every solid part reaches above the ground patches.
+        assert!(scene.solid.iter().all(|t| t.verts.iter().any(|v| v.p.y > 0.2)));
     }
 }
