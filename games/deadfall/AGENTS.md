@@ -20,13 +20,22 @@ Deadfall is a six-versus-six team deathmatch shooter on BlueEngine, built with t
 * Changing a weapon number, the map, or any wire layout changes `netgame::fingerprint()`, so old clients are refused. Weapon wire
   ids are positions in `weapons::WEAPONS`: append, never reorder.
 * No blood, no music, no voices. Ambience stems and one-shots live in `client/audio.rs`.
+* Shadows are presentation only (never touch `sim`, `netgame` or the map for them: `netgame::fingerprint()` must not change). The
+  setting is `Prefs::shadows` (Off / Simple / Full), the `--shadows` flag overrides it for one run, and `client/render.rs` owns the
+  engine's `kit::Shadows`: Simple draws a blob under each soldier and loot item (ground from the level's block tops), Full adds
+  one shadow pass of the same batches. `LevelScene::solid` and `decor` cast; `LevelScene::ground` (the slabs, ground cover and far
+  scenery) only receives. Casting meshes are sorted into 20 m cells (`level_view::Grid`) so the pass can skip those outside the box.
 * Gameplay keys are read straight from macroquad in `controls.rs`: the engine's `ClientInput` tracks only a fixed list of keys on Windows.
 
 ## Looking at it without a screen
 `xvfb-run` plus `deadfall --solo --capture DIR --frames 200,600 --mute` saves screenshots; `--script "ads:100-300,fire:150-200,slot1@10,accept@400"`
-plays the local player; `DEADFALL_AUTOPILOT=1` lets a bot drive you; `DEADFALL_GIVE=awm,frag` starts you with those weapons;
+plays the local player; `DEADFALL_AUTOPILOT=1` lets a bot drive you; `--shadows off|simple|full` picks the shadow tier (the capture path honours it); `DEADFALL_GIVE=awm,frag` starts you with those weapons;
 `DEADFALL_DATA=DIR` redirects stats and preferences. Online screens: `--hub 127.0.0.1:PORT --screen online` against a loopback
 `deadfall-hub` (see `src/bin/hub.rs`); `DEADFALL_FAKE_BUILD=N` pretends to be another build to see the version-mismatch state.
+
+`preview_level --what walk --at x,y,z --angles 0 --out DIR --shadows full --men x:z:yaw,x:z:yaw` draws a fixed spot through the game's
+own renderer, with soldiers standing where you say and the average frame time printed: the way to compare the three shadow tiers
+without a moving match.
 
 ## Tests
 `cargo test` runs the armoury checks, combat rules, 12-bot soaks, an online match on a lossy simulated network and a 20-second

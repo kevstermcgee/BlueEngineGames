@@ -19,6 +19,10 @@ Everything (models, sounds, map) is generated in code; the game is one executabl
   teams* to fill both sides to six. Choose how the match ends: first team to N kills, or a time limit.
 * **Join by address (advanced)**: type or paste (Ctrl+V) the host's address (`address:port`, the port defaults to 4100) and, if the host set one, the password. Pick your team
   in the lobby, press **Ready**; the match starts when everyone is ready.
+* **Settings**: name, mouse and stick sensitivity, invert look, volume, fullscreen and **Shadows**: *Simple* (the default: a soft
+  contact shadow under every soldier and dropped weapon, nearly free), *Full* (real cast shadows from buildings, containers,
+  trees, crates and soldiers; costs frame rate, most on slow graphics) or *Off*. It is remembered; `--shadows off|simple|full` picks
+  one for a single run.
 * **Stats**: your lifetime kills, deaths, headshots, accuracy, matches, time played and more are kept on this computer.
 
 ### Playing with friends over the internet
