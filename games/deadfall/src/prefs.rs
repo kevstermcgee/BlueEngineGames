@@ -19,6 +19,10 @@ pub struct Prefs {
     /// Shadows: Off, Simple (soft contact shadows, the default) or Full (cast shadows). Files from before this
     /// existed, and unknown words, read as Simple.
     pub shadows: ShadowQuality,
+    /// The Play Online hub the player chose on the command line (`--hub`) and then joined a room on: the next run uses it
+    /// again unless `--hub` or a `server.txt` says otherwise. Never set for the built-in hub, so a new default still reaches
+    /// everyone.
+    pub last_hub: Option<String>,
     /// The last server typed in, and its key.
     pub address: String,
     pub key: String,
@@ -43,6 +47,7 @@ impl Default for Prefs {
             volume: 0.8,
             fullscreen: false,
             shadows: ShadowQuality::default(),
+            last_hub: None,
             address: String::new(),
             key: String::new(),
             kills_target: 40,
@@ -83,6 +88,7 @@ impl Prefs {
         self.team = self.team.min(1);
         self.name = self.name.chars().filter(|c| !c.is_control()).take(16).collect();
         self.address = self.address.chars().filter(|c| !c.is_control()).take(80).collect();
+        self.last_hub = self.last_hub.take().map(|h| h.chars().filter(|c| !c.is_control()).take(80).collect::<String>()).filter(|h| !h.trim().is_empty());
         self.key = self.key.chars().filter(|c| !c.is_control()).take(64).collect();
     }
     /// The name shown in matches: what was typed, else the computer's user name, else "Soldier".
@@ -138,6 +144,20 @@ mod tests {
             std::fs::write(&path, serde_json::to_string(&p).unwrap()).unwrap();
             assert_eq!(Prefs::load_from(&path).shadows, q);
         }
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn the_remembered_hub_is_optional_cleaned_and_absent_from_old_files() {
+        let dir = std::env::temp_dir().join(format!("deadfall-prefs-hub-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("prefs.json");
+        std::fs::write(&path, r#"{"name": "Kev"}"#).unwrap();
+        assert_eq!(Prefs::load_from(&path).last_hub, None);
+        std::fs::write(&path, r#"{"last_hub": "play.example.com:4100\u0007"}"#).unwrap();
+        assert_eq!(Prefs::load_from(&path).last_hub.as_deref(), Some("play.example.com:4100"));
+        std::fs::write(&path, r#"{"last_hub": "  "}"#).unwrap();
+        assert_eq!(Prefs::load_from(&path).last_hub, None);
         let _ = std::fs::remove_dir_all(dir);
     }
 }

@@ -53,7 +53,7 @@ impl TextRules {
     pub const ANY: TextRules = TextRules { max: 60, charset: Charset::Any };
     pub const NAME: TextRules = TextRules { max: 16, charset: Charset::Any };
     pub const ADDRESS: TextRules = TextRules { max: 60, charset: Charset::Address };
-    pub const ROOM: TextRules = TextRules { max: crate::hub_client::MAX_NAME_CHARS, charset: Charset::RoomName };
+    pub const ROOM: TextRules = TextRules { max: vesper3d::viewer::netplay::hub::wire::MAX_NAME_CHARS, charset: Charset::RoomName };
 }
 
 /// Turn what the clipboard holds into what may be inserted into a field that already has `have` characters: the first
@@ -456,7 +456,7 @@ mod tests {
         assert_eq!(sanitize_paste(" Kevin's room-2 <b>", 0, TextRules::ROOM), "Kevin's room-2 b");
         assert_eq!(
             sanitize_paste(&"x".repeat(60), 0, TextRules::ROOM).chars().count(),
-            crate::hub_client::MAX_NAME_CHARS
+            vesper3d::viewer::netplay::hub::wire::MAX_NAME_CHARS
         );
         // The cut never leaves trailing space.
         assert_eq!(sanitize_paste("ab cd", 0, TextRules { max: 3, charset: Charset::Any }), "ab");

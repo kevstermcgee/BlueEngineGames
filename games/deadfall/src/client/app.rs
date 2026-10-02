@@ -19,12 +19,12 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use vesper3d::math::V;
 use vesper3d::viewer::{
-    devkit::{flag_value, has_flag, ShadowQuality},
+    devkit::{flag_value, has_flag, ServerOrigin, ShadowQuality},
     game_client::{self, GameShell},
     game_input::ClientInput,
     kit::{capture, hud, View},
     net::{client_transport, server_transport, AnyTransport, TransportProfile},
-    netplay::{ClientConfig, ClientState, NetClient, NetServer, ServerConfig},
+    netplay::{hub, ClientConfig, ClientState, NetClient, NetServer, ServerConfig},
 };
 
 const PORT: u16 = 4100;
@@ -173,6 +173,8 @@ pub struct App {
     results_menu: Menu,
     // Play Online.
     hub_spec: String,
+    /// Where `hub_spec` came from: only a hub the player named on the command line is remembered.
+    hub_origin: ServerOrigin,
     online: Option<Online>,
     online_menu: Menu,
     dialog_menu: Menu,
@@ -225,6 +227,7 @@ fn pick(options: &[u16], v: u16) -> usize {
 impl App {
     pub async fn new(args: &[String]) -> App {
         let prefs = Prefs::load();
+        let hub = hub::default_hub(flag_value(args, "--hub"), prefs.last_hub.as_deref());
         let level = crate::map();
         let mut renderer = Renderer::new(&level);
         // `--shadows off|simple|full` wins for this run without changing what is remembered.
@@ -260,7 +263,8 @@ impl App {
             join_items: Vec::new(),
             settings_items: Vec::new(),
             results_menu: Menu::new(),
-            hub_spec: flag_value(args, "--hub").map(str::to_string).unwrap_or_else(crate::hub_client::default_server),
+            hub_spec: hub.address,
+            hub_origin: hub.origin,
             online: None,
             online_menu: Menu::new(),
             dialog_menu: Menu::new(),
@@ -402,7 +406,7 @@ impl App {
     }
 
     fn open_online(&mut self) {
-        self.online = Some(Online::new(&self.hub_spec, self.now));
+        self.online = Some(online::open(&self.hub_spec, self.now));
         self.online_menu = Menu::new();
         self.online_on_row = false;
         self.screen = Screen::Online;
@@ -1388,6 +1392,15 @@ impl App {
                             s.client.ready(true);
                         }
                     }
+                    // A room joined on a hub the player named with --hub: use that hub again next time.
+                    if matches!(self.screen, Screen::Connecting | Screen::Waiting)
+                        && self.hub_origin == ServerOrigin::CliArg
+                        && self.last_join.as_ref().is_some_and(|t| t.room.is_some())
+                        && self.prefs.last_hub.as_deref() != Some(self.hub_spec.as_str())
+                    {
+                        self.prefs.last_hub = Some(self.hub_spec.clone());
+                        self.prefs.store();
+                    }
                     self.screen = Screen::Lobby;
                     if s.solo {
                         s.client.ready(true);
@@ -1408,12 +1421,11 @@ impl App {
                 }
             }
             ClientState::Rejected(why) => {
-                let (addr, from_list) = match &self.last_join {
-                    Some(t) => (t.addr.clone(), t.room.is_some()),
-                    None => ("the server".to_string(), false),
-                };
+                let from_list = self.last_join.as_ref().is_some_and(|t| t.room.is_some());
+                // The engine client says why (nobody answered, or the server's reason sorted into a case).
+                let failure = s.client.failure().unwrap_or_else(|| ConnectFailure::classify(&why));
                 self.session.take();
-                match online::classify_rejection(&why) {
+                match failure {
                     // The lobby takes us after this round: keep asking, quietly.
                     ConnectFailure::MatchInProgress if self.last_join.is_some() => {
                         if self.wait.is_none() {
@@ -1421,9 +1433,7 @@ impl App {
                         }
                         self.screen = Screen::Waiting;
                     }
-                    ConnectFailure::MatchInProgress => self.show_failure(online::refused_message(&why)),
-                    ConnectFailure::NoReply => self.show_failure(online::no_reply_message(&addr, from_list)),
-                    ConnectFailure::Refused(reason) => self.show_failure(online::refused_message(&reason)),
+                    other => self.show_failure(online::failure_message(&other, from_list)),
                 }
                 return;
             }
