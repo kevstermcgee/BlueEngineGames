@@ -1042,6 +1042,15 @@ pub fn describe(s: &Settings) -> String {
 mod tests {
     use super::*;
 
+    /// The join fingerprint of the shipped clients and the deployed server. A change to a weapon number, the map or
+    /// any wire layout changes it and locks every shipped client out: if this fails, either revert the change or
+    /// accept that the next release is a breaking one and update the pin on purpose.
+    #[test]
+    fn the_join_fingerprint_is_pinned() {
+        assert_eq!(fingerprint(), 0x2BAF_E9C8, "netgame::fingerprint() changed");
+        assert_eq!(<DeadfallGame as NetGame>::fingerprint(), fingerprint());
+    }
+
     #[test]
     fn replay_interpolates_the_recorded_victim_and_keeps_death_at_its_tick() {
         let (m, _) = Match::new(1, &[(0, "A".into()), (1, "B".into())], Settings { bots: false, ..Default::default() });
