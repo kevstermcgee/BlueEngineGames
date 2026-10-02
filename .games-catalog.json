@@ -1,6 +1,6 @@
 {
   "collections": {
-    "demos": 77,
+    "demos": 78,
     "games": 105,
     "prototypes": 10,
     "tests": 64
@@ -69,6 +69,10 @@
     {
       "path": "demos/examples/server_load.rs",
       "sha256": "bd1c1c122b71439de44ea97e4ac7331214dd5b540c057a2d8cee7feb513e0cc8"
+    },
+    {
+      "path": "demos/examples/shadow_demo.rs",
+      "sha256": "7b38d2f6eeeec69530964badd15ebf230eb84f9b2204fd2e093f9c743efe6709"
     },
     {
       "path": "demos/examples/validate_expanded_maps.rs",
@@ -1084,6 +1088,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "a785762f623ac62cb76720fdd9ee897de20d9713",
+  "source_revision": "8796c421be5fe00994fc1dc85bc82a307f655a88",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
