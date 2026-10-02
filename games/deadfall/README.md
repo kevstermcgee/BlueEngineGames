@@ -9,16 +9,22 @@ Everything (models, sounds, map) is generated in code; the game is one executabl
 
 ## Playing
 
+* **Play Online**: the easy way to play with friends. Both of you click **Play Online**: you see a list of rooms (the *Public*
+  room first, then rooms people made, with player counts and *Lobby* / *In match*). Click a room to join it, or **Create Room**,
+  name it, and your friend picks it from the same list. Nobody types an address or opens a router port. If a match is already
+  running the game says so and puts you in the next round. Both players need the same game version (the build id shows in the
+  corner of the main menu).
 * **Solo**: you and bots against bots. Pick your team, how the match ends and the bot skill.
-* **Host**: start a server on your computer for friends. By default **only the people who join play**; switch on *Bots fill the
+* **Host on this PC (advanced)**: start a server on your computer for friends. By default **only the people who join play**; switch on *Bots fill the
   teams* to fill both sides to six. Choose how the match ends: first team to N kills, or a time limit.
-* **Join**: type the host's address (`address:port`, the port defaults to 4100) and, if the host set one, the password. Pick your team
+* **Join by address (advanced)**: type or paste (Ctrl+V) the host's address (`address:port`, the port defaults to 4100) and, if the host set one, the password. Pick your team
   in the lobby, press **Ready**; the match starts when everyone is ready.
 * **Stats**: your lifetime kills, deaths, headshots, accuracy, matches, time played and more are kept on this computer.
 
 ### Playing with friends over the internet
 
-The host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
+Use **Play Online** (the rooms live on a hub that runs `deadfall-hub`; see `deploy/README.md`). `--hub HOST:PORT` or a `server.txt`
+next to the game picks another hub. Hosting on your own PC is the advanced route: the host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
 Tailscale or ZeroTier and use the VPN address). Friends join with the host's public address. The game's network layer is
 raw UDP with an optional password; it is meant for friends, not the open internet. A dedicated server also exists:
 `deadfall-server --listen 0.0.0.0:4100 [--kills 40 | --minutes 10] [--bots] [--skill 0|1|2]`.

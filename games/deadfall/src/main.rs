@@ -3,7 +3,8 @@
 //!   deadfall                          the menu
 //!   deadfall --solo                   start a solo match with bots at once
 //!   deadfall --connect HOST:PORT      join a server ([--name N] [--key K])
-//!   deadfall --capture DIR --frames 60,300 [--solo] [--screen stats|settings|host|join]
+//!   deadfall --hub HOST:PORT          use another room hub for Play Online (default: server.txt next to the game, else the built-in one)
+//!   deadfall --capture DIR --frames 60,300 [--solo] [--screen stats|settings|host|join|online]
 //!                                     save screenshots of those frames, then exit (for runs nobody watches)
 //!   --size WxH   --mute   --novsync
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]

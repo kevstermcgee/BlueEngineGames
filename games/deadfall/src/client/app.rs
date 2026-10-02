@@ -2,6 +2,7 @@
 //! sound together.
 use super::audio::{self, Sfx};
 use super::controls::Controls;
+use super::online::{self, Action, ConnectFailure, DialogPhase, JoinWait, Online, Pane, RetryStep};
 use super::overlay::{self, Feed};
 use super::render::{self, Figure, Renderer};
 use super::sound::{Audio, Listener};
@@ -35,12 +36,33 @@ enum Screen {
     Solo,
     Host,
     Join,
+    Online,
     Stats,
     Settings,
     Connecting,
+    /// A running match refused us; asking again every few seconds.
+    Waiting,
     Lobby,
     Playing,
     Error(String),
+    /// Joining a server failed: the message, with Retry.
+    ConnectFailed(String),
+}
+
+/// A room from the Play Online list, as the session and the lobby know it.
+#[derive(Clone, Debug, PartialEq)]
+struct RoomTag {
+    name: String,
+    public: bool,
+}
+
+/// Where a join goes, kept so Retry and the "match in progress" wait can ask again.
+#[derive(Clone, Debug, PartialEq)]
+struct JoinTarget {
+    addr: String,
+    key: String,
+    team: u8,
+    room: Option<RoomTag>,
 }
 
 /// A server running inside this process (solo and hosted games).
@@ -113,6 +135,8 @@ struct Session {
     over_handled: bool,
     solo: bool,
     hosting: Option<String>,
+    /// The Play Online room this session joined.
+    room: Option<RoomTag>,
     skins: [u8; 16],
     last_alive: bool,
     motion: render::ViewMotion,
@@ -145,6 +169,16 @@ pub struct App {
     join_items: Vec<Item>,
     settings_items: Vec<Item>,
     results_menu: Menu,
+    // Play Online.
+    hub_spec: String,
+    online: Option<Online>,
+    online_menu: Menu,
+    dialog_menu: Menu,
+    /// The highlight is on a room row (so it follows the room, not the position, when the list changes).
+    online_on_row: bool,
+    last_join: Option<JoinTarget>,
+    wait: Option<JoinWait>,
+    now: f64,
     vignette: Texture2D,
     play_seconds_unsaved: f32,
     // Capture and scripted runs.
@@ -208,12 +242,21 @@ impl App {
             host_port: PORT.to_string(),
             host_key: prefs.key.clone(),
             join_addr: prefs.address.clone(),
-            join_key: prefs.key.clone(),
+            // A password is never carried over from what was typed or hosted before.
+            join_key: String::new(),
             solo_items: Vec::new(),
             host_items: Vec::new(),
             join_items: Vec::new(),
             settings_items: Vec::new(),
             results_menu: Menu::new(),
+            hub_spec: flag_value(args, "--hub").map(str::to_string).unwrap_or_else(crate::hub_client::default_server),
+            online: None,
+            online_menu: Menu::new(),
+            dialog_menu: Menu::new(),
+            online_on_row: false,
+            last_join: None,
+            wait: None,
+            now: 0.,
             vignette,
             play_seconds_unsaved: 0.,
             capture_dir: flag_value(args, "--capture").map(Into::into),
@@ -240,6 +283,7 @@ impl App {
             Some("solo") => app.screen = Screen::Solo,
             Some("host") => app.screen = Screen::Host,
             Some("join") => app.screen = Screen::Join,
+            Some("online") => app.open_online(),
             _ => {}
         }
         if has_flag(args, "--solo") {
@@ -333,8 +377,35 @@ impl App {
         }
         self.audio.clear_match_state();
         self.renderer.clear_match();
+        self.last_join = None;
+        self.wait = None;
+        self.online = None;
         self.screen = Screen::Main;
         self.rebuild_items();
+    }
+
+    fn open_online(&mut self) {
+        self.online = Some(Online::new(&self.hub_spec, self.now));
+        self.online_menu = Menu::new();
+        self.online_on_row = false;
+        self.screen = Screen::Online;
+    }
+
+    /// Join a game server somewhere else (a room from the list, or an address typed in). Remembers where, so Retry and
+    /// the wait for a running match can ask again.
+    fn join(&mut self, target: JoinTarget) {
+        self.last_join = Some(target.clone());
+        self.connect(&target.addr, &target.key, target.team, None, false, None);
+        if let Some(s) = self.session.as_mut() {
+            s.room = target.room;
+        }
+    }
+
+    /// Show why joining failed: with Retry when there is somewhere to retry.
+    fn show_failure(&mut self, message: String) {
+        self.wait = None;
+        self.session = None;
+        self.screen = if self.last_join.is_some() { Screen::ConnectFailed(message) } else { Screen::Error(message) };
     }
 
     /// Fold the match into the lifetime stats (once) and store them.
@@ -357,7 +428,7 @@ impl App {
         let target = if addr.contains(':') { addr.to_string() } else { format!("{addr}:{PORT}") };
         let resolved = target.to_socket_addrs().ok().and_then(|mut a| a.next());
         let Some(address) = resolved else {
-            self.screen = Screen::Error(format!("Cannot find a server at {target}"));
+            self.show_failure(format!("Cannot find a server at {target}"));
             return;
         };
         let name = self.prefs.display_name();
@@ -385,6 +456,7 @@ impl App {
                     over_handled: false,
                     solo,
                     hosting,
+                    room: None,
                     skins,
                     last_alive: false,
                     motion: render::ViewMotion::default(),
@@ -393,9 +465,9 @@ impl App {
                     kills_by_me: Vec::new(),
                     died_by_headshot: false,
                 });
-                self.screen = Screen::Connecting;
+                self.screen = if self.wait.is_some() { Screen::Waiting } else { Screen::Connecting };
             }
-            Err(e) => self.screen = Screen::Error(format!("Could not start the network: {e}")),
+            Err(e) => self.show_failure(format!("Could not start the network: {e}")),
         }
     }
 
@@ -403,6 +475,7 @@ impl App {
         let team = if let Some(Item::Choice(_, _, t)) = items.first() { *t as u8 } else { 0 };
         let (by_time, kills, minutes) = self.settings_from(items, 1, 2);
         let skill = if let Some(Item::Choice(_, _, s)) = items.get(3) { *s as u8 } else { 1 };
+        self.last_join = None;
         self.prefs.team = team;
         self.prefs.end_by_time = by_time;
         self.prefs.kills_target = kills;
@@ -436,6 +509,7 @@ impl App {
         let bots = matches!(items.get(5), Some(Item::Toggle(_, true)));
         let skill = if let Some(Item::Choice(_, _, s)) = items.get(6) { *s as u8 } else { 1 };
         let port: u16 = self.host_port.trim().parse().unwrap_or(PORT);
+        self.last_join = None;
         self.prefs.team = team;
         self.prefs.end_by_time = by_time;
         self.prefs.kills_target = kills;
@@ -459,7 +533,7 @@ impl App {
         };
         match LocalServer::start(&format!("0.0.0.0:{port}"), cfg, settings) {
             Ok(server) => {
-                let hint = format!("Friends join: {}:{}", local_ip(), port);
+                let hint = format!("Same Wi-Fi/LAN only: {}:{}", local_ip(), port);
                 self.connect(&format!("127.0.0.1:{port}"), &key, team, Some(server), false, Some(hint));
             }
             Err(e) => self.screen = Screen::Error(format!("{e} (is port {port} already in use?)")),
@@ -495,6 +569,7 @@ impl App {
         }
         let dt = self.input.frame_seconds();
         self.time += dt;
+        self.now = now;
         self.audio.poll().await;
         let mut nav =
             Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
@@ -513,11 +588,27 @@ impl App {
                     self.start_solo(&items);
                 }
                 Screen::Join => {
-                    let (a, k) = (self.join_addr.clone(), self.join_key.clone());
-                    self.connect(&a, &k, self.prefs.team, None, false, None);
+                    let target = JoinTarget {
+                        addr: self.join_addr.clone(),
+                        key: self.join_key.clone(),
+                        team: self.prefs.team,
+                        room: None,
+                    };
+                    self.join(target);
                 }
                 _ => {}
             }
+        }
+        if self.screen == Screen::Online {
+            if let Some(Action::Join { addr, room }) = self.online.as_mut().and_then(|o| o.update(now)) {
+                self.online = None;
+                let team = self.prefs.team;
+                let room = RoomTag { name: room.name, public: room.public };
+                self.join(JoinTarget { addr: addr.to_string(), key: String::new(), team, room: Some(room) });
+            }
+        }
+        if self.screen == Screen::Waiting && self.session.is_none() {
+            self.retry_waiting(now);
         }
         if self.session.is_some() {
             self.pump_session(now, dt);
@@ -526,6 +617,7 @@ impl App {
             Screen::Playing => self.frame_match(now, dt, &nav),
             Screen::Lobby => self.frame_lobby(&nav, dt),
             Screen::Connecting => self.frame_connecting(&nav, dt),
+            Screen::Waiting => self.frame_waiting(&nav, dt),
             other => self.frame_menu(other, &nav, dt),
         }
         // Screenshots for runs nobody can watch.
@@ -586,31 +678,34 @@ impl App {
             Screen::Main => {
                 self.title("team deathmatch");
                 let mut items = vec![
+                    Item::Button("Play Online".into()),
                     Item::Button("Solo".into()),
-                    Item::Button("Host".into()),
-                    Item::Button("Join".into()),
+                    Item::Button("Host on this PC (advanced)".into()),
+                    Item::Button("Join by address (advanced)".into()),
                     Item::Button("Stats".into()),
                     Item::Button("Settings".into()),
                     Item::Button("Quit".into()),
                 ];
-                let hit = self.menu.run(nav, &mut items, cx, 210., 380., dt);
+                let hit = self.menu.run(nav, &mut items, cx, 210., 440., dt);
+                self.draw_build_label();
                 if let Hit::Item(i) = hit {
                     self.audio.ui(Sfx::MenuConfirm, 0.5);
                     match i {
-                        0 => {
+                        0 => self.open_online(),
+                        1 => {
                             self.rebuild_items();
                             self.screen = Screen::Solo
                         }
-                        1 => {
+                        2 => {
                             self.rebuild_items();
                             self.screen = Screen::Host
                         }
-                        2 => {
+                        3 => {
                             self.rebuild_items();
                             self.screen = Screen::Join
                         }
-                        3 => self.screen = Screen::Stats,
-                        4 => {
+                        4 => self.screen = Screen::Stats,
+                        5 => {
                             self.rebuild_items();
                             self.screen = Screen::Settings
                         }
@@ -646,7 +741,7 @@ impl App {
                 if let Some(Item::Text(_, v, _, _)) = items.get(1) {
                     self.host_key = v.clone();
                 }
-                hud::text_centered("Friends need your address and this UDP port forwarded on your router (or a VPN such as Tailscale).", cx, screen_height() - 14. * ui, 17. * ui, DIM);
+                hud::text_centered("Friends far away? Use Play Online: no router setup. A hosted game needs this UDP port forwarded on your router.", cx, screen_height() - 14. * ui, 17. * ui, DIM);
                 match hit {
                     Hit::Item(8) => {
                         self.audio.ui(Sfx::MenuConfirm, 0.5);
@@ -675,8 +770,9 @@ impl App {
                         self.prefs.team = team;
                         self.save_prefs();
                         self.audio.ui(Sfx::MenuConfirm, 0.5);
-                        let (a, k) = (self.join_addr.clone(), self.join_key.clone());
-                        self.connect(&a, &k, team, None, false, None);
+                        let target =
+                            JoinTarget { addr: self.join_addr.clone(), key: self.join_key.clone(), team, room: None };
+                        self.join(target);
                     }
                     Hit::Item(5) | Hit::Back => back(self),
                     _ => {}
@@ -730,16 +826,40 @@ impl App {
             }
             Screen::Error(message) => {
                 self.title("");
-                hud::text_centered(&message, cx, screen_height() * 0.45, 26. * ui, Color::new(1., 0.55, 0.5, 1.));
+                let top = self.draw_failure(&message);
                 let mut items = vec![Item::Button("Back".into())];
-                if matches!(
-                    self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt),
-                    Hit::Item(_) | Hit::Back
-                ) {
+                if matches!(self.menu.run(nav, &mut items, cx, top, 300., dt), Hit::Item(_) | Hit::Back) {
                     back(self);
                 }
             }
-            Screen::Connecting | Screen::Lobby | Screen::Playing => {}
+            Screen::ConnectFailed(message) => {
+                self.title("");
+                let top = self.draw_failure(&message);
+                let mut items = vec![Item::Button("Retry".into()), Item::Button("Back".into())];
+                match self.menu.run(nav, &mut items, cx, top, 300., dt) {
+                    Hit::Item(0) => {
+                        self.audio.ui(Sfx::MenuConfirm, 0.5);
+                        if let Some(target) = self.last_join.clone() {
+                            self.join(target);
+                        } else {
+                            back(self);
+                        }
+                    }
+                    Hit::Item(_) | Hit::Back => {
+                        // A failed room goes back to the room list, an address back to the main menu.
+                        let from_list = self.last_join.take().is_some_and(|t| t.room.is_some());
+                        if from_list {
+                            self.audio.ui(Sfx::MenuBack, 0.5);
+                            self.open_online();
+                        } else {
+                            back(self);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            Screen::Online => self.frame_online(nav, dt),
+            Screen::Connecting | Screen::Waiting | Screen::Lobby | Screen::Playing => {}
         }
     }
 
@@ -787,13 +907,324 @@ impl App {
         hud::text_centered("press any key to go back", cx, 650. * ui, 18. * ui, DIM);
     }
 
+    /// The build id in the corner, so two players can see at a glance whether they run the same version.
+    fn draw_build_label(&self) {
+        let ui = hud::ui_scale();
+        let mut c = DIM;
+        c.a = 0.7;
+        hud::text_right(
+            &online::build_label(online::local_build()),
+            screen_width() - 14. * ui,
+            screen_height() - 12. * ui,
+            15. * ui,
+            c,
+        );
+    }
+
+    /// A failure message wrapped in the middle of the screen; returns where the buttons under it go (in 720p units).
+    fn draw_failure(&self, message: &str) -> f32 {
+        let ui = hud::ui_scale();
+        let cx = screen_width() * 0.5;
+        let size = 26. * ui;
+        let lines = ui::wrap(message, (screen_width() - 120. * ui).min(900. * ui), size);
+        let y0 = screen_height() * 0.38;
+        for (i, line) in lines.iter().enumerate() {
+            hud::text_centered(line, cx, y0 + i as f32 * 36. * ui, size, Color::new(1., 0.55, 0.5, 1.));
+        }
+        (y0 + lines.len() as f32 * 36. * ui + 24. * ui) / ui
+    }
+
+    /// Play Online: the room list, or what stands in its way.
+    fn frame_online(&mut self, nav: &Nav, dt: f32) {
+        let ui = hud::ui_scale();
+        let cx = screen_width() * 0.5;
+        let warn = Color::new(1., 0.55, 0.5, 1.);
+        self.title("play online");
+        self.draw_build_label();
+        let Some(mut online) = self.online.take() else {
+            self.screen = Screen::Main;
+            return;
+        };
+        if online.dialog.is_some() {
+            self.frame_create_dialog(&mut online, nav, dt);
+            self.online = Some(online);
+            return;
+        }
+        let visible = online::visible_rows(screen_height(), ui);
+        let mismatch = online.mismatch();
+        let selectable = online.can_join();
+        let total = online.rooms.len();
+        let showing_rooms = online.view == Pane::Rooms && total > 0;
+        // Rows (a window onto the list) first, then the buttons.
+        let mut nav = nav.clone();
+        let mut sel_idx =
+            online.selected.as_ref().and_then(|n| online.rooms.iter().position(|r| &r.name == n)).unwrap_or(0);
+        let mut offset = online::scroll_to(sel_idx, online.offset, visible, total);
+        let mut nrows = if showing_rooms { visible.min(total) } else { 0 };
+        if showing_rooms && selectable && self.online_on_row {
+            // The highlight rides the room, not the screen position, across refreshes and scrolling.
+            let local = sel_idx - offset;
+            if nav.down && local + 1 == nrows && offset + nrows < total {
+                sel_idx += 1;
+                nav.down = false;
+            } else if nav.up && local == 0 && offset > 0 {
+                sel_idx -= 1;
+                nav.up = false;
+            }
+            offset = online::scroll_to(sel_idx, offset, visible, total);
+            self.online_menu.sel = sel_idx - offset;
+        }
+        nrows = nrows.min(total.saturating_sub(offset));
+        let mut items: Vec<Item> = Vec::new();
+        if showing_rooms {
+            for r in &online.rooms[offset..offset + nrows] {
+                let status = online::room_status(r);
+                items.push(if selectable {
+                    Item::Row(r.name.clone(), status)
+                } else {
+                    Item::Label(format!("{}    {status}", r.name))
+                });
+            }
+        }
+        items.push(Item::Gap);
+        #[derive(Clone, Copy, PartialEq)]
+        enum Btn {
+            Join,
+            Create,
+            Refresh,
+            Retry,
+            Address,
+            Back,
+        }
+        let buttons: Vec<(Btn, &str)> = match &online.view {
+            Pane::Looking => vec![(Btn::Back, "Back")],
+            Pane::Rooms if mismatch => vec![(Btn::Refresh, "Refresh"), (Btn::Back, "Back")],
+            Pane::Rooms => {
+                vec![(Btn::Join, "Join"), (Btn::Create, "Create Room"), (Btn::Refresh, "Refresh"), (Btn::Back, "Back")]
+            }
+            Pane::Offline | Pane::Problem(_) => {
+                vec![(Btn::Retry, "Retry"), (Btn::Address, "Join by address"), (Btn::Back, "Back")]
+            }
+        };
+        items.extend(buttons.iter().map(|(_, t)| Item::Button((*t).to_string())));
+        // The message above the list.
+        let mut top = 215.;
+        let say = |text: &str, size: f32, c: Color, top: &mut f32| {
+            for line in ui::wrap(text, (screen_width() - 120. * ui).min(900. * ui), size * ui) {
+                hud::text_centered(&line, cx, (*top - 10.) * ui, size * ui, c);
+                *top += size * 1.4;
+            }
+        };
+        match &online.view {
+            Pane::Looking => say("Looking for games...", 28., TEXT, &mut top),
+            Pane::Rooms if mismatch => say(online::UPDATE_TEXT, 26., warn, &mut top),
+            Pane::Rooms => {}
+            Pane::Offline => {
+                say(
+                    "Can't reach the Deadfall servers right now. Check your internet connection, then Retry.",
+                    26.,
+                    warn,
+                    &mut top,
+                );
+                if let Some(d) = &online.detail {
+                    say(d, 18., DIM, &mut top);
+                } else {
+                    say(&format!("({})", online.hub_spec()), 18., DIM, &mut top);
+                }
+                top += 14.;
+            }
+            Pane::Problem(text) => {
+                say(text, 26., warn, &mut top);
+                top += 14.;
+            }
+        }
+        if mismatch {
+            top += 6.;
+        }
+        let list_top = top;
+        let hit = self.online_menu.run(&nav, &mut items, cx, list_top, 680., dt);
+        // Remember the highlighted room by name.
+        if self.online_menu.sel < nrows && selectable {
+            sel_idx = offset + self.online_menu.sel;
+            online.selected = online.rooms.get(sel_idx).map(|r| r.name.clone());
+            self.online_on_row = true;
+        } else {
+            self.online_on_row = false;
+        }
+        online.offset = offset;
+        if showing_rooms && total > nrows {
+            let below = total - offset - nrows;
+            let text = format!("{} more above, {} more below", offset, below);
+            hud::text_centered(&text, cx, (list_top + nrows as f32 * 46. + 14.) * ui, 15. * ui, DIM);
+        }
+        let mut action = None;
+        if let Hit::Item(i) = hit {
+            self.audio.ui(Sfx::MenuConfirm, 0.5);
+            if i < nrows {
+                action = online.join_index(offset + i);
+            } else if let Some((btn, _)) = i.checked_sub(nrows + 1).and_then(|k| buttons.get(k)) {
+                match btn {
+                    Btn::Join => action = online.join_selected(),
+                    Btn::Create => {
+                        online.open_dialog(&self.prefs.display_name());
+                        self.dialog_menu = Menu::new();
+                    }
+                    Btn::Refresh | Btn::Retry => online.refresh(self.now),
+                    Btn::Address => {
+                        self.online = None;
+                        self.rebuild_items();
+                        self.screen = Screen::Join;
+                        return;
+                    }
+                    Btn::Back => {
+                        self.audio.ui(Sfx::MenuBack, 0.5);
+                        self.screen = Screen::Main;
+                        return;
+                    }
+                }
+            }
+        } else if hit == Hit::Back {
+            self.audio.ui(Sfx::MenuBack, 0.5);
+            self.screen = Screen::Main;
+            return;
+        }
+        if let Some(Action::Join { addr, room }) = action {
+            let team = self.prefs.team;
+            let room = RoomTag { name: room.name, public: room.public };
+            self.join(JoinTarget { addr: addr.to_string(), key: String::new(), team, room: Some(room) });
+            return;
+        }
+        self.online = Some(online);
+    }
+
+    /// The Create Room box, drawn over the dimmed menu background.
+    fn frame_create_dialog(&mut self, online: &mut Online, nav: &Nav, dt: f32) {
+        let ui = hud::ui_scale();
+        let cx = screen_width() * 0.5;
+        let w = 700. * ui;
+        let y = 215. * ui;
+        draw_rectangle(0., 0., screen_width(), screen_height(), Color::new(0., 0., 0., 0.35));
+        ui::panel(cx - w * 0.5, y, w, 330. * ui, "CREATE A ROOM");
+        hud::text_centered(
+            "Friends will see this name under Play Online and join with one click.",
+            cx,
+            y + 62. * ui,
+            19. * ui,
+            DIM,
+        );
+        let Some(dialog) = online.dialog.as_mut() else { return };
+        let mut close = false;
+        match dialog.phase {
+            DialogPhase::Editing => {
+                let mut items = vec![
+                    Item::Text("Room name".into(), dialog.name.clone(), "name", TextRules::ROOM),
+                    Item::Gap,
+                    Item::Button("Create".into()),
+                    Item::Button("Cancel".into()),
+                ];
+                let enter_in_field = nav.accept && self.dialog_menu.sel == 0;
+                let hit = self.dialog_menu.run(nav, &mut items, cx, y / ui + 84., 640., dt);
+                if let Some(Item::Text(_, v, _, _)) = items.first() {
+                    if *v != dialog.name {
+                        dialog.name = v.clone();
+                        dialog.error = None;
+                    }
+                }
+                if let Some(e) = &dialog.error {
+                    for (i, line) in ui::wrap(e, w - 60. * ui, 19. * ui).iter().enumerate() {
+                        hud::text_centered(
+                            line,
+                            cx,
+                            y + 292. * ui + i as f32 * 24. * ui,
+                            19. * ui,
+                            Color::new(1., 0.55, 0.5, 1.),
+                        );
+                    }
+                }
+                match hit {
+                    Hit::Item(2) => {
+                        self.audio.ui(Sfx::MenuConfirm, 0.5);
+                        online.create();
+                    }
+                    Hit::Item(3) | Hit::Back => close = true,
+                    _ if enter_in_field => online.create(),
+                    _ => {}
+                }
+            }
+            DialogPhase::Creating => {
+                let dots = ".".repeat(1 + (self.time * 2.) as usize % 3);
+                hud::text_centered(&format!("Creating your room{dots}"), cx, y + 120. * ui, 28. * ui, TEXT);
+                let mut items = vec![Item::Button("Cancel".into())];
+                if matches!(
+                    self.dialog_menu.run(nav, &mut items, cx, y / ui + 150., 300., dt),
+                    Hit::Item(_) | Hit::Back
+                ) {
+                    close = true;
+                }
+            }
+        }
+        if close {
+            self.audio.ui(Sfx::MenuBack, 0.5);
+            online.close_dialog();
+        }
+    }
+
+    /// "A match is running": ask the lobby again on schedule.
+    fn retry_waiting(&mut self, now: f64) {
+        let Some(wait) = self.wait.as_mut() else { return };
+        match wait.step(now) {
+            RetryStep::Wait => {}
+            RetryStep::TryNow => {
+                wait.attempted(now);
+                match self.last_join.clone() {
+                    Some(target) => self.join(target),
+                    None => self.wait = None,
+                }
+            }
+            RetryStep::GiveUp => {
+                self.show_failure("The match is still running. Try again in a little while.".into());
+            }
+        }
+    }
+
+    fn frame_waiting(&mut self, nav: &Nav, dt: f32) {
+        self.backdrop(dt);
+        let ui = hud::ui_scale();
+        let cx = screen_width() * 0.5;
+        self.title("");
+        hud::text_centered(
+            "A match is running. You'll be in the next round.",
+            cx,
+            screen_height() * 0.43,
+            30. * ui,
+            TEXT,
+        );
+        let dots = ".".repeat(1 + (self.time * 2.) as usize % 3);
+        hud::text_centered(
+            &format!("Trying again every few seconds{dots}"),
+            cx,
+            screen_height() * 0.43 + 40. * ui,
+            20. * ui,
+            DIM,
+        );
+        let mut items = vec![Item::Button("Cancel".into())];
+        if matches!(self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt), Hit::Item(_) | Hit::Back)
+        {
+            self.leave();
+        }
+    }
+
     fn frame_connecting(&mut self, nav: &Nav, dt: f32) {
         self.backdrop(dt);
         let ui = hud::ui_scale();
         let cx = screen_width() * 0.5;
         self.title("");
         let dots = ".".repeat(1 + (self.time * 2.) as usize % 3);
-        hud::text_centered(&format!("Connecting{dots}"), cx, screen_height() * 0.45, 30. * ui, TEXT);
+        let what = match self.session.as_ref().and_then(|s| s.room.as_ref()) {
+            Some(room) => format!("Connecting to {}{dots}", room.name),
+            None => format!("Connecting{dots}"),
+        };
+        hud::text_centered(&what, cx, screen_height() * 0.45, 30. * ui, TEXT);
         let mut items = vec![Item::Button("Cancel".into())];
         if matches!(self.menu.run(nav, &mut items, cx, screen_height() / ui * 0.55, 300., dt), Hit::Item(_) | Hit::Back)
         {
@@ -805,7 +1236,31 @@ impl App {
         self.backdrop(dt);
         let ui = hud::ui_scale();
         let cx = screen_width() * 0.5;
-        self.title("lobby");
+        let Some(session) = self.session.as_mut() else { return };
+        let room = session.room.clone();
+        match &room {
+            Some(r) if !r.public => {
+                self.title(&format!("Room: {}", r.name));
+                hud::text_centered(
+                    &format!("Friends: open Deadfall > Play Online > pick '{}'", r.name),
+                    cx,
+                    184. * ui,
+                    19. * ui,
+                    ACCENT,
+                );
+            }
+            Some(_) => {
+                self.title("Public room");
+                hud::text_centered(
+                    "Public room: anyone who clicks Play Online lands here",
+                    cx,
+                    184. * ui,
+                    19. * ui,
+                    ACCENT,
+                );
+            }
+            None => self.title("lobby"),
+        }
         let Some(session) = self.session.as_mut() else { return };
         let lobby = session.client.lobby().cloned();
         let me = session.client.seat();
@@ -815,7 +1270,7 @@ impl App {
         let ready = mine.as_ref().is_some_and(|e| e.ready);
         // Team columns, sized to the window.
         let w = 340. * ui;
-        let py = 190. * ui;
+        let py = if room.is_some() { 200. * ui } else { 190. * ui };
         let ph = (screen_height() - py - 250. * ui).max(150. * ui);
         let mut counts = [0usize; 2];
         for t in 0..2 {
@@ -895,7 +1350,8 @@ impl App {
         match s.client.state().clone() {
             ClientState::Connecting => {}
             ClientState::Lobby => {
-                if self.screen == Screen::Connecting || self.screen == Screen::Playing {
+                if matches!(self.screen, Screen::Connecting | Screen::Waiting | Screen::Playing) {
+                    self.wait = None;
                     if self.screen == Screen::Playing {
                         // Back from the results.
                         s.tracker = MatchTracker::new(None);
@@ -927,9 +1383,23 @@ impl App {
                 }
             }
             ClientState::Rejected(why) => {
-                let msg = format!("The server turned you away: {why}");
+                let (addr, from_list) = match &self.last_join {
+                    Some(t) => (t.addr.clone(), t.room.is_some()),
+                    None => ("the server".to_string(), false),
+                };
                 self.session.take();
-                self.screen = Screen::Error(msg);
+                match online::classify_rejection(&why) {
+                    // The lobby takes us after this round: keep asking, quietly.
+                    ConnectFailure::MatchInProgress if self.last_join.is_some() => {
+                        if self.wait.is_none() {
+                            self.wait = Some(JoinWait::new(now));
+                        }
+                        self.screen = Screen::Waiting;
+                    }
+                    ConnectFailure::MatchInProgress => self.show_failure(online::refused_message(&why)),
+                    ConnectFailure::NoReply => self.show_failure(online::no_reply_message(&addr, from_list)),
+                    ConnectFailure::Refused(reason) => self.show_failure(online::refused_message(&reason)),
+                }
                 return;
             }
             ClientState::Disconnected(why) => {
@@ -937,7 +1407,7 @@ impl App {
                 if let Some(mut sess) = self.session.take() {
                     self.flush_match(&mut sess, None);
                 }
-                self.screen = Screen::Error(msg);
+                self.show_failure(msg);
                 return;
             }
         }
