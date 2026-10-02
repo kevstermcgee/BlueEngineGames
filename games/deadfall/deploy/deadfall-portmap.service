@@ -1,0 +1,13 @@
+[Unit]
+Description=Renew Deadfall's temporary UPnP router mappings (UDP 4100-4107)
+After=network-online.target deadfall-hub.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# blue_portmap.py maps one port per call (3600 s lease, only ever touches its own mappings), so loop over the range.
+# Every port is attempted; the unit fails if any one failed. "$$" is systemd's escape for a shell "$".
+# If you change --base-port or --max-rooms in deadfall-hub.service, change the range here to base .. base+1+max-rooms.
+ExecStart=/bin/sh -c 'rc=0; for p in $$(seq 4100 4107); do /usr/bin/python3 %h/deadfall/blue_portmap.py enable --port "$$p" || rc=1; done; exit "$$rc"'
+NoNewPrivileges=true
+UMask=0077
