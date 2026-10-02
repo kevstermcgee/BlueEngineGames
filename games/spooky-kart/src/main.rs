@@ -5,6 +5,12 @@
 //!   --script "fwd:0-400,left:60-120,drift:60-120,perk@200"   drive the human input path from a cue script
 //!   --autopilot   the bots' driving logic steers your kart (for captures and load tests)
 //!   --connect HOST:PORT   join a Spooky Kart server ([--transport development|production] [--name N] [--join-key K] [--auto-ready])
+//!   --hub HOST:PORT   the hub that Play Online asks for rooms (else hub.txt beside the exe, else the last hub used,
+//!                     else the public one); P (or Y on a controller) on the select screen opens it
+//!   --screen online|create   open on Play Online (create: with the Create Room box open) [--join-room NAME|public]
+//!                     [--create-room NAME]: join or make a room as soon as the list arrives (for captures and tests)
+//!                     [--online-script "30:down,60:enter,90:type=Hi_there"]: press keys on given frames (cues: up, down,
+//!                     left, right, tab, enter, space, backspace, back, type=TEXT, erase=N)
 //!   --debug-input   print the input gate and held state once a second (for "my keys do nothing" reports)
 //!   --select   open on the character select screen even when capturing
 //!   --character NAME   start a race at once as this driver (any part of the name: ghost, frank, ...)
@@ -20,6 +26,7 @@ mod models;
 mod platform;
 
 use macroquad::prelude::*;
+use spooky_kart::online::{self, Btn, RoomTag};
 use spooky_kart::{
     controls::{self, Raw},
     music,
@@ -27,12 +34,12 @@ use spooky_kart::{
     Character, Difficulty, Driver, Event, HazardKind, Inputs, Kart, KartGame, KartInput, Perk, Phase, Sim, ALL, LAPS,
     MAX_RACERS,
 };
-use std::net::ToSocketAddrs;
+use std::net::{SocketAddr, ToSocketAddrs};
 use std::sync::{Arc, OnceLock};
 use vesper3d::viewer::{
     devkit::{
-        beside_exe, downloads_dir, flag_value, has_flag, parse_size, sanitize_filename, synth, unique_path, Juice,
-        Lifecycle, Notice, Settings, ShadowQuality,
+        beside_exe, downloads_dir, flag_value, has_flag, parse_size, sanitize_filename, synth, unique_path, CharFilter,
+        Juice, Lifecycle, MenuStep, Notice, ServerOrigin, Settings, ShadowQuality, TextField,
     },
     game_client::{self, AudioMenu, GameShell},
     game_input::ClientInput,
@@ -40,7 +47,14 @@ use vesper3d::viewer::{
     identity::Identity,
     kit::{self, hud, Batch, Fx, Look, Materials, Rendered, Shadows, SoundBank, Template, Tint, View},
     net::{client_transport, AnyTransport, TransportProfile},
-    netplay::{ClientConfig, ClientState, NetClient},
+    netplay::{
+        hub::{
+            self,
+            client::{scroll_to, Action, DialogPhase, JoinWait, Online, Pane, RetryStep},
+            wire::{RoomInfo, MAX_NAME_CHARS},
+        },
+        ClientConfig, ClientState, ConnectFailure, NetClient,
+    },
 };
 
 /// Title, tagline and controls live in one file, shared with the build script and `scripts/ship.py`.
@@ -354,6 +368,8 @@ type Client = NetClient<KartGame, AnyTransport>;
 
 enum Screen {
     Select,
+    /// Play Online: the hub's room list and the Create Room box.
+    Online,
     Lobby,
     Race,
 }
@@ -657,14 +673,22 @@ fn draw_race_hud(sim: &Sim, me: usize, view: &View, ui: f32) {
 }
 
 /// The networked lobby: the driver picker plus who is here and what the server says.
-fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32) {
+fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32, room: Option<&RoomCtx>) {
     let (w, h) = (screen_width(), screen_height());
-    let prompt = if my_ready {
-        "Ready! Enter or A to un-ready    O: practice offline"
-    } else {
-        "A / D or left stick to choose    Enter or A when ready    O: practice offline"
+    let prompt = match (my_ready, room.is_some()) {
+        (true, false) => "Ready! Enter or A to un-ready    O: practice offline",
+        (false, false) => "A / D or left stick to choose    Enter or A when ready    O: practice offline",
+        (true, true) => "Ready! Enter or A to un-ready    Backspace or B: other rooms    O: practice offline",
+        (false, true) => "A / D: driver    Enter or A: ready    Backspace or B: other rooms    O: practice offline",
     };
     draw_select(choice, time, ui, prompt, None);
+    if let Some(ctx) = room {
+        let (name, friends) = ctx.tag.lobby_lines();
+        hud::text_centered(&name, w * 0.5, 134. * ui, 24. * ui, hud::col([1., 0.85, 0.4], 1.));
+        if let Some(friends) = friends {
+            hud::text_centered(&friends, w * 0.5, 160. * ui, 17. * ui, hud::col([0.8, 0.7, 1.], 1.));
+        }
+    }
     let (pw, px, py) = (330. * ui, w - 370. * ui, h * 0.5 - 130. * ui);
     hud::panel(px, py, pw, 300. * ui, 14. * ui, Color::new(0.05, 0.02, 0.12, 0.75));
     match client.state() {
@@ -672,17 +696,24 @@ fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32
             hud::text_outlined("Connecting...", px + 20. * ui, py + 44. * ui, 26. * ui, hud::col([1., 0.8, 0.3], 1.))
         }
         ClientState::Rejected(why) | ClientState::Disconnected(why) => {
-            hud::text_outlined("Cannot play", px + 20. * ui, py + 44. * ui, 26. * ui, hud::col([1., 0.4, 0.4], 1.));
-            for (i, line) in hud::wrap(why, pw - 40. * ui, 18. * ui).iter().enumerate() {
+            let failure = client.failure();
+            let waiting = room.is_some_and(|r| r.wait.is_some());
+            let view = online::failure_view(failure.as_ref(), why, room.is_some(), waiting);
+            let title_tint = if view.waiting { [1., 0.8, 0.3] } else { [1., 0.4, 0.4] };
+            hud::text_outlined(view.title, px + 20. * ui, py + 44. * ui, 26. * ui, hud::col(title_tint, 1.));
+            for (i, line) in hud::wrap(&view.text, pw - 40. * ui, 18. * ui).iter().enumerate() {
                 hud::text_outlined(line, px + 20. * ui, py + 76. * ui + i as f32 * 22. * ui, 18. * ui, WHITE);
             }
-            hud::text_outlined(
-                "Enter or O: practice offline",
-                px + 20. * ui,
-                py + 260. * ui,
-                16. * ui,
-                hud::col([1., 0.9, 0.5], 1.),
-            );
+            let (footer, footer2) = match (room.is_some(), view.waiting) {
+                (false, _) => ("Enter or O: practice offline", None),
+                (true, true) => ("Trying again every few seconds.", Some("Backspace or B: other rooms")),
+                (true, false) => ("Enter or A: try again", Some("Backspace or B: other rooms")),
+            };
+            let footer_y = if footer2.is_some() { 236. } else { 260. };
+            hud::text_outlined(footer, px + 20. * ui, py + footer_y * ui, 16. * ui, hud::col([1., 0.9, 0.5], 1.));
+            if let Some(f) = footer2 {
+                hud::text_outlined(f, px + 20. * ui, py + 260. * ui, 16. * ui, hud::col([1., 0.9, 0.5], 1.));
+            }
         }
         _ => {
             let lobby = client.lobby();
@@ -735,6 +766,590 @@ fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32
     }
 }
 
+// ---- Play Online --------------------------------------------------------------------------------------------------
+// The state machine (hub conversation, room order, retry schedule, name rules) is the engine's `hub::Online` and
+// `spooky_kart::online`; this is only the window half: focus, input, and drawing in the game's own style.
+
+/// The room a lobby belongs to, and how the join is going. `None` for a direct `--connect` / `server.txt` game.
+struct RoomCtx {
+    tag: RoomTag,
+    addr: SocketAddr,
+    /// The hub this room was found on (remembered once a join works, when it was chosen with `--hub`).
+    hub: String,
+    /// Waiting for a running race to end: the retry schedule.
+    wait: Option<JoinWait>,
+    remembered: bool,
+}
+
+/// The Play Online screen: the engine's `Online` plus which row or button has focus and the Create Room box.
+struct OnlineUi {
+    online: Online,
+    /// Focus is on a room row (else on `button`).
+    on_rows: bool,
+    button: usize,
+    /// The Create Room box: the name being typed, which of its four items has focus, the rivals chosen.
+    field: TextField,
+    dialog_focus: usize,
+    rivals: Difficulty,
+    rivals_touched: bool,
+    /// A join that could not even start (shown above the list).
+    notice: Option<String>,
+    /// Automation for captures and tests (`--screen create`, `--create-room`, `--join-room`).
+    auto_box: bool,
+    auto_create: Option<String>,
+    auto_join: Option<String>,
+}
+
+/// Where a frame of the Play Online screen sent the player.
+enum OnlineOutcome {
+    Stay,
+    Back,
+    Join(SocketAddr, RoomInfo),
+}
+
+const DIALOG_ITEMS: usize = 4;
+
+impl OnlineUi {
+    fn new(hub: &str, local_build: u32, now: f64) -> Self {
+        OnlineUi {
+            online: Online::new(hub, "spooky-kart", local_build, now),
+            on_rows: true,
+            button: 0,
+            field: TextField::new(MAX_NAME_CHARS, CharFilter::Name),
+            dialog_focus: 0,
+            rivals: Difficulty::Medium,
+            rivals_touched: false,
+            notice: None,
+            auto_box: false,
+            auto_create: None,
+            auto_join: None,
+        }
+    }
+
+    /// The name box has the keyboard: typed letters must not reach anything else (not even the shell's F key).
+    fn typing(&self) -> bool {
+        self.online.dialog.as_ref().is_some_and(|d| d.phase == DialogPhase::Editing) && self.dialog_focus == 0
+    }
+
+    fn open_create(&mut self, player: &str) {
+        self.online.open_dialog(player);
+        if let Some(d) = self.online.dialog.as_mut() {
+            d.name = online::default_room_name(player);
+            self.field = TextField::with_text(MAX_NAME_CHARS, CharFilter::Name, &d.name);
+            self.dialog_focus = 0;
+            self.rivals = Difficulty::Medium;
+            self.rivals_touched = false;
+        }
+    }
+
+    /// Send the Create (rivals only when the player chose them: otherwise the hub's own default applies).
+    fn create(&mut self) {
+        let settings = [(spooky_kart::netgame::SETTING_DIFFICULTY, self.rivals.index() as u32)];
+        self.online.set_create_settings(if self.rivals_touched { &settings } else { &[] });
+        self.online.create();
+    }
+
+    fn join_wanted(&mut self) -> Option<OnlineOutcome> {
+        let want = self.auto_join.clone()?;
+        let room = self
+            .online
+            .rooms
+            .iter()
+            .find(|r| (want.eq_ignore_ascii_case("public") && r.public) || r.name.eq_ignore_ascii_case(&want))?
+            .name
+            .clone();
+        self.auto_join = None;
+        self.online.selected = Some(room);
+        match self.online.join_selected() {
+            Some(Action::Join { addr, room }) => Some(OnlineOutcome::Join(addr, room)),
+            None => None,
+        }
+    }
+}
+
+/// One frame of keys for the Play Online screen: the keyboard, the D-pad and stick (as menu steps) and the controller
+/// buttons, all as plain booleans, so a script can stand in for a person (`--online-script`).
+#[derive(Default, Clone)]
+struct OnlineKeys {
+    /// Arrow keys or a D-pad / stick step.
+    up: bool,
+    down: bool,
+    left: bool,
+    right: bool,
+    /// Letter keys that also move in the list (but type into the name box).
+    w: bool,
+    s: bool,
+    a: bool,
+    d: bool,
+    tab: bool,
+    enter: bool,
+    space: bool,
+    backspace: bool,
+    /// Controller A and B.
+    select: bool,
+    back: bool,
+    /// A script's typing and erasing in the name box (a real keyboard goes through `ClientInput::feed_text`).
+    typed: String,
+    erase: usize,
+}
+
+impl OnlineKeys {
+    fn read(input: &ClientInput, step: MenuStep) -> Self {
+        OnlineKeys {
+            up: input.pressed(KeyCode::Up) || step.up,
+            down: input.pressed(KeyCode::Down) || step.down,
+            left: input.pressed(KeyCode::Left) || step.left,
+            right: input.pressed(KeyCode::Right) || step.right,
+            w: input.pressed(KeyCode::W),
+            s: input.pressed(KeyCode::S),
+            a: input.pressed(KeyCode::A),
+            d: input.pressed(KeyCode::D),
+            tab: input.pressed(KeyCode::Tab),
+            enter: input.pressed(KeyCode::Enter),
+            space: input.pressed(KeyCode::Space),
+            backspace: input.pressed(KeyCode::Backspace),
+            select: input.menu_select(),
+            back: input.menu_back(),
+            ..Default::default()
+        }
+    }
+
+    /// Add what a script says for this frame: names like `down`, `enter`, `tab`, `back`, `space`, `left`, `right`,
+    /// `up`, `type=TEXT`, `erase=N`.
+    fn script(&mut self, cues: &[&str]) {
+        for cue in cues {
+            match cue.split_once('=') {
+                Some(("type", text)) => self.typed.push_str(&text.replace('_', " ")),
+                Some(("erase", n)) => self.erase += n.parse::<usize>().unwrap_or(1),
+                _ => match *cue {
+                    "up" => self.up = true,
+                    "down" => self.down = true,
+                    "left" => self.left = true,
+                    "right" => self.right = true,
+                    "tab" => self.tab = true,
+                    "enter" => self.enter = true,
+                    "space" => self.space = true,
+                    "backspace" => self.backspace = true,
+                    "back" => self.back = true,
+                    other => eprintln!("--online-script: unknown cue {other}"),
+                },
+            }
+        }
+    }
+}
+
+/// `--online-script "30:down,60:enter,90:type=Hi_there"`: each `FRAME:CUE` is pressed on that frame of the run.
+fn online_script(args: &[String]) -> Vec<(u32, String)> {
+    flag_value(args, "--online-script")
+        .map(|text| {
+            text.split(',')
+                .filter_map(|c| c.split_once(':'))
+                .filter_map(|(f, cue)| Some((f.trim().parse().ok()?, cue.trim().to_string())))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// One frame of Play Online: the hub's answers, then the keys (keyboard and controller alike).
+fn online_input(
+    ou: &mut OnlineUi,
+    k: &OnlineKeys,
+    input: &ClientInput,
+    player: &str,
+    now: f64,
+    ui: f32,
+    sounds: &mut SoundBank,
+    live: bool,
+) -> OnlineOutcome {
+    if let Some(Action::Join { addr, room }) = ou.online.update(now) {
+        return OnlineOutcome::Join(addr, room);
+    }
+    if ou.online.can_join() && ou.online.dialog.is_none() {
+        if let Some(name) = ou.auto_create.take() {
+            ou.open_create(player);
+            if let Some(d) = ou.online.dialog.as_mut() {
+                d.name = name;
+            }
+            ou.create();
+        } else if std::mem::take(&mut ou.auto_box) {
+            ou.open_create(player);
+        } else if let Some(join) = ou.join_wanted() {
+            return join;
+        }
+    }
+    if !live {
+        return OnlineOutcome::Stay;
+    }
+    let blip = |sounds: &mut SoundBank| sounds.play(sound(synth::Preset::Blip), 0.5);
+    let accept_key = k.enter || k.select;
+    if let Some(phase) = ou.online.dialog.as_ref().map(|d| d.phase.clone()) {
+        match phase {
+            DialogPhase::Creating => {
+                if accept_key || k.backspace || k.back {
+                    sounds.play(sound(synth::Preset::Back), 0.6);
+                    ou.online.close_dialog();
+                }
+            }
+            DialogPhase::Editing => {
+                let before = ou.dialog_focus;
+                let down = k.down || k.tab;
+                let up = k.up;
+                ou.dialog_focus = online::step_focus(ou.dialog_focus, DIALOG_ITEMS, up, down);
+                if ou.dialog_focus != before {
+                    blip(sounds);
+                }
+                if ou.dialog_focus == 0 {
+                    input.feed_text(&mut ou.field);
+                    for _ in 0..k.erase {
+                        ou.field.backspace();
+                    }
+                    ou.field.insert_str(&k.typed);
+                    if let Some(d) = ou.online.dialog.as_mut() {
+                        if d.name != ou.field.text {
+                            d.name = ou.field.text.clone();
+                            d.error = None;
+                        }
+                    }
+                } else if ou.dialog_focus == 1 {
+                    let left = k.left || k.a;
+                    let right = k.right || k.d;
+                    let next = ou.rivals.step(i32::from(right) - i32::from(left));
+                    if next != ou.rivals {
+                        ou.rivals = next;
+                        ou.rivals_touched = true;
+                        blip(sounds);
+                    }
+                }
+                let accept = accept_key || (ou.dialog_focus != 0 && k.space);
+                if k.back || (accept && ou.dialog_focus == 3) {
+                    sounds.play(sound(synth::Preset::Back), 0.6);
+                    ou.online.close_dialog();
+                } else if accept && matches!(ou.dialog_focus, 0 | 2) {
+                    sounds.play(sound(synth::Preset::Select), 0.8);
+                    ou.create();
+                }
+            }
+        }
+        return OnlineOutcome::Stay;
+    }
+    // The list.
+    let view = ou.online.view.clone();
+    let mismatch = ou.online.mismatch();
+    let rows = if view == Pane::Rooms { ou.online.rooms.len() } else { 0 };
+    let buttons = online::buttons(&view, mismatch, rows);
+    let selectable = ou.online.can_join() && rows > 0;
+    ou.button = ou.button.min(buttons.len().saturating_sub(1));
+    let (up, down, left, right) = (k.up || k.w, k.down || k.s, k.left || k.a, k.right || k.d);
+    if ou.on_rows && selectable {
+        let current = ou.online.selected.as_ref().and_then(|n| ou.online.rooms.iter().position(|r| &r.name == n));
+        let at = current.unwrap_or(0);
+        if down && at + 1 == rows {
+            ou.on_rows = false;
+            ou.button = 0;
+            blip(sounds);
+        } else {
+            let to = online::step_focus(at, rows, up, down);
+            if to != at || current.is_none() {
+                ou.online.selected = ou.online.rooms.get(to).map(|r| r.name.clone());
+                if to != at {
+                    blip(sounds);
+                }
+            }
+            ou.online.offset = scroll_to(to, ou.online.offset, online_rows(ui), rows);
+        }
+    } else if up && selectable {
+        ou.on_rows = true;
+        blip(sounds);
+    } else {
+        let to = online::step_focus(ou.button, buttons.len(), left, right);
+        if to != ou.button {
+            ou.button = to;
+            blip(sounds);
+        }
+    }
+    if k.backspace || k.back {
+        sounds.play(sound(synth::Preset::Back), 0.6);
+        return OnlineOutcome::Back;
+    }
+    if accept_key || k.space {
+        let action = if ou.on_rows && selectable {
+            ou.online.join_selected()
+        } else {
+            match buttons.get(ou.button) {
+                Some(Btn::Join) => ou.online.join_selected(),
+                Some(Btn::Create) => {
+                    ou.open_create(player);
+                    None
+                }
+                Some(Btn::Refresh | Btn::Retry) => {
+                    ou.notice = None;
+                    ou.online.refresh(now);
+                    None
+                }
+                Some(Btn::Back) => {
+                    sounds.play(sound(synth::Preset::Back), 0.6);
+                    return OnlineOutcome::Back;
+                }
+                None => None,
+            }
+        };
+        sounds.play(sound(synth::Preset::Select), 0.8);
+        if let Some(Action::Join { addr, room }) = action {
+            return OnlineOutcome::Join(addr, room);
+        }
+    }
+    OnlineOutcome::Stay
+}
+
+/// How many room rows fit between the heading and the buttons.
+fn online_rows(ui: f32) -> usize {
+    (((screen_height() - 335. * ui) / (40. * ui)).floor() as usize).clamp(3, 8)
+}
+
+fn chip(x: f32, y: f32, w: f32, h: f32, ui: f32, label: &str, on: bool, tint: [f32; 3]) {
+    hud::panel(
+        x,
+        y,
+        w,
+        h,
+        8. * ui,
+        if on { Color::new(0.35, 0.15, 0.05, 0.92) } else { Color::new(0.05, 0.02, 0.12, 0.82) },
+    );
+    if on {
+        draw_rectangle(x + 10. * ui, y + h - 7. * ui, w - 20. * ui, 3. * ui, hud::col(tint, 1.));
+    }
+    hud::text_centered(
+        label,
+        x + w * 0.5,
+        y + h * 0.5 + 6. * ui,
+        18. * ui,
+        if on { WHITE } else { hud::col([0.7, 0.65, 0.85], 1.) },
+    );
+}
+
+const WARN: [f32; 3] = [1., 0.55, 0.45];
+const DIM: [f32; 3] = [0.7, 0.65, 0.85];
+
+fn draw_online(ou: &OnlineUi, time: f32, ui: f32, local_build: u32) {
+    let (w, h) = (screen_width(), screen_height());
+    let online = &ou.online;
+    hud::text_centered("SPOOKY KART", w * 0.5, 60. * ui, 54. * ui, hud::col([1., 0.55, 0.1], 1.));
+    hud::text_centered("Play Online", w * 0.5, 96. * ui, 20. * ui, hud::col([0.8, 0.7, 1.], 1.));
+    let (pw, py) = (700. * ui, 118. * ui);
+    let px = (w - pw) * 0.5;
+    let mismatch = online.mismatch();
+    let rows = if online.view == Pane::Rooms { online.rooms.len() } else { 0 };
+    // The panel fits its rooms (or the message): the buttons sit right under it.
+    let visible = online_rows(ui);
+    let top = if mismatch || ou.notice.is_some() { 212. } else { 160. };
+    let panel_h = if rows > 0 {
+        top + rows.min(visible) as f32 * 40. + if rows > visible { 24. } else { 4. } - 118.
+    } else {
+        200.
+    } * ui;
+    hud::panel(px, py, pw, panel_h, 14. * ui, Color::new(0.05, 0.02, 0.12, 0.93));
+    let rooms_selectable = online.can_join();
+    let on_rows = ou.on_rows && rooms_selectable && rows > 0;
+    let say = |text: &str, y: f32, size: f32, tint: [f32; 3]| {
+        for (i, line) in hud::wrap(text, pw - 60. * ui, size * ui).iter().enumerate() {
+            hud::text_centered(line, w * 0.5, (y + i as f32 * size * 1.35) * ui, size * ui, hud::col(tint, 1.));
+        }
+    };
+    // What stands in the way, above or instead of the list.
+    match &online.view {
+        Pane::Looking => {
+            let dots = ".".repeat(1 + (time * 2.) as usize % 3);
+            say(&format!("Looking for races{dots}"), 205., 26., [1., 0.9, 0.6]);
+        }
+        Pane::Offline => {
+            say(
+                "Can't reach the Spooky Kart servers right now. Check your internet connection, then Retry.",
+                176.,
+                24.,
+                WARN,
+            );
+            let detail = online.detail.clone().unwrap_or_else(|| format!("({})", online.hub_spec()));
+            say(&detail, 252., 17., DIM);
+        }
+        Pane::Problem(text) => say(text, 186., 24., WARN),
+        Pane::Rooms => {
+            if mismatch {
+                say(&hub_update_message(), 148., 20., WARN);
+            } else if let Some(n) = &ou.notice {
+                say(n, 148., 20., WARN);
+            }
+            if rows == 0 {
+                say("No races are open right now. Create a room and invite your friends.", 200., 22., [1., 0.9, 0.6]);
+            }
+        }
+    }
+    // The rooms.
+    if rows > 0 {
+        let offset = ou.online.offset.min(rows.saturating_sub(visible));
+        hud::text_outlined("ROOM", px + 34. * ui, (top - 6.) * ui, 14. * ui, hud::col(DIM, 1.));
+        hud::text_right("RACERS", px + pw - 34. * ui, (top - 6.) * ui, 14. * ui, hud::col(DIM, 1.));
+        let selected = online.selected_room().map(|r| r.name.clone());
+        let can = online.can_join();
+        for (i, r) in online.rooms.iter().enumerate().skip(offset).take(visible) {
+            let y = (top + (i - offset) as f32 * 40.) * ui;
+            let on = can && selected.as_deref() == Some(r.name.as_str());
+            let strong = on && on_rows;
+            let fill = if strong {
+                Color::new(0.35, 0.15, 0.05, 0.92)
+            } else if on {
+                Color::new(0.2, 0.09, 0.1, 0.85)
+            } else {
+                Color::new(0.09, 0.05, 0.18, 0.85)
+            };
+            hud::panel(px + 20. * ui, y, pw - 40. * ui, 34. * ui, 8. * ui, fill);
+            if strong {
+                draw_rectangle(px + 34. * ui, y + 28. * ui, pw - 68. * ui, 3. * ui, hud::col([1., 0.6, 0.15], 1.));
+            }
+            let dim = if can { 1. } else { 0.55 };
+            let name_tint = if r.public { [1., 0.7, 0.2] } else { [1., 1., 1.] };
+            hud::text_outlined(&r.name, px + 34. * ui, y + 24. * ui, 20. * ui, hud::col(name_tint, dim));
+            let status = online::room_label(r);
+            let tint = if status.ends_with("Full") {
+                [1., 0.45, 0.4]
+            } else if status.ends_with("In race") {
+                [1., 0.8, 0.3]
+            } else {
+                [0.45, 1., 0.55]
+            };
+            hud::text_right(&status, px + pw - 34. * ui, y + 24. * ui, 18. * ui, hud::col(tint, dim));
+        }
+        if rows > visible {
+            let below = rows - offset - visible.min(rows - offset);
+            hud::text_centered(
+                &format!("{offset} more above, {below} more below"),
+                w * 0.5,
+                (top + visible as f32 * 40. + 14.) * ui,
+                14. * ui,
+                hud::col(DIM, 1.),
+            );
+        }
+    }
+    // The buttons.
+    let buttons = online::buttons(&online.view, mismatch, rows);
+    let (bw, bh, gap) = (160. * ui, 40. * ui, 12. * ui);
+    let total = buttons.len() as f32 * bw + (buttons.len() as f32 - 1.) * gap;
+    for (i, b) in buttons.iter().enumerate() {
+        let x = w * 0.5 - total * 0.5 + i as f32 * (bw + gap);
+        let on = !on_rows && ou.button.min(buttons.len() - 1) == i && online.dialog.is_none();
+        chip(x, py + panel_h + 22. * ui, bw, bh, ui, b.label(), on, [1., 0.6, 0.15]);
+    }
+    let blink = 0.6 + 0.4 * (time * 3.).sin();
+    let hint = if online.dialog.is_some() {
+        "Type a name     Up / Down or stick: move     Left / Right: rivals     Enter or A: select"
+    } else if rows > 0 && rooms_selectable {
+        "Up / Down or stick: rooms     Left / Right: buttons     Enter or A: select     Backspace or B: back"
+    } else {
+        "Left / Right: buttons     Enter or A: select     Backspace or B: back"
+    };
+    hud::text_centered(hint, w * 0.5, h - 20. * ui, 17. * ui, Color::new(1., 1., 1., blink));
+    hud::text_outlined(&hub::client::build_label(local_build), 16. * ui, h - 14. * ui, 13. * ui, hud::col(DIM, 0.8));
+    hud::text_right(online.hub_spec(), w - 16. * ui, h - 14. * ui, 13. * ui, hud::col(DIM, 0.8));
+    if online.dialog.is_some() {
+        draw_create_dialog(ou, time, ui);
+    }
+}
+
+fn hub_update_message() -> String {
+    hub::client::update_message(online::TITLE)
+}
+
+/// The Create Room box over the dimmed list.
+fn draw_create_dialog(ou: &OnlineUi, time: f32, ui: f32) {
+    let (w, h) = (screen_width(), screen_height());
+    let Some(d) = &ou.online.dialog else { return };
+    draw_rectangle(0., 0., w, h, Color::new(0.02, 0., 0.06, 0.62));
+    let (pw, ph) = (640. * ui, 350. * ui);
+    let (px, py) = ((w - pw) * 0.5, (h - ph) * 0.5 - 20. * ui);
+    hud::panel(px, py, pw, ph, 14. * ui, Color::new(0.06, 0.025, 0.14, 0.97));
+    hud::text_centered("CREATE A ROOM", w * 0.5, py + 46. * ui, 32. * ui, hud::col([1., 0.55, 0.1], 1.));
+    for (i, line) in
+        hud::wrap("Friends will see this name under Play Online and join with one click.", pw - 60. * ui, 17. * ui)
+            .iter()
+            .enumerate()
+    {
+        hud::text_centered(line, w * 0.5, py + 76. * ui + i as f32 * 22. * ui, 17. * ui, hud::col(DIM, 1.));
+    }
+    if d.phase == DialogPhase::Creating {
+        let dots = ".".repeat(1 + (time * 2.) as usize % 3);
+        hud::text_centered(
+            &format!("Creating your room{dots}"),
+            w * 0.5,
+            py + 170. * ui,
+            28. * ui,
+            hud::col([1., 0.9, 0.6], 1.),
+        );
+        chip(w * 0.5 - 80. * ui, py + 270. * ui, 160. * ui, 40. * ui, ui, "CANCEL", true, [1., 0.6, 0.15]);
+        return;
+    }
+    // The name box.
+    let (fx, fy, fw, fh) = (px + 40. * ui, py + 124. * ui, pw - 80. * ui, 44. * ui);
+    let focus = ou.dialog_focus;
+    hud::text_outlined("Room name", fx, fy - 8. * ui, 15. * ui, hud::col(DIM, 1.));
+    hud::panel(
+        fx,
+        fy,
+        fw,
+        fh,
+        6. * ui,
+        if focus == 0 { Color::new(0.2, 0.09, 0.05, 0.95) } else { Color::new(0.04, 0.02, 0.1, 0.9) },
+    );
+    if focus == 0 {
+        draw_rectangle(fx + 8. * ui, fy + fh - 5. * ui, fw - 16. * ui, 3. * ui, hud::col([1., 0.6, 0.15], 1.));
+    }
+    let size = 24. * ui;
+    hud::text_outlined(&ou.field.text, fx + 14. * ui, fy + 31. * ui, size, WHITE);
+    if focus == 0 && (time * 2.).fract() < 0.6 {
+        let before = &ou.field.text[..ou.field.caret_byte()];
+        let cx = fx + 14. * ui + hud::width_of(before, size);
+        draw_rectangle(cx + 1. * ui, fy + 9. * ui, 2. * ui, 28. * ui, hud::col([1., 0.85, 0.4], 1.));
+    }
+    // The rivals.
+    let ry = py + 196. * ui;
+    hud::text_outlined(
+        "Rivals",
+        fx,
+        ry + 27. * ui,
+        18. * ui,
+        if focus == 1 { hud::col([1., 0.85, 0.4], 1.) } else { hud::col(DIM, 1.) },
+    );
+    let (cw, gap) = (110. * ui, 10. * ui);
+    for (i, dif) in Difficulty::ALL.iter().enumerate() {
+        let x = px + pw - 40. * ui - 3. * cw - 2. * gap + i as f32 * (cw + gap);
+        let tint = match dif {
+            Difficulty::Easy => [0.4, 0.9, 0.5],
+            Difficulty::Medium => [1., 0.8, 0.3],
+            Difficulty::Hard => [1., 0.4, 0.35],
+        };
+        chip(x, ry, cw, 36. * ui, ui, &dif.name().to_uppercase(), *dif == ou.rivals, tint);
+        if focus == 1 && *dif == ou.rivals {
+            draw_rectangle(x + 4. * ui, ry - 5. * ui, cw - 8. * ui, 2. * ui, hud::col([1., 0.85, 0.4], 1.));
+        }
+    }
+    // Create and Cancel.
+    let by = py + 256. * ui;
+    chip(w * 0.5 - 170. * ui, by, 160. * ui, 40. * ui, ui, "CREATE", focus == 2, [0.4, 0.9, 0.5]);
+    chip(w * 0.5 + 10. * ui, by, 160. * ui, 40. * ui, ui, "CANCEL", focus == 3, [1., 0.6, 0.15]);
+    if let Some(e) = &d.error {
+        for (i, line) in hud::wrap(e, pw - 60. * ui, 17. * ui).iter().enumerate() {
+            hud::text_centered(line, w * 0.5, py + 322. * ui + i as f32 * 21. * ui, 17. * ui, hud::col(WARN, 1.));
+        }
+    }
+}
+
+/// The Play Online chip on the select screen.
+fn draw_online_chip(ui: f32, time: f32) {
+    let w = screen_width();
+    let (cw, ch) = (250. * ui, 40. * ui);
+    let pulse = 0.85 + 0.15 * (time * 2.5).sin();
+    hud::panel(w - cw - 30. * ui, 28. * ui, cw, ch, 8. * ui, Color::new(0.3, 0.12, 0.06, 0.9 * pulse));
+    hud::text_centered("P or Y: PLAY ONLINE", w - cw * 0.5 - 30. * ui, 28. * ui + 27. * ui, 18. * ui, WHITE);
+}
+
 /// Dust behind sliding karts, sparks behind boosting ones.
 fn trails(sim: &Sim, fx: &mut Fx) {
     for k in &sim.karts {
@@ -757,6 +1372,36 @@ fn chase_target(k: &Kart) -> f32 {
     } else {
         k.yaw
     }
+}
+
+/// The name this player races under: `--name`, else the account name, else "Racer".
+fn player_name(args: &[String]) -> String {
+    flag_value(args, "--name")
+        .map(|n| n.to_string())
+        .or_else(|| std::env::var("USER").ok())
+        .or_else(|| std::env::var("USERNAME").ok())
+        .unwrap_or_else(|| "Racer".into())
+}
+
+/// A client for the server at `address` (a direct connection, or a hub's room over raw UDP).
+fn make_client(
+    address: SocketAddr,
+    profile: TransportProfile,
+    name: String,
+    key: String,
+    choice: usize,
+) -> Result<Client, String> {
+    client_transport(profile, address)
+        .and_then(|t| Client::new(t, address, ClientConfig { name, key, choice: choice as u8 }))
+        .map_err(|e| e.to_string())
+}
+
+/// Open Play Online: pick the hub (`--hub`, `hub.txt`, the last one used, the public one) and start asking it.
+fn open_online(args: &[String], settings: &Settings, local_build: u32, now: f64) -> (OnlineUi, ServerOrigin, String) {
+    let dir =
+        std::env::current_exe().ok().and_then(|p| p.parent().map(std::path::Path::to_path_buf)).unwrap_or_default();
+    let hub = online::hub_choice(&dir, flag_value(args, "--hub"), settings.last_server.as_deref());
+    (OnlineUi::new(&hub.address, local_build, now), hub.origin, hub.address)
 }
 
 /// Where to play online, if anywhere: `--connect` on the command line, else a `server.txt` next to the program
@@ -836,20 +1481,33 @@ async fn main() {
             eprintln!("Cannot find a server at {target}");
             std::process::exit(2);
         });
-        let name = flag_value(&args, "--name")
-            .map(|n| n.to_string())
-            .or_else(|| std::env::var("USER").ok())
-            .or_else(|| std::env::var("USERNAME").ok())
-            .unwrap_or_else(|| "Racer".into());
-        let made = client_transport(profile, address)
-            .and_then(|t| Client::new(t, address, ClientConfig { name, key, choice: choice as u8 }));
-        match made {
+        match make_client(address, profile, player_name(&args), key, choice) {
             Ok(c) => client = Some(c),
             Err(e) => eprintln!("Cannot start the network ({e}); playing offline"),
         }
     }
+    // Play Online: the hub's rooms. `--screen online|create` opens it at once (for captures and tests).
+    let fake_build = std::env::var(online::FAKE_BUILD_ENV).ok();
+    let local_build = online::local_build(fake_build.as_deref());
+    let player = player_name(&args);
+    let script = online_script(&args);
+    let mut frame_no = 0u32;
+    let mut online_ui: Option<OnlineUi> = None;
+    let mut hub_origin = ServerOrigin::Builtin;
+    let mut hub_spec = String::new();
+    let mut room_ctx: Option<RoomCtx> = None;
+    let start_online = client.is_none() && matches!(flag_value(&args, "--screen"), Some("online" | "create"));
+    if start_online {
+        let (mut ou, origin, spec) = open_online(&args, &settings, local_build, 0.);
+        ou.auto_box = flag_value(&args, "--screen") == Some("create");
+        ou.auto_create = flag_value(&args, "--create-room").map(str::to_string);
+        ou.auto_join = flag_value(&args, "--join-room").map(str::to_string);
+        (online_ui, hub_origin, hub_spec) = (Some(ou), origin, spec);
+    }
     let mut screen = if client.is_some() {
         Screen::Lobby
+    } else if start_online {
+        Screen::Online
     } else if has_flag(&args, "--select") || (direct.is_none() && !unattended) {
         Screen::Select
     } else {
@@ -866,7 +1524,17 @@ async fn main() {
     let (mut world, mut alpha, mut add) = (Batch::new(), Batch::new(), Batch::new());
 
     loop {
+        frame_no += 1;
+        let cues_now: Vec<&str> = script.iter().filter(|(f, _)| *f == frame_no).map(|(_, c)| c.as_str()).collect();
+        // The shell turns F into fullscreen; while a name is being typed that is just a letter. The engine has no way to
+        // mask it, so undo the toggle (a frame in which the box did not have the keyboard is unaffected).
+        let typing = matches!(screen, Screen::Online) && online_ui.as_ref().is_some_and(OnlineUi::typing);
+        let was_fullscreen = shell.fullscreen;
         input.begin_frame_with_keyboard(&mut shell, false, unattended || platform::focused(), platform::keyboard());
+        if typing && shell.fullscreen != was_fullscreen {
+            shell.fullscreen = was_fullscreen;
+            set_fullscreen(was_fullscreen);
+        }
         let dt = life.begin_frame(input.frame_seconds());
         let time = life.time();
         sounds.poll().await;
@@ -909,6 +1577,18 @@ async fn main() {
                 }
                 _ => {}
             }
+            if let Some(ctx) = room_ctx.as_mut().filter(|r| !r.remembered && *c.state() == ClientState::Lobby) {
+                // A hub typed with --hub is remembered once a room on it let us in (not for unattended runs).
+                ctx.remembered = true;
+                ctx.wait = None;
+                if hub_origin == ServerOrigin::CliArg
+                    && !unattended
+                    && settings.last_server.as_deref() != Some(&ctx.hub)
+                {
+                    settings.last_server = Some(ctx.hub.clone());
+                    settings.store(&settings_path);
+                }
+            }
             let mine = c.lobby().and_then(|l| l.entries.iter().find(|e| e.slot == c.seat()).cloned());
             my_ready = mine.as_ref().is_some_and(|e| e.ready);
             if let Some(e) = &mine {
@@ -928,7 +1608,53 @@ async fn main() {
                 let failed = client
                     .as_ref()
                     .is_some_and(|c| matches!(c.state(), ClientState::Rejected(_) | ClientState::Disconnected(_)));
-                if offline_key || (failed && (input.pressed(KeyCode::Enter) || input.menu_select())) {
+                let accept = input.pressed(KeyCode::Enter) || input.menu_select();
+                if let Some(ctx) = room_ctx.as_mut() {
+                    // A room from Play Online. "A race is running" is waited out: ask again every few seconds.
+                    let now = time as f64;
+                    let mut reconnect = failed && accept && ctx.wait.is_none();
+                    if let Some(c) = client.as_ref().filter(|_| failed) {
+                        if c.failure() == Some(ConnectFailure::MatchInProgress) {
+                            match ctx.wait.as_mut() {
+                                None => ctx.wait = Some(JoinWait::new(now)),
+                                Some(w) => match w.step(now) {
+                                    RetryStep::TryNow => {
+                                        w.attempted(now);
+                                        reconnect = true;
+                                    }
+                                    RetryStep::GiveUp => ctx.wait = None,
+                                    RetryStep::Wait => {}
+                                },
+                            }
+                        } else {
+                            ctx.wait = None;
+                        }
+                    }
+                    if reconnect {
+                        if let Ok(c) =
+                            make_client(ctx.addr, TransportProfile::Development, player.clone(), String::new(), choice)
+                        {
+                            client = Some(c);
+                        }
+                    }
+                    if !offline_key
+                        && (input.pressed(KeyCode::Backspace) || input.menu_back() || cues_now.contains(&"back"))
+                    {
+                        if let Some(c) = client.as_mut() {
+                            c.leave();
+                        }
+                        client = None;
+                        room_ctx = None;
+                        let (mut ou, origin, spec) = open_online(&args, &settings, local_build, time as f64);
+                        ou.on_rows = true;
+                        (online_ui, hub_origin, hub_spec) = (Some(ou), origin, spec);
+                        screen = Screen::Online;
+                        sounds.play(sound(synth::Preset::Back), 0.6);
+                    }
+                }
+                let leaves_room_on_accept = room_ctx.is_none();
+                if matches!(screen, Screen::Lobby) && (offline_key || (failed && accept && leaves_room_on_accept)) {
+                    room_ctx = None;
                     // Practice offline: leave the server (politely, if we are on it) and use the local game.
                     if let Some(c) = client.as_mut() {
                         c.leave();
@@ -973,7 +1699,12 @@ async fn main() {
                         sounds.play(sound(synth::Preset::Blip), 0.5);
                     }
                 }
-                if input.pressed(KeyCode::Enter) || input.pressed(KeyCode::Space) || input.menu_select() {
+                if !shell.paused && (input.pressed(KeyCode::P) || pad.pressed(Button::North)) {
+                    let (ou, origin, spec) = open_online(&args, &settings, local_build, time as f64);
+                    (online_ui, hub_origin, hub_spec) = (Some(ou), origin, spec);
+                    screen = Screen::Online;
+                    sounds.play(sound(synth::Preset::Select), 0.8);
+                } else if input.pressed(KeyCode::Enter) || input.pressed(KeyCode::Space) || input.menu_select() {
                     sounds.play(sound(synth::Preset::Select), 0.8);
                     let (s, slot) = new_race(life.restart_seed(), Character::from_index(choice), difficulty);
                     sim = s;
@@ -983,6 +1714,47 @@ async fn main() {
                     life.reset_input();
                     camera_yaw = sim.karts[me].yaw;
                     screen = Screen::Race;
+                }
+            }
+            Screen::Online => {
+                let outcome = match online_ui.as_mut() {
+                    Some(ou) => {
+                        let mut keys = OnlineKeys::read(&input, menu_step);
+                        keys.script(&cues_now);
+                        online_input(ou, &keys, &input, &player, time as f64, ui, &mut sounds, !shell.paused)
+                    }
+                    None => OnlineOutcome::Back,
+                };
+                match outcome {
+                    OnlineOutcome::Stay => {}
+                    OnlineOutcome::Back => {
+                        online_ui = None;
+                        screen = Screen::Select;
+                    }
+                    OnlineOutcome::Join(addr, room) => {
+                        // The hub only found the room: the existing online client takes over, over raw UDP (a hub's
+                        // rooms are the Development transport, with no join key).
+                        match make_client(addr, TransportProfile::Development, player.clone(), String::new(), choice) {
+                            Ok(c) => {
+                                client = Some(c);
+                                room_ctx = Some(RoomCtx {
+                                    tag: RoomTag { name: room.name, public: room.public },
+                                    addr,
+                                    hub: hub_spec.clone(),
+                                    wait: None,
+                                    remembered: false,
+                                });
+                                online_ui = None;
+                                screen = Screen::Lobby;
+                                choice_changed = f32::NEG_INFINITY;
+                            }
+                            Err(e) => {
+                                if let Some(ou) = online_ui.as_mut() {
+                                    ou.notice = Some(format!("Could not start the network: {e}"));
+                                }
+                            }
+                        }
+                    }
                 }
             }
             Screen::Race => {
@@ -1244,16 +2016,24 @@ async fn main() {
             draw_rectangle(0., 0., screen_width(), screen_height(), hud::col(juice.flash_color, juice.flash * 0.4));
         }
         match screen {
-            Screen::Select => draw_select(
-                choice,
-                time,
-                ui,
-                "A / D or left stick: driver     W / S or up / down: rivals     Enter or A to race",
-                Some(difficulty),
-            ),
+            Screen::Select => {
+                draw_select(
+                    choice,
+                    time,
+                    ui,
+                    "A / D or left stick: driver     W / S or up / down: rivals     Enter or A to race",
+                    Some(difficulty),
+                );
+                draw_online_chip(ui, time);
+            }
+            Screen::Online => {
+                if let Some(ou) = &online_ui {
+                    draw_online(ou, time, ui, local_build);
+                }
+            }
             Screen::Lobby => {
                 if let Some(c) = &client {
-                    draw_lobby(c, choice, my_ready, time, ui);
+                    draw_lobby(c, choice, my_ready, time, ui, room_ctx.as_ref());
                 }
             }
             Screen::Race if racing_view => {

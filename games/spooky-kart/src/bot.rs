@@ -6,7 +6,7 @@ use crate::sim::Sim;
 use crate::track::{wrap_angle, yaw_of};
 use serde::{Deserialize, Serialize};
 
-/// How hard the bots drive. Offline only: an online race always runs at `Medium`.
+/// How hard the bots drive: the offline choice, or a hosted room's `difficulty` setting (Medium unless set).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Difficulty {
     Easy,

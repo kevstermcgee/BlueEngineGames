@@ -28,15 +28,18 @@ against bots, or online on a dedicated server with friends (empty grid slots are
 | Steer | A / D | left stick |
 | Drift (hold through a corner, release to boost) | Shift | either bumper |
 | Perk | Space | X |
-| Menus | A / D, Enter | D-pad or stick, A |
+| Menus | A / D, Enter; P: Play Online | D-pad or stick, A; Y: Play Online |
 | Pause | Esc | Start |
 
 ## Play
 
-Offline: run `spooky-kart` (or `spooky-kart --offline`). Online: put the server's address in a `server.txt`
-next to the program (line 1 `host:port`, optional line 2 join key, optional line 3 `development` or
-`production`), or run `spooky-kart --connect HOST:PORT [--transport production] [--join-key KEY]`. If the server is
-down, press Enter or O to practise offline.
+Offline: run `spooky-kart` (or `spooky-kart --offline`). Online: on the select screen press **P** (or **Y** on a
+controller) for **Play Online**: pick a room from the list (the Public room is always there), or **Create Room**, give it
+a name and send your friends to Play Online > that name. `--hub HOST:PORT` (or a `hub.txt` next to the program, line 1)
+points Play Online at another hub. To play on one particular server instead, put its address in a `server.txt` next to the
+program (line 1 `host:port`, optional line 2 join key, optional line 3 `development` or `production`), or run
+`spooky-kart --connect HOST:PORT [--transport production] [--join-key KEY]`. If the server is down, press Enter or O to
+practise offline.
 
 ## Hosting
 

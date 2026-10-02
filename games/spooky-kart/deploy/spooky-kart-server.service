@@ -1,5 +1,7 @@
 [Unit]
-Description=Spooky Kart dedicated server
+# Standalone and optional. Under be2-hub do not enable this unit: the hub starts one server per room itself, and this one
+# would hold UDP 4100, which the hub listens on.
+Description=Spooky Kart dedicated server (standalone; optional, the BlueEngine hub is the recommended way, see docs/HOSTING.md)
 After=network-online.target
 Wants=network-online.target
 

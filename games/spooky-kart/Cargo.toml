@@ -26,6 +26,11 @@ path = "src/bin/spooky-kart-server.rs"
 name = "spooky-kart-bots"
 path = "src/bin/spooky-kart-bots.rs"
 
+# The agent environment: headless, no window, no network (no required-features).
+[[bin]]
+name = "spooky-kart-env"
+path = "src/bin/spooky-kart-env.rs"
+
 [dependencies]
 vesper3d = { package = "be2", path = "../../../BlueEngine", default-features = false }
 macroquad = { optional = true, version = "=0.4.14", default-features = false, features = ["audio"] }

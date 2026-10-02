@@ -103,7 +103,7 @@ pub struct Sim {
     pub first_finish: Option<u32>,
     pub finished_count: u32,
     pub seed: u64,
-    /// How hard the bots drive (offline choice; online races run at Medium).
+    /// How hard the bots drive (the offline choice, or a hosted room's setting; Medium by default).
     pub difficulty: Difficulty,
     track: Track,
     rng: Rng,

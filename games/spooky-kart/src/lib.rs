@@ -9,15 +9,22 @@
 //! - `bot`: AI drivers and their `Difficulty`.
 //! - `music`: the race music spec and which layers play when.
 //! - `controls`: keyboard and controller mapping.
+//! - `env`: the agent interface (reset, step, observe, reward) over the race, with `policy` (reference and
+//!   baseline drivers) and `recorder` (JSONL trajectories and replay); a layer that only reads `Sim` and steps it.
+//! - `online`: the rules of the Play Online screen (which hub, room names, buttons, honest failure text).
 //! - `netgame`: the game as a BlueEngine `NetGame` (protocol layouts, seats to karts, client prediction); the
 //!   lobby, sessions, server and client come from the engine's netplay kit.
 pub mod border;
 pub mod bot;
 pub mod character;
 pub mod controls;
+pub mod env;
 pub mod kart;
 pub mod music;
 pub mod netgame;
+pub mod online;
+pub mod policy;
+pub mod recorder;
 pub mod sim;
 pub mod track;
 

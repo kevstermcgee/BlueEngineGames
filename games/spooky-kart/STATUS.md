@@ -42,6 +42,26 @@
   drawn into the shadow pass) and casters (walls, arch, scenery, grouped in 64 m cells that the pass skips when far
   from the focus). The moon (`halloween_look`) is lower and more from the side so shadows read.
 
+- **Agent env** (a new layer; no rules, physics, bots, netcode, save hash or content fingerprint touched). `src/env.rs`
+  (+ `src/env/`), `src/policy.rs`, `src/recorder.rs`, the headless `spooky-kart-env` bin: `reset(seed)` and
+  `step(actions)` over the real sim, a separate 91-float `Obs` built only from what a driver can perceive, a pure
+  reward, JSONL trajectories that replay to the same `state_hash` and `RaceReport`, `validate`, `bench`, `eval`.
+  Release speed about 170,000 ticks/s (a race in about 35 ms) on the shared N97. An obs-only baseline lands within
+  about half a place of the omniscient bot. Not provided: pixels, audio, a Python binding or bridge. Usage and
+  numbers in `docs/ENV.md`; what a generic engine interface needs in `docs/ENV_DESIGN.md`.
+
+- **Play Online through the shared hub** (`src/online.rs`, `src/main.rs`, `src/bin/spooky-kart-server.rs`; sim, physics, bots,
+  wire format, save hash and `content_fingerprint()` (0xb4023cbc, pinned in `tests/server_cli.rs`) untouched). The server main
+  is now the engine's `netplay::cli::serve` (same flags, plus `--info`, `--status-lines`, `--set`), with one room setting,
+  rival difficulty (Medium by default, so nothing changes unless a room asks). The select screen has **Play Online** (P, or Y
+  on a controller): the hub's room list (Public first, status like 3/8 Lobby / In race / Full, auto-refresh every 4 s),
+  Join, Create Room (name box with paste, rivals), Refresh, Back, and honest states for looking, hub unreachable, version
+  mismatch and "a race is running" (waits and retries). A room joins the existing lobby over raw UDP; the lobby shows
+  `Room: NAME` and how friends find it. Hub choice: `--hub`, `hub.txt`, last used, built in; `server.txt` and `--connect`
+  keep meaning a direct server. `tests/hub.rs` runs the real `be2-hub` and `spooky-kart-server` on loopback (skipped without
+  the hub binary). Not verified: a real controller or keyboard on the new screens (a script drove them, see
+  `--online-script`), the live public hub, a Windows build. Docs/HOSTING.md has the registry stanza.
+
 ## Seeing the game without a display
 This box is headless. Use a virtual display and the engine's capture flags; software rendering is slow (a full
 race takes about 7 minutes), so capture few frames:
@@ -59,7 +79,9 @@ handling, so this only guards against a broken kart; real tuning needs human pla
 
 ## Next Steps
 - Verify controller feel on real hardware; tune handling and the camera by playing.
-- Deploy the server on the Debian box (deploy/spooky-kart-server.service, docs/HOSTING.md); prepared, not yet enabled.
-  The production QUIC/TLS transport is verified end to end with a real certificate.
+- Host it: add the `[game spooky-kart]` stanza to the hub's registry (docs/HOSTING.md) and `be2-hub reload spooky-kart`;
+  the standalone unit (deploy/spooky-kart-server.service) is optional. The production QUIC/TLS transport is verified
+  end to end with a real certificate (standalone only: hub rooms are raw UDP).
+- Publish the Play Online client (BlueEngineGames sync); the published game still uses server.txt / --connect until then.
 - Predict kart-to-kart collisions on the client (see docs/ENGINE_LESSONS.md, item 5).
 - Milestone 5: identity and icon, `scripts/blue ship`, publish to BlueEngineGames.

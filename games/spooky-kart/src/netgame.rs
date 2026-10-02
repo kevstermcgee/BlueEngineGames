@@ -2,14 +2,16 @@
 //! owns the lobby, sessions, input streaming, snapshots and statistics; this file is what is particular to
 //! karts: the layouts of an input, a snapshot and an event, how seats become karts, and how a client predicts
 //! its own kart and smooths everyone else's.
+use crate::bot::Difficulty;
 use crate::character::{Character, Perk, ALL, MAX_RACERS};
 use crate::kart::{Driver, Kart, KartInput, KartStats};
 use crate::sim::{Event, Hazard, HazardKind, Inputs, Phase, Sim, LAPS};
 use crate::track::{wrap_angle, Track};
+use std::sync::atomic::{AtomicU8, Ordering};
 use vesper3d::math::V;
 use vesper3d::viewer::devkit::Rng;
 use vesper3d::viewer::net::codec::{Reader, WireError, WireResult, Writer};
-use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat};
+use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat, SettingKind, SettingSpec};
 
 /// A prediction error larger than this snaps instead of easing (metres).
 const SNAP_DISTANCE: f32 = 6.;
@@ -18,6 +20,38 @@ const SNAPSHOT_INTERVAL: f64 = 1. / 30.;
 const MAX_HAZARDS: usize = 24;
 
 pub struct KartGame;
+
+/// The one room setting: how hard the bots that fill the grid drive (0 Easy, 1 Medium, 2 Hard). The number is what
+/// a hub sends (`--set 1=N`) and must never be reused for something else.
+pub const SETTING_DIFFICULTY: u8 = 1;
+
+const SETTINGS: [SettingSpec; 1] = [SettingSpec {
+    id: SETTING_DIFFICULTY,
+    name: "difficulty",
+    flag: "difficulty",
+    kind: SettingKind::Choice,
+    min: 0,
+    max: 2,
+    default: Difficulty::Medium as u32,
+}];
+
+/// What this server process was started with (a hub starts one process per room, so one value is enough). Medium
+/// until [`NetGame::configure`] says otherwise: a server nobody configured races exactly as it always did.
+static ROOM_DIFFICULTY: AtomicU8 = AtomicU8::new(Difficulty::Medium as u8);
+
+/// The difficulty named by a `configure` call's `(id, value)` pairs (Medium when the setting is absent).
+pub fn difficulty_from_settings(values: &[(u8, u32)]) -> Result<Difficulty, String> {
+    match values.iter().find(|(id, _)| *id == SETTING_DIFFICULTY) {
+        None => Ok(Difficulty::default()),
+        Some((_, v)) if (*v as usize) < Difficulty::ALL.len() => Ok(Difficulty::from_index(*v as usize)),
+        Some((_, v)) => Err(format!("difficulty {v} is not 0 (Easy), 1 (Medium) or 2 (Hard)")),
+    }
+}
+
+/// The difficulty the bots of a networked race drive at in this process.
+pub fn room_difficulty() -> Difficulty {
+    Difficulty::from_index(ROOM_DIFFICULTY.load(Ordering::Relaxed) as usize)
+}
 
 /// The race as one server tick shows it: everything a client draws and predicts from.
 #[derive(Clone, Debug, PartialEq)]
@@ -31,6 +65,29 @@ pub struct KartSnapshot {
 }
 
 impl KartGame {
+    /// [`NetGame::start`] with the rivals' difficulty given (the trait method passes the room's). Humans keep the
+    /// characters they picked; bots take the rest in table order; the grid is shuffled.
+    pub fn start_at(seed: u64, seats: &[Seat], participants: usize, difficulty: Difficulty) -> (Sim, Vec<usize>) {
+        let picked: Vec<Character> =
+            seats.iter().map(|s| Character::from_wire(s.choice).unwrap_or(Character::Vampire)).collect();
+        let total = participants.clamp(1, MAX_RACERS).max(seats.len());
+        let mut grid: Vec<(Option<usize>, Character, Driver)> =
+            picked.iter().enumerate().map(|(i, c)| (Some(i), *c, Driver::Human)).collect();
+        for c in ALL.iter().filter(|c| !picked.contains(c)) {
+            if grid.len() >= total {
+                break;
+            }
+            grid.push((None, *c, Driver::Bot));
+        }
+        let mut order: Vec<usize> = (0..grid.len()).collect();
+        Rng::new(seed).shuffle(&mut order);
+        let shuffled: Vec<_> = order.iter().map(|&i| grid[i]).collect();
+        let sim = Sim::with_difficulty(seed, &shuffled.iter().map(|g| (g.1, g.2)).collect::<Vec<_>>(), difficulty);
+        let assigned =
+            (0..seats.len()).map(|seat| shuffled.iter().position(|g| g.0 == Some(seat)).unwrap_or(0)).collect();
+        (sim, assigned)
+    }
+
     fn write_kart(w: &mut Writer, k: &Kart) {
         w.u8(k.character.index() as u8);
         w.bool(k.driver == Driver::Human);
@@ -291,26 +348,17 @@ impl NetGame for KartGame {
         })
     }
 
-    /// Humans keep the characters they picked; bots take the rest in table order; the grid is shuffled.
+    fn settings() -> &'static [SettingSpec] {
+        &SETTINGS
+    }
+
+    fn configure(values: &[(u8, u32)]) -> Result<(), String> {
+        ROOM_DIFFICULTY.store(difficulty_from_settings(values)?.index() as u8, Ordering::Relaxed);
+        Ok(())
+    }
+
     fn start(seed: u64, seats: &[Seat], participants: usize) -> (Sim, Vec<usize>) {
-        let picked: Vec<Character> =
-            seats.iter().map(|s| Character::from_wire(s.choice).unwrap_or(Character::Vampire)).collect();
-        let total = participants.clamp(1, MAX_RACERS).max(seats.len());
-        let mut grid: Vec<(Option<usize>, Character, Driver)> =
-            picked.iter().enumerate().map(|(i, c)| (Some(i), *c, Driver::Human)).collect();
-        for c in ALL.iter().filter(|c| !picked.contains(c)) {
-            if grid.len() >= total {
-                break;
-            }
-            grid.push((None, *c, Driver::Bot));
-        }
-        let mut order: Vec<usize> = (0..grid.len()).collect();
-        Rng::new(seed).shuffle(&mut order);
-        let shuffled: Vec<_> = order.iter().map(|&i| grid[i]).collect();
-        let sim = Sim::with_grid(seed, &shuffled.iter().map(|g| (g.1, g.2)).collect::<Vec<_>>());
-        let assigned =
-            (0..seats.len()).map(|seat| shuffled.iter().position(|g| g.0 == Some(seat)).unwrap_or(0)).collect();
-        (sim, assigned)
+        Self::start_at(seed, seats, participants, room_difficulty())
     }
 
     fn participants(m: &Sim) -> usize {

@@ -5,7 +5,47 @@ slots are filled with bots, and a player who drops out is replaced by a bot. On 
 Intel N97 mini PC) it used about 1.5% of one core and under 4 MB of memory with two players; see
 `docs/perf` in BlueEngine (`python tools/perf.py report`, metrics starting `kart_`).
 
-## Build and run
+## The hub (recommended)
+
+The BlueEngine hub, `be2-hub`, is the easy way to host: one program on one UDP port (4100) that lists and creates rooms for
+every BlueEngine online game and starts one `spooky-kart-server` per room on a shared port pool. Players press **P** on the
+select screen (Play Online), see this game's rooms (a permanent **Public** room, restarted if it dies, and any a player made
+with Create Room), and nobody types an address or a key. The hub assigns each room its own port, so the old clash of
+every server defaulting to UDP 4100 is gone: do not also run a standalone server on 4100-4116. Rooms are raw UDP (the
+engine's `development` transport, no join key); empty rooms close after two minutes.
+
+Build the server, then add this stanza to the hub's registry (`~/.config/blueengine/hub.conf`; the whole file format, the
+systemd units, router mapping and DuckDNS are in `BlueEngine/deploy/hub/README.md`):
+
+```ini
+[game spooky-kart]
+server = /home/YOU/blueengine/spooky-kart-server     # built from this repository, release mode
+public = on                                          # a Public room that is always there
+max_rooms = 4                                        # rooms players may make at once
+auto_start = 30                                      # seconds after the first player joins before the countdown
+# difficulty is this game's one room setting: 0 Easy, 1 Medium (the default), 2 Hard rivals on the bot-filled grid.
+# public_set = difficulty=1                          # the Public room's rivals
+# client_settings = difficulty                       # what Create Room may choose (the default: all)
+```
+
+`cargo build --release --no-default-features --bin spooky-kart-server`, copy it to the path above, then
+`be2-hub reload spooky-kart` (only this game's rooms are retired: a race in progress is never cut off). The hub checks the
+server with `spooky-kart-server --info` (game, content fingerprint, seats, settings) and refuses to list a build it cannot
+read. Clients compare the hub's build id with their own and say "update the game" on a mismatch.
+
+The window finds the hub from `--hub HOST:PORT`, else a `hub.txt` beside the program (line 1, `#` comments), else the hub
+used last with `--hub`, else the built-in `blue-engine.duckdns.org:4100`. `server.txt` is not read as a hub: it still
+means "a Spooky Kart server to connect to directly" (below), exactly as before.
+
+## Build and run (standalone, optional)
+
+A standalone server and direct connect (`--connect`, `server.txt`) still work and are unchanged for players; use them for a
+LAN, a QUIC/TLS server with a join key, or when you do not run the hub. The server is the engine's shared `serve` main, so it
+has the same flags as before, plus `--info`, `--status-lines`, `--exit-on-stdin-eof`, `--set ID=VALUE` and `--difficulty N`;
+SIGINT and SIGTERM now stop it cleanly. `--help` lists them. Differences from the hand-written server: the start-up lines
+read differently (`[Server] spooky-kart on ADDR, ...`), `--difficulty` takes 0, 1 or 2 (not a name), and `--help` is generated.
+Defaults are unchanged: `--listen 0.0.0.0:4100`, all eight racers (`--racers 1..8`), `--auto-start 45`, report directory
+`spooky-kart-data`, join key from `SPOOKY_KART_JOIN_KEY`.
 
 ```sh
 cargo build --release --no-default-features --bin spooky-kart-server
@@ -45,9 +85,9 @@ so strangers who find the port cannot start races: `SPOOKY_KART_JOIN_KEY=...` (o
 inside the encrypted channel. Development UDP is unencrypted; keep it on a trusted network. Verified: the real server and bot clients over
 QUIC/TLS, including a wrong join key being refused.
 
-## As a service
+## As a service (standalone)
 
-`deploy/spooky-kart-server.service` is a hardened systemd user unit.
+Under the hub you do not need this: the hub starts the servers. `deploy/spooky-kart-server.service` is a hardened systemd user unit for a standalone server, kept for hosting without the hub (it listens on 4100, which the hub also wants: use one or the other).
 
 ```sh
 mkdir -p ~/.config/spooky-kart ~/.local/share/spooky-kart
