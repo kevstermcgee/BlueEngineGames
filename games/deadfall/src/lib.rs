@@ -5,6 +5,7 @@
 //! behind the `client` feature.
 pub mod bots;
 pub mod hands;
+pub mod hub;
 pub mod input;
 pub mod level;
 pub mod nav;

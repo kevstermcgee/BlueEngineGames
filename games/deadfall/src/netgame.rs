@@ -553,7 +553,7 @@ fn read_event(r: &mut Reader) -> WireResult<Event> {
 // ---- the game -----------------------------------------------------------------------------------------------------
 
 /// A number that changes whenever the rules, the armoury or the map change.
-fn fingerprint() -> u32 {
+pub fn fingerprint() -> u32 {
     use std::sync::OnceLock;
     static F: OnceLock<u32> = OnceLock::new();
     *F.get_or_init(|| {
