@@ -9,7 +9,7 @@ use std::collections::VecDeque;
 use vesper3d::math::V;
 use vesper3d::viewer::controller::{Controller, ControllerState};
 use vesper3d::viewer::net::codec::{Reader, WireError, WireResult, Writer};
-use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat};
+use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat, SettingKind, SettingSpec};
 
 /// Bump when any layout or rule both sides must agree on changes (the fingerprint folds it in).
 pub const PROTOCOL: u32 = 1;
@@ -627,6 +627,14 @@ impl NetGame for DeadfallGame {
         read_event(r)
     }
 
+    fn settings() -> &'static [SettingSpec] {
+        SETTINGS
+    }
+    fn configure(values: &[(u8, u32)]) -> Result<(), String> {
+        sim::set_settings(settings_from(values)?);
+        Ok(())
+    }
+
     fn start(seed: u64, seats: &[Seat], _participants: usize) -> (Match, Vec<usize>) {
         let humans: Vec<(u8, String)> = seats.iter().map(|s| (s.choice, s.name.clone())).collect();
         Match::new(seed, &humans, sim::settings())
@@ -1029,6 +1037,51 @@ impl ClientView<DeadfallGame> for DeadfallView {
     }
 }
 
+// ---- room settings (hub and server flags) ------------------------------------------------------------------------
+
+/// The setting ids are on the hub's wire and in its registry: never renumber or reuse one. The names `bots` and `kills`
+/// are what the engine hub's legacy adapter maps the shipped clients' `DFHB` Create request to.
+pub const SETTING_BOTS: u8 = 1;
+pub const SETTING_KILLS: u8 = 2;
+pub const SETTING_SKILL: u8 = 3;
+pub const SETTING_MINUTES: u8 = 4;
+
+/// What a room may be asked for: `--bots`, `--kills N`, `--skill N`, `--minutes N` on `deadfall-server`, or
+/// `--set ID=VALUE` from a hub.
+pub static SETTINGS: &[SettingSpec] = &[
+    SettingSpec { id: SETTING_BOTS, name: "bots", flag: "bots", kind: SettingKind::Bool, min: 0, max: 1, default: 0 },
+    SettingSpec { id: SETTING_KILLS, name: "kills", flag: "kills", kind: SettingKind::Int, min: 1, max: 500, default: 40 },
+    SettingSpec { id: SETTING_SKILL, name: "skill", flag: "skill", kind: SettingKind::Choice, min: 0, max: 2, default: 1 },
+    SettingSpec { id: SETTING_MINUTES, name: "minutes", flag: "minutes", kind: SettingKind::Int, min: 0, max: 60, default: 0 },
+];
+
+/// The match [`Settings`] for the `(id, value)` pairs a server was started with (a missing id takes its default).
+/// `minutes` above zero ends the match on the clock and wins over `kills`; zero means the kill target.
+pub fn settings_from(values: &[(u8, u32)]) -> Result<Settings, String> {
+    let get = |id: u8| -> Result<u32, String> {
+        let spec = SETTINGS.iter().find(|s| s.id == id).expect("a known setting id");
+        let v = values.iter().find(|(i, _)| *i == id).map_or(spec.default, |(_, v)| *v);
+        if (spec.min..=spec.max).contains(&v) {
+            Ok(v)
+        } else {
+            Err(format!("{} must be {}..={}, got {v}", spec.name, spec.min, spec.max))
+        }
+    };
+    if let Some((id, _)) = values.iter().find(|(id, _)| !SETTINGS.iter().any(|s| s.id == *id)) {
+        return Err(format!("unknown setting id {id}"));
+    }
+    let minutes = get(SETTING_MINUTES)?;
+    Ok(Settings {
+        end: if minutes > 0 {
+            sim::EndRule::Time { minutes: minutes as u16 }
+        } else {
+            sim::EndRule::Kills { target: get(SETTING_KILLS)? as u16 }
+        },
+        bots: get(SETTING_BOTS)? != 0,
+        bot_skill: get(SETTING_SKILL)? as u8,
+    })
+}
+
 /// `Settings` as the lobby shows them.
 pub fn describe(s: &Settings) -> String {
     let end = match s.end {
@@ -1041,6 +1094,28 @@ pub fn describe(s: &Settings) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn room_settings_declare_stable_ids_and_build_the_match_rules() {
+        let table: Vec<_> = SETTINGS.iter().map(|s| (s.id, s.name, s.flag, s.kind, s.min, s.max, s.default)).collect();
+        assert_eq!(
+            table,
+            vec![
+                (1, "bots", "bots", SettingKind::Bool, 0, 1, 0),
+                (2, "kills", "kills", SettingKind::Int, 1, 500, 40),
+                (3, "skill", "skill", SettingKind::Choice, 0, 2, 1),
+                (4, "minutes", "minutes", SettingKind::Int, 0, 60, 0),
+            ]
+        );
+        assert_eq!(settings_from(&[]), Ok(Settings::default()), "no values means the old server's defaults");
+        let s = settings_from(&[(1, 1), (2, 25), (3, 2)]).unwrap();
+        assert_eq!((s.end, s.bots, s.bot_skill), (sim::EndRule::Kills { target: 25 }, true, 2));
+        let s = settings_from(&[(2, 25), (4, 10)]).unwrap();
+        assert_eq!(s.end, sim::EndRule::Time { minutes: 10 }, "minutes win over kills");
+        assert_eq!(settings_from(&[(4, 0), (2, 7)]).unwrap().end, sim::EndRule::Kills { target: 7 });
+        assert!(settings_from(&[(2, 0)]).is_err() && settings_from(&[(2, 501)]).is_err());
+        assert!(settings_from(&[(3, 3)]).is_err() && settings_from(&[(4, 61)]).is_err() && settings_from(&[(9, 1)]).is_err());
+    }
 
     /// The join fingerprint of the shipped clients and the deployed server. A change to a weapon number, the map or
     /// any wire layout changes it and locks every shipped client out: if this fails, either revert the change or

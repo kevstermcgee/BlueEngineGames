@@ -1,9 +1,0 @@
-[Unit]
-Description=Renew Deadfall router mappings every 30 minutes
-
-[Timer]
-OnBootSec=45s
-OnUnitActiveSec=30min
-
-[Install]
-WantedBy=timers.target
