@@ -19,7 +19,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use vesper3d::math::V;
 use vesper3d::viewer::{
-    devkit::{flag_value, has_flag},
+    devkit::{flag_value, has_flag, ShadowQuality},
     game_client::{self, GameShell},
     game_input::ClientInput,
     kit::{capture, hud, View},
@@ -148,6 +148,8 @@ struct Session {
 
 pub struct App {
     prefs: Prefs,
+    /// The shadow tier the Settings row last showed or set (a `--shadows` flag can differ from `prefs`).
+    shadow_choice: ShadowQuality,
     stats: Stats,
     renderer: Renderer,
     audio: Audio,
@@ -224,7 +226,16 @@ impl App {
     pub async fn new(args: &[String]) -> App {
         let prefs = Prefs::load();
         let level = crate::map();
-        let renderer = Renderer::new(&level);
+        let mut renderer = Renderer::new(&level);
+        // `--shadows off|simple|full` wins for this run without changing what is remembered.
+        let shadows = match ShadowQuality::from_flag(args) {
+            Ok(q) => q.unwrap_or(prefs.shadows),
+            Err(message) => {
+                eprintln!("{message}");
+                std::process::exit(2);
+            }
+        };
+        renderer.set_shadows(shadows);
         let audio = Audio::start(has_flag(args, "--mute"), prefs.volume).await;
         let vignette = hud::make_vignette();
         let mut app = App {
@@ -268,6 +279,7 @@ impl App {
             go_home: false,
             autostart: None,
             autopilot: std::env::var_os("DEADFALL_AUTOPILOT").is_some(),
+            shadow_choice: shadows,
             prefs,
         };
         app.rebuild_items();
@@ -344,6 +356,11 @@ impl App {
             Item::Toggle("Invert look".into(), p.invert_y),
             Item::Slider("Volume".into(), p.volume, 0., 1.),
             Item::Toggle("Fullscreen".into(), p.fullscreen),
+            Item::Choice(
+                "Shadows".into(),
+                ShadowQuality::ALL.iter().map(|q| q.label().to_string()).collect(),
+                ShadowQuality::ALL.iter().position(|q| *q == self.shadow_choice).unwrap_or(1),
+            ),
             Item::Gap,
             Item::Button("Back".into()),
         ];
@@ -814,9 +831,17 @@ impl App {
                         set_fullscreen(*v);
                     }
                 }
+                if let Some(Item::Choice(_, _, k)) = items.get(6) {
+                    let q = ShadowQuality::ALL[(*k).min(2)];
+                    if q != self.shadow_choice {
+                        self.shadow_choice = q;
+                        self.prefs.shadows = q;
+                        self.renderer.set_shadows(q);
+                    }
+                }
                 hud::text_centered("Keyboard: WASD move, mouse look, LMB fire, RMB aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores", cx, screen_height() - 60. * ui, 17. * ui, DIM);
                 hud::text_centered("Controller: sticks, RT fire, LT aim, A jump, B crouch, X reload, RB use, D-pad weapons, Back scores", cx, screen_height() - 36. * ui, 17. * ui, DIM);
-                if matches!(hit, Hit::Item(7) | Hit::Back) {
+                if matches!(hit, Hit::Item(8) | Hit::Back) {
                     self.prefs.sanitize();
                     self.prefs.store();
                     back(self);

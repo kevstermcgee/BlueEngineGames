@@ -6,6 +6,7 @@
 //!   deadfall --hub HOST:PORT          use another room hub for Play Online (default: server.txt next to the game, else the built-in one)
 //!   deadfall --capture DIR --frames 60,300 [--solo] [--screen stats|settings|host|join|online]
 //!                                     save screenshots of those frames, then exit (for runs nobody watches)
+//!   --shadows off|simple|full         shadow quality for this run (default: the Settings choice, else simple)
 //!   --size WxH   --mute   --novsync
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use deadfall::client::{app::App, platform};

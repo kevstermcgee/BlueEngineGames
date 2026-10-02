@@ -2,7 +2,7 @@
 use crate::stats::data_dir;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use vesper3d::viewer::devkit::{load_or_default, store_atomic};
+use vesper3d::viewer::devkit::{load_or_default, store_atomic, ShadowQuality};
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -16,6 +16,9 @@ pub struct Prefs {
     /// Sound effects and ambience volume, 0-1.
     pub volume: f32,
     pub fullscreen: bool,
+    /// Shadows: Off, Simple (soft contact shadows, the default) or Full (cast shadows). Files from before this
+    /// existed, and unknown words, read as Simple.
+    pub shadows: ShadowQuality,
     /// The last server typed in, and its key.
     pub address: String,
     pub key: String,
@@ -39,6 +42,7 @@ impl Default for Prefs {
             invert_y: false,
             volume: 0.8,
             fullscreen: false,
+            shadows: ShadowQuality::default(),
             address: String::new(),
             key: String::new(),
             kills_target: 40,
@@ -110,6 +114,30 @@ mod tests {
         assert!(p.name.len() <= 16 && !p.name.contains('\u{7}'));
         std::fs::write(&path, "garbage").unwrap();
         assert_eq!(Prefs::load_from(&path), Prefs::default());
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn shadows_default_to_simple_survive_a_round_trip_and_old_files_still_load() {
+        let dir = std::env::temp_dir().join(format!("deadfall-prefs-shadows-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("prefs.json");
+        // A file written before the setting existed keeps everything else and reads Simple.
+        std::fs::write(&path, r#"{"name": "Kev", "sensitivity": 2.0, "volume": 0.3}"#).unwrap();
+        let p = Prefs::load_from(&path);
+        assert_eq!(p.shadows, ShadowQuality::Simple);
+        assert_eq!((p.name.as_str(), p.sensitivity, p.volume), ("Kev", 2., 0.3));
+        // An unknown word falls back to Simple without discarding the file.
+        std::fs::write(&path, r#"{"name": "Kev", "shadows": "ultra"}"#).unwrap();
+        let p = Prefs::load_from(&path);
+        assert_eq!((p.shadows, p.name.as_str()), (ShadowQuality::Simple, "Kev"));
+        // Each tier is remembered.
+        for q in ShadowQuality::ALL {
+            let mut p = Prefs::default();
+            p.shadows = q;
+            std::fs::write(&path, serde_json::to_string(&p).unwrap()).unwrap();
+            assert_eq!(Prefs::load_from(&path).shadows, q);
+        }
         let _ = std::fs::remove_dir_all(dir);
     }
 }
