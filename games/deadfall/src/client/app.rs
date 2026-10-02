@@ -5,7 +5,7 @@ use super::controls::Controls;
 use super::overlay::{self, Feed};
 use super::render::{self, Figure, Renderer};
 use super::sound::{Audio, Listener};
-use super::ui::{self, Hit, Item, Menu, Nav, ACCENT, DIM, TEXT};
+use super::ui::{self, Hit, Item, Menu, Nav, TextRules, ACCENT, DIM, TEXT};
 use crate::hands::{Busy, Hands};
 use crate::netgame::{flag, DeadfallGame, Local, Snapshot};
 use crate::prefs::Prefs;
@@ -274,8 +274,8 @@ impl App {
             Item::Button("Back".into()),
         ];
         self.host_items = vec![
-            Item::Text("Port".into(), self.host_port.clone(), "4100"),
-            Item::Text("Password (optional)".into(), self.host_key.clone(), "none"),
+            Item::Text("Port".into(), self.host_port.clone(), "4100", TextRules { max: 5, charset: ui::Charset::Any }),
+            Item::Text("Password (optional)".into(), self.host_key.clone(), "none", TextRules::ANY),
             Item::Choice("Team".into(), team.clone(), p.team as usize),
             Item::Choice("Ends".into(), end_choices(), p.end_by_time as usize),
             options(p.end_by_time),
@@ -286,15 +286,15 @@ impl App {
             Item::Button("Back".into()),
         ];
         self.join_items = vec![
-            Item::Text("Server".into(), self.join_addr.clone(), "address:port"),
-            Item::Text("Password".into(), self.join_key.clone(), "none"),
+            Item::Text("Server".into(), self.join_addr.clone(), "address:port", TextRules::ADDRESS),
+            Item::Text("Password".into(), self.join_key.clone(), "none", TextRules::ANY),
             Item::Choice("Team".into(), team, p.team as usize),
             Item::Gap,
             Item::Button("Connect".into()),
             Item::Button("Back".into()),
         ];
         self.settings_items = vec![
-            Item::Text("Name".into(), p.name.clone(), "your name"),
+            Item::Text("Name".into(), p.name.clone(), "your name", TextRules::NAME),
             Item::Slider("Mouse sensitivity".into(), p.sensitivity, 0.2, 4.),
             Item::Slider("Stick sensitivity".into(), p.stick_sensitivity, 0.3, 3.),
             Item::Toggle("Invert look".into(), p.invert_y),
@@ -640,10 +640,10 @@ impl App {
                 let mut items = std::mem::take(&mut self.host_items);
                 let hit = self.menu.run(nav, &mut items, cx, 180., 560., dt);
                 self.sync_target_row(&mut items, 3, 4);
-                if let Some(Item::Text(_, v, _)) = items.first() {
+                if let Some(Item::Text(_, v, _, _)) = items.first() {
                     self.host_port = v.clone();
                 }
-                if let Some(Item::Text(_, v, _)) = items.get(1) {
+                if let Some(Item::Text(_, v, _, _)) = items.get(1) {
                     self.host_key = v.clone();
                 }
                 hud::text_centered("Friends need your address and this UDP port forwarded on your router (or a VPN such as Tailscale).", cx, screen_height() - 14. * ui, 17. * ui, DIM);
@@ -663,10 +663,10 @@ impl App {
                 self.title("join a game");
                 let mut items = std::mem::take(&mut self.join_items);
                 let hit = self.menu.run(nav, &mut items, cx, 210., 560., dt);
-                if let Some(Item::Text(_, v, _)) = items.first() {
+                if let Some(Item::Text(_, v, _, _)) = items.first() {
                     self.join_addr = v.clone();
                 }
-                if let Some(Item::Text(_, v, _)) = items.get(1) {
+                if let Some(Item::Text(_, v, _, _)) = items.get(1) {
                     self.join_key = v.clone();
                 }
                 let team = if let Some(Item::Choice(_, _, t)) = items.get(2) { *t as u8 } else { 0 };
@@ -696,7 +696,7 @@ impl App {
                 self.title("settings");
                 let mut items = std::mem::take(&mut self.settings_items);
                 let hit = self.menu.run(nav, &mut items, cx, 200., 560., dt);
-                if let Some(Item::Text(_, v, _)) = items.first() {
+                if let Some(Item::Text(_, v, _, _)) = items.first() {
                     self.prefs.name = v.chars().filter(|c| !c.is_control()).take(16).collect();
                 }
                 if let Some(Item::Slider(_, v, _, _)) = items.get(1) {

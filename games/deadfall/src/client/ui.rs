@@ -18,6 +18,65 @@ pub fn team_colour(team: usize) -> Color {
     }
 }
 
+/// Which characters a text field takes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Charset {
+    /// Anything printable.
+    Any,
+    /// A host name, IPv4 address and port: letters, digits and `. - _ :`.
+    Address,
+    /// A room name as the hub accepts it: letters, digits, spaces, apostrophes and hyphens.
+    RoomName,
+}
+
+impl Charset {
+    pub fn allows(self, c: char) -> bool {
+        if c.is_control() {
+            return false;
+        }
+        match self {
+            Charset::Any => true,
+            Charset::Address => c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_' | ':'),
+            Charset::RoomName => c.is_alphanumeric() || matches!(c, ' ' | '\'' | '-'),
+        }
+    }
+}
+
+/// How long a text field may get and what it takes.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TextRules {
+    pub max: usize,
+    pub charset: Charset,
+}
+
+impl TextRules {
+    pub const ANY: TextRules = TextRules { max: 60, charset: Charset::Any };
+    pub const NAME: TextRules = TextRules { max: 16, charset: Charset::Any };
+    pub const ADDRESS: TextRules = TextRules { max: 60, charset: Charset::Address };
+    pub const ROOM: TextRules = TextRules { max: crate::hub_client::MAX_NAME_CHARS, charset: Charset::RoomName };
+}
+
+/// Turn what the clipboard holds into what may be inserted into a field that already has `have` characters: the first
+/// line only (a copied line usually ends in a newline; a second line is not part of an address), control characters
+/// dropped, ends trimmed, characters the field does not take dropped, and no more than the field has room for.
+pub fn sanitize_paste(raw: &str, have: usize, rules: TextRules) -> String {
+    let first = raw.trim_start_matches(['\r', '\n']).split(['\r', '\n']).next().unwrap_or("");
+    let kept: String = first.chars().filter(|c| rules.charset.allows(*c)).collect();
+    let room = rules.max.saturating_sub(have);
+    // Trim before cutting to length so leading spaces do not eat the room; trim again in case the cut ends on one.
+    kept.trim().chars().take(room).collect::<String>().trim_end().to_string()
+}
+
+/// Is the paste shortcut held this frame: Ctrl+V (Cmd+V on a Mac) or Shift+Insert.
+fn paste_pressed() -> bool {
+    let ctrl = is_key_down(KeyCode::LeftControl)
+        || is_key_down(KeyCode::RightControl)
+        || is_key_down(KeyCode::LeftSuper)
+        || is_key_down(KeyCode::RightSuper);
+    let shift = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
+    (ctrl && is_key_pressed(KeyCode::V)) || (shift && is_key_pressed(KeyCode::Insert))
+}
+
 /// What the devices did this frame, gathered once.
 #[derive(Clone, Default)]
 pub struct Nav {
@@ -28,6 +87,8 @@ pub struct Nav {
     pub accept: bool,
     pub back: bool,
     pub typed: Vec<char>,
+    /// The clipboard's text when the paste shortcut was pressed this frame.
+    pub pasted: Option<String>,
     pub backspace: bool,
     pub mouse: Vec2,
     pub moved: bool,
@@ -47,6 +108,13 @@ impl Nav {
                 typed.push(c);
             }
         }
+        let pasted = if paste_pressed() {
+            // The key press may also arrive as a character ("v", or a control code): the paste replaces it.
+            typed.clear();
+            macroquad::miniquad::window::clipboard_get()
+        } else {
+            None
+        };
         Nav {
             up: step.up || is_key_pressed(KeyCode::Up),
             down: step.down || is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::Tab),
@@ -55,6 +123,7 @@ impl Nav {
             accept: select || is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::KpEnter),
             back: back || is_key_pressed(KeyCode::Escape),
             typed,
+            pasted,
             backspace: is_key_pressed(KeyCode::Backspace),
             mouse,
             moved,
@@ -69,7 +138,9 @@ pub enum Item {
     Toggle(String, bool),
     Choice(String, Vec<String>, usize),
     Slider(String, f32, f32, f32),
-    Text(String, String, &'static str),
+    Text(String, String, &'static str, TextRules),
+    /// A selectable row with text at both ends (a list entry): the label and a status.
+    Row(String, String),
     Label(String),
     Gap,
 }
@@ -213,6 +284,26 @@ impl Menu {
                         hit = Hit::Item(i);
                     }
                 }
+                Item::Row(label, status) => {
+                    draw_row(r, on, ui);
+                    hud::text_outlined(
+                        label,
+                        r.x + 18. * ui,
+                        r.y + r.h * 0.68,
+                        26. * ui,
+                        if on { ACCENT } else { TEXT },
+                    );
+                    hud::text_right(
+                        status,
+                        r.x + r.w - 18. * ui,
+                        r.y + r.h * 0.68,
+                        24. * ui,
+                        if on { ACCENT } else { DIM },
+                    );
+                    if activate {
+                        hit = Hit::Item(i);
+                    }
+                }
                 Item::Slider(t, v, lo, hi) => {
                     draw_row(r, on, ui);
                     hud::text_outlined(t, r.x + 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
@@ -236,7 +327,7 @@ impl Menu {
                         hit = Hit::Item(i);
                     }
                 }
-                Item::Text(t, v, hint) => {
+                Item::Text(t, v, hint, rules) => {
                     draw_row(r, on, ui);
                     hud::text_outlined(t, r.x + 18. * ui, r.y + r.h * 0.68, 26. * ui, if on { ACCENT } else { TEXT });
                     let caret = if on && (self.time * 2.).fract() < 0.5 { "|" } else { "" };
@@ -250,8 +341,15 @@ impl Menu {
                     );
                     if on {
                         for c in &nav.typed {
-                            if v.chars().count() < 60 {
+                            if v.chars().count() < rules.max && rules.charset.allows(*c) {
                                 v.push(*c);
+                                hit = Hit::Item(i);
+                            }
+                        }
+                        if let Some(clip) = &nav.pasted {
+                            let add = sanitize_paste(clip, v.chars().count(), *rules);
+                            if !add.is_empty() {
+                                v.push_str(&add);
                                 hit = Hit::Item(i);
                             }
                         }
@@ -293,6 +391,30 @@ pub fn panel(x: f32, y: f32, w: f32, h: f32, title: &str) {
     }
 }
 
+/// Break `text` into lines no wider than `max` by `measure`, at spaces (a single word wider than `max` stays whole).
+pub fn wrap_by(text: &str, max: f32, measure: impl Fn(&str) -> f32) -> Vec<String> {
+    let mut lines: Vec<String> = Vec::new();
+    let mut line = String::new();
+    for word in text.split_whitespace() {
+        let candidate = if line.is_empty() { word.to_string() } else { format!("{line} {word}") };
+        if !line.is_empty() && measure(&candidate) > max {
+            lines.push(std::mem::take(&mut line));
+            line = word.to_string();
+        } else {
+            line = candidate;
+        }
+    }
+    if !line.is_empty() {
+        lines.push(line);
+    }
+    lines
+}
+
+/// [`wrap_by`] at the HUD font's size.
+pub fn wrap(text: &str, max: f32, size: f32) -> Vec<String> {
+    wrap_by(text, max, |s| hud::width_of(s, size))
+}
+
 /// `seconds` as `m:ss`.
 pub fn clock(seconds: f32) -> String {
     let s = seconds.max(0.) as u32;
@@ -312,6 +434,49 @@ pub fn duration(seconds: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn pasted_text_is_one_clean_line_that_fits() {
+        let any = TextRules::ANY;
+        assert_eq!(sanitize_paste("  play.example.com:4100 \r\n", 0, TextRules::ADDRESS), "play.example.com:4100");
+        assert_eq!(sanitize_paste("\n\nfirst\nsecond", 0, any), "first");
+        assert_eq!(sanitize_paste("a\u{7}b\u{0}c\td", 0, any), "abcd", "controls are dropped");
+        assert_eq!(sanitize_paste("   \n  ", 0, any), "");
+        assert_eq!(sanitize_paste("", 0, any), "");
+        // Only what fits is taken.
+        assert_eq!(sanitize_paste("abcdefghij", 7, TextRules { max: 10, charset: Charset::Any }), "abc");
+        assert_eq!(sanitize_paste("abc", 10, TextRules { max: 10, charset: Charset::Any }), "");
+        assert_eq!(sanitize_paste("abc", 99, any), "");
+        // Counted in characters, not bytes.
+        assert_eq!(sanitize_paste("字字字字", 0, TextRules { max: 3, charset: Charset::Any }), "字字字");
+        // An address field drops what an address cannot hold.
+        assert_eq!(sanitize_paste("my host!.net:41 00", 0, TextRules::ADDRESS), "myhost.net:4100");
+        assert_eq!(sanitize_paste("192.168.1.9:4100", 0, TextRules::ADDRESS), "192.168.1.9:4100");
+        // A room name keeps its spaces, apostrophes and hyphens, and nothing else odd.
+        assert_eq!(sanitize_paste(" Kevin's room-2 <b>", 0, TextRules::ROOM), "Kevin's room-2 b");
+        assert_eq!(
+            sanitize_paste(&"x".repeat(60), 0, TextRules::ROOM).chars().count(),
+            crate::hub_client::MAX_NAME_CHARS
+        );
+        // The cut never leaves trailing space.
+        assert_eq!(sanitize_paste("ab cd", 0, TextRules { max: 3, charset: Charset::Any }), "ab");
+    }
+
+    #[test]
+    fn long_messages_wrap_at_spaces() {
+        let by_chars = |s: &str| s.chars().count() as f32;
+        assert_eq!(wrap_by("one two three four", 9., by_chars), ["one two", "three", "four"]);
+        assert_eq!(wrap_by("short", 50., by_chars), ["short"]);
+        assert_eq!(wrap_by("unbreakable", 4., by_chars), ["unbreakable"]);
+        assert!(wrap_by("   ", 4., by_chars).is_empty());
+    }
+
+    #[test]
+    fn charsets_take_what_they_should() {
+        assert!(Charset::Address.allows('a') && Charset::Address.allows(':') && !Charset::Address.allows(' '));
+        assert!(!Charset::Address.allows('/') && !Charset::Any.allows('\n') && Charset::Any.allows('é'));
+        assert!(Charset::RoomName.allows(' ') && Charset::RoomName.allows('\'') && !Charset::RoomName.allows('!'));
+    }
 
     #[test]
     fn times_read_naturally() {
