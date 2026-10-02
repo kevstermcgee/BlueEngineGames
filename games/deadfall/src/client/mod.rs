@@ -5,6 +5,7 @@ pub mod arms;
 pub mod audio;
 pub mod character;
 pub mod level_view;
+pub mod online;
 pub mod platform;
 pub mod previewkit;
 pub mod weapon_models;
