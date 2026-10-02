@@ -23,6 +23,10 @@ name = "deadfall-server"
 path = "src/bin/server.rs"
 
 [[bin]]
+name = "deadfall-hub"
+path = "src/bin/hub.rs"
+
+[[bin]]
 name = "preview"
 path = "src/bin/preview.rs"
 required-features = ["client"]
