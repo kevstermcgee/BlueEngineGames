@@ -1,13 +1,13 @@
 //! The race: a pure, deterministic, fixed-step simulation of up to eight karts on Haunted Hollow.
 //! Humans supply one `KartInput` a tick; bots are driven from inside (`bot::drive`), so they replay
 //! identically and are part of a save.
-use crate::bot;
+use crate::bot::{self, Difficulty};
 use crate::character::{Character, Perk, ALL, MAX_RACERS};
 use crate::kart::{Driver, Kart, KartInput};
 use crate::track::{forward, Track};
 use serde::{Deserialize, Serialize};
 use vesper3d::math::V;
-use vesper3d::viewer::devkit::{Rng, SavePolicy, Simulation, Snapshot, StateHasher, TICK};
+use vesper3d::viewer::devkit::{Migration, Rng, SavePolicy, Simulation, Snapshot, StateHasher, TICK};
 
 /// Ticks of countdown before the start (the lights show 3, 2, 1).
 pub const COUNTDOWN_TICKS: u32 = 240;
@@ -103,6 +103,8 @@ pub struct Sim {
     pub first_finish: Option<u32>,
     pub finished_count: u32,
     pub seed: u64,
+    /// How hard the bots drive (offline choice; online races run at Medium).
+    pub difficulty: Difficulty,
     track: Track,
     rng: Rng,
     events: Vec<Event>,
@@ -118,6 +120,11 @@ impl Sim {
 
     /// A race with exactly these drivers, in grid order (at most eight).
     pub fn with_grid(seed: u64, grid: &[(Character, Driver)]) -> Self {
+        Self::with_difficulty(seed, grid, Difficulty::default())
+    }
+
+    /// [`Sim::with_grid`] with the bots driving at `difficulty`.
+    pub fn with_difficulty(seed: u64, grid: &[(Character, Driver)], difficulty: Difficulty) -> Self {
         let track = Track::haunted_hollow();
         let mut rng = Rng::new(seed);
         let karts = grid
@@ -126,7 +133,8 @@ impl Sim {
             .enumerate()
             .map(|(slot, (character, driver))| {
                 let (pos, yaw) = track.grid_slot(slot);
-                Kart::new(*character, *driver, pos, yaw, &track, rng.range(0.85, 1.0))
+                let (lo, hi) = difficulty.tuning().skill_range;
+                Kart::new(*character, *driver, pos, yaw, &track, rng.range(lo, hi))
             })
             .collect();
         Self {
@@ -138,6 +146,7 @@ impl Sim {
             first_finish: None,
             finished_count: 0,
             seed,
+            difficulty,
             track,
             rng,
             events: Vec::new(),
@@ -529,7 +538,8 @@ impl Simulation for Sim {
                     h.u64(self.tick)
                         .u32(self.race_tick)
                         .u32(self.finished_count)
-                        .u32(self.first_finish.unwrap_or(u32::MAX));
+                        .u32(self.first_finish.unwrap_or(u32::MAX))
+                        .u32(self.difficulty.index() as u32);
                     match self.phase {
                         Phase::Countdown(n) => h.u32(n),
                         Phase::Racing => h.u32(u32::MAX - 1),
@@ -585,11 +595,21 @@ pub struct SimState {
     pub finished_count: u32,
     pub seed: u64,
     pub rng: Rng,
+    /// Added in save version 2; older saves were all played at `Medium`.
+    pub difficulty: Difficulty,
 }
 
 impl Snapshot for Sim {
     const KIND: &'static str = "spooky-kart";
     const POLICY: SavePolicy = SavePolicy::Exact;
+    const VERSION: u32 = 2;
+    const MIGRATIONS: &'static [Migration] = &[Migration {
+        from: 1,
+        step: |mut v| {
+            v.as_object_mut().ok_or("the save is not an object")?.insert("difficulty".into(), "Medium".into());
+            Ok(v)
+        },
+    }];
     type State = SimState;
     fn capture(&self) -> SimState {
         SimState {
@@ -602,6 +622,7 @@ impl Snapshot for Sim {
             finished_count: self.finished_count,
             seed: self.seed,
             rng: self.rng.clone(),
+            difficulty: self.difficulty,
         }
     }
     /// Refuse a state this game could not have produced; the caller then keeps the running race.
@@ -628,6 +649,7 @@ impl Snapshot for Sim {
         self.finished_count = state.finished_count;
         self.seed = state.seed;
         self.rng = state.rng;
+        self.difficulty = state.difficulty;
         self.events.clear();
         Ok(())
     }

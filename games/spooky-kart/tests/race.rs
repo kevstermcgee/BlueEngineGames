@@ -3,7 +3,7 @@
 use spooky_kart::character::{ALL, MAX_RACERS};
 use spooky_kart::sim::{COUNTDOWN_TICKS, LAPS};
 use spooky_kart::track::{forward, HALF_WIDTH, SHOULDER};
-use spooky_kart::{Character, Driver, Event, Inputs, KartInput, Perk, Phase, Sim, Track};
+use spooky_kart::{Character, Difficulty, Driver, Event, Inputs, KartInput, Perk, Phase, Sim, Track};
 use vesper3d::math::V;
 use vesper3d::viewer::devkit::{assert_deterministic, run_inputs, snapshot, Simulation};
 
@@ -460,4 +460,238 @@ fn a_bad_save_is_refused_and_the_running_race_is_left_alone() {
     assert_eq!(sim.state_hash(), before, "a refused load changes nothing");
     snapshot::restore(&mut sim, &bytes).unwrap();
     assert_eq!(sim.tick, 400);
+}
+
+/// The game's grid: the human fifth, the other seven characters as bots.
+fn game_grid(human: Character) -> (Vec<(Character, Driver)>, usize) {
+    let mut grid: Vec<_> = ALL.iter().filter(|c| **c != human).map(|c| (*c, Driver::Bot)).collect();
+    let slot = 5.min(grid.len());
+    grid.insert(slot, (human, Driver::Human));
+    (grid, slot)
+}
+
+/// What `--autopilot` does: the human's kart steered by a Medium bot while the rivals drive at `difficulty`.
+/// Returns (finishing place, finish seconds) of the autopilot.
+fn autopilot_race(seed: u64, human: Character, difficulty: Difficulty) -> (u32, f32) {
+    let (grid, me) = game_grid(human);
+    let mut sim = Sim::with_difficulty(seed, &grid, difficulty);
+    let mut ticks = 0;
+    while !sim.is_over() && ticks < 60 * 60 * 8 {
+        let mut inputs = Inputs::default();
+        inputs.0[me] = spooky_kart::bot::drive_as(&sim, me, Difficulty::Medium);
+        sim.step(&inputs);
+        ticks += 1;
+    }
+    assert!(sim.is_over());
+    let r = &sim.report().racers[me];
+    (r.place, r.finish_seconds.unwrap_or(600.))
+}
+
+#[test]
+fn difficulty_maps_to_names_steps_and_tunings_that_get_harder() {
+    assert_eq!("easy".parse(), Ok(Difficulty::Easy));
+    assert_eq!("HARD".parse(), Ok(Difficulty::Hard));
+    assert_eq!("Medium".parse(), Ok(Difficulty::Medium));
+    assert!("nightmare".parse::<Difficulty>().is_err());
+    assert_eq!(Difficulty::default(), Difficulty::Medium);
+    assert_eq!(Difficulty::Easy.step(-1), Difficulty::Easy, "the ends do not wrap");
+    assert_eq!(Difficulty::Easy.step(1), Difficulty::Medium);
+    assert_eq!(Difficulty::Medium.step(1), Difficulty::Hard);
+    assert_eq!(Difficulty::Hard.step(1), Difficulty::Hard);
+    let [e, m, h] = Difficulty::ALL.map(|d| d.tuning());
+    assert!(e.bend_cap > m.bend_cap && m.bend_cap > h.bend_cap, "harder bots slow less for a bend");
+    assert!(e.pace < m.pace && m.pace <= h.pace);
+    assert!(e.skill_range.0 < m.skill_range.0 && m.skill_range.0 < h.skill_range.0);
+    assert!(e.look_base < m.look_base && m.look_base < h.look_base);
+}
+
+#[test]
+fn the_difficulty_is_kept_by_the_race_and_by_a_save() {
+    for d in Difficulty::ALL {
+        let (grid, _) = game_grid(Character::Vampire);
+        let mut sim = Sim::with_difficulty(5, &grid, d);
+        assert_eq!(sim.difficulty, d);
+        for _ in 0..30 {
+            sim.step(&idle());
+        }
+        let bytes = snapshot::save(&sim, "d").unwrap();
+        let mut fresh = Sim::with_difficulty(5, &grid, Difficulty::Medium);
+        snapshot::restore(&mut fresh, &bytes).unwrap();
+        assert_eq!(fresh.difficulty, d, "a load brings back the difficulty it was saved at");
+        assert_eq!(fresh.state_hash(), sim.state_hash());
+    }
+    let (grid, _) = game_grid(Character::Vampire);
+    let (a, b) = (Sim::with_difficulty(5, &grid, Difficulty::Easy), Sim::with_difficulty(5, &grid, Difficulty::Hard));
+    assert_ne!(a.state_hash(), b.state_hash(), "the difficulty is part of the save hash");
+    assert_eq!(Sim::with_grid(5, &grid).difficulty, Difficulty::Medium, "online races stay at Medium");
+}
+
+#[test]
+fn every_difficulty_replays_identically_and_saves_resume_exactly() {
+    for d in Difficulty::ALL {
+        assert_deterministic(|| Sim::with_difficulty(7, &game_grid(Character::Vampire).0, d), &scripted());
+        snapshot::assert_resumes_as_promised(
+            || Sim::with_difficulty(7, &game_grid(Character::Vampire).0, d),
+            &scripted(),
+            60,
+        );
+    }
+}
+
+#[test]
+fn bots_drive_faster_the_harder_the_difficulty() {
+    let mut mean = [0f32; 3];
+    let seeds = 6u64;
+    for seed in 0..seeds {
+        for d in Difficulty::ALL {
+            let grid: Vec<_> = ALL.iter().map(|c| (*c, Driver::Bot)).collect();
+            let mut sim = Sim::with_difficulty(seed + 50, &grid, d);
+            let mut ticks = 0;
+            while !sim.is_over() && ticks < 60 * 60 * 8 {
+                sim.step(&idle());
+                ticks += 1;
+            }
+            assert!(sim.is_over());
+            let finishers: Vec<f32> = sim.report().racers.iter().map(|r| r.finish_seconds.unwrap_or(600.)).collect();
+            mean[d.index()] += finishers.iter().sum::<f32>() / finishers.len() as f32 / seeds as f32;
+        }
+    }
+    println!("mean bot finish time: easy {:.1}s medium {:.1}s hard {:.1}s", mean[0], mean[1], mean[2]);
+    assert!(mean[0] > mean[1] + 3. && mean[1] > mean[2] + 2., "{mean:?}");
+}
+
+/// A measurement with teeth: the same Medium-level autopilot finishes near the front against Easy bots and
+/// mid-pack or worse against Hard ones. Run with `--nocapture` to see the table.
+#[test]
+fn the_autopilot_places_better_against_easy_bots_than_hard_ones() {
+    let seeds = 8u64;
+    let mut sum = [0f32; 3];
+    let mut top3 = [0u32; 3];
+    println!("\n{:<8} {:>12} {:>10}", "bots", "avg place", "top-3");
+    for d in Difficulty::ALL {
+        let mut times = 0.;
+        for seed in 0..seeds {
+            let (place, secs) = autopilot_race(seed + 1, Character::Vampire, d);
+            sum[d.index()] += place as f32;
+            times += secs;
+            top3[d.index()] += (place <= 3) as u32;
+        }
+        println!(
+            "{:<8} {:>12.2} {:>7}/{seeds}   avg time {:.1}s",
+            d.name(),
+            sum[d.index()] / seeds as f32,
+            top3[d.index()],
+            times / seeds as f32
+        );
+    }
+    let avg = sum.map(|s| s / seeds as f32);
+    assert!(avg[0] <= 3.0, "autopilot should usually be top-3 against Easy: {avg:?}");
+    assert!(avg[2] >= 4.5, "autopilot should be mid-pack or worse against Hard: {avg:?}");
+    assert!(avg[0] < avg[1] && avg[1] < avg[2], "{avg:?}");
+}
+
+/// Twice the signed area of the triangle `a b c` in (x, z).
+fn orient(a: [f32; 2], b: [f32; 2], c: [f32; 2]) -> f32 {
+    (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+}
+
+/// Do segments `ab` and `cd` cross (a shared end does not count)?
+fn crosses(a: [f32; 2], b: [f32; 2], c: [f32; 2], d: [f32; 2]) -> bool {
+    orient(a, b, c) * orient(a, b, d) < 0. && orient(c, d, a) * orient(c, d, b) < 0.
+}
+
+/// What is drawn along the road: the road edge, kerb, verge and wall lines are strips of quads between
+/// offset lines. A strip that folds over (an inner offset doubling back at a tight bend) flickers and shows
+/// as glitching geometry, so every drawn line must stay a clean, ordered ribbon around the whole lap.
+#[test]
+fn the_drawn_border_never_folds_over_at_a_bend() {
+    use spooky_kart::border::Border;
+    let track = Track::haunted_hollow();
+    let border = Border::new(&track);
+    let n = border.len();
+    assert_eq!(n, track.samples().len());
+    // Every line the world draws, left to right: wall, verge edge, kerb inner edge, centre, and mirrored.
+    let wall = HALF_WIDTH + SHOULDER;
+    let paved = HALF_WIDTH - 0.6;
+    let laterals = [-wall, -HALF_WIDTH, -paved, 0., paved, HALF_WIDTH, wall];
+    let lines: Vec<Vec<[f32; 2]>> = laterals.iter().map(|&l| border.line(l)).collect();
+
+    for (line, &lat) in lines.iter().zip(&laterals) {
+        let mut collapsed = 0;
+        for i in 0..n {
+            let (p0, p1) = (line[i], line[(i + 1) % n]);
+            // 1. Each line keeps advancing in the direction of travel, or sits still where a cut-off loop
+            //    folded onto one point; a fold would reverse a segment.
+            let t = border.tangent(i);
+            let advance = (p1[0] - p0[0]) * t[0] + (p1[1] - p0[1]) * t[1];
+            assert!(advance >= -1e-3, "line {lat:+} m folds back at sample {i} (advances {advance:.3} m)");
+            if advance < 0.05 {
+                collapsed += 1;
+            }
+            // 2. No two nearby segments of one line cross each other.
+            for j in i + 2..i + 12 {
+                if (j + 1) % n == i {
+                    continue;
+                }
+                let (q0, q1) = (line[j % n], line[(j + 1) % n]);
+                assert!(!crosses(p0, p1, q0, q1), "line {lat:+} m crosses itself between samples {i} and {j}");
+            }
+        }
+        // The road, kerb and verge edge never need cutting; only the wall, out past the tightest bends'
+        // radius, may fold onto a corner, and only at a few samples.
+        if lat.abs() <= HALF_WIDTH {
+            assert_eq!(collapsed, 0, "line {lat:+} m was cut");
+        } else {
+            assert!(collapsed <= 20, "the wall collapses at {collapsed} samples");
+        }
+    }
+
+    // 3. Between each pair of neighbouring lines every quad keeps one winding (a cut loop may leave a
+    //    zero-area triangle): none is inverted, so no strip has turned inside out. The renderer would
+    //    otherwise quietly re-wind it and hide the fold. Left to right across a road that runs forward
+    //    winds negative in (x, z).
+    for (pair, lats) in lines.windows(2).zip(laterals.windows(2)) {
+        for i in 0..n {
+            let q = [pair[0][i], pair[1][i], pair[1][(i + 1) % n], pair[0][(i + 1) % n]];
+            let (t1, t2) = (orient(q[0], q[1], q[2]), orient(q[0], q[2], q[3]));
+            assert!(
+                t1 <= 1e-3 && t2 <= 1e-3,
+                "strip {:+}..{:+} m is inverted at sample {i} ({t1:.4}, {t2:.4})",
+                lats[0],
+                lats[1]
+            );
+        }
+    }
+
+    // 4. Left stays left of right: at each sample the lines are ordered across the road.
+    for i in 0..n {
+        let t = border.tangent(i);
+        let right = [-t[1], t[0]];
+        let c = border.centre(i);
+        let mut last = f32::MIN;
+        for (line, &lat) in lines.iter().zip(&laterals) {
+            let across = (line[i][0] - c[0]) * right[0] + (line[i][1] - c[1]) * right[1];
+            assert!(across >= last - 1e-2, "lines swap sides at sample {i} ({lat:+} m)");
+            last = across;
+        }
+    }
+}
+
+/// The drawn wall stands where the physics wall does: every point on it is the wall distance from the
+/// centreline (within the mitre's small stretch round a corner), including on the inside of the tightest
+/// bends, where a naive offset would fold or pull away.
+#[test]
+fn the_drawn_wall_stands_where_the_physics_wall_does() {
+    use spooky_kart::border::Border;
+    let track = Track::haunted_hollow();
+    let border = Border::new(&track);
+    let wall = HALF_WIDTH + SHOULDER;
+    assert_eq!(wall, track.wall());
+    for side in [-1., 1.] {
+        for (i, p) in border.line(side * wall).iter().enumerate() {
+            let near = track.nearest_global(V(p[0], 0., p[1]));
+            let d = ((p[0] - near.center.0).powi(2) + (p[1] - near.center.2).powi(2)).sqrt();
+            assert!((d - wall).abs() < 0.3, "wall point {i} on side {side:+} is {d:.2} m out, not {wall}");
+        }
+    }
 }

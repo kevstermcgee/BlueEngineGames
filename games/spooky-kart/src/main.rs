@@ -8,8 +8,10 @@
 //!   --debug-input   print the input gate and held state once a second (for "my keys do nothing" reports)
 //!   --select   open on the character select screen even when capturing
 //!   --character NAME   start a race at once as this driver (any part of the name: ghost, frank, ...)
+//!   --difficulty easy|medium|hard   how hard the offline bots drive (default medium; also pickable on the select screen)
 //!   --seed N   --size WxH   --mute   --perf           reproducible run, window size, silence, frame times
 //!   --load SLOT_OR_FILE   --save-dir DIR                resume a saved race / where F5 saves (default: next to the exe)
+//! Music and sound effects can be switched in the Esc menu's Settings (remembered in settings.json next to the exe).
 //! Keyboard: W/S gas and brake, A/D steer, Shift drift, Space perk, F5/F9 quick save and load, Esc menu.
 //! Controller: right trigger (or A) gas, left trigger brake, left stick steer, bumpers drift, X perk.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -19,13 +21,19 @@ mod platform;
 use macroquad::prelude::*;
 use spooky_kart::{
     controls::{self, Raw},
+    music,
     track::{forward, wrap_angle, yaw_of},
-    Character, Driver, Event, HazardKind, Inputs, Kart, KartGame, KartInput, Perk, Phase, Sim, ALL, LAPS, MAX_RACERS,
+    Character, Difficulty, Driver, Event, HazardKind, Inputs, Kart, KartGame, KartInput, Perk, Phase, Sim, ALL, LAPS,
+    MAX_RACERS,
 };
 use std::net::ToSocketAddrs;
+use std::sync::{Arc, OnceLock};
 use vesper3d::viewer::{
-    devkit::{flag_value, has_flag, parse_size, synth, Juice, Lifecycle, Notice},
-    game_client::{self, GameShell},
+    devkit::{
+        beside_exe, downloads_dir, flag_value, has_flag, parse_size, sanitize_filename, synth, unique_path, Juice,
+        Lifecycle, Notice, Settings,
+    },
+    game_client::{self, AudioMenu, GameShell},
     game_input::ClientInput,
     gamepad::Button,
     identity::Identity,
@@ -88,13 +96,27 @@ const SOUNDS: [synth::Preset; 9] = [
 fn sound(preset: synth::Preset) -> usize {
     SOUNDS.iter().position(|p| *p == preset).unwrap_or(0)
 }
-fn render_audio() -> Rendered {
+/// The race music (spooky_kart::music): three synced stems, base / melodic / lead, faded with the race.
+const HAS_MUSIC: bool = true;
+
+/// Renders on the worker thread. `music_wav` is filled once with the whole loop (all three layers mixed) so
+/// the Settings screen's "Save music" button can hand over the exact track without regenerating it.
+fn render_audio(music_wav: Arc<OnceLock<Vec<u8>>>) -> Rendered {
+    let stems = if HAS_MUSIC {
+        let loop_ = synth::music_loop(&music::SPEC);
+        let mix: Vec<f32> =
+            loop_.base.iter().zip(&loop_.melodic).zip(&loop_.lead).map(|((a, b), c)| (a + b + c) * 0.5).collect();
+        let _ = music_wav.set(synth::wav_bytes(&mix, synth::RATE));
+        [&loop_.base, &loop_.melodic, &loop_.lead].map(|stem| synth::wav_bytes(stem, synth::RATE)).to_vec()
+    } else {
+        Vec::new()
+    };
     Rendered {
         sfx: SOUNDS
             .iter()
             .map(|p| (0..p.variants()).map(|v| synth::wav_bytes(&synth::render(*p, v, 7), synth::RATE)).collect())
             .collect(),
-        stems: Vec::new(),
+        stems,
     }
 }
 
@@ -149,11 +171,11 @@ fn v3(p: vesper3d::math::V) -> Vec3 {
 }
 
 /// Where `human` starts: the fifth grid slot, so there is always someone to chase.
-fn new_race(seed: u64, human: Character) -> (Sim, usize) {
+fn new_race(seed: u64, human: Character, difficulty: Difficulty) -> (Sim, usize) {
     let mut grid: Vec<(Character, Driver)> = ALL.iter().filter(|c| **c != human).map(|c| (*c, Driver::Bot)).collect();
     let slot = 5.min(grid.len());
     grid.insert(slot, (human, Driver::Human));
-    (Sim::with_grid(seed, &grid), slot)
+    (Sim::with_difficulty(seed, &grid, difficulty), slot)
 }
 
 fn character_from(name: &str) -> Option<Character> {
@@ -255,6 +277,27 @@ fn react(event: &Event, sim: &Sim, me: usize, sounds: &mut SoundBank, fx: &mut F
     }
 }
 
+/// Write the race music to the player's Downloads folder as a `.wav`, never overwriting an earlier save.
+fn save_music(music_wav: &OnceLock<Vec<u8>>, title: &str) -> Notice {
+    let fail = |detail: String, ok_colour: bool| Notice {
+        title: "SAVE FAILED",
+        detail,
+        color: if ok_colour { [1., 0.7, 0.3] } else { [1., 0.5, 0.3] },
+        ok: false,
+    };
+    let Some(bytes) = music_wav.get() else {
+        return fail("the music is still rendering; try again in a moment".into(), true);
+    };
+    let Some(dir) = downloads_dir() else {
+        return fail("could not find your Downloads folder".into(), false);
+    };
+    let path = unique_path(&dir, &format!("{} - Race Music", sanitize_filename(title)), "wav");
+    match std::fs::create_dir_all(&dir).and_then(|()| std::fs::write(&path, bytes)) {
+        Ok(()) => Notice { title: "MUSIC SAVED", detail: path.display().to_string(), color: [0.4, 0.9, 0.6], ok: true },
+        Err(error) => fail(error.to_string(), false),
+    }
+}
+
 /// Show the outcome of a quick save or load.
 fn announce(fx: &mut Fx, notice: &Notice) {
     fx.banners.clear();
@@ -274,11 +317,56 @@ fn stat_bar(label: &str, value: f32, x: f32, y: f32, w: f32, ui: f32, colour: Co
     hud::bar(x + 120. * ui, y, w, 18. * ui, value.clamp(0., 1.), colour);
 }
 
-fn draw_select(choice: usize, time: f32, ui: f32, prompt: &str) {
+/// The Easy / Medium / Hard chips and a line about the chosen one (offline only).
+fn draw_difficulty(current: Difficulty, ui: f32) {
+    let w = screen_width();
+    let (cw, ch, gap, y) = (130. * ui, 34. * ui, 12. * ui, 118. * ui);
+    let total = cw * 3. + gap * 2.;
+    hud::text_outlined(
+        "Rivals",
+        w * 0.5 - total * 0.5 - 90. * ui,
+        y + 24. * ui,
+        18. * ui,
+        hud::col([0.8, 0.7, 1.], 1.),
+    );
+    for (i, d) in Difficulty::ALL.iter().enumerate() {
+        let x = w * 0.5 - total * 0.5 + i as f32 * (cw + gap);
+        let on = *d == current;
+        hud::panel(
+            x,
+            y,
+            cw,
+            ch,
+            8. * ui,
+            if on { Color::new(0.35, 0.15, 0.05, 0.92) } else { Color::new(0.05, 0.02, 0.12, 0.7) },
+        );
+        let tint = match d {
+            Difficulty::Easy => [0.4, 0.9, 0.5],
+            Difficulty::Medium => [1., 0.8, 0.3],
+            Difficulty::Hard => [1., 0.4, 0.35],
+        };
+        if on {
+            draw_rectangle(x + 10. * ui, y + ch - 7. * ui, cw - 20. * ui, 3. * ui, hud::col(tint, 1.));
+        }
+        hud::text_centered(
+            &d.name().to_uppercase(),
+            x + cw * 0.5,
+            y + 23. * ui,
+            18. * ui,
+            if on { WHITE } else { hud::col([0.7, 0.65, 0.85], 1.) },
+        );
+    }
+    hud::text_centered(current.blurb(), w * 0.5, y + ch + 24. * ui, 16. * ui, hud::col([1., 0.9, 0.6], 1.));
+}
+
+fn draw_select(choice: usize, time: f32, ui: f32, prompt: &str, difficulty: Option<Difficulty>) {
     let c = Character::from_index(choice);
     let (w, h) = (screen_width(), screen_height());
     hud::text_centered("SPOOKY KART", w * 0.5, 60. * ui, 54. * ui, hud::col([1., 0.55, 0.1], 1.));
     hud::text_centered("Choose your driver", w * 0.5, 96. * ui, 20. * ui, hud::col([0.8, 0.7, 1.], 1.));
+    if let Some(d) = difficulty {
+        draw_difficulty(d, ui);
+    }
     // The driver card.
     let (px, py, pw) = (40. * ui, h * 0.5 - 130. * ui, 360. * ui);
     hud::panel(px, py, pw, 300. * ui, 14. * ui, Color::new(0.05, 0.02, 0.12, 0.75));
@@ -530,7 +618,7 @@ fn draw_lobby(client: &Client, choice: usize, my_ready: bool, time: f32, ui: f32
     } else {
         "A / D or left stick to choose    Enter or A when ready    O: practice offline"
     };
-    draw_select(choice, time, ui, prompt);
+    draw_select(choice, time, ui, prompt, None);
     let (pw, px, py) = (330. * ui, w - 370. * ui, h * 0.5 - 130. * ui);
     hud::panel(px, py, pw, 300. * ui, 14. * ui, Color::new(0.05, 0.02, 0.12, 0.75));
     match client.state() {
@@ -654,15 +742,31 @@ async fn main() {
     let seed = life.seed();
     let unattended = life.options.unattended();
     let direct = flag_value(&args, "--character").and_then(character_from);
+    let mut difficulty = match flag_value(&args, "--difficulty").map(|d| d.parse::<Difficulty>()) {
+        Some(Ok(d)) => d,
+        Some(Err(e)) => {
+            eprintln!("{e}");
+            std::process::exit(2);
+        }
+        None => Difficulty::default(),
+    };
     let autopilot = has_flag(&args, "--autopilot");
     let debug_input = has_flag(&args, "--debug-input");
     let mut last_debug = u32::MAX;
 
     let materials = Materials::load().expect("the materials failed to compile");
     let look = halloween_look();
-    let (mut sim, mut me) = new_race(seed, direct.unwrap_or(Character::Vampire));
+    let (mut sim, mut me) = new_race(seed, direct.unwrap_or(Character::Vampire), difficulty);
     let scene = build_scene(&sim);
-    let mut sounds = SoundBank::start(life.options.silent(), 0.9, 0.6, render_audio).await;
+    // Audio settings survive a relaunch next to the exe; `music_wav` is filled by the render thread.
+    let settings_path = beside_exe("settings.json");
+    let mut settings = Settings::load(&settings_path);
+    let music_wav: Arc<OnceLock<Vec<u8>>> = Arc::new(OnceLock::new());
+    let mut sounds = SoundBank::start(life.options.silent(), settings.sfx_level(), settings.music_level(), {
+        let music_wav = music_wav.clone();
+        move || render_audio(music_wav)
+    })
+    .await;
     let mut shell = GameShell::new();
     let mut input = ClientInput::new();
     let (mut fx, mut juice) = (Fx::new(seed), Juice::default());
@@ -698,6 +802,7 @@ async fn main() {
     let mut choice_changed = f32::NEG_INFINITY;
     if client.is_none() {
         life.load_flag_or_exit(&mut sim);
+        difficulty = sim.difficulty;
     }
     let vignette = hud::make_vignette();
     let (mut world, mut alpha, mut add) = (Batch::new(), Batch::new(), Batch::new());
@@ -710,6 +815,13 @@ async fn main() {
         if sounds.ready() {
             sounds.start_music();
         }
+        // The layers follow the race on screen (the network client's predicted view when online).
+        let race_view = match (&screen, &client) {
+            (Screen::Race, Some(c)) => c.participant().map(|m| (c.view().sim(), m)),
+            (Screen::Race, None) => Some((&sim, me)),
+            _ => None,
+        };
+        sounds.update_music(dt, &music::layers(race_view));
         let ui = hud::ui_scale();
         let pad = input.gamepad().clone();
         let menu_step = input.menu_step();
@@ -793,9 +905,19 @@ async fn main() {
                     choice = (choice + 1) % MAX_RACERS;
                     sounds.play(sound(synth::Preset::Blip), 0.5);
                 }
+                // Up / Down (W / S, or the stick) set how hard the rivals drive; not while the pause menu has the keys.
+                if !shell.paused {
+                    let harder = input.pressed(KeyCode::S) || input.pressed(KeyCode::Down) || menu_step.down;
+                    let easier = input.pressed(KeyCode::W) || input.pressed(KeyCode::Up) || menu_step.up;
+                    let next = difficulty.step(i32::from(harder) - i32::from(easier));
+                    if next != difficulty {
+                        difficulty = next;
+                        sounds.play(sound(synth::Preset::Blip), 0.5);
+                    }
+                }
                 if input.pressed(KeyCode::Enter) || input.pressed(KeyCode::Space) || input.menu_select() {
                     sounds.play(sound(synth::Preset::Select), 0.8);
-                    let (s, slot) = new_race(life.restart_seed(), Character::from_index(choice));
+                    let (s, slot) = new_race(life.restart_seed(), Character::from_index(choice), difficulty);
                     sim = s;
                     me = slot;
                     fx.clear();
@@ -862,12 +984,13 @@ async fn main() {
                         let notice = life.quick_load(&mut sim);
                         announce(&mut fx, &notice);
                         if notice.ok {
+                            difficulty = sim.difficulty;
                             juice = Juice::default();
                         }
                     }
                     if sim.is_over() && input.pressed(KeyCode::R) {
                         let human = sim.karts[me].character;
-                        let (s, slot) = new_race(life.restart_seed(), human);
+                        let (s, slot) = new_race(life.restart_seed(), human, difficulty);
                         sim = s;
                         me = slot;
                         fx.clear();
@@ -907,7 +1030,8 @@ async fn main() {
                         let tick = life.take_tick();
                         let mut inputs = Inputs::default();
                         inputs.0[me] = if autopilot {
-                            spooky_kart::bot::drive(&sim, me)
+                            // A steady Medium-level driver whatever the rivals are set to.
+                            spooky_kart::bot::drive_as(&sim, me, Difficulty::Medium)
                         } else {
                             KartInput {
                                 throttle: tick.held.throttle,
@@ -975,7 +1099,7 @@ async fn main() {
         for mesh in &scene.sky {
             draw_mesh(mesh);
         }
-        set_camera(&view.camera(0.1, 700.));
+        set_camera(&view.camera(0.3, 700.));
         materials.set_scene(&look, view.eye, time, 0.5 + 0.5 * (time * 3.).sin());
         world.clear();
         alpha.clear();
@@ -985,18 +1109,23 @@ async fn main() {
                 for (i, k) in view_sim.karts.iter().enumerate() {
                     let lean = if k.drifting { -k.drift_dir * 0.12 } else { 0. };
                     let slide = if k.drifting { k.drift_dir * 0.3 } else { 0. };
-                    let bob = 0.03 * (time * 30. + i as f32).sin() * (k.speed() / 25.).min(1.);
+                    // The kart only ever lifts: a bob that dips would sink the wheels into the road.
+                    let bob = 0.025 * (0.5 + 0.5 * (time * 30. + i as f32).sin()) * (k.speed() / 25.).min(1.);
                     let m = Mat4::from_translation(vec3(k.pos.0, bob, k.pos.2))
                         * Mat4::from_rotation_y(-(k.yaw + slide))
                         * Mat4::from_rotation_z(lean);
                     let template = &scene.karts[k.character.index()];
-                    if k.phased() {
-                        alpha.add(template, m, Tint::alpha(0.35));
+                    // Phasing stays opaque (a translucent kart drawn unsorted without depth writes shows its
+                    // insides, and which ones flips as the camera moves): a cold spectral tint and extra glow
+                    // say "ghost" without flicker.
+                    let tint = if k.phased() {
+                        Tint { mul: [0.45, 0.75, 1.3], add: [0.06, 0.2, 0.32], alpha: 1., glow: 1.8 }
+                    } else if k.slow_ticks > 0 {
+                        Tint { mul: [0.8, 0.7, 1.], ..Tint::NONE }
                     } else {
-                        let tint =
-                            if k.slow_ticks > 0 { Tint { mul: [0.8, 0.7, 1.], ..Tint::NONE } } else { Tint::NONE };
-                        world.add(template, m, tint);
-                    }
+                        Tint::NONE
+                    };
+                    world.add(template, m, tint);
                 }
                 for h in &view_sim.hazards {
                     let m = Mat4::from_translation(vec3(h.pos.0, 0., h.pos.2));
@@ -1031,7 +1160,13 @@ async fn main() {
             draw_rectangle(0., 0., screen_width(), screen_height(), hud::col(juice.flash_color, juice.flash * 0.4));
         }
         match screen {
-            Screen::Select => draw_select(choice, time, ui, "A / D or left stick to choose    Enter or A to race"),
+            Screen::Select => draw_select(
+                choice,
+                time,
+                ui,
+                "A / D or left stick: driver     W / S or up / down: rivals     Enter or A to race",
+                Some(difficulty),
+            ),
             Screen::Lobby => {
                 if let Some(c) = &client {
                     draw_lobby(c, choice, my_ready, time, ui);
@@ -1056,7 +1191,22 @@ async fn main() {
             }
         }
         let controls: Vec<&str> = identity.controls.split(", ").collect();
-        if shell.local_menu(&identity.title, &controls) {
+        let audio_menu = AudioMenu { music_on: settings.music_on, sfx_on: settings.sfx_on, has_music: HAS_MUSIC };
+        let outcome = shell.local_menu_with_audio(&identity.title, &controls, audio_menu);
+        if outcome.toggle_music {
+            settings.toggle_music();
+            sounds.music_volume = settings.music_level();
+            settings.store(&settings_path);
+        }
+        if outcome.toggle_sfx {
+            settings.toggle_sfx();
+            sounds.sfx_volume = settings.sfx_level();
+            settings.store(&settings_path);
+        }
+        if outcome.download_music {
+            announce(&mut fx, &save_music(&music_wav, &identity.title));
+        }
+        if outcome.quit {
             break;
         }
 

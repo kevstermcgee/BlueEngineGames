@@ -1,6 +1,7 @@
 //! Everything drawn, built once from primitives: Haunted Hollow's ground, road, walls and scenery, and the
 //! eight karts with their drivers. Presentation only; nothing here touches the simulation.
 use macroquad::prelude::*;
+use spooky_kart::border::Border;
 use spooky_kart::track::{HALF_WIDTH, SHOULDER};
 use spooky_kart::{Character, Track};
 use std::f32::consts::{FRAC_PI_2, PI};
@@ -108,15 +109,20 @@ pub fn kart(c: Character) -> Template {
     for x in [-0.32, 0.32] {
         t.ball(vec3(x, 0.55, -1.8), vec3(0.1, 0.1, 0.06), p.glow, 0.9, 8, 5);
     }
-    // Seat and driver.
-    t.box_(vec3(0., 0.95, 0.3), vec3(0.42, 0.18, 0.3), p.cloth, 0.);
-    t.box_(vec3(0., 1.35, 0.3), vec3(0.32, 0.36, 0.22), p.cloth, 0.);
+    // Seat and driver. The ghost is all sheet (it covers the seat) and the skeleton is bones, so neither
+    // gets a boxed torso whose corners would poke through the drawn body.
+    if c != Character::Ghost {
+        t.box_(vec3(0., 0.95, 0.3), vec3(0.42, 0.18, 0.3), p.cloth, 0.);
+    }
+    if !matches!(c, Character::Ghost | Character::Skeleton) {
+        t.box_(vec3(0., 1.35, 0.3), vec3(0.32, 0.36, 0.22), p.cloth, 0.);
+    }
     let head = vec3(0., 1.95, 0.25);
     match c {
         Character::Vampire => {
             t.ball(head, vec3(0.3, 0.32, 0.3), p.skin, 0., 12, 8);
             t.ball(head + vec3(0., 0.16, -0.02), vec3(0.31, 0.16, 0.31), [0.04, 0.03, 0.06], 0., 10, 6); // slicked hair
-            t.box_(vec3(0., 1.4, 0.55), vec3(0.5, 0.5, 0.05), [0.5, 0.03, 0.08], 0.); // cape
+            t.box_(vec3(0., 1.36, 0.57), vec3(0.4, 0.4, 0.04), [0.5, 0.03, 0.08], 0.); // cape, short of the head
             t.box_(vec3(0., 1.72, 0.32), vec3(0.42, 0.14, 0.14), [0.5, 0.03, 0.08], 0.); // high collar
             for x in [-0.09, 0.09] {
                 t.cone(head + vec3(x, -0.2, -0.27), 0.03, 0.0, 0.1, [1., 1., 1.], 0.2, 6); // fangs
@@ -126,9 +132,14 @@ pub fn kart(c: Character) -> Template {
         Character::Frankenstein => {
             t.box_(head + vec3(0., 0.03, 0.), vec3(0.36, 0.34, 0.32), p.skin, 0.); // flat head
             t.box_(head + vec3(0., 0.33, 0.), vec3(0.37, 0.09, 0.33), [0.05, 0.05, 0.07], 0.); // hair
-            for x in [-0.4f32, 0.4] {
-                t.cylinder(head + vec3(x - 0.06 * x.signum(), -0.1, 0.), 0.05, 0.16, [0.6, 0.6, 0.65], 0.1, 8); // bolts
-                t.ball(head + vec3(x, -0.02, 0.), vec3(0.06, 0.06, 0.06), [0.7, 0.7, 0.75], 0.1, 8, 5);
+            for side in [-1f32, 1.] {
+                // Neck bolts: a rod through each side of the head with a cap on the end.
+                let mut bolt = Template::new();
+                bolt.cylinder(vec3(0., 0., 0.), 0.05, 0.2, [0.6, 0.6, 0.65], 0.1, 8);
+                bolt.ball(vec3(0., 0.2, 0.), vec3(0.08, 0.04, 0.08), [0.7, 0.7, 0.75], 0.1, 8, 5);
+                t.append(&bolt.transformed(
+                    Mat4::from_translation(head + vec3(side * 0.3, -0.05, 0.)) * Mat4::from_rotation_z(-side * FRAC_PI_2),
+                ));
             }
             t.box_(head + vec3(0., -0.02, -0.33), vec3(0.28, 0.03, 0.02), [0.1, 0.05, 0.08], 0.); // scar
             for x in [-0.12, 0.12] {
@@ -137,18 +148,25 @@ pub fn kart(c: Character) -> Template {
         }
         Character::Mummy => {
             t.ball(head, vec3(0.31, 0.33, 0.31), p.skin, 0., 12, 8);
-            for y in [-0.2, -0.05, 0.1, 0.25] {
+            for y in [-0.22, -0.1, 0.2, 0.3] {
                 t.box_(head + vec3(0., y, 0.), vec3(0.33, 0.035, 0.33), p.cloth, 0.);
             }
-            t.box_(head + vec3(0., 0.07, -0.3), vec3(0.2, 0.05, 0.03), p.glow, 1.); // eye slit
+            t.box_(head + vec3(0., 0.07, -0.33), vec3(0.2, 0.05, 0.03), p.glow, 1.); // eye slit, in a gap between bands
             t.box_(vec3(0., 1.35, 0.3), vec3(0.34, 0.38, 0.24), p.cloth, 0.); // wrapped torso
             for y in [1.15, 1.35, 1.55] {
                 t.box_(vec3(0., y, 0.3), vec3(0.35, 0.03, 0.25), [0.6, 0.55, 0.42], 0.);
             }
         }
         Character::Ghost => {
-            t.cone(vec3(0., 0.95, 0.25), 0.52, 0.28, 0.75, [0.95, 0.98, 1.], 0.5, 12); // the sheet
-            t.ball(head + vec3(0., -0.05, 0.), vec3(0.36, 0.38, 0.36), [0.95, 0.98, 1.], 0.6, 12, 8);
+            // The sheet is the whole body: a bell from the chassis up under the head, wide enough to cover the
+            // seat, with two small bumps for arms on the wheel.
+            let sheet = [0.95, 0.98, 1.];
+            t.cone(vec3(0., 0.8, 0.25), 0.66, 0.46, 0.35, sheet, 0.5, 16);
+            t.cone(vec3(0., 1.15, 0.25), 0.46, 0.3, 0.63, sheet, 0.5, 16);
+            for x in [-0.4, 0.4] {
+                t.ball(vec3(x, 1.2, 0.0), vec3(0.12, 0.12, 0.16), sheet, 0.5, 8, 5);
+            }
+            t.ball(head + vec3(0., -0.05, 0.), vec3(0.36, 0.38, 0.36), sheet, 0.6, 12, 8);
             for x in [-0.12, 0.12] {
                 t.ball(head + vec3(x, 0.02, -0.32), vec3(0.07, 0.11, 0.04), [0.02, 0.02, 0.08], 0., 8, 5);
             }
@@ -166,8 +184,12 @@ pub fn kart(c: Character) -> Template {
                 t.ball(head + vec3(x, 0.04, -0.28), vec3(0.05, 0.05, 0.03), [0.05, 0.03, 0.02], 0., 6, 4);
             }
             t.box_(head + vec3(0., -0.1, -0.29), vec3(0.16, 0.02, 0.02), [0.1, 0.05, 0.03], 0.); // stitched smile
-            t.box_(vec3(0.42, 1.35, 0.3), vec3(0.06, 0.06, 0.6), [0.35, 0.22, 0.1], 0.);
-            // arm pole
+            // Arms out along a crossbar through the shoulders, in sleeves with straw hands.
+            t.box_(vec3(0., 1.58, 0.3), vec3(0.75, 0.04, 0.04), [0.35, 0.22, 0.1], 0.);
+            for x in [-1., 1.] {
+                t.box_(vec3(x * 0.52, 1.58, 0.3), vec3(0.22, 0.09, 0.09), p.cloth, 0.);
+                t.ball(vec3(x * 0.76, 1.58, 0.3), vec3(0.08, 0.08, 0.08), [0.85, 0.7, 0.3], 0., 6, 4);
+            }
         }
         Character::Zombie => {
             t.ball(head, vec3(0.3, 0.32, 0.3), p.skin, 0., 12, 8);
@@ -177,7 +199,11 @@ pub fn kart(c: Character) -> Template {
                 t.ball(head + vec3(x, 0.05, -0.31), vec3(0.025, 0.025, 0.02), [0.4, 0.05, 0.05], 0.2, 6, 4);
             }
             t.box_(head + vec3(0., -0.12, -0.28), vec3(0.14, 0.03, 0.02), [0.25, 0.04, 0.05], 0.);
-            t.box_(vec3(0.45, 1.3, 0.05), vec3(0.08, 0.08, 0.42), p.skin, 0.); // reaching arm
+            for x in [-1., 1.] {
+                // Both arms reach forward from the shoulders.
+                t.box_(vec3(x * 0.36, 1.5, -0.12), vec3(0.07, 0.07, 0.4), p.skin, 0.);
+                t.ball(vec3(x * 0.36, 1.5, -0.52), vec3(0.09, 0.09, 0.09), p.skin, 0., 6, 4);
+            }
         }
         Character::Clown => {
             t.ball(head, vec3(0.31, 0.33, 0.31), p.skin, 0., 12, 8);
@@ -191,8 +217,10 @@ pub fn kart(c: Character) -> Template {
                 t.ball(head + vec3(x, 0.08, -0.29), vec3(0.06, 0.07, 0.03), [0.03, 0.03, 0.05], 0., 6, 4);
             }
             t.box_(head + vec3(0., -0.14, -0.29), vec3(0.2, 0.04, 0.02), [0.9, 0.1, 0.15], 0.2); // grin
-            t.ball(vec3(0., 1.72, 0.05), vec3(0.14, 0.14, 0.1), [0.9, 0.9, 0.2], 0., 8, 5);
-            // ruffle
+            t.ball(vec3(0., 1.7, 0.3), vec3(0.38, 0.11, 0.32), [0.9, 0.9, 0.2], 0., 10, 5); // ruffle
+            for y in [1.5, 1.3, 1.1] {
+                t.ball(vec3(0., y, 0.07), vec3(0.06, 0.06, 0.04), [0.9, 0.1, 0.15], 0., 6, 4); // pompoms
+            }
         }
         Character::Skeleton => {
             t.ball(head, vec3(0.3, 0.32, 0.3), p.skin, 0., 12, 8); // skull
@@ -201,10 +229,17 @@ pub fn kart(c: Character) -> Template {
                 t.ball(head + vec3(x, 0.05, -0.27), vec3(0.08, 0.09, 0.05), [0.03, 0.02, 0.05], 0., 8, 5);
                 t.ball(head + vec3(x, 0.05, -0.31), vec3(0.03, 0.03, 0.02), p.glow, 1., 6, 4);
             }
-            for y in [1.15, 1.3, 1.45, 1.6] {
-                t.box_(vec3(0., y, 0.05), vec3(0.3, 0.025, 0.05), p.skin, 0.); // ribs
+            // A ribcage with no body behind it: bars round front, sides and back, spine, pelvis and shoulders.
+            for y in [1.2, 1.33, 1.46, 1.59] {
+                t.box_(vec3(0., y, 0.1), vec3(0.28, 0.03, 0.03), p.skin, 0.);
+                for x in [-0.28, 0.28] {
+                    t.box_(vec3(x, y, 0.3), vec3(0.03, 0.03, 0.2), p.skin, 0.);
+                }
             }
-            t.box_(vec3(0., 1.38, 0.05), vec3(0.03, 0.26, 0.05), p.skin, 0.); // spine
+            t.box_(vec3(0., 1.4, 0.48), vec3(0.04, 0.27, 0.04), p.skin, 0.); // spine
+            t.box_(vec3(0., 1.4, 0.1), vec3(0.03, 0.24, 0.03), p.skin, 0.); // breastbone
+            t.box_(vec3(0., 1.1, 0.3), vec3(0.3, 0.05, 0.15), p.skin, 0.); // pelvis
+            t.box_(vec3(0., 1.65, 0.3), vec3(0.38, 0.03, 0.05), p.skin, 0.); // shoulders
         }
     }
     t
@@ -328,6 +363,9 @@ impl Chunks {
     }
 }
 
+/// Width of the kerb stripe on each road edge.
+const KERB: f32 = 0.6;
+
 /// Ground, road, walls and scenery for Haunted Hollow, as templates that each fit one mesh.
 pub fn world(track: &Track) -> Vec<Template> {
     let mut out = Chunks::new();
@@ -335,28 +373,38 @@ pub fn world(track: &Track) -> Vec<Template> {
     let mut ground = Template::new();
     face(
         &mut ground,
-        [vec3(-700., -0.06, -700.), vec3(700., -0.06, -700.), vec3(700., -0.06, 700.), vec3(-700., -0.06, 700.)],
+        [vec3(-700., -0.08, -700.), vec3(700., -0.08, -700.), vec3(700., -0.08, 700.), vec3(-700., -0.08, 700.)],
         Vec3::Y,
         [0.05, 0.11, 0.08],
         0.,
     );
     out.add(&ground);
-    let pts = track.samples();
-    let n = pts.len();
-    let edge = |i: usize, lateral: f32| {
-        let (a, b) = (pts[i % n], pts[(i + 1) % n]);
-        let tangent = (b - a).norm();
-        let right = vec3(-tangent.2, 0., tangent.0);
-        vec3(a.0, 0., a.2) + right * lateral
-    };
+    // The drawn lines: exact mitred offsets with the loops on the inside of tight bends cut off, so the
+    // border never folds over and the wall stands where the physics wall does.
+    let border = Border::new(track);
+    let n = border.len();
     let wall = HALF_WIDTH + SHOULDER;
+    let paved = HALF_WIDTH - KERB;
+    let lines: Vec<(u32, Vec<[f32; 2]>)> = [-wall, -HALF_WIDTH, -paved, 0., paved, HALF_WIDTH, wall]
+        .iter()
+        .map(|&lateral| (lateral.to_bits(), border.line(lateral)))
+        .collect();
+    // A point on one of the drawn lines, or (for scenery, checked separately) the raw offset elsewhere.
+    let edge = |i: usize, lateral: f32| {
+        let p = match lines.iter().find(|(bits, _)| *bits == lateral.to_bits()) {
+            Some((_, line)) => line[i % n],
+            None => border.at(i, lateral),
+        };
+        vec3(p[0], 0., p[1])
+    };
     for i in 0..n {
         let mut t = Template::new();
         let shade = if (i / 3) % 2 == 0 { 0.0 } else { 0.012 };
-        // Road.
+        // Road, out to the kerbs' inner edge: the two share their edge points, so they never overlap (a
+        // coplanar overlap z-fights along the whole lap).
         face(
             &mut t,
-            [edge(i, -HALF_WIDTH), edge(i, HALF_WIDTH), edge(i + 1, HALF_WIDTH), edge(i + 1, -HALF_WIDTH)],
+            [edge(i, -paved), edge(i, paved), edge(i + 1, paved), edge(i + 1, -paved)],
             Vec3::Y,
             [0.16 + shade, 0.15 + shade, 0.19 + shade],
             0.,
@@ -377,7 +425,7 @@ pub fn world(track: &Track) -> Vec<Template> {
             );
             // Kerb stripes on the road edge, alternating orange and bone.
             let kerb = if (i / 2) % 2 == 0 { [0.95, 0.45, 0.05] } else { [0.9, 0.9, 0.82] };
-            let (inner, outer) = (side * (HALF_WIDTH - 0.6), side * HALF_WIDTH);
+            let (inner, outer) = (side * paved, side * HALF_WIDTH);
             face(&mut t, [edge(i, inner), edge(i, outer), edge(i + 1, outer), edge(i + 1, inner)], Vec3::Y, kerb, 0.25);
             // The wall: a low purple barrier with a glowing top rail.
             let (w0, w1) = (edge(i, side * wall), edge(i + 1, side * wall));
@@ -392,8 +440,11 @@ pub fn world(track: &Track) -> Vec<Template> {
     }
     // The start line: a chequered strip and two glowing arch posts.
     let mut line = Template::new();
-    let (a, b) = (edge(0, 0.), edge(1, 0.));
-    let tangent = (b - a).normalize_or_zero();
+    let a = edge(0, 0.);
+    let tangent = {
+        let t = border.tangent(0);
+        vec3(t[0], 0., t[1])
+    };
     let right = vec3(-tangent.z, 0., tangent.x);
     for k in 0..12 {
         for row in 0..2 {
@@ -401,7 +452,7 @@ pub fn world(track: &Track) -> Vec<Template> {
             let x0 = -HALF_WIDTH + k as f32 * (2. * HALF_WIDTH / 12.);
             let x1 = x0 + 2. * HALF_WIDTH / 12.;
             let z0 = row as f32;
-            let p = |x: f32, z: f32| a + right * x + tangent * z + vec3(0., 0.02, 0.);
+            let p = |x: f32, z: f32| a + right * x + tangent * z + vec3(0., 0.03, 0.);
             face(&mut line, [p(x0, z0), p(x1, z0), p(x1, z0 + 1.), p(x0, z0 + 1.)], Vec3::Y, col, 0.1);
         }
     }
@@ -444,9 +495,14 @@ pub fn world(track: &Track) -> Vec<Template> {
     }
     for i in (0..n).step_by(4) {
         let side = if (i / 4) % 2 == 0 { 1. } else { -1. };
-        out.add(&placed(&pump, edge(i, side * (wall + 0.6)), 0.));
-        if i % 12 == 0 {
-            out.add(&placed(&post, edge(i + 2, -side * (wall + 1.8)), 0.));
+        // Where a tight bend pulls the drawn border in, there is no room beyond the wall: skip the prop.
+        let pumpkin_at = edge(i, side * (wall + 0.6));
+        if clear_of_road(pumpkin_at, 0.) {
+            out.add(&placed(&pump, pumpkin_at, 0.));
+        }
+        let post_at = edge(i + 2, -side * (wall + 1.8));
+        if i % 12 == 0 && clear_of_road(post_at, 0.) {
+            out.add(&placed(&post, post_at, 0.));
         }
     }
     out.finish()

@@ -5,18 +5,23 @@
 //! - `track`: Haunted Hollow, the one map.
 //! - `kart`: one kart's driving model.
 //! - `sim`: the race (perks, hazards, bumping, standings, save states, `RaceReport`).
-//! - `bot`: AI drivers.
+//! - `border`: where the drawn road edge, kerbs, verges and walls stand (presentation only).
+//! - `bot`: AI drivers and their `Difficulty`.
+//! - `music`: the race music spec and which layers play when.
 //! - `controls`: keyboard and controller mapping.
 //! - `netgame`: the game as a BlueEngine `NetGame` (protocol layouts, seats to karts, client prediction); the
 //!   lobby, sessions, server and client come from the engine's netplay kit.
+pub mod border;
 pub mod bot;
 pub mod character;
 pub mod controls;
 pub mod kart;
+pub mod music;
 pub mod netgame;
 pub mod sim;
 pub mod track;
 
+pub use bot::Difficulty;
 pub use character::{Character, Perk, ALL, MAX_RACERS};
 pub use kart::{Driver, Kart, KartInput, KartStats};
 pub use netgame::{KartGame, KartSnapshot, KartView};
