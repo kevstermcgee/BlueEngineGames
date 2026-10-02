@@ -1,10 +1,20 @@
 # Deadfall status
 
-Playable: solo with bots, hosting and joining (direct address), lobby with team choice, kill-target or timed matches, killcam,
+Playable: solo with bots, Play Online (room list and Create Room on the shared BlueEngine hub), hosting and joining (direct address), lobby with team choice, kill-target or timed matches, killcam,
 results with Play again / Home, lifetime stats, controller support, 33 weapons, the Slagworks map, bots.
 
 Known limits: matches cannot be joined once started (players wait for the next one); no player-versus-player body collision;
 direct UDP needs a forwarded port or a VPN; controller input has not been tried with a physical pad.
+
+## Shared hub (2026-10-02)
+
+Deadfall no longer ships its own hub: `deadfall-hub`, `src/hub.rs`, `src/hub_client.rs` and the private `deploy/` units are gone. Play
+Online uses the engine's hub client and the box runs the engine's `be2-hub` (ADR 0037, `deploy/README.md`), default name
+`blue-engine.duckdns.org:4100` (`--hub`, `server.txt`, last used first). Already-shipped builds still ask
+`deadfall-kevin.duckdns.org:4100` with the old DFHB protocol and the same hub answers them (its legacy adapter maps `bots` and `kills`; the join
+fingerprint is unchanged and pinned). `deadfall-server` is the engine's shared server main with four settings (`bots`, `kills`, `skill`,
+`minutes`). Remaining duplicates to fold into the engine kit later: Deadfall's own menu text fields and paste handling (`ui.rs`) instead of
+`devkit::TextField`, and the Join by address screen's own name lookup instead of `devkit::resolve_ipv4`.
 
 ## Movement, weapons and scenery maintenance (2026-10-01)
 

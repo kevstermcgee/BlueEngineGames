@@ -27,11 +27,16 @@ Everything (models, sounds, map) is generated in code; the game is one executabl
 
 ### Playing with friends over the internet
 
-Use **Play Online** (the rooms live on a hub that runs `deadfall-hub`; see `deploy/README.md`). `--hub HOST:PORT` or a `server.txt`
-next to the game picks another hub. Hosting on your own PC is the advanced route: the host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
+Use **Play Online**: the rooms live on the shared BlueEngine hub (`be2-hub`, one DNS name for every BlueEngine game; see
+`deploy/README.md` and the engine's `docs/adr/0037-shared-multi-game-hub.md`). The game looks for the hub in this order: `--hub HOST:PORT`,
+a `server.txt` next to the game (first line `host` or `host:port`), the hub you last chose with `--hub` and joined a room on, then the
+built-in `blue-engine.duckdns.org:4100`. Builds from before the shared hub keep working: they ask `deadfall-kevin.duckdns.org:4100`, which
+the same hub answers in the old protocol. Hosting on your own PC is the advanced route: the host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
 Tailscale or ZeroTier and use the VPN address). Friends join with the host's public address. The game's network layer is
 raw UDP with an optional password; it is meant for friends, not the open internet. A dedicated server also exists:
-`deadfall-server --listen 0.0.0.0:4100 [--kills 40 | --minutes 10] [--bots] [--skill 0|1|2]`.
+`deadfall-server --listen 0.0.0.0:4100 [--kills 40 | --minutes 10] [--bots] [--skill 0|1|2]` (the engine's shared server flags plus
+`--set ID=VALUE`, `--status-lines`, `--exit-on-stdin-eof`, `--info`; `--minutes` above 0 wins over `--kills`; out-of-range values are
+refused rather than clamped).
 
 ## Controls
 

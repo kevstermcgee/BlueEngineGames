@@ -7,6 +7,9 @@ Ordered by how much each item cost or would save in the next game. "Cost" is tim
   someone leaves and per-client snapshots saved weeks of work; 12 players cost 90 kbit/s each. `LoopNet` made lossy-network tests trivial.
 * **Headless capture** (`xvfb-run` plus `--capture`): the only way an agent can see its work; every visual defect here was caught this way.
 * **`devkit` pieces** (`Rng`, `store_atomic`, `synth::wav_bytes_stereo`, `MenuStep`) and the `kit` renderer got a game on screen in an hour.
+* **The shared hub (`netplay::cli::serve` + `netplay::hub`, ADR 0037)**: Deadfall's server main went from 121 lines to 25 and about 2,800 lines of private hub, client, tests and deploy
+  units were deleted; the engine's `Online` is Deadfall's old state machine, so the screens needed one constructor change. The legacy adapter plus a
+  hand-written copy of the old codec let the shipped clients stay compatible and be tested.
 * **The games-repo release workflow**: a new native game needed one manifest line and built on Windows unchanged.
 
 ## Highest value fixes
@@ -60,3 +63,11 @@ Ordered by how much each item cost or would save in the next game. "Cost" is tim
 * CUSTOM_SIM_CHEATSHEET is excellent for single-player custom sims; add a "networked shooter" page: per-client snapshots, prediction by sharing the
   step function, counters for presses, lag compensation, killcam from a snapshot ring (this document's architecture, in short).
 * State the audio limits (mono, one volume) and the 4-light limit up front; both shaped design decisions.
+
+## Small things found moving Deadfall onto the shared hub
+* **Settings that exclude each other** (Deadfall's `--kills N` versus `--minutes N`, last one wins in the old server) cannot be said in a `SettingSpec`
+  schema; I used `minutes` 0 = "use kills" and `configure` decides. A documented "0 means off" convention for int settings would save the next game the thought.
+* **Server flags now refuse out-of-range values** (`--kills 0` is an error) where the old Deadfall server clamped them. Right for a hub, but worth a line in
+  `--help` or NETPLAY.md because it is a behaviour change for anyone moving a hand-written server onto `cli::serve`.
+* **`ConnectFailure::Unreachable` carries the resolved `SocketAddr`**, so a player who typed a name sees its IP in the message. Carrying the typed text too would read better.
+* **`Online` has no "remember this hub" hook**: the game stores `last_used` itself (Deadfall keeps `Prefs::last_hub`, set only for a hub named with `--hub`).

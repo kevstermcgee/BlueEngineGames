@@ -3,7 +3,7 @@
 //!   deadfall                          the menu
 //!   deadfall --solo                   start a solo match with bots at once
 //!   deadfall --connect HOST:PORT      join a server ([--name N] [--key K])
-//!   deadfall --hub HOST:PORT          use another room hub for Play Online (default: server.txt next to the game, else the built-in one)
+//!   deadfall --hub HOST:PORT          use another room hub for Play Online (default: server.txt next to the game, else the last --hub you joined a room on, else blue-engine.duckdns.org:4100)
 //!   deadfall --capture DIR --frames 60,300 [--solo] [--screen stats|settings|host|join|online]
 //!                                     save screenshots of those frames, then exit (for runs nobody watches)
 //!   --shadows off|simple|full         shadow quality for this run (default: the Settings choice, else simple)
