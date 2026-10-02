@@ -9,9 +9,10 @@
 //!   --select   open on the character select screen even when capturing
 //!   --character NAME   start a race at once as this driver (any part of the name: ghost, frank, ...)
 //!   --difficulty easy|medium|hard   how hard the offline bots drive (default medium; also pickable on the select screen)
+//!   --shadows off|simple|full   shadows for this run: Simple (soft contact shadows) is the default, Full casts real ones
 //!   --seed N   --size WxH   --mute   --perf           reproducible run, window size, silence, frame times
 //!   --load SLOT_OR_FILE   --save-dir DIR                resume a saved race / where F5 saves (default: next to the exe)
-//! Music and sound effects can be switched in the Esc menu's Settings (remembered in settings.json next to the exe).
+//! Music, sound effects and shadows can be switched in the Esc menu's Settings (remembered in settings.json next to the exe).
 //! Keyboard: W/S gas and brake, A/D steer, Shift drift, Space perk, F5/F9 quick save and load, Esc menu.
 //! Controller: right trigger (or A) gas, left trigger brake, left stick steer, bumpers drift, X perk.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -31,13 +32,13 @@ use std::sync::{Arc, OnceLock};
 use vesper3d::viewer::{
     devkit::{
         beside_exe, downloads_dir, flag_value, has_flag, parse_size, sanitize_filename, synth, unique_path, Juice,
-        Lifecycle, Notice, Settings,
+        Lifecycle, Notice, Settings, ShadowQuality,
     },
     game_client::{self, AudioMenu, GameShell},
     game_input::ClientInput,
     gamepad::Button,
     identity::Identity,
-    kit::{self, hud, Batch, Fx, Look, Materials, Rendered, SoundBank, Template, Tint, View},
+    kit::{self, hud, Batch, Fx, Look, Materials, Rendered, Shadows, SoundBank, Template, Tint, View},
     net::{client_transport, AnyTransport, TransportProfile},
     netplay::{ClientConfig, ClientState, NetClient},
 };
@@ -120,10 +121,21 @@ fn render_audio(music_wav: Arc<OnceLock<Vec<u8>>>) -> Rendered {
     }
 }
 
+/// Meshes that stand up from the ground and so cast shadows, with the ground rectangle
+/// `[min_x, min_z, max_x, max_z]` they lie within (the shadow pass skips the ones far from its focus).
+struct Casters {
+    bounds: [f32; 4],
+    meshes: Vec<Mesh>,
+}
+
 /// The meshes built once at startup.
 struct Scene {
     sky: Vec<Mesh>,
-    world: Vec<Mesh>,
+    /// Ground slab, road, verges and kerbs: they only receive shadows and never go into the shadow pass
+    /// (the slab is 1.4 km wide).
+    ground: Vec<Mesh>,
+    /// Walls, the start arch and the scenery: drawn in the normal pass and cast in the shadow pass.
+    casters: Vec<Casters>,
     karts: Vec<Template>,
     bandage: Template,
     bone: Template,
@@ -145,9 +157,15 @@ fn build_scene(sim: &Sim) -> Scene {
     let mut podium = Template::new();
     podium.cylinder(vec3(-300., -0.05, -300.), 3.4, 0.22, [0.18, 0.12, 0.25], 0.1, 32);
     podium.ring(vec3(-300., 0.2, -300.), 3.0, 3.3, [1., 0.5, 0.05], 0.9, 32);
+    let world = models::world(sim.track());
     Scene {
         sky: sky.to_meshes(),
-        world: models::world(sim.track()).iter().flat_map(|t| t.to_meshes()).collect(),
+        ground: world.receivers.iter().flat_map(|t| t.to_meshes()).collect(),
+        casters: world
+            .casters
+            .iter()
+            .map(|c| Casters { bounds: c.bounds, meshes: c.templates.iter().flat_map(|t| t.to_meshes()).collect() })
+            .collect(),
         karts: ALL.iter().map(|c| models::kart(*c)).collect(),
         bandage: models::bandage(),
         bone: models::bone(),
@@ -159,11 +177,39 @@ fn halloween_look() -> Look {
     let mut look = Look::night();
     look.ambient_sky = [0.26, 0.20, 0.42];
     look.ambient_ground = [0.10, 0.06, 0.14];
-    look.key_color = [0.85, 0.70, 1.0];
+    // The moon, lower and more from the side than the stock night look (almost overhead, which hid a kart's
+    // shadow under the kart): shadows now fall to the right of a driver heading east and are long enough to
+    // read. The colour is scaled up to keep flat ground as bright as it was.
+    look.key_direction = [-0.1, 0.62, -0.6];
+    look.key_color = [0.99, 0.81, 1.15];
     look.rim_color = [1.0, 0.5, 0.15];
     look.fog_color = [0.07, 0.04, 0.11];
     look.fog_density = 0.0085;
     look
+}
+
+/// Shadow box: half-width and depth along the light, in metres. 2048 texels over 2 x 32 m is 3 cm a texel,
+/// which keeps a kart's and a gravestone's shadow crisp; the box is centred a little ahead of the human's kart
+/// (where the chase camera looks) and fades out over its outer edge.
+const SHADOW_HALF: f32 = 32.;
+const SHADOW_DEPTH: f32 = 80.;
+const SHADOW_RESOLUTION: u32 = 2048;
+/// How far ahead of the kart the shadow box is centred, metres.
+const SHADOW_AHEAD: f32 = 12.;
+/// The podium the select screen shows the kart on: where it is, how big, and how high its top is.
+const PODIUM: Vec3 = Vec3::new(-300., 0., -300.);
+const PODIUM_RADIUS: f32 = 3.4;
+const PODIUM_TOP: f32 = 0.17;
+/// Radius of the soft contact shadow under a kart, metres. A kart is about 1.8 wide and 3.6 long and the blob is a
+/// disc whose opacity is already down to a quarter at 70% of its radius, so it is drawn wider than the kart.
+const KART_BLOB: f32 = 2.0;
+
+/// Whether a caster cell (ground rectangle `[min_x, min_z, max_x, max_z]`) can shadow anything the shadow box
+/// around `focus` covers: the box's corner distance plus a margin for tall things beside it.
+fn shadow_reaches(bounds: &[f32; 4], focus: Vec3) -> bool {
+    let reach = SHADOW_HALF * std::f32::consts::SQRT_2 + 12.;
+    let nearest = vec2(focus.x.clamp(bounds[0], bounds[2]), focus.z.clamp(bounds[1], bounds[3]));
+    (nearest - vec2(focus.x, focus.z)).length() <= reach
 }
 
 fn v3(p: vesper3d::math::V) -> Vec3 {
@@ -767,6 +813,18 @@ async fn main() {
         move || render_audio(music_wav)
     })
     .await;
+    // Shadows: Off, Simple (soft contact shadows, the default) or Full (a real shadow map). `--shadows` picks the
+    // tier for this run only; Esc > Settings changes it and remembers it in settings.json.
+    let quality = match ShadowQuality::from_flag(&args) {
+        Ok(flag) => flag.unwrap_or(settings.shadow_quality),
+        Err(message) => {
+            eprintln!("{message}");
+            std::process::exit(2);
+        }
+    };
+    let mut shadows = Shadows::new(quality).with_range(SHADOW_HALF, SHADOW_DEPTH).with_resolution(SHADOW_RESOLUTION);
+    // The ground is flat at 0 everywhere but on the select screen's podium.
+    shadows.set_ground(|x, z| if (x - PODIUM.x).hypot(z - PODIUM.z) < PODIUM_RADIUS { PODIUM_TOP } else { 0. });
     let mut shell = GameShell::new();
     let mut input = ClientInput::new();
     let (mut fx, mut juice) = (Fx::new(seed), Juice::default());
@@ -1068,7 +1126,7 @@ async fn main() {
 
         // 3. Camera: a chase view behind the kart, or an orbit around the podium on the select screen.
         let (shake, roll) = juice.camera_shake();
-        let podium = vec3(-300., 0., -300.);
+        let podium = PODIUM;
         let mut view = match screen {
             Screen::Race if have_karts => {
                 let kart = &view_sim.karts[view_me];
@@ -1092,18 +1150,18 @@ async fn main() {
         };
         view.roll = roll;
 
-        // 4. Draw: sky, world, karts, translucent effects, additive effects, then the 2D layer.
+        // 4. Draw. The dynamic geometry is filled first (CPU only) so the shadow pass can reuse it; then the shadow
+        // pass, sky, world, contact blobs, karts, translucent effects, additive effects, then the 2D layer.
         clear_background(look.clear_color());
-        set_camera(&view.sky_camera());
-        gl_use_material(&materials.sky);
-        for mesh in &scene.sky {
-            draw_mesh(mesh);
-        }
-        set_camera(&view.camera(0.3, 700.));
-        materials.set_scene(&look, view.eye, time, 0.5 + 0.5 * (time * 3.).sin());
         world.clear();
         alpha.clear();
         add.clear();
+        // The shadow box follows the human's kart (a little ahead of it, where the camera looks), or the podium.
+        let focus = match &screen {
+            Screen::Race if racing_view => v3(view_sim.karts[view_me].pos) + v3(forward(camera_yaw)) * SHADOW_AHEAD,
+            _ => podium,
+        };
+        shadows.begin_frame(&look, focus);
         match screen {
             Screen::Race if racing_view => {
                 for (i, k) in view_sim.karts.iter().enumerate() {
@@ -1126,27 +1184,53 @@ async fn main() {
                         Tint::NONE
                     };
                     world.add(template, m, tint);
+                    shadows.blob(vec3(k.pos.0, 0., k.pos.2), KART_BLOB);
                 }
                 for h in &view_sim.hazards {
                     let m = Mat4::from_translation(vec3(h.pos.0, 0., h.pos.2));
                     world.add(if h.kind == HazardKind::Bone { &scene.bone } else { &scene.bandage }, m, Tint::NONE);
+                    shadows.blob(vec3(h.pos.0, 0., h.pos.2), h.radius.clamp(0.4, 1.2));
                 }
             }
             _ => {
-                let m = Mat4::from_translation(podium + vec3(0., 0.2, 0.)) * Mat4::from_rotation_y(time * 0.6);
+                let at = podium + vec3(0., 0.2, 0.);
+                let m = Mat4::from_translation(at) * Mat4::from_rotation_y(time * 0.6);
                 world.add(&scene.karts[choice % MAX_RACERS], m, Tint::NONE);
+                shadows.blob(at, KART_BLOB);
             }
         }
         fx.draw(&mut add, &mut alpha, view.eye, view.right(), view.up());
-        gl_use_material(&materials.world);
-        for mesh in &scene.world {
+        // Full only: what stands up (walls, scenery, karts, hazards), seen from the sun. The ground and road are
+        // receivers and stay out; so do the translucent and additive effects and the sky.
+        shadows.cast(|| {
+            for cell in scene.casters.iter().filter(|c| shadow_reaches(&c.bounds, focus)) {
+                for mesh in &cell.meshes {
+                    draw_mesh(mesh);
+                }
+            }
+            world.draw();
+        });
+        set_camera(&view.sky_camera());
+        gl_use_material(&materials.sky);
+        for mesh in &scene.sky {
             draw_mesh(mesh);
+        }
+        set_camera(&view.camera(0.3, 700.));
+        materials.set_scene(&look, view.eye, time, 0.5 + 0.5 * (time * 3.).sin());
+        shadows.apply(&materials);
+        materials.draw_static(&scene.ground);
+        for cell in &scene.casters {
+            for mesh in &cell.meshes {
+                draw_mesh(mesh);
+            }
         }
         if !racing_view {
             for mesh in &scene.podium {
                 draw_mesh(mesh);
             }
         }
+        shadows.draw_decals(&materials); // after the static world, before the karts (it leaves `decal` bound)
+        gl_use_material(&materials.world);
         world.draw();
         gl_use_material(&materials.fx_alpha);
         alpha.draw();
@@ -1192,7 +1276,7 @@ async fn main() {
         }
         let controls: Vec<&str> = identity.controls.split(", ").collect();
         let audio_menu = AudioMenu { music_on: settings.music_on, sfx_on: settings.sfx_on, has_music: HAS_MUSIC };
-        let outcome = shell.local_menu_with_audio(&identity.title, &controls, audio_menu);
+        let outcome = shell.local_menu_with_options(&identity.title, &controls, audio_menu, shadows.quality());
         if outcome.toggle_music {
             settings.toggle_music();
             sounds.music_volume = settings.music_level();
@@ -1201,6 +1285,11 @@ async fn main() {
         if outcome.toggle_sfx {
             settings.toggle_sfx();
             sounds.sfx_volume = settings.sfx_level();
+            settings.store(&settings_path);
+        }
+        if outcome.cycle_shadows {
+            shadows.set_quality(shadows.quality().next());
+            settings.shadow_quality = shadows.quality();
             settings.store(&settings_path);
         }
         if outcome.download_music {

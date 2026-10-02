@@ -366,9 +366,54 @@ impl Chunks {
 /// Width of the kerb stripe on each road edge.
 const KERB: f32 = 0.6;
 
+/// Side of a caster cell, metres.
+const CELL: f32 = 64.;
+/// How far a piece may reach beyond the cell its anchor is in (the widest is the start arch's bar).
+const CELL_MARGIN: f32 = 12.;
+
+/// A group of nearby casters, packed into templates that each fit one mesh, with the ground rectangle
+/// `[min_x, min_z, max_x, max_z]` they all lie within. The shadow pass skips the groups far from its focus.
+pub struct CasterCell {
+    pub bounds: [f32; 4],
+    pub templates: Vec<Template>,
+}
+
+/// Casters sorted into square cells by where they stand.
+struct Cells(std::collections::BTreeMap<(i32, i32), Chunks>);
+
+impl Cells {
+    fn add(&mut self, at: Vec3, piece: &Template) {
+        let key = ((at.x / CELL).floor() as i32, (at.z / CELL).floor() as i32);
+        self.0.entry(key).or_insert_with(Chunks::new).add(piece);
+    }
+
+    fn finish(self) -> Vec<CasterCell> {
+        self.0
+            .into_iter()
+            .map(|((cx, cz), chunks)| {
+                let (x, z) = (cx as f32 * CELL, cz as f32 * CELL);
+                CasterCell {
+                    bounds: [x - CELL_MARGIN, z - CELL_MARGIN, x + CELL + CELL_MARGIN, z + CELL + CELL_MARGIN],
+                    templates: chunks.finish(),
+                }
+            })
+            .collect()
+    }
+}
+
+/// The hollow, split for shadows: `receivers` are the flat surfaces (the wide ground slab, road, verges,
+/// kerbs, the chequered line) that only ever receive a shadow, and `casters` are everything with height
+/// (walls, the start arch, gravestones, trees, pumpkins, lantern posts), grouped by place. Both are drawn
+/// in the normal pass; only the casters go into the shadow pass.
+pub struct World {
+    pub receivers: Vec<Template>,
+    pub casters: Vec<CasterCell>,
+}
+
 /// Ground, road, walls and scenery for Haunted Hollow, as templates that each fit one mesh.
-pub fn world(track: &Track) -> Vec<Template> {
+pub fn world(track: &Track) -> World {
     let mut out = Chunks::new();
+    let mut casters = Cells(Default::default());
     // The grass: one large slab.
     let mut ground = Template::new();
     face(
@@ -427,14 +472,16 @@ pub fn world(track: &Track) -> Vec<Template> {
             let kerb = if (i / 2) % 2 == 0 { [0.95, 0.45, 0.05] } else { [0.9, 0.9, 0.82] };
             let (inner, outer) = (side * paved, side * HALF_WIDTH);
             face(&mut t, [edge(i, inner), edge(i, outer), edge(i + 1, outer), edge(i + 1, inner)], Vec3::Y, kerb, 0.25);
-            // The wall: a low purple barrier with a glowing top rail.
+            // The wall: a low purple barrier with a glowing top rail (a caster, so its own template).
             let (w0, w1) = (edge(i, side * wall), edge(i + 1, side * wall));
             let up = vec3(0., 1.1, 0.);
             let tangent = (w1 - w0).normalize_or_zero();
             let normal = vec3(-tangent.z, 0., tangent.x) * -side;
-            face(&mut t, [w0, w1, w1 + up, w0 + up], normal, [0.22, 0.15, 0.32], 0.05);
+            let mut barrier = Template::new();
+            face(&mut barrier, [w0, w1, w1 + up, w0 + up], normal, [0.22, 0.15, 0.32], 0.05);
             let rail = vec3(0., 0.12, 0.);
-            face(&mut t, [w0 + up, w1 + up, w1 + up + rail, w0 + up + rail], normal, [0.55, 0.2, 0.9], 0.9);
+            face(&mut barrier, [w0 + up, w1 + up, w1 + up + rail, w0 + up + rail], normal, [0.55, 0.2, 0.9], 0.9);
+            casters.add((w0 + w1) * 0.5, &barrier);
         }
         out.add(&t);
     }
@@ -456,16 +503,19 @@ pub fn world(track: &Track) -> Vec<Template> {
             face(&mut line, [p(x0, z0), p(x1, z0), p(x1, z0 + 1.), p(x0, z0 + 1.)], Vec3::Y, col, 0.1);
         }
     }
+    out.add(&line);
+    // The arch over it: two glowing posts and a bar, all casters.
+    let mut arch = Template::new();
     for side in [-1., 1.] {
         let post = a + right * (side * (HALF_WIDTH + 1.5));
-        line.cylinder(post, 0.3, 7., [0.2, 0.15, 0.3], 0., 8);
-        line.ball(post + vec3(0., 7.3, 0.), vec3(0.6, 0.6, 0.6), [1., 0.5, 0.05], 1., 10, 6);
+        arch.cylinder(post, 0.3, 7., [0.2, 0.15, 0.3], 0., 8);
+        arch.ball(post + vec3(0., 7.3, 0.), vec3(0.6, 0.6, 0.6), [1., 0.5, 0.05], 1., 10, 6);
     }
     let mut bar = Template::new();
     bar.box_(vec3(0., 7.4, 0.), vec3(HALF_WIDTH + 1.6, 0.35, 0.2), [0.95, 0.45, 0.05], 0.8);
     let heading = tangent.x.atan2(-tangent.z);
-    line.append(&bar.transformed(Mat4::from_translation(a) * Mat4::from_rotation_y(-heading)));
-    out.add(&line);
+    arch.append(&bar.transformed(Mat4::from_translation(a) * Mat4::from_rotation_y(-heading)));
+    casters.add(a, &arch);
 
     // Scenery: seeded, so every peer sees the same hollow. Kept clear of the road.
     let mut rng = Rng::new(0x5EED_CAFE);
@@ -484,13 +534,13 @@ pub fn world(track: &Track) -> Vec<Template> {
     };
     for _ in 0..320 {
         if let Some(p) = near_track(&mut rng, 3., 50.) {
-            out.add(&placed(&stone, p, rng.range(-0.5, 0.5) + PI));
+            casters.add(p, &placed(&stone, p, rng.range(-0.5, 0.5) + PI));
         }
     }
     for _ in 0..140 {
         if let Some(p) = near_track(&mut rng, 5., 60.) {
             let tree = dead_tree(&mut rng);
-            out.add(&placed(&tree, p, rng.range(0., 2. * PI)));
+            casters.add(p, &placed(&tree, p, rng.range(0., 2. * PI)));
         }
     }
     for i in (0..n).step_by(4) {
@@ -498,16 +548,72 @@ pub fn world(track: &Track) -> Vec<Template> {
         // Where a tight bend pulls the drawn border in, there is no room beyond the wall: skip the prop.
         let pumpkin_at = edge(i, side * (wall + 0.6));
         if clear_of_road(pumpkin_at, 0.) {
-            out.add(&placed(&pump, pumpkin_at, 0.));
+            casters.add(pumpkin_at, &placed(&pump, pumpkin_at, 0.));
         }
         let post_at = edge(i + 2, -side * (wall + 1.8));
         if i % 12 == 0 && clear_of_road(post_at, 0.) {
-            out.add(&placed(&post, post_at, 0.));
+            casters.add(post_at, &placed(&post, post_at, 0.));
         }
     }
-    out.finish()
+    World { receivers: out.finish(), casters: casters.finish() }
 }
 
 fn spooky_kart_v(p: Vec3) -> vesper3d::math::V {
     vesper3d::math::V(p.x, 0., p.z)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Every vertex of a template, in world space (the world's templates are built in world space).
+    fn points(t: &Template) -> impl Iterator<Item = Vec3> + '_ {
+        t.verts.iter().map(|v| v.p)
+    }
+
+    #[test]
+    fn the_shadow_pass_never_sees_the_ground_and_the_road() {
+        let world = world(&Track::default());
+        // Receivers are flat: the 1.4 km slab, road, verges, kerbs and the chequered line.
+        for t in &world.receivers {
+            assert!(points(t).all(|p| p.y <= 0.05), "a receiver stands up out of the ground");
+        }
+        // The slab is a receiver, so it is in the receivers and in none of the caster cells.
+        assert!(world.receivers.iter().any(|t| points(t).any(|p| p.x.abs() > 600.)));
+        for cell in &world.casters {
+            for t in &cell.templates {
+                assert!(points(t).all(|p| p.x.abs() < 400. && p.z.abs() < 400.), "the slab is in a caster cell");
+            }
+        }
+    }
+
+    #[test]
+    fn caster_cells_bound_their_geometry_so_the_shadow_pass_can_skip_far_ones() {
+        let world = world(&Track::default());
+        assert!(!world.casters.is_empty());
+        let mut total = 0;
+        for cell in &world.casters {
+            let [x0, z0, x1, z1] = cell.bounds;
+            for t in &cell.templates {
+                for p in points(t) {
+                    assert!(
+                        p.x >= x0 && p.x <= x1 && p.z >= z0 && p.z <= z1,
+                        "{p:?} escapes its cell {:?}",
+                        cell.bounds
+                    );
+                    total += 1;
+                }
+            }
+        }
+        assert!(total > 0);
+    }
+
+    #[test]
+    fn walls_scenery_and_the_arch_all_cast() {
+        let world = world(&Track::default());
+        let tallest = world.casters.iter().flat_map(|c| &c.templates).flat_map(points).map(|p| p.y).fold(0., f32::max);
+        assert!(tallest > 7., "the start arch (7+ m) must be a caster, tallest is {tallest}");
+        // Nothing the pass draws is lower than the road: all casters stand on it.
+        assert!(world.casters.iter().flat_map(|c| &c.templates).flat_map(points).all(|p| p.y >= -0.01));
+    }
 }

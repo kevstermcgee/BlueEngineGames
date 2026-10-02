@@ -34,6 +34,13 @@
   **To let friends connect with one click, put the public `host:port` (and join key) in
   `games/spooky-kart/server.txt` in BlueEngineGames before a release.**
 - Race length is now 2 laps (about 1:40 with bots).
+- **Shadows** (presentation only: no rules, physics, bots, netcode, save hash or content fingerprint touched).
+  Esc > Settings > Shadows cycles Off / Simple / Full, remembered in `settings.json`; `--shadows off|simple|full`
+  overrides it for one run. Simple (the default) puts a soft contact blob under every kart and hazard; Full adds
+  the engine's single shadow map of the moon around the human's kart (32 m half-width, 2048 texels, centred 12 m
+  ahead, strength 0.85). `models::world` splits the hollow into receivers (ground slab, road, verges, kerbs: never
+  drawn into the shadow pass) and casters (walls, arch, scenery, grouped in 64 m cells that the pass skips when far
+  from the focus). The moon (`halloween_look`) is lower and more from the side so shadows read.
 
 ## Seeing the game without a display
 This box is headless. Use a virtual display and the engine's capture flags; software rendering is slow (a full
