@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 78,
-    "games": 105,
+    "games": 122,
     "prototypes": 10,
     "tests": 64
   },
@@ -727,6 +727,74 @@
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
     },
     {
+      "path": "games/observatory/README.md",
+      "sha256": "8e9e97353a4364bbcd14689a69d58526da26a4576959c6aa2533324cbb803f5e"
+    },
+    {
+      "path": "games/observatory/author.py",
+      "sha256": "567865451f3b90874eaa8437891610f43b58d1c879da38c66927e53bfc1dbb21"
+    },
+    {
+      "path": "games/observatory/content/authoring-evidence.json",
+      "sha256": "0444f20a294bf89307a7afeb7b2f116529bd1a4e484c7af7ec240caf37ef8af7"
+    },
+    {
+      "path": "games/observatory/content/blueprint.json",
+      "sha256": "17e4949f229a450e97c2c7f94b5330d7a4dfc6ff834909295d7e471161e24da4"
+    },
+    {
+      "path": "games/observatory/content/closed-gate.json",
+      "sha256": "c555fe823e73b23fa30e35456eb8df494f8153baf563413171de6f3f7cdbc365"
+    },
+    {
+      "path": "games/observatory/content/edit.patch.json",
+      "sha256": "cbdf07939cd70f428cd9b2d22dd26734e68647fa44867d467e8d1e06d2a7e953"
+    },
+    {
+      "path": "games/observatory/content/edited-map.json",
+      "sha256": "b7cc96d855df685fe134d871e750b3b9719ba21f1f67cbb6eabfa02a39d1c44c"
+    },
+    {
+      "path": "games/observatory/content/game.json",
+      "sha256": "d505a1cb91c73e959a3f0f542851466d4fcff88abd163f38751e4f4d0ff3e6ed"
+    },
+    {
+      "path": "games/observatory/content/geometry.patch.json",
+      "sha256": "5f9cf7ad49bcc0ecb87d08a4f9ccb38bb0328bab7aafe6dada22fa85b53b1b42"
+    },
+    {
+      "path": "games/observatory/content/loss-restart-win.json",
+      "sha256": "ee0c26e6a0f165a4943f04d5b1b780c63f4266df2d37a3a6b8066a4bce67ea17"
+    },
+    {
+      "path": "games/observatory/content/win.json",
+      "sha256": "b58425a4095bad27f416754167a32f1a7f9285d3b5e8d9d8403d966232bb4a98"
+    },
+    {
+      "path": "games/observatory/evidence/capture.json",
+      "sha256": "1ca4619e7d752f1654663c753916e2033c4c0f45344eceb42815910c32c0e1fc"
+    },
+    {
+      "path": "games/observatory/evidence/loss-0.png",
+      "sha256": "3f63b3f35261c7136c924f85421c06436c52fe467398429d5caec389043c421b"
+    },
+    {
+      "path": "games/observatory/evidence/menu.png",
+      "sha256": "a1895e1ede530bb1cdefece36cef76077bc7a518c1f357eea92445b9fa8d866a"
+    },
+    {
+      "path": "games/observatory/evidence/reset-1.png",
+      "sha256": "8efe70e3f60026dce81ee64aae78cf01171e6960dbda6cb63ad65f38039e5cef"
+    },
+    {
+      "path": "games/observatory/evidence/win-1.png",
+      "sha256": "ce320cda79fddf9d7dbf143562272b57bebdd35ab015ac00ad97ef7429a4cc39"
+    },
+    {
+      "path": "games/observatory/evidence/world.png",
+      "sha256": "8efe70e3f60026dce81ee64aae78cf01171e6960dbda6cb63ad65f38039e5cef"
+    },
+    {
       "path": "games/three-switches/game.json",
       "sha256": "cdc69ba3f13f5d106adc4b1f8d3a39205008f00362e5dfd449b3ee3df2598799"
     },
@@ -1088,6 +1156,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "4136080c7f42c8c2becf7b9597bf2de11e5c44a3",
+  "source_revision": "66b496df12ac66ed7f95f14f3ddc0631ae5b9073",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
