@@ -39,12 +39,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -fsSL -o catalog.tsv \
-            https://github.com/${{ github.repository }}/releases/latest/download/BlueEngineLauncher-catalog.tsv
           gh api repos/${{ github.repository }}/releases/latest > release.json
+          tag=$(jq -r .tag_name release.json)
+          # The old filename is a migration fallback until the first new release completes.
+          curl -fsSL -o catalog.tsv \
+            "https://github.com/${{ github.repository }}/releases/download/$tag/Games-catalog.tsv" || \
+          curl -fsSL -o catalog.tsv \
+            "https://github.com/${{ github.repository }}/releases/download/$tag/BlueEngineLauncher-catalog.tsv"
+          gh api --paginate --slurp repos/${{ github.repository }}/releases | jq 'add' > releases.json
 
       - name: Build site
-        run: python3 site/build.py --catalog catalog.tsv --release-json release.json --games-dir games --thumbs site/thumbs --out _site
+        run: python3 site/build.py --catalog catalog.tsv --release-json release.json --releases-json releases.json --games-dir games --thumbs site/thumbs --out _site
 
       - uses: actions/configure-pages@v5
 

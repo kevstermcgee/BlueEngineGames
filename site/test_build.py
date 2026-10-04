@@ -1,0 +1,73 @@
+import csv
+import importlib.util
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+spec = importlib.util.spec_from_file_location('download_site', Path(__file__).with_name('build.py'))
+site = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(site)
+
+
+def release(tag, names, **extra):
+    return {'tag_name': tag, 'published_at': '2026-10-01T00:00:00Z',
+            'assets': [{'name': name, 'size': 1234,
+                        'browser_download_url': f'https://example.com/{tag}/{name}'} for name in names], **extra}
+
+
+class Downloads(unittest.TestCase):
+    def test_installer_preferred_and_actual_pinned_urls(self):
+        current = release('new', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
+        url, label, _ = site.download_for(current, 'game')
+        self.assertEqual(url, 'https://example.com/new/game-setup-windows-x64.exe')
+        self.assertEqual(label, 'Download installer')
+        self.assertEqual(site.download_for(current, 'missing')[0], '')
+
+    def test_history_filters_and_supports_old_zips(self):
+        versions = [release('new', ['game-windows-x64.zip']),
+                    release('old', ['game-windows-x64.zip', 'SHA256SUMS.txt']),
+                    release('draft', ['game-windows-x64.zip'], draft=True),
+                    release('preview', ['game-windows-x64.zip'], prerelease=True),
+                    release('unrelated', ['another-windows-x64.zip'])]
+        history = site.history_for(versions, 'game', 'new')
+        self.assertIn('Older versions (1)', history)
+        self.assertIn('https://example.com/old/game-windows-x64.zip', history)
+        self.assertIn('https://example.com/old/SHA256SUMS.txt', history)
+        self.assertNotIn('/new/', history)
+        self.assertNotIn('/draft/', history)
+        self.assertNotIn('/preview/', history)
+        self.assertNotIn('/unrelated/', history)
+
+    def test_complete_site_uses_release_assets_not_mutable_catalog_links(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'games').mkdir()
+            (root / 'thumbs').mkdir()
+            rows = [{'slug': 'game', 'name': 'Game', 'description': '<unsafe>', 'created': '2026-01-01',
+                     'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'},
+                    {'slug': 'missing', 'name': 'Missing', 'asset': 'https://bad/nonexistent.zip'}]
+            with (root / 'catalog.tsv').open('w') as out:
+                writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
+                writer.writeheader(); writer.writerows(rows)
+            current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt'])
+            old = release('old', ['game-windows-x64.zip'])
+            (root / 'release.json').write_text(json.dumps(current))
+            (root / 'releases.json').write_text(json.dumps([current, old]))
+            with patch.object(site, 'game_added_date', return_value='2026-01-01'):
+                site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
+                                          releases_json=root / 'releases.json', games_dir=root / 'games',
+                                          thumbs=root / 'thumbs', out=root / 'out'))
+            page = (root / 'out/index.html').read_text()
+            self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
+            self.assertIn('https://example.com/old/game-windows-x64.zip', page)
+            self.assertIn('&lt;unsafe&gt;', page)
+            self.assertNotIn('https://bad/', page)
+            self.assertNotIn('BlueEngine Launcher', page)
+            self.assertNotIn('id="missing"', page)
+
+
+if __name__ == '__main__':
+    unittest.main()

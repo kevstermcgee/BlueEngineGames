@@ -6,10 +6,8 @@ on:
     paths:
       - .games-catalog.json
       - .release-games.json
-      - .launcher-config.json
       - games/**
-      - launcher/**
-      - Install-BlueEngineLauncher.*
+      - distribution/**
       - .github/scripts/**
       - .github/workflows/releases.yml
   workflow_dispatch:
@@ -22,7 +20,24 @@ permissions:
   contents: write
 
 jobs:
+  distribution-checks:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Test updater and download history
+        shell: pwsh
+        run: |
+          distribution/test_updater.ps1
+          python -m unittest discover -s site -p test_*.py
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Test Windows installation, upgrade and uninstall
+        shell: pwsh
+        run: distribution/test_installers.ps1
+
   windows:
+    needs: distribution-checks
     runs-on: windows-latest
     steps:
       - name: Check out the games catalog
@@ -36,8 +51,10 @@ jobs:
           $short = $catalog.source_revision.Substring(0, 12)
           "source_repository=$($catalog.source_repository)" >> $env:GITHUB_OUTPUT
           "source_revision=$($catalog.source_revision)" >> $env:GITHUB_OUTPUT
-          "tag=blueengine-$short" >> $env:GITHUB_OUTPUT
-          "title=BlueEngine playable builds ($short)" >> $env:GITHUB_OUTPUT
+          $gamesShort = $env:GITHUB_SHA.Substring(0, 12)
+          "tag=blueengine-$short-games-$gamesShort-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT
+          "title=BlueEngine games ($gamesShort / engine $short)" >> $env:GITHUB_OUTPUT
+          "RELEASE_TAG=blueengine-$short-games-$gamesShort-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_ENV
 
       - name: Check out the exact BlueEngine source
         uses: actions/checkout@v7
@@ -79,9 +96,24 @@ jobs:
           CARGO_TARGET_DIR: ${{ runner.temp }}\cargo-target
         run: .github/scripts/package_native_releases.ps1 -EngineRoot _engine
 
-      - name: Package BlueEngine Launcher
+      - name: Build release catalog
         shell: pwsh
-        run: .github/scripts/package_launcher.ps1 -OutputName BlueEngineLauncher
+        run: distribution/build_catalog.ps1
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+
+      - name: Build game installers
+        shell: pwsh
+        run: .github/scripts/package_installers.ps1
+
+      - name: Save reviewable Windows downloads
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-downloads
+          path: dist/
+          retention-days: 7
 
       # Branch runs (workflow_dispatch on a branch) build and package everything but never publish.
       - name: Create or update the GitHub Release
@@ -93,10 +125,5 @@ jobs:
           RELEASE_TITLE: ${{ steps.catalog.outputs.title }}
         run: |
           $assets = @(Get-ChildItem dist -File | Where-Object Name -ne 'release-notes.md' | ForEach-Object FullName)
-          gh release view $env:RELEASE_TAG *> $null
-          if ($LASTEXITCODE -eq 0) {
-            gh release upload $env:RELEASE_TAG $assets --clobber
-            gh release edit $env:RELEASE_TAG --title $env:RELEASE_TITLE --notes-file dist/release-notes.md --latest
-          } else {
-            gh release create $env:RELEASE_TAG $assets --target $env:GITHUB_SHA --title $env:RELEASE_TITLE --notes-file dist/release-notes.md --latest
-          }
+          # Every build gets a new tag; release history is never overwritten.
+          gh release create $env:RELEASE_TAG $assets --target $env:GITHUB_SHA --title $env:RELEASE_TITLE --notes-file dist/release-notes.md --latest

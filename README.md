@@ -8,30 +8,21 @@ the download site lists every game with a screenshot, description, and direct
 download link. It rebuilds automatically from each release
 (see `site/` and `.github/workflows/pages.yml`).
 
-**[Download ready-to-play Windows builds](../../releases/latest).** Every directory
-under `games/` has a Windows x64 ZIP containing an `.exe`; extract it and start the
-included executable. No Rust toolchain or command line is required. The executables
-are not code-signed, so Windows may show a SmartScreen warning.
+**[Download ready-to-play Windows builds](../../releases/latest).** Each game has a
+Windows x64 installer that installs for your user, adds Start Menu shortcuts, and
+offers a desktop shortcut. No Rust toolchain or command line is required.
 
-## Game downloads
+Installed games have a **Check for updates** Start Menu shortcut. Updates replace
+the existing game and keep saves and settings. You can also run a newer installer
+to upgrade the same installation. Use **Older versions** on a game's website card
+to download a specific previous release. Latest is the default.
 
-- [BlueEngine Launcher](../../releases/latest/download/BlueEngineLauncher-windows-x64.zip) — browse, install, and play every game from one app.
-- [BlueEngineSandbox](../../releases/latest/download/blueengine-sandbox-windows-x64.zip)
-- [BlueDM](../../releases/latest/download/bluedm-windows-x64.zip)
-- [Magnet Mine](../../releases/latest/download/magnet-mine-windows-x64.zip)
-- [Riftwake](../../releases/latest/download/riftwake-windows-x64.zip)
-- [Skyhook Sprint](../../releases/latest/download/skyhook-sprint-windows-x64.zip)
-- [Three Switches](../../releases/latest/download/three-switches-windows-x64.zip)
-- [Wrecking Orbit](../../releases/latest/download/wrecking-orbit-windows-x64.zip)
-- [Pulse Nova](../../releases/latest/download/pulse-nova-windows-x64.zip)
-- [Spooky Kart](../../releases/latest/download/spooky-kart-windows-x64.zip)
-- [Dead Air](../../releases/latest/download/dead-air-windows-x64.zip)
-- [Clockwork Pinball](../../releases/latest/download/clockwork-pinball-windows-x64.zip)
-- [Wobble Tower](../../releases/latest/download/wobble-tower-windows-x64.zip)
-- [Tumble Maze](../../releases/latest/download/tumble-maze-windows-x64.zip)
+New games install under `%LOCALAPPDATA%\BlueEngine\Games\<game>`.
+The installer recognizes existing installs from the retired launcher and lets you
+select an existing portable game's folder. ZIPs remain available for portable use
+and for releases published before installers were introduced.
 
-Run `Install-BlueEngineLauncher.cmd` from a checkout to build the launcher and add
-a **BlueEngine Launcher** shortcut to your Windows desktop.
+See [DISTRIBUTION.md](DISTRIBUTION.md) for release, versioning, and update details.
 
 - `games/` contains playable game documents and standalone game crates.
 - `prototypes/` contains API and multiplayer starter projects.

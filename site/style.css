@@ -127,3 +127,10 @@ footer {
   color: var(--muted);
   text-align: center;
 }
+
+.card[hidden] { display: none; }
+.versions { margin-top: 12px; font-size: 0.8rem; }
+.versions summary { cursor: pointer; color: var(--accent); }
+.versions ul { padding-left: 18px; max-height: 240px; overflow-y: auto; }
+.versions li { margin: 10px 0; overflow-wrap: anywhere; }
+.versions span, .history-empty { color: var(--muted); font-size: 0.78rem; }

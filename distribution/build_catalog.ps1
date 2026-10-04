@@ -1,5 +1,5 @@
 param(
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot 'build')
+    [string]$OutputDirectory = (Join-Path $PSScriptRoot '../dist')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -7,15 +7,12 @@ Set-StrictMode -Version Latest
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $output = [System.IO.Path]::GetFullPath($OutputDirectory)
-$config = Get-Content -Raw -LiteralPath (Join-Path $repoRoot '.launcher-config.json') | ConvertFrom-Json
+$repository = 'kevstermcgee/BlueEngineGames'
 $release = Get-Content -Raw -LiteralPath (Join-Path $repoRoot '.release-games.json') | ConvertFrom-Json
 $catalog = Get-Content -Raw -LiteralPath (Join-Path $repoRoot '.games-catalog.json') | ConvertFrom-Json
 $safeRepo = $repoRoot.Replace('\', '/')
 
-if (Test-Path -LiteralPath $output) {
-    Remove-Item -LiteralPath $output -Recurse -Force
-}
-New-Item -ItemType Directory -Path $output | Out-Null
+New-Item -ItemType Directory -Path $output -Force | Out-Null
 
 $definitions = @{}
 foreach ($playable in @($catalog.playables) + @($release.data_playables)) {
@@ -116,22 +113,27 @@ function Engine-Version([string]$Directory) {
     return $sourceRevision.Substring(0, [Math]::Min(12, $sourceRevision.Length))
 }
 
+$releaseTag = $env:RELEASE_TAG
+if (-not $releaseTag) { $releaseTag = "games-$((& git -C $repoRoot rev-parse HEAD).Substring(0, 12))" }
+$fixtures = @()
+if ($release.PSObject.Properties.Name -contains 'non_playable_directories') { $fixtures = @($release.non_playable_directories) }
 $rows = @()
 foreach ($gameRoot in @($release.game_roots)) {
     $rootRelative = ([string]$gameRoot).Replace('\', '/').Trim('/')
     $rootPath = Join-Path $repoRoot $rootRelative
     foreach ($directory in Get-ChildItem -LiteralPath $rootPath -Directory | Sort-Object Name) {
         $relative = "$rootRelative/$($directory.Name)"
+        if ($relative -in $fixtures) { continue }
         if (-not $definitions.ContainsKey($relative)) {
-            throw "Launcher discovery found a game without a release definition: $relative"
+            throw "Release discovery found a game without a release definition: $relative"
         }
         $definition = $definitions[$relative]
         $createdLines = @(& git -c "safe.directory=$safeRepo" -C $repoRoot log --diff-filter=A --format=%aI -- $relative 2>$null)
         $createdDates = @($createdLines | ForEach-Object { [DateTimeOffset]$_ } | Sort-Object UtcDateTime)
         $created = if ($createdDates.Count -gt 0) { $createdDates[0].ToString('yyyy-MM-dd') } else { 'unknown' }
-        $fallback = "$($definition.name), built with $($config.engine_name)."
+        $fallback = "$($definition.name), built with BlueEngine."
         $description = Read-Description $directory.FullName $fallback
-        $asset = "https://github.com/$($config.repository)/releases/latest/download/$($definition.slug)-windows-x64.zip"
+        $asset = "https://github.com/$repository/releases/download/$releaseTag/$($definition.slug)-windows-x64.zip"
         $fields = @(
             (One-Line $definition.slug)
             (One-Line $definition.name)
@@ -141,43 +143,15 @@ foreach ($gameRoot in @($release.game_roots)) {
             (One-Line (Engine-Version $directory.FullName))
             (One-Line $definition.kind)
             $asset
+            $releaseTag
+            $(if (Test-Path (Join-Path $repoRoot "dist/$($definition.slug)-windows-x64.zip")) {
+                (Get-FileHash -Algorithm SHA256 (Join-Path $repoRoot "dist/$($definition.slug)-windows-x64.zip")).Hash.ToLowerInvariant()
+            } else { '' })
         )
         $rows += $fields -join [char]9
     }
 }
 
-$separator = [char]9
-$settings = @()
-$settings += "product${separator}$($config.product)"
-$settings += "repository${separator}$($config.repository)"
-$settings += "install_folder${separator}$($config.install_folder)"
-$settings += "catalog_url${separator}https://github.com/$($config.repository)/releases/latest/download/$($config.output_name)-catalog.tsv"
-$settings += "accent${separator}$($config.accent)"
-foreach ($color in @('background', 'surface', 'card', 'muted')) {
-    if ($config.PSObject.Properties.Name -contains $color) {
-        $settings += "${color}${separator}$($config.$color)"
-    }
-}
-$header = @('slug', 'name', 'description', 'created', 'game_version', 'engine_version', 'kind', 'asset') -join [char]9
-Set-Content -LiteralPath (Join-Path $output 'launcher-settings.tsv') -Value $settings -Encoding utf8
-Set-Content -LiteralPath (Join-Path $output 'launcher-catalog.tsv') -Value (@($header) + $rows) -Encoding utf8
-
-$cscCandidates = @(
-    (Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'),
-    (Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe')
-)
-$csc = $cscCandidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
-if (-not $csc) { throw 'The Windows .NET Framework C# compiler was not found.' }
-$exe = Join-Path $output ([string]$config.launcher_exe)
-& $csc /nologo /target:winexe "/out:$exe" /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll (Join-Path $PSScriptRoot 'EngineGamesLauncher.cs')
-if ($LASTEXITCODE -ne 0) { throw "Launcher compilation failed with exit code $LASTEXITCODE" }
-
-$readme = @(
-    "$($config.product)",
-    ('=' * ([string]$config.product).Length),
-    '',
-    "Run $($config.launcher_exe). Games are downloaded from the latest $($config.repository) GitHub release",
-    'and installed per-user under LocalAppData. Downloads and executables are not code-signed.'
-)
-Set-Content -LiteralPath (Join-Path $output 'README.txt') -Value $readme -Encoding utf8
-Write-Output "Built $($config.launcher_exe) with $($rows.Count) automatically discovered game(s)."
+$header = @('slug', 'name', 'description', 'created', 'game_version', 'engine_version', 'kind', 'asset', 'release', 'sha256') -join [char]9
+Set-Content -LiteralPath (Join-Path $output 'Games-catalog.tsv') -Value (@($header) + $rows) -Encoding utf8NoBOM
+Write-Output "Cataloged $($rows.Count) game(s) for release $releaseTag."
