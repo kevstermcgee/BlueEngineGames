@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 79,
-    "games": 137,
+    "games": 183,
     "prototypes": 10,
     "tests": 64
   },
@@ -731,6 +731,190 @@
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
     },
     {
+      "path": "games/leo/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/leo/AGENTS.md",
+      "sha256": "55e344f803f71136730850f476b724f89ee6ac2b97a6e8c11507dbaeb24e1ef3"
+    },
+    {
+      "path": "games/leo/AUDIO.md",
+      "sha256": "476e05189f46d3544ec5630915e0bcada9dc2dfe8cdd3bf3887d1424af9ac694"
+    },
+    {
+      "path": "games/leo/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/leo/Cargo.lock",
+      "sha256": "de4f7855be00d901c5042c707812d5ee102db92891f085c913c56372900c11a6"
+    },
+    {
+      "path": "games/leo/Cargo.toml",
+      "sha256": "18f3d0d14e19b24a8d48893782dbbb70c9fefdedac9a092e36161a27a69f654a"
+    },
+    {
+      "path": "games/leo/README.md",
+      "sha256": "64a2b098561dcbfd93160918b3b60bb41185773d9da1c2acc98ff11248afc2e0"
+    },
+    {
+      "path": "games/leo/STATUS.md",
+      "sha256": "ba2a27cc65c10a2d0e4bb3d89794a235cb0dbbf52c91f4f6267b8a51b8a6adf7"
+    },
+    {
+      "path": "games/leo/assets/audio-source/dawn.wav",
+      "sha256": "9cf21f9b18da8ac4e49f89f00baf5f2a3808e1a595ba2fdb18ec1ca70b2e9d31"
+    },
+    {
+      "path": "games/leo/assets/audio-source/leaves.wav",
+      "sha256": "446b013d3e28b577b36cdefbf4953c2f01b58e8cac7cddaca961f9be5e9f126d"
+    },
+    {
+      "path": "games/leo/assets/audio-source/music.json",
+      "sha256": "f9a02b9802b50e055b03afc008360bda148959adacc563dd940f04aadad3d5b5"
+    },
+    {
+      "path": "games/leo/assets/audio-source/nature.json",
+      "sha256": "937b9c3348751e2043ffd8d359a812923f3fe55a847577296649b596b2353e5e"
+    },
+    {
+      "path": "games/leo/assets/audio-source/night.wav",
+      "sha256": "a7ab83857f6a06ed616e8795ba1207160ae0d014015a25098d2f6a3a35dce9c7"
+    },
+    {
+      "path": "games/leo/assets/audio-source/wind.wav",
+      "sha256": "478b56092d0506873a0ff481a9ffdd127df98d8a5203edfc2fbbb4723cc0f117"
+    },
+    {
+      "path": "games/leo/assets/audio/music/bank.json",
+      "sha256": "0ae996df16796e9ebc31f3f28908e37baaeac346bd72f69b0e0cad89d45d4278"
+    },
+    {
+      "path": "games/leo/assets/audio/music/music-home.wav",
+      "sha256": "cf5e16f2728a6fc2f88620fc962823a1c8ab9349da7be6bfeff61a1c895ce169"
+    },
+    {
+      "path": "games/leo/assets/audio/music/music-starlight.wav",
+      "sha256": "1eaba38e13c8866281539718d185dec839b4c9ade5697d9628b85bfc57e542f6"
+    },
+    {
+      "path": "games/leo/assets/audio/music/music-wander.wav",
+      "sha256": "eac4ee99d235968f4068640649c603f2711da5af40c234ad0c431c5f88336283"
+    },
+    {
+      "path": "games/leo/assets/audio/music/preview-mix.wav",
+      "sha256": "510fea0628b12dcca0996f1b037347faefb162fa493d49ac5b01bec4f3ad4e26"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/bank.json",
+      "sha256": "f9300dcdc4e1e45089a898bbccc761c33aa90563a37c7db071841abaf17bbac6"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/music-birds.wav",
+      "sha256": "186c96f4e73fba62b698cd900fc206268211b494b6f70262a55a7a9e3d13fb86"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/music-leaves.wav",
+      "sha256": "c8e857e6c23a1439ba169a93aaf9e06efc001617758e437ec9891b75c4f31072"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/music-night.wav",
+      "sha256": "62fd3719945ad7d03ae7e488001ebe453cab9193d7a20ead186bb110c7759ea7"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/music-wind.wav",
+      "sha256": "15dc2e81ce07026d0fe0f2bc29e6f4fe5bfe5e139bb615a92dd3fd86f9704916"
+    },
+    {
+      "path": "games/leo/assets/audio/nature/preview-mix.wav",
+      "sha256": "fe7ee36156e3384331e7d4289ff013b1e8802f7ecbeea0c425e18a1e53d298c6"
+    },
+    {
+      "path": "games/leo/assets/icon.ico",
+      "sha256": "48596df6bc9f603f053003ad4b40fd713106ccc336352921be43ea2c1343436e"
+    },
+    {
+      "path": "games/leo/assets/icon.png",
+      "sha256": "e5d547951fe0f2dac4c9ca81e9770959a6fb1514524a4a6348358037d11dd573"
+    },
+    {
+      "path": "games/leo/assets/icon_16.rgba",
+      "sha256": "28dd93d2a7b42955dfef08c372d11e0a43815db5503c92e998529285fd003d9b"
+    },
+    {
+      "path": "games/leo/assets/icon_32.rgba",
+      "sha256": "02820cad5fc4baf6a066e6189e2cdd63647309cb49e960fbb5249be818293314"
+    },
+    {
+      "path": "games/leo/assets/icon_64.rgba",
+      "sha256": "52084cfce8b4586434bee24a66112b6ecc9096151643f7b35bbb506210ae063f"
+    },
+    {
+      "path": "games/leo/assets/identity.json",
+      "sha256": "660ddc09b9096b577d32737d04d30e147470bdc8c3f9bb37cde4fa34ff1a6f24"
+    },
+    {
+      "path": "games/leo/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/leo/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/leo/scripts/blue",
+      "sha256": "d0f261161f38b664172172a8f65b97c9147efacc98b6bde525aede6b2607f8dc"
+    },
+    {
+      "path": "games/leo/scripts/blue.ps1",
+      "sha256": "88c92cb7e11331cb905c760337503ec21955097e02019318ed7f98bc4b87e7fd"
+    },
+    {
+      "path": "games/leo/scripts/check.py",
+      "sha256": "960cfc7e59eefbe7148520494fc3e7118b7f3949a51095fbd07368bbbd670051"
+    },
+    {
+      "path": "games/leo/scripts/dev.py",
+      "sha256": "1ec74470bafba23a42ad134347fd905010704cc8d1e0e4ae6ed783474edad211"
+    },
+    {
+      "path": "games/leo/scripts/prepare_ambience.py",
+      "sha256": "894ea3329adb9fd90d23d6c3ecfe089452f136b17e1354c7e068c983152f360d"
+    },
+    {
+      "path": "games/leo/scripts/render_audio.py",
+      "sha256": "5b07403f2db5f7445dcf98e0aa2fda857197ffb0eb566eaf60c8b13fa090e5a0"
+    },
+    {
+      "path": "games/leo/scripts/ship.py",
+      "sha256": "07b0a43ce704138dbf6dfcbe018ecdbb7027c80c62d21e7a65ee1b6e0f9eb866"
+    },
+    {
+      "path": "games/leo/src/lib.rs",
+      "sha256": "7573d2f2000a70eaf7c5d8f78e36eea6b09cb4ac71431b71cf5f347acb6478c2"
+    },
+    {
+      "path": "games/leo/src/main.rs",
+      "sha256": "01d5c3cc2f24eb2a045aa1d2b3eb3e58a77e478776fce51dd877f13b97869e04"
+    },
+    {
+      "path": "games/leo/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/leo/src/scene.rs",
+      "sha256": "cbb4ced650e6e06229e97eb372c95620cc3881e8c0efca081ce22f53d5bb273e"
+    },
+    {
+      "path": "games/leo/tests/determinism.rs",
+      "sha256": "0f92e2fe35d691401965d758be2fc0dbe3b622a237aef1af22d075d970c19ad3"
+    },
+    {
+      "path": "games/leo/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
       "path": "games/observatory/README.md",
       "sha256": "d6153d22845e8e60c014b51e8c117ed9f7fb399d13aadd025b81e716c71dabdc"
     },
@@ -1220,6 +1404,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "678f4a9ab5e8d06f117425ea976dbaf97e2e2c07",
+  "source_revision": "fc078d592900b61b27b806e03023cada617f8939",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
