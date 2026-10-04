@@ -1,11 +1,15 @@
 {
   "collections": {
-    "demos": 78,
+    "demos": 79,
     "games": 122,
     "prototypes": 10,
     "tests": 64
   },
   "files": [
+    {
+      "path": "demos/examples/audio_preview.rs",
+      "sha256": "0a340831020395701f1d20ef050a07dbd14d6cf4cea96896d407595bb836c38a"
+    },
     {
       "path": "demos/examples/custom_client.rs",
       "sha256": "8b7cef1175e9a1051ae32a610b753a665c7837b32baa7ef2070d661ca4f746f2"
@@ -1156,6 +1160,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "75e6d00e8b5674b364d32b49659b125ad30291f2",
+  "source_revision": "343c5ab61155b489cefc33b2fdfe5b06a8499094",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
