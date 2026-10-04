@@ -44,8 +44,9 @@ excluded from update ZIPs. The portable package includes the per-game updater.
 `SHA256SUMS.txt` covers the final ZIPs, installers, and catalog.
 
 The website fetches all pages of published GitHub releases at build time. Latest
-is shown by default, and each game's **Older versions** section links to actual
-assets from each previous release. Installers are preferred when present; older
+is shown by default, and each game has its own page with details and a **Versions** table linking to
+actual assets from each previous release. The catalog keeps its original grid
+layout; version tables use normal page scrolling. Installers are preferred when present; older
 ZIP-only releases stay downloadable. Checksums belong to the selected release.
 Drafts, prereleases, and releases without that game are excluded. Historical tags
 are shown even when two releases use the same semantic game version.

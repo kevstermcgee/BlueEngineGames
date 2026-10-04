@@ -50,9 +50,14 @@ try {
     }
     $updatesLink = Join-Path ([Environment]::GetFolderPath('Programs')) "BlueEngine Games/$name - Check for updates.lnk"
     Assert (Test-Path $updatesLink) 'Start Menu update shortcut missing'
+    # Simulate a later updater adding package files beyond the original Inno log.
+    Set-Content (Join-Path $install 'update-added.txt') 'new package asset'
+    $newHash = (Get-FileHash (Join-Path $install 'update-added.txt') -Algorithm SHA256).Hash.ToLowerInvariant()
+    Add-Content (Join-Path $install '.installed-files.tsv') "update-added.txt`t$newHash"
     Run-Setup (Join-Path $install 'unins000.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART')
     Assert (Test-Path (Join-Path $install 'saves/quick.be2save')) 'Uninstaller removed player progress'
     Assert (-not (Test-Path (Join-Path $install 'Play-test-game.exe'))) 'Uninstaller left game executable'
+    Assert (-not (Test-Path (Join-Path $install 'update-added.txt'))) 'Uninstaller left updater-added package files'
     Assert (-not (Test-Path $shortcut)) 'Uninstaller left desktop shortcut'
     Write-Output 'Installer tests passed: install, receipt, checksum, shortcuts, upgrade, save preservation, uninstall.'
 } finally {

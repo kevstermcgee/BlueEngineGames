@@ -89,7 +89,7 @@ internal static class InstallationLogic
             throw new InvalidDataException("The download failed its SHA-256 check. Your installed game was kept.");
         var parent = Directory.GetParent(dir).FullName;
         Directory.CreateDirectory(parent);
-        // A separate lock survives renames and prevents two launchers updating the same game.
+        // A separate lock survives renames and prevents two updater processes updating the same game.
         using (var installLock = new FileStream(Path.Combine(parent, "." + game.Slug + ".lock"),
             FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) {
             var staging = Path.Combine(parent, "." + game.Slug + ".installing-" + Guid.NewGuid().ToString("N"));

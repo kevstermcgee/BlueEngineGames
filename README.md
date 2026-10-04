@@ -14,7 +14,7 @@ offers a desktop shortcut. No Rust toolchain or command line is required.
 
 Installed games have a **Check for updates** Start Menu shortcut. Updates replace
 the existing game and keep saves and settings. You can also run a newer installer
-to upgrade the same installation. Use **Older versions** on a game's website card
+to upgrade the same installation. Open a game's page on the website and use its **Versions** table
 to download a specific previous release. Latest is the default.
 
 New games install under `%LOCALAPPDATA%\BlueEngine\Games\<game>`.

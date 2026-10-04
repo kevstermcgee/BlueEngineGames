@@ -32,8 +32,8 @@ class Downloads(unittest.TestCase):
                     release('draft', ['game-windows-x64.zip'], draft=True),
                     release('preview', ['game-windows-x64.zip'], prerelease=True),
                     release('unrelated', ['another-windows-x64.zip'])]
-        history = site.history_for(versions, 'game', 'new')
-        self.assertIn('Older versions (1)', history)
+        history = site.version_rows(versions[1:], 'game', 'new')
+        self.assertEqual(history.count('<tr>'), 1)
         self.assertIn('https://example.com/old/game-windows-x64.zip', history)
         self.assertIn('https://example.com/old/SHA256SUMS.txt', history)
         self.assertNotIn('/new/', history)
@@ -62,7 +62,14 @@ class Downloads(unittest.TestCase):
                                           thumbs=root / 'thumbs', out=root / 'out'))
             page = (root / 'out/index.html').read_text()
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
-            self.assertIn('https://example.com/old/game-windows-x64.zip', page)
+            self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
+            self.assertIn('href="games/game/"', page)
+            game_page = (root / 'out/games/game/index.html').read_text()
+            self.assertIn('https://example.com/old/game-windows-x64.zip', game_page)
+            self.assertIn('https://example.com/current/game-setup-windows-x64.exe', game_page)
+            self.assertIn('Latest</span>', game_page)
+            self.assertNotIn('<details', game_page)
+            self.assertEqual(game_page.count('<tbody>'), 1)
             self.assertIn('&lt;unsafe&gt;', page)
             self.assertNotIn('https://bad/', page)
             self.assertNotIn('BlueEngine Launcher', page)

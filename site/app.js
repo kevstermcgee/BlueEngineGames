@@ -7,16 +7,6 @@
   var kindButtons = Array.prototype.slice.call(document.querySelectorAll(".kinds button"));
   var cards = Array.prototype.slice.call(grid.children);
   var kind = "";
-  var selectedGame = new URLSearchParams(window.location.search).get("game");
-  if (selectedGame) {
-    var selectedCard = cards.filter(function (card) { return card.dataset.slug === selectedGame; })[0];
-    if (selectedCard) {
-      search.value = selectedCard.dataset.name;
-      var versions = selectedCard.querySelector("details");
-      if (versions) versions.open = true;
-    }
-  }
-
   var sorters = {
     newest: function (a, b) {
       return b.dataset.created.localeCompare(a.dataset.created) ||

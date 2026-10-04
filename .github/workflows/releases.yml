@@ -11,6 +11,11 @@ on:
       - .github/scripts/**
       - .github/workflows/releases.yml
   workflow_dispatch:
+    inputs:
+      checks_only:
+        description: Run distribution checks without rebuilding game downloads
+        type: boolean
+        default: false
 
 concurrency:
   group: blueenginegames-windows-release
@@ -38,6 +43,7 @@ jobs:
 
   windows:
     needs: distribution-checks
+    if: github.event.inputs.checks_only != 'true'
     runs-on: windows-latest
     steps:
       - name: Check out the games catalog
