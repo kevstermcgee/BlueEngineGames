@@ -23,10 +23,11 @@ class Downloads(unittest.TestCase):
         current = release('new', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
         url, label, _ = site.download_for(current, 'game')
         self.assertEqual(url, 'https://example.com/new/game-setup-windows-x64.exe')
-        self.assertEqual(label, 'Download installer')
+        self.assertEqual(label, 'Download installer (.exe)')
         self.assertEqual(site.download_for(current, 'missing')[0], '')
+        self.assertEqual(site.download_for(release('old', ['game-windows-x64.zip']), 'game')[0], '')
 
-    def test_history_filters_and_supports_old_zips(self):
+    def test_legacy_history_never_offers_zip_downloads(self):
         versions = [release('new', ['game-windows-x64.zip']),
                     release('old', ['game-windows-x64.zip', 'SHA256SUMS.txt']),
                     release('draft', ['game-windows-x64.zip'], draft=True),
@@ -34,7 +35,8 @@ class Downloads(unittest.TestCase):
                     release('unrelated', ['another-windows-x64.zip'])]
         history = site.version_rows(versions[1:], 'game', 'new')
         self.assertEqual(history.count('<tr>'), 1)
-        self.assertIn('https://example.com/old/game-windows-x64.zip', history)
+        self.assertIn('Installer not yet available', history)
+        self.assertNotIn('game-windows-x64.zip', history)
         self.assertIn('https://example.com/old/SHA256SUMS.txt', history)
         self.assertNotIn('/new/', history)
         self.assertNotIn('/draft/', history)
@@ -53,7 +55,7 @@ class Downloads(unittest.TestCase):
                 writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
                 writer.writeheader(); writer.writerows(rows)
             current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt'])
-            old = release('old', ['game-windows-x64.zip'])
+            old = release('old', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
             (root / 'release.json').write_text(json.dumps(current))
             (root / 'releases.json').write_text(json.dumps([current, old]))
             with patch.object(site, 'game_added_date', return_value='2026-01-01'):
@@ -65,7 +67,8 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
             game_page = (root / 'out/games/game/index.html').read_text()
-            self.assertIn('https://example.com/old/game-windows-x64.zip', game_page)
+            self.assertIn('https://example.com/old/game-setup-windows-x64.exe', game_page)
+            self.assertNotIn('game-windows-x64.zip', game_page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', game_page)
             self.assertIn('Latest</span>', game_page)
             self.assertNotIn('<details', game_page)

@@ -36,10 +36,17 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch latest release metadata
+        id: metadata
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api repos/${{ github.repository }}/releases/latest > release.json
+          if ! jq -e '[.assets[].name | select(endswith("-setup-windows-x64.exe"))] | length > 0' release.json > /dev/null; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Keeping the current site until installer downloads are published."
+            exit 0
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
           tag=$(jq -r .tag_name release.json)
           # The old filename is a migration fallback until the first new release completes.
           curl -fsSL -o catalog.tsv \
@@ -49,13 +56,17 @@ jobs:
           gh api --paginate --slurp repos/${{ github.repository }}/releases | jq 'add' > releases.json
 
       - name: Build site
+        if: steps.metadata.outputs.ready == 'true'
         run: python3 site/build.py --catalog catalog.tsv --release-json release.json --releases-json releases.json --games-dir games --thumbs site/thumbs --out _site
 
       - uses: actions/configure-pages@v5
+        if: steps.metadata.outputs.ready == 'true'
 
       - uses: actions/upload-pages-artifact@v4
+        if: steps.metadata.outputs.ready == 'true'
         with:
           path: _site
 
       - id: deployment
+        if: steps.metadata.outputs.ready == 'true'
         uses: actions/deploy-pages@v4

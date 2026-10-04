@@ -46,13 +46,22 @@ excluded from update ZIPs. The portable package includes the per-game updater.
 The website fetches all pages of published GitHub releases at build time. Latest
 is shown by default, and each game has its own page with details and a **Versions** table linking to
 actual assets from each previous release. The catalog keeps its original grid
-layout; version tables use normal page scrolling. Installers are preferred when present; older
-ZIP-only releases stay downloadable. Checksums belong to the selected release.
+layout; version tables use normal page scrolling. The website offers only installer `.exe` downloads. Older builds
+without installers are marked as pending until the archive packaging job runs. Checksums belong to the selected release.
 Drafts, prereleases, and releases without that game are excluded. Historical tags
 are shown even when two releases use the same semantic game version.
 
+To package older builds without recompiling them, dispatch **Build Windows releases**
+with `backfill_limit` set to the number of recent releases to convert. ZIP bytes
+stay unchanged. The job uploads installers as reviewable artifacts; setting
+`publish_archives` to true on `main` additionally appends the installers and
+`INSTALLER-SHA256SUMS.txt` to their original releases, without overwriting existing
+assets. Re-running skips games that already have installers. Original catalog data
+supplies the archived game's title/version when available. The launcher is excluded.
+
 The website temporarily accepts the old catalog filename until the first new
-release finishes. It provides no launcher download. Existing historical release
+release finishes. It keeps the existing deployed site until installer assets
+exist, and provides no launcher download. Existing historical release
 artifacts remain intact.
 
 `non_playable_directories` in `.release-games.json` explicitly identifies source

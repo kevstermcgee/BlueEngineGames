@@ -19,8 +19,8 @@ to download a specific previous release. Latest is the default.
 
 New games install under `%LOCALAPPDATA%\BlueEngine\Games\<game>`.
 The installer recognizes existing installs from the retired launcher and lets you
-select an existing portable game's folder. ZIPs remain available for portable use
-and for releases published before installers were introduced.
+select an existing portable game's folder. Website downloads are `.exe` installers. Original ZIPs remain as internal update
+packages and preserved GitHub release artifacts.
 
 See [DISTRIBUTION.md](DISTRIBUTION.md) for release, versioning, and update details.
 

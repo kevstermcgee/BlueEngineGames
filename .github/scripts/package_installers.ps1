@@ -1,7 +1,11 @@
+param(
+    [string]$DistDirectory = (Join-Path $PSScriptRoot '../../dist'),
+    [switch]$PreserveArchives
+)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
-$dist = Join-Path $repoRoot 'dist'
+$dist = [IO.Path]::GetFullPath($DistDirectory)
 $catalog = Get-Content -Raw (Join-Path $dist 'Games-catalog.tsv') | ConvertFrom-Csv -Delimiter "`t"
 $definitions = @($catalog | ForEach-Object {
     [pscustomobject]@{ slug = $_.slug; name = $_.name; exe = ''; folder = "BlueEngine\Games\$($_.slug)" }
@@ -47,8 +51,10 @@ foreach ($game in $definitions) {
         Copy-Item $updater (Join-Path $stage "Update-$($game.slug).exe")
         # The update ZIP contains only shipped payload, never local installation receipts.
         # Repack first, then add receipts to the installer staging directory.
-        Remove-Item $archive
-        Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+        if (-not $PreserveArchives) {
+            Remove-Item $archive
+            Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+        }
         ($catalog | Where-Object slug -eq $game.slug).sha256 = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
         $manifest = @(Get-ChildItem $stage -Recurse -File | ForEach-Object {
             $relative = $_.FullName.Substring($stage.Length + 1)

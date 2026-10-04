@@ -29,7 +29,9 @@ try {
         $row = @('test-game',$name,'Test game','2026-01-01','0.1.0','engine','native','https://example.com/game.zip',$env:RELEASE_TAG,'') -join "`t"
         Set-Content (Join-Path $dist 'Games-catalog.tsv') @($header,$row)
         Set-Content (Join-Path $dist 'release-notes.md') 'Test'
-        & (Join-Path $temp '.github/scripts/package_installers.ps1')
+        $originalHash = (Get-FileHash $zip -Algorithm SHA256).Hash
+        & (Join-Path $temp '.github/scripts/package_installers.ps1') -PreserveArchives:($version -eq 'two')
+        if ($version -eq 'two') { Assert ((Get-FileHash $zip -Algorithm SHA256).Hash -eq $originalHash) 'Archive packaging changed the original ZIP' }
         $catalog = Get-Content -Raw (Join-Path $dist 'Games-catalog.tsv') | ConvertFrom-Csv -Delimiter "`t"
         Assert ($catalog.sha256 -eq (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()) 'ZIP checksum does not match catalog'
         Run-Setup (Join-Path $dist 'test-game-setup-windows-x64.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=`"$install`"",'/TASKS=desktopicon')

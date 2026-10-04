@@ -39,7 +39,6 @@ PAGE = """<!DOCTYPE html>
 <section class="notes">
   <ul>
     <li>Windows x64 only.</li>
-    <li>Windows checks publisher signatures and download reputation. Unsigned or new builds may show a SmartScreen warning.</li>
     <li>Verify downloads against <a href="{sums_url}">SHA256SUMS.txt</a>.</li>
     <li>Installed games have a <strong>Check for updates</strong> shortcut in the Start Menu.</li>
   </ul>
@@ -116,13 +115,12 @@ def release_download(release: dict, filename: str) -> str:
 
 
 def download_for(release: dict, slug: str) -> tuple[str, str, int]:
-    for suffix, label in (("-setup-windows-x64.exe", "Download installer"), ("-windows-x64.zip", "Download ZIP")):
-        filename = slug + suffix
-        url = release_download(release, filename)
-        if url:
-            size = next(a.get("size", 0) for a in release["assets"] if a["name"] == filename)
-            return url, label, size
-    return "", "Unavailable in this release", 0
+    filename = slug + "-setup-windows-x64.exe"
+    url = release_download(release, filename)
+    if url:
+        size = next(a.get("size", 0) for a in release["assets"] if a["name"] == filename)
+        return url, "Download installer (.exe)", size
+    return "", "Installer not yet available", 0
 
 
 def version_rows(releases: list[dict], slug: str, current_tag: str) -> str:
@@ -131,15 +129,16 @@ def version_rows(releases: list[dict], slug: str, current_tag: str) -> str:
         if release.get("draft") or release.get("prerelease"):
             continue
         url, label, size = download_for(release, slug)
-        if not url:
+        if not url and not release_download(release, slug + "-windows-x64.zip"):
             continue
         esc = html.escape
         date = (release.get("published_at") or "")[:10]
         tag = release["tag_name"]
         latest = ' <span class="badge">Latest</span>' if tag == current_tag else ''
-        sums = release_download(release, "SHA256SUMS.txt")
+        sums = release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt")
         checksum = f'<a href="{esc(sums)}">Checksums</a>' if sums else ""
-        items.append(f'<tr><td>{esc(date)}{latest}</td><td><code>{esc(tag)}</code></td><td><a href="{esc(url)}">{label}</a><br><span class="version-size">{human_size(size)}</span></td><td>{checksum}</td></tr>')
+        download = f'<a href="{esc(url)}">{label}</a><br><span class="version-size">{human_size(size)}</span>' if url else '<span class="version-size">Installer not yet available</span>'
+        items.append(f'<tr><td>{esc(date)}{latest}</td><td><code>{esc(tag)}</code></td><td>{download}</td><td>{checksum}</td></tr>')
     return "\n".join(items)
 
 

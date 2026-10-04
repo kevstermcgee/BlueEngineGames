@@ -16,9 +16,17 @@ on:
         description: Run distribution checks without rebuilding game downloads
         type: boolean
         default: false
+      backfill_limit:
+        description: Package installers for this many historical releases (0 disables)
+        type: string
+        default: '0'
+      publish_archives:
+        description: Add the archived installers to their existing GitHub releases
+        type: boolean
+        default: false
 
 concurrency:
-  group: blueenginegames-windows-release
+  group: blueenginegames-windows-${{ github.event.inputs.checks_only == 'true' && 'checks' || github.event.inputs.backfill_limit != '' && github.event.inputs.backfill_limit != '0' && 'archive' || 'build' }}
   cancel-in-progress: false
 
 permissions:
@@ -41,9 +49,32 @@ jobs:
         shell: pwsh
         run: distribution/test_installers.ps1
 
+  archived-installers:
+    needs: distribution-checks
+    if: github.event.inputs.backfill_limit != '' && github.event.inputs.backfill_limit != '0'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Package archived Windows installers
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BACKFILL_LIMIT: ${{ github.event.inputs.backfill_limit }}
+          PUBLISH_ARCHIVES: ${{ github.ref == 'refs/heads/main' && github.event.inputs.publish_archives == 'true' }}
+        run: .github/scripts/backfill_installers.ps1 -ReleaseLimit ([int]$env:BACKFILL_LIMIT) -Publish:($env:PUBLISH_ARCHIVES -eq 'true')
+      - name: Save archived installers for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: archived-installers
+          path: dist/backfill/
+          retention-days: 7
+
   windows:
     needs: distribution-checks
-    if: github.event.inputs.checks_only != 'true'
+    if: github.event.inputs.checks_only != 'true' && (github.event.inputs.backfill_limit == '' || github.event.inputs.backfill_limit == '0')
     runs-on: windows-latest
     steps:
       - name: Check out the games catalog
