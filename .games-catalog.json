@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 79,
-    "games": 122,
+    "games": 137,
     "prototypes": 10,
     "tests": 64
   },
@@ -732,11 +732,67 @@
     },
     {
       "path": "games/observatory/README.md",
-      "sha256": "8e9e97353a4364bbcd14689a69d58526da26a4576959c6aa2533324cbb803f5e"
+      "sha256": "d6153d22845e8e60c014b51e8c117ed9f7fb399d13aadd025b81e716c71dabdc"
     },
     {
       "path": "games/observatory/author.py",
-      "sha256": "567865451f3b90874eaa8437891610f43b58d1c879da38c66927e53bfc1dbb21"
+      "sha256": "dc9c44f7e186411ff896630ca788ec45b0457e5e760b16851d04b5dd3cc8cc38"
+    },
+    {
+      "path": "games/observatory/content/audio-bindings.json",
+      "sha256": "baf332b549fdbe7caf1dc4bb669c7bfa35f9a244adaff8dbf3d9d722629b4799"
+    },
+    {
+      "path": "games/observatory/content/audio-loss-restart-win.json",
+      "sha256": "0be231e19a0a3595b2b47c70bc7a54a3a088ab08dc506274ccc71d60b9c62edf"
+    },
+    {
+      "path": "games/observatory/content/audio/bank.json",
+      "sha256": "318544268f6751d0a87c9d7fb614ae541be82578b7cc7061b237be98751096dd"
+    },
+    {
+      "path": "games/observatory/content/audio/music-orbit.wav",
+      "sha256": "f809a13136ff70a5e647843bf6465e688e4cc1d659cb71186ca9aee914075208"
+    },
+    {
+      "path": "games/observatory/content/audio/music-signal.wav",
+      "sha256": "2e3c14aa0d394cfe539f30b05bbd8cd45f5c5e8ea160382ad1b72e207b098ffc"
+    },
+    {
+      "path": "games/observatory/content/audio/preview-mix.wav",
+      "sha256": "a1b3f4d72c3a3fc1ad8e505c13be553933015efd2202ed33c8a37ef92e53ed31"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-battery-0.wav",
+      "sha256": "43bfa6f2ee9fa0a57a2b9f1acb99b94f9971b1b5d8159c54a4e66736221589c3"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-shutter-0.wav",
+      "sha256": "80eb517e5c7a4187f15a9a3cb8026dbce4868ec415843d3cc381b9a9c0914f6d"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-shutter-1.wav",
+      "sha256": "4058ab8c7472ce770b83f2bf061ca0417b304b88a15d28662063378cda51784e"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-step-0.wav",
+      "sha256": "61e8e1f958287189a0911e3ed15cffc4ed7ff5332d80dd6a969ba011d173cae1"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-step-1.wav",
+      "sha256": "7e9c62616e8c51552a7f87458fffa17dcf8251081175c9fc8391b4772b272f65"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-step-2.wav",
+      "sha256": "90746bd6da01248d3a6109b8e957c1d8f50eef6b2ce01874e0eeae7460d09081"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-step-3.wav",
+      "sha256": "34861efe6e416dbbf0830bc39bcff809889f7bc9e1c66e1a8aaeccf1d8e3b0eb"
+    },
+    {
+      "path": "games/observatory/content/audio/sfx-success-0.wav",
+      "sha256": "259c51e784ed60e6f4146dd2a1fb942a60ce10de48a5243dd788f53ea85b4215"
     },
     {
       "path": "games/observatory/content/authoring-evidence.json",
@@ -757,6 +813,10 @@
     {
       "path": "games/observatory/content/edited-map.json",
       "sha256": "b7cc96d855df685fe134d871e750b3b9719ba21f1f67cbb6eabfa02a39d1c44c"
+    },
+    {
+      "path": "games/observatory/content/game-audio.json",
+      "sha256": "d57cb3039c77224b2b836e49d100a58a2adb6110453cf4e6d2cfea6f81cb30b9"
     },
     {
       "path": "games/observatory/content/game.json",
@@ -1160,6 +1220,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "343c5ab61155b489cefc33b2fdfe5b06a8499094",
+  "source_revision": "678f4a9ab5e8d06f117425ea976dbaf97e2e2c07",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
