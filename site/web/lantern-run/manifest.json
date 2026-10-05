@@ -1,5 +1,5 @@
 {
-  "built_at_epoch": 1791204254,
+  "built_at_epoch": 1791239374,
   "compatibility": {
     "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
     "macroquad": "0.4.14",
@@ -10,27 +10,39 @@
     "webgl": "WebGL 1"
   },
   "description": "Collect four lanterns and reach the garden exit.",
-  "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "engine_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
   "file_sha256": {
-    "game.wasm": "c242d8173c9b8b78e76bab643ff4f2add1aae3f91103487abc032848cfed8312",
-    "index.html": "b4bffb57303384ab6bf96ab233a7ea109a18f9c49da1bd477ceaa4c8875dfa96",
+    "app.webmanifest": "27ca1a9bd101300818d3f0c1e3b0fb82fe02db839cfa39b569a8a457063537a6",
+    "game.wasm": "259c7278d14d4e04048f117c782a8233a7bf9cd90b818fe6c4cffddb36eb288e",
+    "index.html": "16fdcdd79b75e0414f89d3f82e0955991eb92c9e10221de9f3f2b8a56e000513",
     "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
-    "platform.js": "f08f3895af094c1e61edcc12c6cabd0bd587a2aebe0968e46a25c85137393a48",
+    "mobile.js": "333f3c6abcecfe6d5526c5e7b2ef10c89606164c95b7f8e4c8c87a21165a9541",
+    "platform.js": "1d370630b3a9263ba2077d1bc359e32b7d8471f9957fb84d3ce130d9619610b5",
+    "service-worker.js": "e06b38fc6358a8788a3bbb1bc565cf205eea4d9102b9da69e933860184db2a9e",
     "thumbnail.png": "1f301b1bc3be0bdaf47b78d80568a2de461b0bfa7888be79f79aa68fb63d493a"
   },
-  "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
-  "game_source_sha256": "a49f5cfc6c437cd2a96c8f047302442473b6e2c0acdb7a1c0917f3ede0778edf",
+  "game_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
+  "game_source_sha256": "5b0225d3078ccfaab6568355d3ce4e9cc3a859b8cc14b8b6ab474305bdb2aa86",
   "id": "lantern-run",
   "input": [
     "keyboard",
     "mouse",
     "controller"
   ],
+  "install": {
+    "offline": true,
+    "web": "app.webmanifest"
+  },
+  "mobile_controls": {
+    "action_label": null,
+    "layout": "dpad"
+  },
   "native_download": null,
   "networking": "offline",
   "play": "index.html",
   "presentation": "2d",
-  "runtime_abi": 1,
+  "runtime": "portable",
+  "runtime_abi": 2,
   "schema_version": 1,
   "targets": [
     "web",

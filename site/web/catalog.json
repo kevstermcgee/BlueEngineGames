@@ -5,8 +5,8 @@
       "id": "lantern-run",
       "title": "Lantern Run",
       "description": "Collect four lanterns and reach the garden exit.",
-      "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
-      "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+      "engine_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
+      "game_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
       "presentation": "2d",
       "networking": "offline",
       "input": [
@@ -19,7 +19,7 @@
         "linux",
         "windows"
       ],
-      "built_at_epoch": 1791204254,
+      "built_at_epoch": 1791239374,
       "compatibility": {
         "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
         "macroquad": "0.4.14",

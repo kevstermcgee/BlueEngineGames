@@ -255,6 +255,10 @@ def build(args) -> None:
             versions=version_rows(versions, slug, release.get("tag_name", "")), repo=REPO,
         ))
 
+    # BlueEngine unified catalog (static publisher contract v2)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from browser_catalog import merge_games, enhance_page
+    games = merge_games(games, rows, Path(__file__).resolve().parent / "web", out, args.games_dir)
     games.sort(key=lambda g: g["name"])
     games.sort(key=lambda g: g["created"], reverse=True)  # newest first, A-Z within a day
 
@@ -269,11 +273,7 @@ def build(args) -> None:
         repo=REPO,
     )
 
-    # BlueEngine web artifacts (static publisher contract v1)
-    web_root = Path(__file__).resolve().parent / "web"
-    if web_root.is_dir():
-        shutil.copytree(web_root, out / "web", dirs_exist_ok=True)
-        page = page.replace('<main id="grid">', '<p><a href="web/index.html">Play 2D games in your browser</a></p><main id="grid">')
+    page = enhance_page(page)
     (out / "index.html").write_text(page)
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")
