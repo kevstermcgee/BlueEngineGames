@@ -54,7 +54,7 @@ class Downloads(unittest.TestCase):
             with (root / 'catalog.tsv').open('w') as out:
                 writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
                 writer.writeheader(); writer.writerows(rows)
-            current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt'])
+            current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt', 'INSTALLER-SHA256SUMS.txt'])
             old = release('old', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
             (root / 'release.json').write_text(json.dumps(current))
             (root / 'releases.json').write_text(json.dumps([current, old]))
@@ -66,6 +66,7 @@ class Downloads(unittest.TestCase):
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
+            self.assertIn('https://example.com/current/INSTALLER-SHA256SUMS.txt', page)
             game_page = (root / 'out/games/game/index.html').read_text()
             self.assertIn('https://example.com/old/game-setup-windows-x64.exe', game_page)
             self.assertNotIn('game-windows-x64.zip', game_page)

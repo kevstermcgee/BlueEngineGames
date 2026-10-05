@@ -259,7 +259,7 @@ def build(args) -> None:
 
     page = PAGE.format(
         cards="\n".join(g["card"] for g in games),
-        sums_url=html.escape(release_download(release, "SHA256SUMS.txt") or f"{LATEST}/SHA256SUMS.txt"),
+        sums_url=html.escape(release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt") or f"{LATEST}/SHA256SUMS.txt"),
         release_url=html.escape(release.get("html_url", f"https://github.com/{REPO}/releases/latest")),
         release_name=html.escape(release.get("name") or release.get("tag_name", "latest")),
         release_date=html.escape((release.get("published_at") or "")[:10]),
