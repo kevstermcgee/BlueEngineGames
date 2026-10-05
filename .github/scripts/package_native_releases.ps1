@@ -13,6 +13,9 @@ $configPath = Join-Path $repoRoot '.release-games.json'
 $config = Get-Content -Raw -LiteralPath $configPath | ConvertFrom-Json
 $nativePlayables = @($config.native_playables)
 
+& python (Join-Path $repoRoot 'distribution/check_catalog.py') --root $repoRoot
+if ($LASTEXITCODE -ne 0) { throw 'Windows download coverage validation failed.' }
+
 if ($nativePlayables.Count -eq 0) {
     throw 'The release manifest has no native playable releases.'
 }
