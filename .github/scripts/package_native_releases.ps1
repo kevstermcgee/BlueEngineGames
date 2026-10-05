@@ -62,6 +62,7 @@ if (-not (Test-Path -LiteralPath $dist -PathType Container)) {
 $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [System.IO.Path]::GetTempPath() }
 $expectedEngine = [System.IO.Path]::GetFullPath((Join-Path $repoRoot '..\BlueEngine'))
 $createdJunction = $false
+$originalManifests = @{}
 try {
     if (-not $expectedEngine.Equals($engineRootPath, [System.StringComparison]::OrdinalIgnoreCase)) {
         if (Test-Path -LiteralPath $expectedEngine) {
@@ -76,6 +77,22 @@ try {
         $name = [string]$game.name
         $kind = [string]$game.kind
         $directory = [System.IO.Path]::GetFullPath((Join-Path $repoRoot ([string]$game.directory)))
+        if ($kind -ne 'engine-sandbox') {
+            # Engine-owned games may retain their authoring-relative dependency after export.
+            # Bind path dependencies to the catalog-pinned engine for this build only.
+            $manifest = Join-Path $directory 'Cargo.toml'
+            $text = [IO.File]::ReadAllText($manifest)
+            $engineCargoPath = $engineRootPath.Replace('\', '/')
+            $pattern = '(?m)^(vesper3d\s*=\s*\{[^}\r\n]*\bpath\s*=\s*)"[^"]+"'
+            $bound = [regex]::Replace($text, $pattern, [Text.RegularExpressions.MatchEvaluator]{
+                param($match)
+                return $match.Groups[1].Value + '"' + $engineCargoPath + '"'
+            })
+            if ($bound -ne $text) {
+                $originalManifests[$manifest] = [IO.File]::ReadAllBytes($manifest)
+                [IO.File]::WriteAllText($manifest, $bound, [Text.UTF8Encoding]::new($false))
+            }
+        }
         $stage = Join-Path $tempRoot "games-native-release-$slug"
         if (Test-Path -LiteralPath $stage) {
             Remove-Item -LiteralPath $stage -Recurse -Force
@@ -127,6 +144,9 @@ try {
         Add-Content -LiteralPath (Join-Path $dist 'release-notes.md') -Value "- **$name** — ``$([System.IO.Path]::GetFileName($archive))``" -Encoding utf8NoBOM
     }
 } finally {
+    foreach ($manifest in $originalManifests.Keys) {
+        [IO.File]::WriteAllBytes($manifest, $originalManifests[$manifest])
+    }
     if ($createdJunction -and (Test-Path -LiteralPath $expectedEngine)) {
         Remove-Item -LiteralPath $expectedEngine -Force
     }
