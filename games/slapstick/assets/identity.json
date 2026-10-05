@@ -1,0 +1,15 @@
+{
+  "title": "Slapstick",
+  "tagline": "Two-player online air hockey. Guard your goal, slap the puck, first to seven wins.",
+  "controls": "Mouse or stick moves your paddle, confined to your half. F5/F9 save/load (solo preview only), Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100",
+    "--mute"
+  ],
+  "engine_revision": "a360fc8e6c1f"
+}

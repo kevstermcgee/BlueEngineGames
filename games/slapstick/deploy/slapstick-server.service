@@ -1,0 +1,21 @@
+[Unit]
+Description=Slapstick dedicated server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/share/slapstick
+# The join key lives in the environment file, never on the command line (it would show in `ps`).
+EnvironmentFile=%h/.config/slapstick/server.env
+ExecStart=%h/.local/bin/slapstick-server --listen 0.0.0.0:4102 --transport production --report-dir %h/.local/share/slapstick
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=default.target

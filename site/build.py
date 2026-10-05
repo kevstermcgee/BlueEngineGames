@@ -205,8 +205,7 @@ def build(args) -> None:
         created = game_added_date(repo_root, slug) or row.get("created", "")
         asset, download_label, size = download_for(release, slug)
         if not asset:
-            print(f"warning: no release asset for {slug}", file=sys.stderr)
-            continue
+            raise ValueError(f"Catalog game has no installer in the published release: {slug}")
 
         thumb_src = Path(args.thumbs) / f"{slug}.png"
         icon_src = Path(args.games_dir) / slug / "assets" / "icon.png"

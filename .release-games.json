@@ -209,6 +209,26 @@
       "directory": "games/leo",
       "kind": "cargo-package",
       "binary": "leo"
+    },
+    {
+      "slug": "prop-hunt",
+      "name": "Prop Hunt",
+      "directory": "games/prop-hunt",
+      "kind": "cargo-package",
+      "binary": "prop-hunt"
+    },
+    {
+      "slug": "slapstick",
+      "name": "Slapstick",
+      "directory": "games/slapstick",
+      "kind": "cargo-package",
+      "binary": "slapstick"
+    },
+    {
+      "slug": "feta",
+      "name": "Feta",
+      "directory": "games/feta",
+      "kind": "release-asset"
     }
   ],
   "non_playable_directories": [

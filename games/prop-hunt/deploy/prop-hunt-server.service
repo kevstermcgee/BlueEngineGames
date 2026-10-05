@@ -1,0 +1,21 @@
+[Unit]
+Description=Prop Hunt dedicated server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/share/prop-hunt
+# The join key lives in the environment file, never on the command line (it would show in `ps`).
+EnvironmentFile=%h/.config/prop-hunt/server.env
+ExecStart=%h/.local/bin/prop-hunt-server --listen 0.0.0.0:4101 --transport production --report-dir %h/.local/share/prop-hunt
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=default.target

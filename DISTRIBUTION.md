@@ -80,3 +80,32 @@ runs actual installers to check installation, upgrade, shortcuts, save retention
 and uninstallation. Both run on Windows before game builds in the release workflow.
 `python -m unittest discover -s site -p 'test_*.py'` checks download-history behavior.
 Branch dispatches build reviewable Windows artifacts without publishing releases.
+
+## Adding games and checking one installer
+
+Every playable game folder needs a definition in `.release-games.json`. Run
+`python distribution/check_catalog.py` before publishing or building: it rejects
+unlisted folders, duplicate slugs, missing source paths and incomplete native build
+definitions. The engine export runs this check before pushing; pull requests and
+release builds run it too. A website build fails if any catalog game lacks its
+installer, keeping the previous deployed site intact.
+
+Companion-owned games must also appear in the engine's `games-publish.json`
+`preserve` list so the next engine sync retains them. Prop Hunt and Slapstick use
+the standard Cargo package workflow and have Linux/Windows game checks. Their
+Linux lane runs the shipped payload on a virtual display with a null audio sink;
+this does not certify human controls or audible hardware playback.
+
+Feta uses `kind: release-asset`: `release-source.json` pins an existing public ZIP
+by release URL and SHA256, plus its source/engine versions and explicit public
+payload files. `distribution/fetch_release.py` validates the digest and archive
+paths before staging. The normal per-game installer and updater are then added.
+Updating Feta's pin is a deliberate source change; it never follows a mutable
+latest URL. Game version and engine revision describe that original playtest.
+
+Dispatch **Build Windows releases** with `game_slug` set to a native slug such as
+`prop-hunt`, `slapstick` or `feta` to build only that installer as a downloadable
+workflow artifact. The complete catalog still validates first. Selected builds
+never publish a partial GitHub release, including when dispatched on `main`.
+Leave `game_slug` empty for the complete production release. Catalog engine
+versions reflect the actual build pin, rather than stale authoring metadata.
