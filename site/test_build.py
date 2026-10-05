@@ -37,7 +37,7 @@ class Downloads(unittest.TestCase):
         self.assertEqual(history.count('<tr>'), 1)
         self.assertIn('Installer not yet available', history)
         self.assertNotIn('game-windows-x64.zip', history)
-        self.assertIn('https://example.com/old/SHA256SUMS.txt', history)
+        self.assertNotIn('https://example.com/old/SHA256SUMS.txt', history)
         self.assertNotIn('/new/', history)
         self.assertNotIn('/draft/', history)
         self.assertNotIn('/preview/', history)

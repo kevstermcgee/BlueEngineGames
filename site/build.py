@@ -136,7 +136,7 @@ def version_rows(releases: list[dict], slug: str, current_tag: str) -> str:
         tag = release["tag_name"]
         latest = ' <span class="badge">Latest</span>' if tag == current_tag else ''
         sums = release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt")
-        checksum = f'<a href="{esc(sums)}">Checksums</a>' if sums else ""
+        checksum = f'<a href="{esc(sums)}">Checksums</a>' if sums and url else ""
         download = f'<a href="{esc(url)}">{label}</a><br><span class="version-size">{human_size(size)}</span>' if url else '<span class="version-size">Installer not yet available</span>'
         items.append(f'<tr><td>{esc(date)}{latest}</td><td><code>{esc(tag)}</code></td><td>{download}</td><td>{checksum}</td></tr>')
     return "\n".join(items)
