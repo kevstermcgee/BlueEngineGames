@@ -1,0 +1,82 @@
+name: Native game checks
+on:
+  pull_request:
+    paths: [games/prop-hunt/**, games/slapstick/**, .github/workflows/native-game-checks.yml]
+  push:
+    branches: [main]
+    paths: [games/prop-hunt/**, games/slapstick/**, .github/workflows/native-game-checks.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  game:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        slug: [prop-hunt, slapstick]
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      GAME_SLUG: ${{ matrix.slug }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read pinned engine revision
+        id: catalog
+        shell: pwsh
+        run: |
+          $catalog = Get-Content -Raw .games-catalog.json | ConvertFrom-Json
+          "revision=$($catalog.source_revision)" >> $env:GITHUB_OUTPUT
+      - uses: actions/checkout@v7
+        with:
+          repository: kevstermcgee/BlueEngine
+          ref: ${{ steps.catalog.outputs.revision }}
+          path: _engine
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            games/${{ matrix.slug }} -> ../../target
+      - name: Install Linux runtime dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev pkg-config xvfb libgl1-mesa-dri
+      - name: Bind game to the catalog engine
+        shell: python
+        run: |
+          import os, pathlib, re
+          manifest = pathlib.Path('games') / os.environ['GAME_SLUG'] / 'Cargo.toml'
+          engine = pathlib.Path('_engine').resolve().as_posix()
+          text = re.sub(r'(vesper3d\s*=\s*\{[^}\n]*\bpath\s*=\s*)"[^"]+"',
+                        lambda m: m[1] + '"' + engine + '"', manifest.read_text())
+          manifest.write_text(text)
+      - name: Rules, networking, identity and code checks
+        shell: pwsh
+        run: |
+          $manifest = "games/$env:GAME_SLUG/Cargo.toml"
+          cargo fmt --manifest-path $manifest --check
+          if ($LASTEXITCODE -ne 0) { throw 'Formatting failed' }
+          cargo test --locked --manifest-path $manifest
+          if ($LASTEXITCODE -ne 0) { throw 'Game tests failed' }
+          cargo clippy --locked --all-targets --manifest-path $manifest -- -D warnings
+          if ($LASTEXITCODE -ne 0) { throw 'Clippy failed' }
+      - name: Package with a private shortcut (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: python "games/$env:GAME_SLUG/scripts/ship.py" ship --folder "$env:RUNNER_TEMP/game-shortcuts" --no-launch --no-smoke
+      - name: Run the clean package on a virtual display (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          printf 'pcm.!default { type null }\nctl.!default { type null }\n' > "$RUNNER_TEMP/asound.conf"
+          xvfb-run -a env LIBGL_ALWAYS_SOFTWARE=1 ALSA_CONFIG_PATH="$RUNNER_TEMP/asound.conf" python "games/$GAME_SLUG/scripts/ship.py" ship --folder "$RUNNER_TEMP/game-shortcuts" --no-launch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-${{ matrix.slug }}-${{ runner.os }}
+          path: |
+            games/${{ matrix.slug }}/dist/ship.json
+            games/${{ matrix.slug }}/.blue-check/
+          include-hidden-files: true

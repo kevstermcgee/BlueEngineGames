@@ -1,6 +1,15 @@
 name: Build Windows releases
 
 on:
+  pull_request:
+    paths:
+      - .games-catalog.json
+      - .release-games.json
+      - games/**
+      - distribution/**
+      - site/**
+      - .github/scripts/**
+      - .github/workflows/releases.yml
   push:
     branches: [main]
     paths:
@@ -16,6 +25,10 @@ on:
         description: Run distribution checks without rebuilding game downloads
         type: boolean
         default: false
+      game_slug:
+        description: Build one native game's installer for review (never publishes a partial release)
+        type: string
+        default: ''
       backfill_limit:
         description: Package installers for this many historical releases (0 disables)
         type: string
@@ -37,6 +50,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Validate every game has a download definition
+        run: |
+          python distribution/check_catalog.py
+          python -m unittest discover -s distribution -p test_*.py
       - name: Test updater and download history
         shell: pwsh
         run: |
@@ -74,7 +91,7 @@ jobs:
 
   windows:
     needs: distribution-checks
-    if: github.event.inputs.checks_only != 'true' && (github.event.inputs.backfill_limit == '' || github.event.inputs.backfill_limit == '0')
+    if: github.event_name != 'pull_request' && github.event.inputs.checks_only != 'true' && (github.event.inputs.backfill_limit == '' || github.event.inputs.backfill_limit == '0')
     runs-on: windows-latest
     steps:
       - name: Check out the games catalog
@@ -118,12 +135,21 @@ jobs:
           restore-keys: windows-cargo-
 
       - name: Build BlueEngine for Windows
+        if: github.event.inputs.game_slug == ''
         working-directory: _engine
         run: cargo build --release --locked --bin be2
 
       - name: Package playable downloads
+        if: github.event.inputs.game_slug == ''
         shell: pwsh
         run: .github/scripts/package_releases.ps1 -EngineExe _engine/target/release/be2.exe -EngineName BlueEngine.exe -ProductName BlueEngine
+
+      - name: Prepare selected game output
+        if: github.event.inputs.game_slug != ''
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          Set-Content dist/release-notes.md 'Selected game installer for review; not a published release.'
 
       - name: Build and package native game downloads
         shell: pwsh
@@ -131,11 +157,14 @@ jobs:
           # One target directory for all games: games with the same engine, features and profile
           # compile the engine and its dependencies once instead of once per game.
           CARGO_TARGET_DIR: ${{ runner.temp }}\cargo-target
-        run: .github/scripts/package_native_releases.ps1 -EngineRoot _engine
+          GAME_SLUG: ${{ github.event.inputs.game_slug }}
+        run: .github/scripts/package_native_releases.ps1 -EngineRoot _engine -GameSlug "$env:GAME_SLUG"
 
       - name: Build release catalog
         shell: pwsh
-        run: distribution/build_catalog.ps1
+        env:
+          GAME_SLUG: ${{ github.event.inputs.game_slug }}
+        run: distribution/build_catalog.ps1 -GameSlug "$env:GAME_SLUG"
 
       - name: Install Inno Setup
         shell: pwsh
@@ -154,7 +183,7 @@ jobs:
 
       # Branch runs (workflow_dispatch on a branch) build and package everything but never publish.
       - name: Create or update the GitHub Release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && github.event.inputs.game_slug == ''
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

@@ -1,5 +1,6 @@
 param(
-    [string]$OutputDirectory = (Join-Path $PSScriptRoot '../dist')
+    [string]$OutputDirectory = (Join-Path $PSScriptRoot '../dist'),
+    [string]$GameSlug = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -71,6 +72,8 @@ function Read-Description([string]$Directory, [string]$Fallback) {
 }
 
 function Game-Version([string]$Directory) {
+    $releaseSource = Join-Path $Directory 'release-source.json'
+    if (Test-Path $releaseSource) { return [string](Get-Content -Raw $releaseSource | ConvertFrom-Json).version }
     $cargoPath = Join-Path $Directory 'Cargo.toml'
     if (Test-Path -LiteralPath $cargoPath) {
         $text = Get-Content -Raw -LiteralPath $cargoPath
@@ -86,6 +89,8 @@ function Game-Version([string]$Directory) {
 }
 
 function Engine-Version([string]$Directory) {
+    $releaseSource = Join-Path $Directory 'release-source.json'
+    if (Test-Path $releaseSource) { return [string](Get-Content -Raw $releaseSource | ConvertFrom-Json).engine_revision }
     $gamePath = Join-Path $Directory 'game.json'
     if (Test-Path -LiteralPath $gamePath) {
         $game = Get-Content -Raw -LiteralPath $gamePath | ConvertFrom-Json
@@ -95,13 +100,8 @@ function Engine-Version([string]$Directory) {
             return $ref.Substring(0, [Math]::Min(12, $ref.Length))
         }
     }
-    $identityPath = Join-Path $Directory 'assets\identity.json'
-    if (Test-Path -LiteralPath $identityPath) {
-        $identity = Get-Content -Raw -LiteralPath $identityPath | ConvertFrom-Json
-        if ($identity.PSObject.Properties.Name -contains 'engine_revision' -and $identity.engine_revision) {
-            return [string]$identity.engine_revision
-        }
-    }
+    # Identity records the author's starting engine. Path-based games are rebuilt
+    # against this release's catalog engine, so report the actual build revision.
     $cargoPath = Join-Path $Directory 'Cargo.toml'
     if (Test-Path -LiteralPath $cargoPath) {
         $text = Get-Content -Raw -LiteralPath $cargoPath
@@ -128,6 +128,7 @@ foreach ($gameRoot in @($release.game_roots)) {
             throw "Release discovery found a game without a release definition: $relative"
         }
         $definition = $definitions[$relative]
+        if ($GameSlug -and $definition.slug -ne $GameSlug) { continue }
         $createdLines = @(& git -c "safe.directory=$safeRepo" -C $repoRoot log --diff-filter=A --format=%aI -- $relative 2>$null)
         $createdDates = @($createdLines | ForEach-Object { [DateTimeOffset]$_ } | Sort-Object UtcDateTime)
         $created = if ($createdDates.Count -gt 0) { $createdDates[0].ToString('yyyy-MM-dd') } else { 'unknown' }
@@ -153,5 +154,6 @@ foreach ($gameRoot in @($release.game_roots)) {
 }
 
 $header = @('slug', 'name', 'description', 'created', 'game_version', 'engine_version', 'kind', 'asset', 'release', 'sha256') -join [char]9
+if ($GameSlug -and $rows.Count -ne 1) { throw "Selection has no game page: $GameSlug" }
 Set-Content -LiteralPath (Join-Path $output 'Games-catalog.tsv') -Value (@($header) + $rows) -Encoding utf8NoBOM
 Write-Output "Cataloged $($rows.Count) game(s) for release $releaseTag."

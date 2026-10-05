@@ -1,0 +1,15 @@
+{
+  "title": "Prop Hunt",
+  "tagline": "Seven hiders disguise themselves as the furniture. One seeker has three minutes to find them all.",
+  "controls": "Hide: WASD move, mouse look, 1-0/scroll pick disguise, E confirm. Seek: WASD move, mouse look, Space hold to inspect. F5/F9 save/load, Esc menu",
+  "smoke_args": [
+    "--capture",
+    "{dir}",
+    "--frames",
+    "30,90",
+    "--exit-after",
+    "100",
+    "--mute"
+  ],
+  "engine_revision": "3855f3fad9dd"
+}

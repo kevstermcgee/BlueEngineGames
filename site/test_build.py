@@ -49,8 +49,7 @@ class Downloads(unittest.TestCase):
             (root / 'games').mkdir()
             (root / 'thumbs').mkdir()
             rows = [{'slug': 'game', 'name': 'Game', 'description': '<unsafe>', 'created': '2026-01-01',
-                     'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'},
-                    {'slug': 'missing', 'name': 'Missing', 'asset': 'https://bad/nonexistent.zip'}]
+                     'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'}]
             with (root / 'catalog.tsv').open('w') as out:
                 writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
                 writer.writeheader(); writer.writerows(rows)
@@ -78,6 +77,12 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('https://bad/', page)
             self.assertNotIn('BlueEngine Launcher', page)
             self.assertNotIn('id="missing"', page)
+            with (root / 'catalog.tsv').open('a') as out:
+                out.write('missing\tMissing\t\t\t\t\t\n')
+            with self.assertRaisesRegex(ValueError, 'no installer.*missing'):
+                site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
+                                          releases_json=root / 'releases.json', games_dir=root / 'games',
+                                          thumbs=root / 'thumbs', out=root / 'out'))
 
 
 if __name__ == '__main__':

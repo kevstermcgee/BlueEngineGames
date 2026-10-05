@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][string]$EngineRoot,
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+    [string]$GameSlug = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,7 +27,7 @@ foreach ($game in $nativePlayables) {
         throw "Duplicate native playable slug: $slug"
     }
     $seenSlugs[$slug] = $true
-    if ([string]$game.kind -notin 'cargo', 'cargo-package', 'engine-sandbox') {
+    if ([string]$game.kind -notin 'cargo', 'cargo-package', 'engine-sandbox', 'release-asset') {
         throw "Unknown native playable kind for ${slug}: $($game.kind)"
     }
     $directory = [System.IO.Path]::GetFullPath((Join-Path $repoRoot ([string]$game.directory)))
@@ -35,7 +36,7 @@ foreach ($game in $nativePlayables) {
         -not (Test-Path -LiteralPath $directory -PathType Container)) {
         throw "Native playable directory is missing or unsafe: $($game.directory)"
     }
-    if ($game.kind -ne 'engine-sandbox') {
+    if ($game.kind -notin 'engine-sandbox', 'release-asset') {
         if (-not $game.binary -or -not (Test-Path -LiteralPath (Join-Path $directory 'Cargo.toml') -PathType Leaf)) {
             throw "Native Cargo playable $slug needs a binary and Cargo.toml."
         }
@@ -44,6 +45,11 @@ foreach ($game in $nativePlayables) {
             throw "Native packaged playable $slug has no scripts/ship.py."
         }
     }
+}
+
+if ($GameSlug) {
+    $nativePlayables = @($nativePlayables | Where-Object slug -eq $GameSlug)
+    if ($nativePlayables.Count -ne 1) { throw "Unknown native game selection: $GameSlug" }
 }
 
 if ($ValidateOnly) {
@@ -77,7 +83,7 @@ try {
         $name = [string]$game.name
         $kind = [string]$game.kind
         $directory = [System.IO.Path]::GetFullPath((Join-Path $repoRoot ([string]$game.directory)))
-        if ($kind -ne 'engine-sandbox') {
+        if ($kind -notin 'engine-sandbox', 'release-asset') {
             # Engine-owned games may retain their authoring-relative dependency after export.
             # Bind path dependencies to the catalog-pinned engine for this build only.
             $manifest = Join-Path $directory 'Cargo.toml'
@@ -98,7 +104,11 @@ try {
             Remove-Item -LiteralPath $stage -Recurse -Force
         }
 
-        if ($kind -eq 'engine-sandbox') {
+        if ($kind -eq 'release-asset') {
+            & python (Join-Path $repoRoot 'distribution/fetch_release.py') --source (Join-Path $directory 'release-source.json') --output $stage
+            if ($LASTEXITCODE -ne 0) { throw "$name pinned release download failed with exit code $LASTEXITCODE" }
+            Copy-Item (Join-Path $directory 'README.md') (Join-Path $stage 'README.md')
+        } elseif ($kind -eq 'engine-sandbox') {
             # package_sandbox.py reads <engine>/target/release, so this game keeps the engine's own target
             # directory (already warm from the engine build step) instead of the shared one below.
             $sharedTarget = $env:CARGO_TARGET_DIR
