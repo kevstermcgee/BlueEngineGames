@@ -1,5 +1,5 @@
 {
-  "built_at_epoch": 1791204254,
+  "built_at_epoch": 1791239374,
   "compatibility": {
     "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
     "macroquad": "0.4.14",
@@ -10,26 +10,38 @@
     "webgl": "WebGL 1"
   },
   "description": "Spend seeds on guards and defend three orchard lanes through nine waves.",
-  "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "engine_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
   "file_sha256": {
-    "game.wasm": "c2ef9adc563062fa2819274c015ccced2ddd8d487fd8824d5d10b02f21ff7b10",
-    "index.html": "944658f0c2625c3f57e8cf0ba0f2051ec969796c504a71287086b06138de84d1",
+    "app.webmanifest": "ef587269c15b5b7fbb0da9c6137a06f93b4cdc0d34b768ade053675cfa314398",
+    "game.wasm": "1e92396d66f06feae3e803710a4e59bea635e55e0eab55ce7cc364a68b2aa254",
+    "index.html": "500dbb26acf4a90c22c07d3c3ed6893b73a8127a26cb3dec713d83627e2cc33d",
     "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
-    "platform.js": "f08f3895af094c1e61edcc12c6cabd0bd587a2aebe0968e46a25c85137393a48",
+    "mobile.js": "333f3c6abcecfe6d5526c5e7b2ef10c89606164c95b7f8e4c8c87a21165a9541",
+    "platform.js": "1d370630b3a9263ba2077d1bc359e32b7d8471f9957fb84d3ce130d9619610b5",
+    "service-worker.js": "f31c64acf3108595dada71ba9dbb5225c39ce2e9abf6511be4f2bee8dd00ad3c",
     "thumbnail.png": "e4ed6f7f3f7b2dec0940daf28499b4f817f3ea206b1167b41ba10c8aae972913"
   },
-  "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
-  "game_source_sha256": "c90a714d4ac754bb64c237acbc98a3378c1dbb468a3b0245c82b00f4e2f4a208",
+  "game_revision": "dd90dae0fa219fb42256b747ebd48f15bc5db377",
+  "game_source_sha256": "10b5a28e34e02872c42f03164616100baa339bf5baa548853d463be7bc55e5dd",
   "id": "orchard-watch",
   "input": [
     "mouse",
     "keyboard"
   ],
+  "install": {
+    "offline": true,
+    "web": "app.webmanifest"
+  },
+  "mobile_controls": {
+    "action_label": "Plant",
+    "layout": "tap"
+  },
   "native_download": null,
   "networking": "offline",
   "play": "index.html",
   "presentation": "2d",
-  "runtime_abi": 1,
+  "runtime": "portable",
+  "runtime_abi": 2,
   "schema_version": 1,
   "targets": [
     "web",

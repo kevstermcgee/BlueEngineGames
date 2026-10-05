@@ -1,0 +1,1 @@
+{"id": "./", "name": "Orchard Watch", "short_name": "Orchard Watch", "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#07111F", "theme_color": "#07111F", "icons": [{"src": "thumbnail.png", "sizes": "256x256", "type": "image/png"}]}
