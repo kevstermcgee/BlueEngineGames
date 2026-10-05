@@ -33,7 +33,7 @@ PAGE = """<!DOCTYPE html>
 <body>
 <header>
   <h1>BlueEngine Games</h1>
-  <p class="tagline">Free games for Windows. Download an installer, choose a desktop shortcut, and play.</p>
+  <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer, choose a desktop shortcut, and play.</p>
 </header>
 
 <section class="notes">
@@ -134,11 +134,13 @@ def version_rows(releases: list[dict], slug: str, current_tag: str) -> str:
         esc = html.escape
         date = (release.get("published_at") or "")[:10]
         tag = release["tag_name"]
+        name = release.get("name") or tag
+        identity = f'{esc(name)}<br><code>{esc(tag)}</code>' if name != tag else f'<code>{esc(tag)}</code>'
         latest = ' <span class="badge">Latest</span>' if tag == current_tag else ''
         sums = release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt")
         checksum = f'<a href="{esc(sums)}">Checksums</a>' if sums and url else ""
         download = f'<a href="{esc(url)}">{label}</a><br><span class="version-size">{human_size(size)}</span>' if url else '<span class="version-size">Installer not yet available</span>'
-        items.append(f'<tr><td>{esc(date)}{latest}</td><td><code>{esc(tag)}</code></td><td>{download}</td><td>{checksum}</td></tr>')
+        items.append(f'<tr><td>{esc(date)}{latest}</td><td>{identity}</td><td>{download}</td><td>{checksum}</td></tr>')
     return "\n".join(items)
 
 
@@ -257,6 +259,8 @@ def build(args) -> None:
     games.sort(key=lambda g: g["created"], reverse=True)  # newest first, A-Z within a day
 
     page = PAGE.format(
+        game_count=len(games),
+        game_noun="game" if len(games) == 1 else "games",
         cards="\n".join(g["card"] for g in games),
         sums_url=html.escape(release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt") or f"{LATEST}/SHA256SUMS.txt"),
         release_url=html.escape(release.get("html_url", f"https://github.com/{REPO}/releases/latest")),

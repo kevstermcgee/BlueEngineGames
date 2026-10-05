@@ -39,7 +39,6 @@ on:
         default: false
 
 concurrency:
-  group: blueenginegames-windows-${{ github.event.inputs.game_slug != '' && format('game-{0}', github.event.inputs.game_slug) || github.event.inputs.checks_only == 'true' && 'checks' || github.event.inputs.backfill_limit != '' && github.event.inputs.backfill_limit != '0' && 'archive' || 'build' }}
   cancel-in-progress: false
 
 permissions:
