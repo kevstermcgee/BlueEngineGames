@@ -127,3 +127,21 @@ footer {
   color: var(--muted);
   text-align: center;
 }
+
+.card[hidden] { display: none; }
+.preview-link { display: block; text-decoration: none; }
+.game-title { color: inherit; text-decoration: none; }
+.game-title:hover { color: var(--accent); }
+.all-versions { margin-top: 8px; font-size: 0.8rem; text-align: center; }
+.game-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0; }
+.game-summary .thumb { border-radius: 8px; }
+.game-summary p:first-child { margin-top: 0; }
+.game-help, .version-size { color: var(--muted); font-size: 0.85rem; }
+.version-history { margin-top: 32px; }
+.version-history table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.version-history th, .version-history td { padding: 12px 8px; border-bottom: 1px solid var(--card); text-align: left; vertical-align: top; }
+.version-history code { overflow-wrap: anywhere; }
+@media (max-width: 650px) {
+  .game-summary { grid-template-columns: 1fr; }
+  .version-history th, .version-history td { padding: 10px 4px; font-size: 0.75rem; }
+}

@@ -7,7 +7,6 @@
   var kindButtons = Array.prototype.slice.call(document.querySelectorAll(".kinds button"));
   var cards = Array.prototype.slice.call(grid.children);
   var kind = "";
-
   var sorters = {
     newest: function (a, b) {
       return b.dataset.created.localeCompare(a.dataset.created) ||
@@ -32,6 +31,7 @@
     empty.hidden = shown > 0;
   }
 
+  apply();
   search.addEventListener("input", apply);
   sort.addEventListener("change", apply);
   kindButtons.forEach(function (btn) {

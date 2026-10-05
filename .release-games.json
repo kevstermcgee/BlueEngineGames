@@ -203,5 +203,8 @@
       "kind": "cargo-package",
       "binary": "dead_air"
     }
+  ],
+  "non_playable_directories": [
+    "games/observatory"
   ]
 }

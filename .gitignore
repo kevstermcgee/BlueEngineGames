@@ -1,3 +1,4 @@
 **/target/
 /dist/
-/launcher/build/
+/_site/
+__pycache__/

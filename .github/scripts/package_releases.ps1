@@ -67,6 +67,14 @@ foreach ($native in @($releaseConfig.native_playables)) {
     Resolve-RepositoryPath $directory | Out-Null
     $coveredDirectories[$directory] = $true
 }
+if ($releaseConfig.PSObject.Properties.Name -contains 'non_playable_directories') {
+    foreach ($fixture in @($releaseConfig.non_playable_directories)) {
+        $relative = ([string]$fixture).Replace('\', '/').TrimEnd('/')
+        Resolve-RepositoryPath $relative | Out-Null
+        if ($coveredDirectories.ContainsKey($relative)) { throw "Playable also marked as a fixture: $relative" }
+        $coveredDirectories[$relative] = $true
+    }
+}
 foreach ($gameRoot in @($releaseConfig.game_roots)) {
     $rootRelative = ([string]$gameRoot).Replace('\', '/').TrimEnd('/')
     $rootPath = Resolve-RepositoryPath $rootRelative
@@ -104,7 +112,7 @@ if ($LASTEXITCODE -ne 0) {
 $notes = @(
     "Windows x64 playable builds from ``$($catalog.source_repository)`` at ``$($catalog.source_revision)``.",
     '',
-    'Download a ZIP, extract it, and double-click the included `Play-*.exe` file.',
+    'Download the game installer (.exe) for a per-user installation with optional desktop shortcut. Portable ZIPs are also available.',
     '',
     '> These executables are not code-signed, so Windows may show a SmartScreen warning.',
     '',
