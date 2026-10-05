@@ -1,17 +1,16 @@
-# Feta
+# Feta — first friends playtest
 
-A two-player cat-and-mouse game in a furnished house and garden, built on BlueEngine.
-Explore alone as Feta or the Scientist, or connect to a host using their server
-address and private join code. The host supplies the code; it is never bundled
-with the game. Online play requires two players choosing opposite characters.
+This archive preserves the original 0.2.0-playtest.1 client, released on September 24, 2026.
+It predates solo exploration; use the latest installer for Explore solo.
+Online play requires a compatible Feta server, its address and a private join code
+provided by the host. No private join code or server key is bundled.
 
-WASD/arrows move, mouse looks, Shift sprints, Space jumps, Ctrl/C crouches, and
-Q changes Feta's camera. The Scientist attacks with the left/right mouse buttons.
-Esc opens the menu. Solo exploration has no opponent or round timer.
+Choose opposite characters and both press Ready. WASD/arrows move, mouse looks,
+Shift sprints, Space jumps, Ctrl/C crouches, and Q changes Feta's camera.
+The Scientist attacks with the left/right mouse buttons; Esc opens the menu.
 
-This catalog packages the existing **0.2.0-playtest.2** Windows build, preserving
-the game's own runtime and approved rat artwork. Its archive checksum and source
-revision are pinned in release-source.json. It is a playtest; human Windows input
-and gameplay still need playtesting.
+The original public archive is SHA256-pinned in release-source.json. The
+BlueEngineGames installer adds standard per-user installation, shortcuts, clean
+uninstallation and the per-game updater without changing the archived game binary.
 
-[Game source and original releases](https://github.com/kevstermcgee/Feta).
+[Original source and playtest release](https://github.com/kevstermcgee/Feta/releases/tag/feta-v0.2.0-playtest.1).
