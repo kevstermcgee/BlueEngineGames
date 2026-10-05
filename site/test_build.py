@@ -71,6 +71,7 @@ class Downloads(unittest.TestCase):
                                           releases_json=root / 'releases.json', games_dir=root / 'games',
                                           thumbs=root / 'thumbs', out=root / 'out'))
             page = (root / 'out/index.html').read_text()
+            self.assertIn('<strong>1 free game</strong> for Windows.', page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
