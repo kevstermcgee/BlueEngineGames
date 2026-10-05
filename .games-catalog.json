@@ -888,7 +888,7 @@
     },
     {
       "path": "games/leo/scripts/ship.py",
-      "sha256": "07b0a43ce704138dbf6dfcbe018ecdbb7027c80c62d21e7a65ee1b6e0f9eb866"
+      "sha256": "050634c5f4ffa2a58b931e526244358ce57b09b0c5a08a934f1bab7587d09e65"
     },
     {
       "path": "games/leo/src/lib.rs",
@@ -896,7 +896,7 @@
     },
     {
       "path": "games/leo/src/main.rs",
-      "sha256": "01d5c3cc2f24eb2a045aa1d2b3eb3e58a77e478776fce51dd877f13b97869e04"
+      "sha256": "afacea5eec6655d3e5e373e76d9951a88a82d13c980f110b5ff3f98f7d0bb279"
     },
     {
       "path": "games/leo/src/platform.rs",
@@ -1400,10 +1400,13 @@
     "games/turret-trench",
     "games/weight-balance",
     "games/target-gallery",
-    "games/dead-air"
+    "games/dead-air",
+    "games/prop-hunt",
+    "games/slapstick",
+    "games/feta"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "fc078d592900b61b27b806e03023cada617f8939",
+  "source_revision": "fc44aa0ae35b9ef15db1fa5dd3b0d1e6702f79ea",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
