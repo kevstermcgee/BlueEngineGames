@@ -34,6 +34,37 @@
       "native_download": null
     },
     {
+      "id": "orchard-watch",
+      "title": "Orchard Watch",
+      "description": "Spend seeds on guards and defend three orchard lanes through nine waves.",
+      "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+      "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+      "presentation": "2d",
+      "networking": "offline",
+      "input": [
+        "mouse",
+        "keyboard"
+      ],
+      "targets": [
+        "web",
+        "linux",
+        "windows"
+      ],
+      "built_at_epoch": 1791204254,
+      "compatibility": {
+        "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+        "macroquad": "0.4.14",
+        "miniquad": "0.4.8",
+        "quad-snd": "0.2.8",
+        "save_frame": 1,
+        "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
+        "webgl": "WebGL 1"
+      },
+      "play": "orchard-watch/index.html",
+      "thumbnail": "orchard-watch/thumbnail.png",
+      "native_download": null
+    },
+    {
       "id": "pocket-breaker",
       "title": "Pocket Breaker",
       "description": "Steer a paddle to clear six stained-glass bands. Miss the ball and try again.",
