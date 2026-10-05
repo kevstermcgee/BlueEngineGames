@@ -269,6 +269,11 @@ def build(args) -> None:
         repo=REPO,
     )
 
+    # BlueEngine web artifacts (static publisher contract v1)
+    web_root = Path(__file__).resolve().parent / "web"
+    if web_root.is_dir():
+        shutil.copytree(web_root, out / "web", dirs_exist_ok=True)
+        page = page.replace('<main id="grid">', '<p><a href="web/index.html">Play 2D games in your browser</a></p><main id="grid">')
     (out / "index.html").write_text(page)
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")

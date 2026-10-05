@@ -1,0 +1,47 @@
+{
+  "built_at_epoch": 1791204254,
+  "compatibility": {
+    "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "macroquad": "0.4.14",
+    "miniquad": "0.4.8",
+    "quad-snd": "0.2.8",
+    "save_frame": 1,
+    "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
+    "webgl": "WebGL 1"
+  },
+  "description": "Collect four lanterns and reach the garden exit.",
+  "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "file_sha256": {
+    "game.wasm": "c242d8173c9b8b78e76bab643ff4f2add1aae3f91103487abc032848cfed8312",
+    "index.html": "b4bffb57303384ab6bf96ab233a7ea109a18f9c49da1bd477ceaa4c8875dfa96",
+    "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "platform.js": "f08f3895af094c1e61edcc12c6cabd0bd587a2aebe0968e46a25c85137393a48",
+    "thumbnail.png": "1f301b1bc3be0bdaf47b78d80568a2de461b0bfa7888be79f79aa68fb63d493a"
+  },
+  "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "game_source_sha256": "a49f5cfc6c437cd2a96c8f047302442473b6e2c0acdb7a1c0917f3ede0778edf",
+  "id": "lantern-run",
+  "input": [
+    "keyboard",
+    "mouse",
+    "controller"
+  ],
+  "native_download": null,
+  "networking": "offline",
+  "play": "index.html",
+  "presentation": "2d",
+  "runtime_abi": 1,
+  "schema_version": 1,
+  "targets": [
+    "web",
+    "linux",
+    "windows"
+  ],
+  "thumbnail": "thumbnail.png",
+  "timestamp_policy": "SOURCE_DATE_EPOCH or source commit time for reproducible packaging",
+  "title": "Lantern Run",
+  "verification": {
+    "hash": "d6a3ec4a1e7d653e",
+    "outcome": "won"
+  }
+}
