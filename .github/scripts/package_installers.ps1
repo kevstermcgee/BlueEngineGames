@@ -63,7 +63,7 @@ foreach ($game in $definitions) {
         Set-Content (Join-Path $stage '.installed-files.tsv') $manifest -Encoding utf8NoBOM
         Set-Content (Join-Path $stage '.installed-release') $env:RELEASE_TAG -Encoding utf8NoBOM
         $icon = Get-ChildItem $stage -Filter '*.ico' | Select-Object -First 1
-        $iconArgs = if ($icon) { @("/DAppIcon=$($icon.FullName)") } else { @() }
+        [string[]]$iconArgs = if ($icon) { @("/DAppIcon=$($icon.FullName)") } else { @() }
         & $compiler "/DAppSlug=$($game.slug)" "/DAppName=$($game.name)" "/DAppExe=$($game.exe)" `
                 "/DAppFolder=$($game.folder)" "/DSourceDir=$stage" "/DOutputDir=$dist" `
                 "/DReleaseTag=$env:RELEASE_TAG" @iconArgs (Join-Path $PSScriptRoot 'game_installer.iss')

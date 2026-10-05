@@ -21,6 +21,9 @@ try {
         New-Item -ItemType Directory $stage | Out-Null
         Copy-Item $env:ComSpec (Join-Path $stage 'Play-test-game.exe')
         Set-Content (Join-Path $stage 'version.txt') $version
+        Add-Type -AssemblyName System.Drawing
+        $iconFile = [IO.File]::Create((Join-Path $stage 'game.ico'))
+        try { [Drawing.SystemIcons]::Application.Save($iconFile) } finally { $iconFile.Dispose() }
         $zip = Join-Path $dist 'test-game-windows-x64.zip'
         if (Test-Path $zip) { Remove-Item $zip }
         Compress-Archive (Join-Path $stage '*') $zip
