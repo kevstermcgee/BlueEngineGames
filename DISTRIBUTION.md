@@ -29,7 +29,10 @@ and shortcuts while retaining player-created saves and settings.
 ## Releases and history
 
 The release workflow pins the engine revision from `.games-catalog.json` and builds
-the games checkout. A release tag contains both engine and games revisions, plus
+the games checkout. Native path-based `vesper3d` dependencies are temporarily
+bound to that exact engine checkout during packaging; original manifests are
+restored afterward. This supports engine-owned games exported from a different
+folder layout. A release tag contains both engine and games revisions, plus
 the workflow run and attempt. Game-only changes and rebuilt packages therefore
 produce distinct releases. Existing releases are never overwritten. Asset names
 are stable within each release; catalog URLs point to that specific tag.

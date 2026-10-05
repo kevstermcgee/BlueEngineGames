@@ -202,6 +202,13 @@
       "directory": "games/dead-air",
       "kind": "cargo-package",
       "binary": "dead_air"
+    },
+    {
+      "slug": "leo",
+      "name": "Leo",
+      "directory": "games/leo",
+      "kind": "cargo-package",
+      "binary": "leo"
     }
   ],
   "non_playable_directories": [
