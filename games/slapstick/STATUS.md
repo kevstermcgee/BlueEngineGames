@@ -55,3 +55,11 @@ automatically). To watch an actual goal, drive the paddle cursor from a script, 
   guesses tuned only against headless captures and bot-vs-bot matches, never played by a human.
 - `scripts/blue ship` has not been run (needs `be2-tools`/a built native binary for `scripts/check.py`'s
   ship gate; not available in the environment this game was built in).
+
+## Catalog packaging validation (2026-10-04)
+
+The BlueEngineGames copy now has its own title-seeded icon and current package tooling.
+Rules, saves, wire encoding and UDP loopback tests passed against the current engine,
+as did Clippy. A release package and private shortcut passed verification, with two
+nonblank captures from a clean staged package on an isolated virtual display.
+Human controls, subjective audio and online tuning remain unverified playtest work.

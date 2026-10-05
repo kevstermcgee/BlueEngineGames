@@ -56,3 +56,13 @@ vocabulary in `main.rs`'s `CUES`, including `confirm` and `inspect`; `out` must 
   current values are first guesses (30 s hide, 3 min seek, 0.6 s hold at 2.2 m), never played by a human.
 - `scripts/blue ship` has not been run (needs `be2-tools`/a built native binary for `scripts/check.py`'s
   ship gate; not available in the environment this game was built in).
+
+## Catalog packaging validation (2026-10-04)
+
+The BlueEngineGames copy now has its own title-seeded icon and current package tooling.
+Rules, saves, wire encoding and UDP loopback tests passed against the current engine,
+as did Clippy. A release package and private shortcut passed verification, with two
+nonblank captures from a clean staged package on an isolated virtual display.
+Two packaged clients completed a real local UDP hide/seek round; the lobby,
+seek crosshair, hiders-win result and return to the lobby were captured and inspected.
+Human controls, subjective audio and online tuning remain unverified playtest work.
