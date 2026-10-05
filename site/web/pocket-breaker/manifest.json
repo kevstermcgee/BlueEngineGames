@@ -1,0 +1,47 @@
+{
+  "built_at_epoch": 1791204254,
+  "compatibility": {
+    "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "macroquad": "0.4.14",
+    "miniquad": "0.4.8",
+    "quad-snd": "0.2.8",
+    "save_frame": 1,
+    "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
+    "webgl": "WebGL 1"
+  },
+  "description": "Steer a paddle to clear six stained-glass bands. Miss the ball and try again.",
+  "engine_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "file_sha256": {
+    "game.wasm": "f3a3eabd9a0fceab45998a91df0e5d1c4d6100909f42a8021b1de70ed8d24332",
+    "index.html": "21e40671abc456c888aeaf0058be6b8945709a59645c79060750dcffdcfd2234",
+    "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "platform.js": "f08f3895af094c1e61edcc12c6cabd0bd587a2aebe0968e46a25c85137393a48",
+    "thumbnail.png": "3c4969b05868756dae0034d9162c2e0619b18fff5ae01bdfb5374553f63453f5"
+  },
+  "game_revision": "899bcb986d8e6c576daade248f8298a21a4cfdb5",
+  "game_source_sha256": "c977d79a2e04f4c37878589cb77148bf1b03d134191fa92eb0213bd0a6db0d93",
+  "id": "pocket-breaker",
+  "input": [
+    "keyboard",
+    "mouse",
+    "controller"
+  ],
+  "native_download": null,
+  "networking": "offline",
+  "play": "index.html",
+  "presentation": "2d",
+  "runtime_abi": 1,
+  "schema_version": 1,
+  "targets": [
+    "web",
+    "linux",
+    "windows"
+  ],
+  "thumbnail": "thumbnail.png",
+  "timestamp_policy": "SOURCE_DATE_EPOCH or source commit time for reproducible packaging",
+  "title": "Pocket Breaker",
+  "verification": {
+    "hash": "3636af9d530c0c41",
+    "outcome": "won"
+  }
+}
