@@ -19,6 +19,15 @@ def release(tag, names, **extra):
 
 
 class Downloads(unittest.TestCase):
+    def test_archive_names_identify_versions_and_escape_release_text(self):
+        archive = release('immutable-archive', ['feta-setup-windows-x64.exe'],
+                          name='Feta 0.2.0-playtest.1 <archived>')
+        rows = site.version_rows([archive], 'feta', 'new')
+        self.assertIn('Feta 0.2.0-playtest.1 &lt;archived&gt;', rows)
+        self.assertIn('<code>immutable-archive</code>', rows)
+        self.assertIn('https://example.com/immutable-archive/feta-setup-windows-x64.exe', rows)
+        self.assertNotIn('<archived>', rows)
+
     def test_installer_preferred_and_actual_pinned_urls(self):
         current = release('new', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
         url, label, _ = site.download_for(current, 'game')
