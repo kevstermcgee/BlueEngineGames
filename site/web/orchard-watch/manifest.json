@@ -1,5 +1,37 @@
 {
-  "built_at_epoch": 1791251519,
+  "browser_verification": {
+    "compiled": true,
+    "desktop": {
+      "audio_initialized": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "environment": "Chromium CDP/software WebGL; emulated touch and synthetic controller",
+    "mobile": {
+      "audio_initialized": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "package_valid": true,
+    "physical_device_tested": false
+  },
+  "built_at_epoch": 1791294118,
   "compatibility": {
     "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
     "macroquad": "0.4.14",
@@ -9,20 +41,154 @@
     "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
     "webgl": "WebGL 1"
   },
+  "controls": {
+    "commands": {
+      "fullscreen": {
+        "bit": 0,
+        "buttons": [],
+        "key": "KeyF",
+        "label": "Fullscreen"
+      },
+      "load": {
+        "bit": 32,
+        "buttons": [],
+        "key": "KeyL",
+        "label": "Load",
+        "touch": "load"
+      },
+      "music": {
+        "bit": 64,
+        "buttons": [],
+        "key": "KeyN",
+        "label": "Music",
+        "touch": "music"
+      },
+      "pause": {
+        "bit": 2,
+        "buttons": [
+          1
+        ],
+        "key": "Escape",
+        "label": "Pause/resume",
+        "touch": "pause"
+      },
+      "restart": {
+        "bit": 4,
+        "buttons": [],
+        "key": "KeyR",
+        "label": "Restart",
+        "touch": "restart"
+      },
+      "save": {
+        "bit": 16,
+        "buttons": [],
+        "key": "KeyK",
+        "label": "Save",
+        "touch": "save"
+      },
+      "sound": {
+        "bit": 8,
+        "buttons": [],
+        "key": "KeyM",
+        "label": "Sound",
+        "touch": "sound"
+      },
+      "start": {
+        "bit": 1,
+        "buttons": [
+          9
+        ],
+        "key": "Enter",
+        "label": "Play",
+        "touch": "play"
+      }
+    },
+    "look": {
+      "axes": [
+        2,
+        3
+      ],
+      "mouse": "canvas drag"
+    },
+    "movement": {
+      "axes": [
+        0,
+        1
+      ],
+      "directions": {
+        "ArrowDown": [
+          0,
+          1
+        ],
+        "ArrowLeft": [
+          -1,
+          0
+        ],
+        "ArrowRight": [
+          1,
+          0
+        ],
+        "ArrowUp": [
+          0,
+          -1
+        ],
+        "KeyA": [
+          -1,
+          0
+        ],
+        "KeyD": [
+          1,
+          0
+        ],
+        "KeyS": [
+          0,
+          1
+        ],
+        "KeyW": [
+          0,
+          -1
+        ]
+      },
+      "keys": [
+        "KeyW",
+        "KeyA",
+        "KeyS",
+        "KeyD",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowDown",
+        "ArrowRight"
+      ],
+      "touch": "project mobile_controls"
+    },
+    "primary": {
+      "button": 0,
+      "key": "Space",
+      "touch": "action"
+    },
+    "sprint": {
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight"
+      ]
+    },
+    "version": 1
+  },
   "description": "Spend seeds on guards and defend three orchard lanes through nine waves.",
-  "engine_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
+  "engine_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
   "file_sha256": {
     "app.webmanifest": "ef587269c15b5b7fbb0da9c6137a06f93b4cdc0d34b768ade053675cfa314398",
-    "game.wasm": "13c604839c0ed60aa18c70f6754089e255dd969293947b9895e35ab8816998e9",
-    "index.html": "3eb61dced0fc3118ba7d12405faac47c7a934cb1b682633e16bb08ae168d622f",
+    "build.json": "d4dc0cbafbf39642459b0536445efc64c5f0d76c576f3ed50202adcb8ea70895",
+    "game.wasm": "0f8325041e273a0e21fa2ee2990a4d3d9bdce3efb8a56b514f3859ac6ab9bc57",
+    "index.html": "0e875d9e580597d63aec8989e354083dc2a698339f5f351b2aaeb4bb7eca0b30",
     "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
-    "mobile.js": "eac9e8e73d26bda919c9a542fdbe2b6afe39c40920c2293ca0fb3cf0b6aa69c4",
-    "platform.js": "28640c3d20af106b97a4c21b15e750de9ea6514dc10e2cb6b8bdefccb63af46f",
-    "service-worker.js": "938cba234cfee5a84b9b75a00829ea8dab0c7aacd43d278f8e2a92a454d0c5ab",
+    "mobile.js": "6085597c317f1aea7ece3ca2947b1e03f4be4a8d2ade652b1929bd8b6d1248ae",
+    "platform.js": "a98569b537a863ed1f5d6b12a3b1b3580a4ab11654c91add17462b63f7539ed4",
+    "service-worker.js": "2371827e8d3a42739975a6cf04ad54966ba0688c606b92287d4b580aec4c303a",
     "thumbnail.png": "e4ed6f7f3f7b2dec0940daf28499b4f817f3ea206b1167b41ba10c8aae972913"
   },
-  "game_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
-  "game_source_sha256": "10b5a28e34e02872c42f03164616100baa339bf5baa548853d463be7bc55e5dd",
+  "game_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
+  "game_source_sha256": "55351b8d455c5759eb1b45b567380252cdb8de2b98fafe8c6036e672c0dfc672",
   "id": "orchard-watch",
   "input": [
     "mouse",
@@ -32,17 +198,169 @@
     "offline": true,
     "web": "app.webmanifest"
   },
+  "measurements": {
+    "desktop": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 59.89518342828649,
+      "frame_max_ms": 33.40000000000009,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 16.799999999999727,
+      "frames": 120,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 15.699999928474426,
+        "step_max_ms": 0.10000002384185791
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 1985817,
+      "load_ms": 422.3251560000008,
+      "navigation_to_ready_roundtrip_ms": 11828.1774,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 4.299999952316284,
+        "step_max_ms": 0.6000000238418579
+      },
+      "sample_ms": 2003.500000023842,
+      "save_ms": 430.06984999999986,
+      "startup_ms": 10815.100000023842,
+      "time_to_playable_ms": 11800.400000095367,
+      "wasm_instantiation_ms": 0.5,
+      "wasm_memory_bytes": 11862016
+    },
+    "physical_devices": [],
+    "touch_emulation": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 60.22597182818178,
+      "frame_max_ms": 16.800000000000182,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 16.700000000000273,
+      "frames": 121,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 10,
+        "step_max_ms": 0.30000007152557373
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 1987223,
+      "load_ms": 484.5113169999968,
+      "navigation_to_ready_roundtrip_ms": 26162.460555999998,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 15.5,
+        "step_max_ms": 0.5
+      },
+      "sample_ms": 2009.1,
+      "save_ms": 349.3308250000009,
+      "startup_ms": 25104.399999976158,
+      "time_to_playable_ms": 26042.100000023842,
+      "wasm_instantiation_ms": 1.100000023841858,
+      "wasm_memory_bytes": 11862016
+    }
+  },
   "mobile_controls": {
     "action_label": "Plant",
     "layout": "tap"
   },
   "native_download": null,
   "networking": "offline",
+  "package_id": "c1bea588f06a3d4370cf792fe8eee256057e8cfb00c2fcba12def27bec547628",
   "play": "index.html",
   "presentation": "2d",
+  "reproduce": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "command": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "build",
+      "games/orchard-watch"
+    ],
+    "compiler_namespace": "canonical package roots, version, features and codegen settings v1",
+    "dependency_policy": "committed Cargo.lock; cargo fetch --locked, then offline locked builds",
+    "engine_relative_to_game": "../..",
+    "game_lock_sha256": "2b66620654f5fb272ef6ce1f893f370f2820f67d97d1320da31d357ab0e84cbf",
+    "path_remapping": "Cargo home=/cargo, engine=/blueengine, game=/game",
+    "prepare": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "prepare",
+      "games/orchard-watch"
+    ],
+    "profile": "release",
+    "runtime_wasm_removed_custom_sections": [
+      "name"
+    ],
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "source_date_epoch": 1791294118,
+    "target": "wasm32-unknown-unknown"
+  },
+  "reproducibility": {
+    "clean_checkout": true,
+    "compared_fields": [
+      "package_id",
+      "engine_revision",
+      "game_revision",
+      "game_source_sha256",
+      "sources",
+      "verification",
+      "file_sha256",
+      "compatibility",
+      "controls",
+      "required_capabilities",
+      "built_at_epoch",
+      "reproduce",
+      "browser_verification"
+    ],
+    "empty_target": true,
+    "package_hashes_match": true
+  },
+  "required_capabilities": [
+    "WebAssembly",
+    "WebGL 1",
+    "Web Audio",
+    "localStorage",
+    "HTTPS or localhost for service worker"
+  ],
   "runtime": "portable",
   "runtime_abi": 2,
   "schema_version": 1,
+  "sources": {
+    "engine": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": ".",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    },
+    "game": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": "games/orchard-watch",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    }
+  },
   "targets": [
     "web",
     "linux",

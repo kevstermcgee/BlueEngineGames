@@ -1,5 +1,38 @@
 {
-  "built_at_epoch": 1791251519,
+  "browser_verification": {
+    "compiled": true,
+    "desktop": {
+      "audio_initialized": true,
+      "controller": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "environment": "Chromium CDP/software WebGL; emulated touch and synthetic controller",
+    "mobile": {
+      "audio_initialized": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "package_valid": true,
+    "physical_device_tested": false
+  },
+  "built_at_epoch": 1791294118,
   "compatibility": {
     "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
     "macroquad": "0.4.14",
@@ -9,20 +42,154 @@
     "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
     "webgl": "WebGL 1"
   },
+  "controls": {
+    "commands": {
+      "fullscreen": {
+        "bit": 0,
+        "buttons": [],
+        "key": "KeyF",
+        "label": "Fullscreen"
+      },
+      "load": {
+        "bit": 32,
+        "buttons": [],
+        "key": "KeyL",
+        "label": "Load",
+        "touch": "load"
+      },
+      "music": {
+        "bit": 64,
+        "buttons": [],
+        "key": "KeyN",
+        "label": "Music",
+        "touch": "music"
+      },
+      "pause": {
+        "bit": 2,
+        "buttons": [
+          1
+        ],
+        "key": "Escape",
+        "label": "Pause/resume",
+        "touch": "pause"
+      },
+      "restart": {
+        "bit": 4,
+        "buttons": [],
+        "key": "KeyR",
+        "label": "Restart",
+        "touch": "restart"
+      },
+      "save": {
+        "bit": 16,
+        "buttons": [],
+        "key": "KeyK",
+        "label": "Save",
+        "touch": "save"
+      },
+      "sound": {
+        "bit": 8,
+        "buttons": [],
+        "key": "KeyM",
+        "label": "Sound",
+        "touch": "sound"
+      },
+      "start": {
+        "bit": 1,
+        "buttons": [
+          9
+        ],
+        "key": "Enter",
+        "label": "Play",
+        "touch": "play"
+      }
+    },
+    "look": {
+      "axes": [
+        2,
+        3
+      ],
+      "mouse": "canvas drag"
+    },
+    "movement": {
+      "axes": [
+        0,
+        1
+      ],
+      "directions": {
+        "ArrowDown": [
+          0,
+          1
+        ],
+        "ArrowLeft": [
+          -1,
+          0
+        ],
+        "ArrowRight": [
+          1,
+          0
+        ],
+        "ArrowUp": [
+          0,
+          -1
+        ],
+        "KeyA": [
+          -1,
+          0
+        ],
+        "KeyD": [
+          1,
+          0
+        ],
+        "KeyS": [
+          0,
+          1
+        ],
+        "KeyW": [
+          0,
+          -1
+        ]
+      },
+      "keys": [
+        "KeyW",
+        "KeyA",
+        "KeyS",
+        "KeyD",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowDown",
+        "ArrowRight"
+      ],
+      "touch": "project mobile_controls"
+    },
+    "primary": {
+      "button": 0,
+      "key": "Space",
+      "touch": "action"
+    },
+    "sprint": {
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight"
+      ]
+    },
+    "version": 1
+  },
   "description": "Steer a paddle to clear six stained-glass bands. Miss the ball and try again.",
-  "engine_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
+  "engine_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
   "file_sha256": {
     "app.webmanifest": "76e3e992fa37169eb510dbe17664575849aecf0a08d465409c22673823385d12",
-    "game.wasm": "53f58d3bfe9c54ced24f5dbdef7cd5527b9814d611a8539edb47bd846d6b8009",
-    "index.html": "f3073e824944fe6a6d1d80d9bdc6c1cd4729762e62c69e027a9469c1b50de2c2",
+    "build.json": "babf47f94a393fe1f0b04a58b37c4c91b3d540d78ccaa365e8d61611c2cd3a0b",
+    "game.wasm": "21c7b689d2ca2ea0454460e0f9e885285ae325352108e80b75d976b7fe2600bf",
+    "index.html": "3c276dc22cbe88b4219cc42adbcbd10d06359c23f98930379984051ff936cc4d",
     "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
-    "mobile.js": "eac9e8e73d26bda919c9a542fdbe2b6afe39c40920c2293ca0fb3cf0b6aa69c4",
-    "platform.js": "28640c3d20af106b97a4c21b15e750de9ea6514dc10e2cb6b8bdefccb63af46f",
-    "service-worker.js": "d8e947db8f63b2919752b9211331fcef914fb386ae91e2a976035f2ce35dda64",
+    "mobile.js": "6085597c317f1aea7ece3ca2947b1e03f4be4a8d2ade652b1929bd8b6d1248ae",
+    "platform.js": "a98569b537a863ed1f5d6b12a3b1b3580a4ab11654c91add17462b63f7539ed4",
+    "service-worker.js": "69f89d6145d3b1d11fef3585e60a1e3176d66d9a586bf5eccf5ae88be13eff3c",
     "thumbnail.png": "3c4969b05868756dae0034d9162c2e0619b18fff5ae01bdfb5374553f63453f5"
   },
-  "game_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
-  "game_source_sha256": "1bd0ee1927bc0e1719b262e651072f97f544f40a89b4df32a86ebf87220f9cbc",
+  "game_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
+  "game_source_sha256": "d9dcf1527f18835a388f263d34c30518bbcddb000c3be3cec1fa537fb865f3a8",
   "id": "pocket-breaker",
   "input": [
     "keyboard",
@@ -33,17 +200,169 @@
     "offline": true,
     "web": "app.webmanifest"
   },
+  "measurements": {
+    "desktop": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 60.285984756271226,
+      "frame_max_ms": 16.800000000000182,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 16.700000000000273,
+      "frames": 121,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 4,
+        "step_max_ms": 0.10000002384185791
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 2070122,
+      "load_ms": 116.25441299999875,
+      "navigation_to_ready_roundtrip_ms": 26144.698874,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 5.399999976158142,
+        "step_max_ms": 1.600000023841858
+      },
+      "sample_ms": 2007.0999999284745,
+      "save_ms": 421.0357049999984,
+      "startup_ms": 25099.900000095367,
+      "time_to_playable_ms": 26136,
+      "wasm_instantiation_ms": 0.6000000238418579,
+      "wasm_memory_bytes": 6488064
+    },
+    "physical_devices": [],
+    "touch_emulation": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 60.294997008732764,
+      "frame_max_ms": 16.800000000000182,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 16.799999999999727,
+      "frames": 121,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 2.5,
+        "step_max_ms": 0.10000002384185791
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 2159451,
+      "load_ms": 500.3536380000005,
+      "navigation_to_ready_roundtrip_ms": 26168.321286,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 68.79999995231628,
+        "step_max_ms": 0.5
+      },
+      "sample_ms": 2006.8000000476836,
+      "save_ms": 314.7457429999995,
+      "startup_ms": 25104.600000023842,
+      "time_to_playable_ms": 26081.5,
+      "wasm_instantiation_ms": 0.5,
+      "wasm_memory_bytes": 6488064
+    }
+  },
   "mobile_controls": {
     "action_label": null,
     "layout": "paddle"
   },
   "native_download": null,
   "networking": "offline",
+  "package_id": "8a9d33dce7646dd720b10026860effa6a76c9ac78b7eb8e02b1dc49187cbb730",
   "play": "index.html",
   "presentation": "2d",
+  "reproduce": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "command": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "build",
+      "games/pocket-breaker"
+    ],
+    "compiler_namespace": "canonical package roots, version, features and codegen settings v1",
+    "dependency_policy": "committed Cargo.lock; cargo fetch --locked, then offline locked builds",
+    "engine_relative_to_game": "../..",
+    "game_lock_sha256": "2e9bc92dce3fcc46e4418429b01ffc11bef57a299721dc913dd34e7d8aa39e95",
+    "path_remapping": "Cargo home=/cargo, engine=/blueengine, game=/game",
+    "prepare": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "prepare",
+      "games/pocket-breaker"
+    ],
+    "profile": "release",
+    "runtime_wasm_removed_custom_sections": [
+      "name"
+    ],
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "source_date_epoch": 1791294118,
+    "target": "wasm32-unknown-unknown"
+  },
+  "reproducibility": {
+    "clean_checkout": true,
+    "compared_fields": [
+      "package_id",
+      "engine_revision",
+      "game_revision",
+      "game_source_sha256",
+      "sources",
+      "verification",
+      "file_sha256",
+      "compatibility",
+      "controls",
+      "required_capabilities",
+      "built_at_epoch",
+      "reproduce",
+      "browser_verification"
+    ],
+    "empty_target": true,
+    "package_hashes_match": true
+  },
+  "required_capabilities": [
+    "WebAssembly",
+    "WebGL 1",
+    "Web Audio",
+    "localStorage",
+    "HTTPS or localhost for service worker"
+  ],
   "runtime": "portable",
   "runtime_abi": 2,
   "schema_version": 1,
+  "sources": {
+    "engine": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": ".",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    },
+    "game": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": "games/pocket-breaker",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    }
+  },
   "targets": [
     "web",
     "linux",

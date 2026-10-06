@@ -1,5 +1,38 @@
 {
-  "built_at_epoch": 1791251519,
+  "browser_verification": {
+    "compiled": true,
+    "desktop": {
+      "audio_initialized": true,
+      "controller": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "environment": "Chromium CDP/software WebGL; emulated touch and synthetic controller",
+    "mobile": {
+      "audio_initialized": true,
+      "focus_loss": true,
+      "focus_return": true,
+      "gameplay_scenario": true,
+      "input": true,
+      "offline_reload": true,
+      "playable": true,
+      "reload_read": true,
+      "save_write": true,
+      "update_recovery": true,
+      "wasm_instantiated": true
+    },
+    "package_valid": true,
+    "physical_device_tested": false
+  },
+  "built_at_epoch": 1791294118,
   "compatibility": {
     "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
     "macroquad": "0.4.14",
@@ -9,20 +42,154 @@
     "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
     "webgl": "WebGL 1"
   },
+  "controls": {
+    "commands": {
+      "fullscreen": {
+        "bit": 0,
+        "buttons": [],
+        "key": "KeyF",
+        "label": "Fullscreen"
+      },
+      "load": {
+        "bit": 32,
+        "buttons": [],
+        "key": "KeyL",
+        "label": "Load",
+        "touch": "load"
+      },
+      "music": {
+        "bit": 64,
+        "buttons": [],
+        "key": "KeyN",
+        "label": "Music",
+        "touch": "music"
+      },
+      "pause": {
+        "bit": 2,
+        "buttons": [
+          1
+        ],
+        "key": "Escape",
+        "label": "Pause/resume",
+        "touch": "pause"
+      },
+      "restart": {
+        "bit": 4,
+        "buttons": [],
+        "key": "KeyR",
+        "label": "Restart",
+        "touch": "restart"
+      },
+      "save": {
+        "bit": 16,
+        "buttons": [],
+        "key": "KeyK",
+        "label": "Save",
+        "touch": "save"
+      },
+      "sound": {
+        "bit": 8,
+        "buttons": [],
+        "key": "KeyM",
+        "label": "Sound",
+        "touch": "sound"
+      },
+      "start": {
+        "bit": 1,
+        "buttons": [
+          9
+        ],
+        "key": "Enter",
+        "label": "Play",
+        "touch": "play"
+      }
+    },
+    "look": {
+      "axes": [
+        2,
+        3
+      ],
+      "mouse": "canvas drag"
+    },
+    "movement": {
+      "axes": [
+        0,
+        1
+      ],
+      "directions": {
+        "ArrowDown": [
+          0,
+          1
+        ],
+        "ArrowLeft": [
+          -1,
+          0
+        ],
+        "ArrowRight": [
+          1,
+          0
+        ],
+        "ArrowUp": [
+          0,
+          -1
+        ],
+        "KeyA": [
+          -1,
+          0
+        ],
+        "KeyD": [
+          1,
+          0
+        ],
+        "KeyS": [
+          0,
+          1
+        ],
+        "KeyW": [
+          0,
+          -1
+        ]
+      },
+      "keys": [
+        "KeyW",
+        "KeyA",
+        "KeyS",
+        "KeyD",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowDown",
+        "ArrowRight"
+      ],
+      "touch": "project mobile_controls"
+    },
+    "primary": {
+      "button": 0,
+      "key": "Space",
+      "touch": "action"
+    },
+    "sprint": {
+      "keys": [
+        "ShiftLeft",
+        "ShiftRight"
+      ]
+    },
+    "version": 1
+  },
   "description": "Collect four lanterns and reach the garden exit.",
-  "engine_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
+  "engine_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
   "file_sha256": {
     "app.webmanifest": "98359077a4263524130043c1b16c9a1c61a8ccc1e322c62f7311d92b7087ff3c",
-    "game.wasm": "b52a06cde7e8067dfe9c479fc0d0c7b3c1798bc7433ee5189c9f731504c7b0cc",
-    "index.html": "cc1beb6b207a73dff8f8b19d7f6e464563378da872e4948c2819c34ae3d65cf6",
+    "build.json": "a1908011a791297d96862e2f1d378a01df8649e838132559ea7dd747e4ba3566",
+    "game.wasm": "52d7d77c20c91e7d8f8ace6bb440e4d07bed3399e2fd4d354e18e787df3ee5c9",
+    "index.html": "e9d7bd1a5e79a229832ad79a15f1aa1c79417f3a807e4cb9c65bc9cb6f7811e7",
     "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
-    "mobile.js": "eac9e8e73d26bda919c9a542fdbe2b6afe39c40920c2293ca0fb3cf0b6aa69c4",
-    "platform.js": "28640c3d20af106b97a4c21b15e750de9ea6514dc10e2cb6b8bdefccb63af46f",
-    "service-worker.js": "b28da73990a560167560b6bb87aa80fa4f7f4b35a06acf6335aae98acb009ec7",
+    "mobile.js": "6085597c317f1aea7ece3ca2947b1e03f4be4a8d2ade652b1929bd8b6d1248ae",
+    "platform.js": "a98569b537a863ed1f5d6b12a3b1b3580a4ab11654c91add17462b63f7539ed4",
+    "service-worker.js": "ed80a2fdf244d010921a4c262a2825b5262fca72f1d21558bc20a3f016c55ba9",
     "thumbnail.png": "8de1c950957c0ad5fe1b7106d7b6453acd656d2f3990a41f6d9aa55b42bce201"
   },
-  "game_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
-  "game_source_sha256": "feee23c974da75b5fafae9c5de9601d91aa3649e5afd97df2b3297f6943166c2",
+  "game_revision": "83842f99a5a4df4dd98c3da46fb04f6878815175",
+  "game_source_sha256": "91dc6f5e7e72734b4669932ac3c1616df2e3ec8082906589bdea60a0e8ea2045",
   "id": "lantern-grove",
   "input": [
     "keyboard",
@@ -33,17 +200,169 @@
     "offline": true,
     "web": "app.webmanifest"
   },
+  "measurements": {
+    "desktop": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 57.10029791392186,
+      "frame_max_ms": 33.5,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 33.29999999999973,
+      "frames": 115,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 4.599999904632568,
+        "step_max_ms": 0.10000002384185791
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 2301036,
+      "load_ms": 458.601587000001,
+      "navigation_to_ready_roundtrip_ms": 26297.72019,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 13.399999976158142,
+        "step_max_ms": 0.30000007152557373
+      },
+      "sample_ms": 2014.000000023842,
+      "save_ms": 110.94992900000216,
+      "startup_ms": 25106,
+      "time_to_playable_ms": 26195.699999928474,
+      "wasm_instantiation_ms": 0.6000000238418579,
+      "wasm_memory_bytes": 6488064
+    },
+    "physical_devices": [],
+    "touch_emulation": {
+      "environment": "Headless Chromium SwiftShader on this Linux host; latency includes CDP/report polling",
+      "fps": 56.75312391300807,
+      "frame_max_ms": 33.40000000000009,
+      "frame_p50_ms": 16.699999999999818,
+      "frame_p95_ms": 33.299999999999955,
+      "frames": 114,
+      "game_performance": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 4.200000047683716,
+        "step_max_ms": 0.10000002384185791
+      },
+      "hardware_coverage": [],
+      "js_heap_bytes": 2443125,
+      "load_ms": 544.2439130000021,
+      "navigation_to_ready_roundtrip_ms": 18723.775651,
+      "replay_work": {
+        "chunk_render_frames": 0,
+        "chunk_render_max_ms": 0,
+        "chunk_render_stalls_over_50ms": 0,
+        "chunk_stalls_over_50ms": 0,
+        "chunk_update_max_ms": 0,
+        "chunk_updates": 0,
+        "draw_max_ms": 11.400000095367432,
+        "step_max_ms": 0.6000000238418579
+      },
+      "sample_ms": 2008.6999999284744,
+      "save_ms": 686.5215310000021,
+      "startup_ms": 17677.799999952316,
+      "time_to_playable_ms": 18697.899999976158,
+      "wasm_instantiation_ms": 0.5,
+      "wasm_memory_bytes": 6488064
+    }
+  },
   "mobile_controls": {
     "action_label": null,
     "layout": "dpad"
   },
   "native_download": null,
   "networking": "offline",
+  "package_id": "1a5d414be0df9e98c2a81808281141bbc5b15d335972624cf89bc3b7101f3faf",
   "play": "index.html",
   "presentation": "hybrid",
+  "reproduce": {
+    "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "command": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "build",
+      "games/lantern-grove"
+    ],
+    "compiler_namespace": "canonical package roots, version, features and codegen settings v1",
+    "dependency_policy": "committed Cargo.lock; cargo fetch --locked, then offline locked builds",
+    "engine_relative_to_game": "../..",
+    "game_lock_sha256": "6b198036c4a7efc28443aef647b3201ec6b3c6b75de3bf98112ffd8658c83ddd",
+    "path_remapping": "Cargo home=/cargo, engine=/blueengine, game=/game",
+    "prepare": [
+      "python3",
+      "tools/be2.py",
+      "web",
+      "prepare",
+      "games/lantern-grove"
+    ],
+    "profile": "release",
+    "runtime_wasm_removed_custom_sections": [
+      "name"
+    ],
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "source_date_epoch": 1791294118,
+    "target": "wasm32-unknown-unknown"
+  },
+  "reproducibility": {
+    "clean_checkout": true,
+    "compared_fields": [
+      "package_id",
+      "engine_revision",
+      "game_revision",
+      "game_source_sha256",
+      "sources",
+      "verification",
+      "file_sha256",
+      "compatibility",
+      "controls",
+      "required_capabilities",
+      "built_at_epoch",
+      "reproduce",
+      "browser_verification"
+    ],
+    "empty_target": true,
+    "package_hashes_match": true
+  },
+  "required_capabilities": [
+    "WebAssembly",
+    "WebGL 1",
+    "Web Audio",
+    "localStorage",
+    "HTTPS or localhost for service worker"
+  ],
   "runtime": "portable",
   "runtime_abi": 2,
   "schema_version": 1,
+  "sources": {
+    "engine": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": ".",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    },
+    "game": {
+      "clean": true,
+      "dirty_paths": [],
+      "path": "games/lantern-grove",
+      "repository": "https://github.com/kevstermcgee/BlueEngine.git",
+      "revision": "83842f99a5a4df4dd98c3da46fb04f6878815175"
+    }
+  },
   "targets": [
     "web",
     "linux",
