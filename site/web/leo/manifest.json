@@ -1,0 +1,73 @@
+{
+  "built_at_epoch": 1791251519,
+  "compatibility": {
+    "loader_sha256": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "macroquad": "0.4.14",
+    "miniquad": "0.4.8",
+    "quad-snd": "0.2.8",
+    "save_frame": 1,
+    "storage": "localStorage per origin + game ID; 4 MiB limit; Snapshot version/migrations",
+    "webgl": "WebGL 1"
+  },
+  "description": "Wander with Leo through an endless storybook meadow, beneath a sky that always brings another morning.",
+  "engine_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
+  "file_sha256": {
+    "AUDIO.md": "476e05189f46d3544ec5630915e0bcada9dc2dfe8cdd3bf3887d1424af9ac694",
+    "app.webmanifest": "82e71b02cc733da758218379689d25d69d58131aeee46004b1707c0e8d9dec66",
+    "assets/audio/music/bank.json": "0ae996df16796e9ebc31f3f28908e37baaeac346bd72f69b0e0cad89d45d4278",
+    "assets/audio/music/music-home.wav": "cf5e16f2728a6fc2f88620fc962823a1c8ab9349da7be6bfeff61a1c895ce169",
+    "assets/audio/music/music-starlight.wav": "1eaba38e13c8866281539718d185dec839b4c9ade5697d9628b85bfc57e542f6",
+    "assets/audio/music/music-wander.wav": "eac4ee99d235968f4068640649c603f2711da5af40c234ad0c431c5f88336283",
+    "assets/audio/music/preview-mix.wav": "510fea0628b12dcca0996f1b037347faefb162fa493d49ac5b01bec4f3ad4e26",
+    "assets/audio/nature/bank.json": "f9300dcdc4e1e45089a898bbccc761c33aa90563a37c7db071841abaf17bbac6",
+    "assets/audio/nature/music-birds.wav": "186c96f4e73fba62b698cd900fc206268211b494b6f70262a55a7a9e3d13fb86",
+    "assets/audio/nature/music-leaves.wav": "c8e857e6c23a1439ba169a93aaf9e06efc001617758e437ec9891b75c4f31072",
+    "assets/audio/nature/music-night.wav": "62fd3719945ad7d03ae7e488001ebe453cab9193d7a20ead186bb110c7759ea7",
+    "assets/audio/nature/music-wind.wav": "15dc2e81ce07026d0fe0f2bc29e6f4fe5bfe5e139bb615a92dd3fd86f9704916",
+    "assets/audio/nature/preview-mix.wav": "fe7ee36156e3384331e7d4289ff013b1e8802f7ecbeea0c425e18a1e53d298c6",
+    "game.wasm": "de418d1f29f11a1c9ec821347945771eb12e173ab1b7e0739e0cc7326c4590b5",
+    "index.html": "aef68537a07349e3f3635d905b4a531c827dfaccd77ccc661229de5cc0ed282a",
+    "loader.js": "99a6b756e7eb2851e47bdf8d0cbc16a85c0acc14d9ecf9f740f5e1b2a9614261",
+    "mobile.js": "eac9e8e73d26bda919c9a542fdbe2b6afe39c40920c2293ca0fb3cf0b6aa69c4",
+    "platform.js": "28640c3d20af106b97a4c21b15e750de9ea6514dc10e2cb6b8bdefccb63af46f",
+    "service-worker.js": "056ae17aa52d8dcfdec99e3cb2007b32e4066a223cfc19d428ca0ecacdd8ec25",
+    "thumbnail.png": "e5d547951fe0f2dac4c9ca81e9770959a6fb1514524a4a6348358037d11dd573"
+  },
+  "game_revision": "d086dec8f56d0aca5e91132fe9abd511c8a4ea9f",
+  "game_source_sha256": "d1499ead5eb95763213b9b64b51198abaa1b4c912069da45c4440fca9dc2363b",
+  "id": "leo",
+  "input": [
+    "keyboard",
+    "mouse",
+    "controller"
+  ],
+  "install": {
+    "offline": true,
+    "web": "app.webmanifest"
+  },
+  "mobile_controls": {
+    "action_label": "Hop",
+    "layout": "dpad"
+  },
+  "native_download": null,
+  "networking": "offline",
+  "play": "index.html",
+  "presentation": "3d",
+  "runtime": "portable",
+  "runtime_abi": 2,
+  "schema_version": 1,
+  "targets": [
+    "web",
+    "linux",
+    "windows"
+  ],
+  "thumbnail": "thumbnail.png",
+  "timestamp_policy": "SOURCE_DATE_EPOCH or source commit time for reproducible packaging",
+  "title": "Leo",
+  "verification": {
+    "hash": "e4e405e3250d5daa",
+    "outcome": "playing",
+    "purpose": "walk, hop and cross chunk boundaries in the unchanged open-ended Leo simulation",
+    "ticks": 1200
+  }
+}

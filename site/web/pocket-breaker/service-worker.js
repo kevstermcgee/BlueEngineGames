@@ -1,5 +1,5 @@
 /* Build substitutes the exact package cache key. Storage is separate from disposable asset caches. */
-const CACHE='be2:'+self.registration.scope+':a3317c974226fd26cac5f0300d1206923c4c496cb321c73725bb66e72de210a0';
+const CACHE='be2:'+self.registration.scope+':7d84bb9b7a87761b64a43f90d9efbd0abd334c373b67e9c10fc923ac26aedd5a';
 const FILES=["app.webmanifest", "game.wasm", "index.html", "loader.js", "mobile.js", "platform.js", "thumbnail.png", "service-worker.js", "manifest.json"];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('be2:'+self.registration.scope+':')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
