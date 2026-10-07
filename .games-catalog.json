@@ -812,7 +812,7 @@
     },
     {
       "path": "games/lantern-grove/scripts/project.py",
-      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/lantern-grove/scripts/ship.py",
@@ -912,7 +912,7 @@
     },
     {
       "path": "games/lantern-run/scripts/project.py",
-      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/lantern-run/scripts/ship.py",
@@ -1096,7 +1096,7 @@
     },
     {
       "path": "games/leo/scripts/project.py",
-      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/leo/scripts/render_audio.py",
@@ -1344,7 +1344,7 @@
     },
     {
       "path": "games/orchard-watch/scripts/project.py",
-      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/orchard-watch/scripts/ship.py",
@@ -1444,7 +1444,7 @@
     },
     {
       "path": "games/pocket-breaker/scripts/project.py",
-      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/pocket-breaker/scripts/ship.py",
@@ -1971,6 +1971,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "933a0dada791cda50aced54e5a68d6d0f5690c37",
+  "source_revision": "4a138ebd7a23b563c5012e7b329d281383d45a96",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
