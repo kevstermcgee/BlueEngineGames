@@ -1,8 +1,10 @@
 import csv
 import importlib.util
 import json
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -18,7 +20,40 @@ def release(tag, names, **extra):
                         'browser_download_url': f'https://example.com/{tag}/{name}'} for name in names], **extra}
 
 
+def screenshot(width=320, height=180):
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
+            + chunk(b'IDAT', zlib.compress((b'\0' + b'\x20\x60\x80' * width) * height)) + chunk(b'IEND', b''))
+
+
 class Downloads(unittest.TestCase):
+    def test_every_release_game_has_a_landscape_screenshot(self):
+        root = Path(__file__).resolve().parent.parent
+        definitions = json.loads((root / '.release-games.json').read_text())
+        for game in definitions['data_playables'] + definitions['native_playables']:
+            with self.subTest(game=game['slug']):
+                site.game_screenshot(root / 'site/thumbs', root / 'games', game['slug'])
+
+    def test_missing_invalid_and_icon_screenshots_are_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            thumb = root / 'game.png'
+            with self.assertRaisesRegex(ValueError, 'Missing game screenshot'):
+                site.game_screenshot(root, root / 'games', 'game')
+            thumb.write_bytes(b'not a PNG')
+            with self.assertRaisesRegex(ValueError, 'must be a PNG'):
+                site.game_screenshot(root, root / 'games', 'game')
+            thumb.write_bytes(screenshot(256, 256))
+            with self.assertRaisesRegex(ValueError, 'must be landscape'):
+                site.game_screenshot(root, root / 'games', 'game')
+            thumb.write_bytes(screenshot())
+            icon = root / 'games/game/assets/icon.png'
+            icon.parent.mkdir(parents=True)
+            icon.write_bytes(thumb.read_bytes())
+            with self.assertRaisesRegex(ValueError, 'launcher icon'):
+                site.game_screenshot(root, root / 'games', 'game')
+
     def test_archive_names_identify_versions_and_escape_release_text(self):
         archive = release('immutable-archive', ['feta-setup-windows-x64.exe'],
                           name='Feta 0.2.0-playtest.1 <archived>')
@@ -57,6 +92,7 @@ class Downloads(unittest.TestCase):
             root = Path(temp)
             (root / 'games').mkdir()
             (root / 'thumbs').mkdir()
+            (root / 'thumbs/game.png').write_bytes(screenshot())
             rows = [{'slug': 'game', 'name': 'Game café ✨', 'description': '<unsafe>', 'created': '2026-01-01',
                      'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'}]
             with (root / 'catalog.tsv').open('w', encoding='utf-8', newline='') as out:
@@ -90,18 +126,33 @@ class Downloads(unittest.TestCase):
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
+            self.assertIn('src="thumbs/game.png"', page)
+            self.assertIn('in-game screenshot', page)
+            self.assertNotIn('thumb icon', page)
+            self.assertNotIn('thumb tile', page)
             self.assertIn('https://example.com/current/INSTALLER-SHA256SUMS.txt', page)
             game_page = (root / 'out/games/game/index.html').read_text(encoding='utf-8')
             self.assertIn('https://example.com/old/game-setup-windows-x64.exe', game_page)
             self.assertNotIn('game-windows-x64.zip', game_page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', game_page)
             self.assertIn('Latest</span>', game_page)
+            self.assertIn('src="../../thumbs/game.png"', game_page)
             self.assertNotIn('<details', game_page)
             self.assertEqual(game_page.count('<tbody>'), 1)
             self.assertIn('&lt;unsafe&gt;', page)
             self.assertNotIn('https://bad/', page)
             self.assertNotIn('BlueEngine Launcher', page)
             self.assertNotIn('id="missing"', page)
+            previous = {str(p.relative_to(root / 'out')): p.read_bytes()
+                        for p in (root / 'out').rglob('*') if p.is_file()}
+            (root / 'thumbs/game.png').unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing game screenshot'):
+                site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
+                                          releases_json=root / 'releases.json', games_dir=root / 'games',
+                                          thumbs=root / 'thumbs', out=root / 'out'))
+            self.assertEqual(previous, {str(p.relative_to(root / 'out')): p.read_bytes()
+                                       for p in (root / 'out').rglob('*') if p.is_file()})
+            (root / 'thumbs/game.png').write_bytes(screenshot())
             with (root / 'catalog.tsv').open('a', encoding='utf-8', newline='') as out:
                 out.write('missing\tMissing\t\t\t\t\t\n')
             previous = {str(p.relative_to(root / 'out')): p.read_bytes()
@@ -127,6 +178,10 @@ class Downloads(unittest.TestCase):
             index.write_text('<canvas></canvas>')
             with self.assertRaises(ValueError):
                 check(root)
+            for preview in ('<img class="thumb icon" src="icon.png">', '<div class="thumb tile">G</div>'):
+                index.write_text(preview)
+                with self.assertRaisesRegex(ValueError, 'must use screenshots'):
+                    check(root)
             index.write_text('Windows downloads')
             for filename in ('game.wasm', 'app.webmanifest', 'service-worker.js', 'web/thumbnail.png'):
                 file = root / filename

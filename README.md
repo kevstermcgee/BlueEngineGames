@@ -10,6 +10,12 @@ the download site lists every game with a screenshot, description, and direct
 download link. It rebuilds automatically from each release
 (see `site/` and `.github/workflows/pages.yml`).
 
+Every game card and detail page uses a real in-game capture from
+`site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
+screenshot (at least 320 × 180); launcher icons and initial tiles are never used
+as substitutes. CI checks screenshot coverage for every release definition, and
+a failed screenshot check leaves the previous website intact.
+
 **[Download ready-to-play Windows builds](../../releases/latest).** Each game has a
 Windows x64 installer that installs for your user, adds Start Menu shortcuts, and
 offers a desktop shortcut. No Rust toolchain or command line is required.

@@ -8,6 +8,9 @@ from urllib.parse import unquote, urlsplit
 class DownloadPage(HTMLParser):
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        classes = attrs.get('class', '').split()
+        if 'thumb' in classes and (tag != 'img' or 'icon' in classes or 'tile' in classes):
+            raise ValueError('Game previews must use screenshots; icon and tile fallbacks are forbidden')
         if tag in {'iframe', 'embed', 'object', 'canvas'}:
             raise ValueError(f"Embedded game element: {tag}")
         for key in ('href', 'src'):

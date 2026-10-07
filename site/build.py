@@ -2,7 +2,7 @@
 """Generate the static download site for BlueEngineGames.
 
 Joins the release catalog TSV (source of truth for which games exist) with the
-GitHub release JSON (per-asset sizes) and the repo checkout (thumbnails, icons,
+GitHub release JSON (per-asset sizes) and the repo checkout (game screenshots,
 git dates), and emits a self-contained _site/ directory for GitHub Pages.
 
 Usage:
@@ -15,6 +15,7 @@ import csv
 import html
 import json
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -106,6 +107,23 @@ def human_size(n: int) -> str:
 def version_label(v: str) -> str:
     """'0.1.0' -> 'v0.1.0 · '; placeholder values like 'catalog' are dropped."""
     return f"v{html.escape(v)} &middot; " if v and v[0].isdigit() else ""
+
+
+def game_screenshot(thumbs: Path, games_dir: Path, slug: str) -> Path:
+    """Require a reviewed landscape capture; never substitute a launcher icon."""
+    source = thumbs / f"{slug}.png"
+    if not source.is_file():
+        raise ValueError(f"Missing game screenshot: {source}. Capture the game before publishing.")
+    data = source.read_bytes()
+    icon = games_dir / slug / "assets" / "icon.png"
+    if icon.is_file() and data == icon.read_bytes():
+        raise ValueError(f"Game screenshot is a launcher icon: {slug}")
+    if len(data) < 33 or data[:8] != b'\x89PNG\r\n\x1a\n' or data[12:16] != b'IHDR':
+        raise ValueError(f"Game screenshot must be a PNG: {slug}")
+    width, height = struct.unpack('>II', data[16:24])
+    if width < 320 or height < 180 or width <= height:
+        raise ValueError(f"Game screenshot must be landscape and at least 320 x 180: {slug}")
+    return source
 
 
 def release_download(release: dict, filename: str) -> str:
@@ -211,17 +229,9 @@ def build_staged(args) -> None:
         if not asset:
             raise ValueError(f"Catalog game has no installer in the published release: {slug}")
 
-        thumb_src = Path(args.thumbs) / f"{slug}.png"
-        icon_src = Path(args.games_dir) / slug / "assets" / "icon.png"
-        if thumb_src.is_file():
-            shutil.copy2(thumb_src, thumbs_out / f"{slug}.png")
-            thumb = f'<img class="thumb" src="thumbs/{slug}.png" alt="" width="320" height="180" loading="lazy">'
-        elif icon_src.is_file():
-            shutil.copy2(icon_src, thumbs_out / f"{slug}.png")
-            thumb = f'<img class="thumb icon" src="thumbs/{slug}.png" alt="" width="320" height="180" loading="lazy">'
-        else:
-            initials = html.escape(row["name"][:2])
-            thumb = f'<div class="thumb tile">{initials}</div>'
+        thumb_src = game_screenshot(Path(args.thumbs), Path(args.games_dir), slug)
+        shutil.copy2(thumb_src, thumbs_out / f"{slug}.png")
+        thumb = f'<img class="thumb" src="thumbs/{slug}.png" alt="{html.escape(row["name"])} in-game screenshot" width="320" height="180" loading="lazy">'
 
         kind = "data" if "data" in row.get("kind", "") else "native"
         name = html.escape(row["name"])
