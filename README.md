@@ -3,6 +3,8 @@
 Games, prototypes, test content, and demos produced with
 [BlueEngine](https://github.com/kevstermcgee/BlueEngine).
 
+Native Windows x64 EXE installers only; no browser play.
+
 **[Browse and download all games](https://kevstermcgee.github.io/BlueEngineGames/)** —
 the download site lists every game with a screenshot, description, and direct
 download link. It rebuilds automatically from each release

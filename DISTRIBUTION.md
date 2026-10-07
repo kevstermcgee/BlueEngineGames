@@ -1,5 +1,9 @@
 # Game distribution
 
+BlueEngine games are distributed as native Windows x64 EXE installers only.
+The public website has no browser games, web-play links, WASM payloads, or PWA
+installation. Keep optional engine browser tooling separate from this repository.
+
 Download a game's `*-setup-windows-x64.exe` from the website or GitHub Releases.
 The installer uses `%LOCALAPPDATA%\BlueEngine\Games\<slug>` by default, needs no
 administrator rights, and creates Start Menu play and **Check for updates**
@@ -78,7 +82,9 @@ obsolete-file pruning, checksum rejection, invalid packages, directory traversal
 and rollback after a failed commit. `distribution/test_installers.ps1` builds and
 runs actual installers to check installation, upgrade, shortcuts, save retention,
 and uninstallation. Both run on Windows before game builds in the release workflow.
-`python -m unittest discover -s site -p 'test_*.py'` checks download-history behavior.
+`python -m unittest discover -s site -p 'test_*.py'` checks download history,
+Windows-only links and replacement of stale generated output.
+`python site/check.py _site` audits the exact deployment; Pages runs both gates.
 Branch dispatches build reviewable Windows artifacts without publishing releases.
 
 ## Adding games and checking one installer

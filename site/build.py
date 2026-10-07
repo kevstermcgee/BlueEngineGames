@@ -17,6 +17,8 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
+from types import SimpleNamespace
 from pathlib import Path
 
 REPO = "kevstermcgee/BlueEngineGames"
@@ -183,7 +185,7 @@ GAME_PAGE = """<!DOCTYPE html>
 
 
 
-def build(args) -> None:
+def build_staged(args) -> None:
     repo_root = Path(args.games_dir).resolve().parent
     out = Path(args.out)
     thumbs_out = out / "thumbs"
@@ -255,10 +257,10 @@ def build(args) -> None:
             versions=version_rows(versions, slug, release.get("tag_name", "")), repo=REPO,
         ))
 
-    # BlueEngine unified catalog (static publisher contract v2)
+    # Windows-only download catalog; optional engine web publishing cannot alter this site.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from browser_catalog import merge_games, enhance_page
-    games = merge_games(games, rows, Path(__file__).resolve().parent / "web", out, args.games_dir)
+    from native_catalog import enrich_games, enhance_page
+    games = enrich_games(games, rows, out, args.games_dir)
     games.sort(key=lambda g: g["name"])
     games.sort(key=lambda g: g["created"], reverse=True)  # newest first, A-Z within a day
 
@@ -280,6 +282,34 @@ def build(args) -> None:
     shutil.copy2(site_dir / "app.js", out / "app.js")
     (out / ".nojekyll").touch()
     print(f"wrote {out}/index.html with {len(games)} games")
+
+
+def build(args) -> None:
+    """Replace the complete generated site only after a successful audited build.
+
+    Fresh output removes obsolete game pages and web payloads from reused directories.
+    A bad release or failed audit keeps the previously completed site intact.
+    """
+    out = Path(args.out).resolve()
+    for source in (Path(args.games_dir).resolve(), Path(args.thumbs).resolve(), Path(__file__).resolve().parent):
+        if source == out or source.is_relative_to(out) or out.is_relative_to(source):
+            raise ValueError("Output must be separate from site and game source directories")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.download-site-', dir=out.parent) as temp:
+        staging = Path(temp) / 'new'
+        build_staged(SimpleNamespace(**(vars(args) | {'out': staging})))
+        from check import check
+        check(staging)
+        previous = Path(temp) / 'previous'
+        if out.exists():
+            out.replace(previous)
+        try:
+            staging.replace(out)
+        except OSError:
+            if previous.exists():
+                previous.replace(out)
+            raise
+    print(f"published Windows EXE download site: {out}")
 
 
 if __name__ == "__main__":

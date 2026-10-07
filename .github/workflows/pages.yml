@@ -35,6 +35,9 @@ jobs:
           # Full history: build.py derives each game's "added" date from git.
           fetch-depth: 0
 
+      - name: Verify Windows-only site builder
+        run: python3 -m unittest discover -s site -p 'test_*.py' -v
+
       - name: Fetch latest release metadata
         id: metadata
         env:
@@ -58,6 +61,10 @@ jobs:
       - name: Build site
         if: steps.metadata.outputs.ready == 'true'
         run: python3 site/build.py --catalog catalog.tsv --release-json release.json --releases-json releases.json --games-dir games --thumbs site/thumbs --out _site
+
+      - name: Audit download-only deployment
+        if: steps.metadata.outputs.ready == 'true'
+        run: python3 site/check.py _site
 
       - uses: actions/configure-pages@v5
         if: steps.metadata.outputs.ready == 'true'

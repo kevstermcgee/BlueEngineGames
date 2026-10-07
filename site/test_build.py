@@ -67,11 +67,25 @@ class Downloads(unittest.TestCase):
             (root / 'release.json').write_text(json.dumps(current))
             (root / 'releases.json').write_text(json.dumps([current, old]))
             with patch.object(site, 'game_added_date', return_value='2026-01-01'):
+                # Simulate output left by the previous browser-enabled builder.
+                stale = root / 'out/web/old-game'
+                stale.mkdir(parents=True)
+                (stale / 'game.wasm').write_bytes(b'old runtime')
+                old_page = root / 'out/games/browser-only'
+                old_page.mkdir(parents=True)
+                (old_page / 'index.html').write_text('Play in browser')
                 site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
                                           releases_json=root / 'releases.json', games_dir=root / 'games',
                                           thumbs=root / 'thumbs', out=root / 'out'))
             page = (root / 'out/index.html').read_text()
             self.assertIn('<strong>1 free game</strong> for Windows.', page)
+            self.assertFalse((root / 'out/web').exists())
+            self.assertFalse(old_page.exists())
+            self.assertNotIn('Play / Install', page)
+            self.assertNotIn('data-browser', page)
+            self.assertNotIn('id="distribution"', page)
+            self.assertIn('data-star="game"', page)
+            self.assertIn('Windows x64 only.', page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
@@ -89,10 +103,39 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('id="missing"', page)
             with (root / 'catalog.tsv').open('a') as out:
                 out.write('missing\tMissing\t\t\t\t\t\n')
+            previous = {str(p.relative_to(root / 'out')): p.read_bytes()
+                        for p in (root / 'out').rglob('*') if p.is_file()}
             with self.assertRaisesRegex(ValueError, 'no installer.*missing'):
                 site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
                                           releases_json=root / 'releases.json', games_dir=root / 'games',
                                           thumbs=root / 'thumbs', out=root / 'out'))
+            self.assertEqual(previous, {str(p.relative_to(root / 'out')): p.read_bytes()
+                                       for p in (root / 'out').rglob('*') if p.is_file()})
+
+    def test_deployment_audit_rejects_web_payloads_and_download_links(self):
+        from check import check
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            index = root / 'index.html'
+            index.write_text('<a class="dl" href="https://example.com/game.exe">Download</a>')
+            check(root)
+            for link in ('web/game/', 'https://example.com/game.zip', 'game.wasm', 'game.html'):
+                index.write_text(f'<a class="dl" href="{link}">Play</a>')
+                with self.assertRaises(ValueError):
+                    check(root)
+            index.write_text('<canvas></canvas>')
+            with self.assertRaises(ValueError):
+                check(root)
+            index.write_text('Windows downloads')
+            for filename in ('game.wasm', 'app.webmanifest', 'service-worker.js', 'web/thumbnail.png'):
+                file = root / filename
+                file.parent.mkdir(exist_ok=True)
+                file.touch()
+                with self.assertRaises(ValueError):
+                    check(root)
+                file.unlink()
+                if file.parent != root:
+                    file.parent.rmdir()
 
 
 if __name__ == '__main__':

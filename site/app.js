@@ -2,7 +2,7 @@
   'use strict';
   const grid=document.getElementById('grid'),empty=document.getElementById('empty'),search=document.getElementById('search'),sort=document.getElementById('sort');
   const cards=Array.from(grid.children),kindButtons=Array.from(document.querySelectorAll('.kinds button'));
-  const filters=['presentation','distribution','networking'].map(id=>document.getElementById(id));
+  const filters=['presentation','networking'].map(id=>document.getElementById(id));
   const storageKey='blueengine:library:favorites:v1';let kind='',stars=new Set();
   const status=document.getElementById('favorites-status');
   function notice(message){if(status)status.textContent=message;}
@@ -13,8 +13,8 @@
     const q=search.value.trim().toLowerCase();let shown=0;
     cards.sort((a,b)=>Number(stars.has(b.dataset.id))-Number(stars.has(a.dataset.id))+(stars.has(b.dataset.id)===stars.has(a.dataset.id)?(sorters[sort.value]||sorters.newest)(a,b):0));
     for(const card of cards){
-      const presentation=filters[0]?.value||'',distribution=filters[1]?.value||'',network=filters[2]?.value||'';
-      const show=(!kind||card.dataset.kind===kind)&&(!q||card.dataset.text.includes(q))&&(!presentation||card.dataset.presentation===presentation)&&(!distribution||card.dataset[distribution]==='true')&&(!network||card.dataset.networking===network);
+      const presentation=filters[0]?.value||'',network=filters[1]?.value||'';
+      const show=(!kind||card.dataset.kind===kind)&&(!q||card.dataset.text.includes(q))&&(!presentation||card.dataset.presentation===presentation)&&(!network||card.dataset.networking===network);
       card.hidden=!show;if(show)shown++;grid.appendChild(card);
       const button=card.querySelector('[data-star]');if(button){const starred=stars.has(card.dataset.id);button.setAttribute('aria-pressed',String(starred));button.setAttribute('aria-label',(starred?'Unstar ':'Star ')+card.dataset.name);}
     }
