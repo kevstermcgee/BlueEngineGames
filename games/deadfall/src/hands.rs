@@ -463,6 +463,7 @@ impl Hands {
         }
     }
 
+    #[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
     fn gun_tick(
         &mut self,
         inv: &mut Inventory,

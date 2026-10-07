@@ -13,8 +13,8 @@
 use deadfall::client::level_view::{self, LevelScene};
 use deadfall::client::previewkit::{self, Args};
 use deadfall::client::render::{Figure, Renderer};
+use deadfall::maps::MapId;
 use deadfall::netgame::{flag, PlayerView};
-use deadfall::slagworks;
 use deadfall::team::Team;
 use macroquad::prelude::*;
 use vesper3d::math::V;
@@ -116,7 +116,7 @@ fn draw(mats: &Materials, scene: &LevelScene, m: &Meshes, view: &View) {
 #[macroquad::main(window)]
 async fn main() {
     let args = Args::parse();
-    let mut level = slagworks::build();
+    let mut level = MapId::from_id(flag_value(&args.raw, "--map").and_then(|v| v.parse().ok()).unwrap_or(0)).build();
     if let Some(cut) = flag_value(&args.raw, "--cut").and_then(|v| v.parse::<f32>().ok()) {
         level.blocks.retain(|b| b.min.1 < cut);
     }

@@ -82,6 +82,16 @@ pub fn vfov(hfov_deg: f32, aspect: f32) -> f32 {
     2. * ((hfov_deg.to_radians() * 0.5).tan() / aspect.max(0.5)).atan()
 }
 
+/// Shared by the actual viewmodel and its preview, so sight-clearance reviews use the same eye.
+pub fn viewmodel_eye_relief(def: &weapons::WeaponDef) -> f32 {
+    match (def.sight, def.class) {
+        (Sight::Scope { .. }, _) => 0.1,
+        (_, Class::Pistol) => 0.55,
+        (Sight::Dot, _) => 0.3,
+        _ => 0.4,
+    }
+}
+
 /// One soldier as it should be drawn this frame.
 #[derive(Clone, Copy, Debug)]
 pub struct Figure {
@@ -241,7 +251,9 @@ impl Renderer {
         let mut rigs = Vec::new();
         for team in Team::ALL {
             for skin in 0..4 {
-                rigs.push(Rig::new(team, skin));
+                for avatar in 0..4 {
+                    rigs.push(Rig::variant(team, skin, avatar));
+                }
             }
         }
         let mut models: Vec<Option<WeaponModel>> = vec![None];
@@ -375,7 +387,7 @@ impl Renderer {
         dropped: &[DroppedView],
         projectiles: &[ProjView],
         zones: &[ZoneView],
-        skins: &[u8; 16],
+        _skins: &[u8; 16],
         dt: f32,
     ) {
         self.animate(figures, dt);
@@ -399,8 +411,9 @@ impl Renderer {
             if own && !casting && self.shadows.quality() != ShadowQuality::Simple {
                 continue;
             }
-            let skin = skins[f.slot.min(15)].min(3);
-            let rig = &self.rigs[f.team.index() * 4 + skin as usize];
+            let skin = (f.view.appearance >> 3) & 3;
+            let avatar = (f.view.appearance >> 1) & 3;
+            let rig = &self.rigs[f.team.index() * 16 + skin as usize * 4 + avatar as usize];
             let mem = self.mem.get(&f.slot).copied().unwrap_or_default();
             let weapon = f.view.weapon;
             let hold = Self::hold_for(weapon);
@@ -618,6 +631,36 @@ impl Renderer {
         set_default_camera();
     }
 
+    /// Objective markers obey world depth: no wall-revealing overlay or collision geometry.
+    pub fn draw_objectives(&self, view: &View, snap: &crate::netgame::Snapshot) {
+        use crate::modes::GameMode;
+        if !matches!(snap.mode, GameMode::CaptureFlag | GameMode::SearchDestroy) {
+            return;
+        }
+        set_camera(&view.camera(0.05, 400.));
+        if snap.mode == GameMode::CaptureFlag {
+            for (t, f) in snap.objective.flags.iter().enumerate() {
+                let p = v3(f.pos);
+                let c = if t == 0 { Color::new(0.55, 0.73, 0.3, 1.) } else { Color::new(0.35, 0.6, 0.95, 1.) };
+                draw_cube(p + vec3(0., 0.9, 0.), vec3(0.055, 1.8, 0.055), None, LIGHTGRAY);
+                draw_cube(p + vec3(0.42, 1.5, 0.), vec3(0.84, 0.5, 0.025), None, c);
+                draw_cube(v3(snap.map.bases()[t]) + vec3(0., 0.025, 0.), vec3(2.4, 0.05, 2.4), None, c);
+            }
+        } else {
+            for p in snap.map.sites() {
+                for (x, z) in [(-1.7, -1.7), (1.7, -1.7), (-1.7, 1.7), (1.7, 1.7)] {
+                    draw_cube(v3(p) + vec3(x, 0.2, z), vec3(0.13, 0.4, 0.13), None, ORANGE);
+                }
+            }
+            let p = v3(snap.objective.bomb);
+            draw_cube(p + vec3(0., 0.15, 0.), vec3(0.42, 0.3, 0.27), None, DARKGRAY);
+            if snap.objective.phase == 2 {
+                draw_cube(p + vec3(0., 0.31, 0.), vec3(0.08, 0.03, 0.06), None, RED);
+            }
+        }
+        set_default_camera();
+    }
+
     fn draw_item(
         models: &[Option<WeaponModel>],
         world: &mut Batch,
@@ -682,12 +725,7 @@ impl Renderer {
         // Where the grip sits on screen at the hip and when aiming (the sight point lands on the eye).
         let hip = if def.class == Class::Melee { vec3(0.18, -0.17, -0.38) } else { vec3(0.15, -0.14, -0.32) };
         // The eye sits a little behind the sight (eye relief), so the rear sight is not a wall across the screen.
-        let relief = match (def.sight, def.class) {
-            (Sight::Scope { .. }, _) => 0.1,
-            (_, Class::Pistol) => 0.55,
-            (Sight::Dot, _) => 0.3,
-            _ => 0.4,
-        };
+        let relief = viewmodel_eye_relief(def);
         let aimed = -anchors.sight + vec3(0., 0., -relief);
         let mut pos = hip.lerp(aimed, a);
         // Lift the blade across the view instead of pointing its thin edge straight at the camera.
@@ -794,7 +832,7 @@ impl Renderer {
         };
         set_camera(&cam);
         clear_background(Color::new(0., 0., 0., 0.));
-        let mut look = self.scene.look.clone();
+        let mut look = self.scene.look;
         look.fog_density = 0.;
         self.materials.set_scene(&look, view.eye, self.time, 0.);
         let _ = self.materials.set_point_lights(&[]);

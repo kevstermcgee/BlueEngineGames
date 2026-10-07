@@ -1,11 +1,17 @@
 name: Native game checks
 on:
   pull_request:
-    paths: [games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
   push:
     branches: [main]
-    paths: [games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
   workflow_dispatch:
+    inputs:
+      game_slug:
+        description: Check Deadfall alone for review, or every native game
+        type: choice
+        options: [all, deadfall]
+        default: all
 permissions:
   contents: read
 jobs:
@@ -14,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        slug: [prop-hunt, slapstick, lantern-run, pocket-breaker, orchard-watch, lantern-grove, signal-garden]
+        slug: ${{ fromJSON(github.event.inputs.game_slug == 'deadfall' && '["deadfall"]' || '["deadfall", "prop-hunt", "slapstick", "lantern-run", "pocket-breaker", "orchard-watch", "lantern-grove", "signal-garden"]') }}
     runs-on: ${{ matrix.os }}
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target
@@ -52,6 +58,14 @@ jobs:
           text = re.sub(r'(vesper3d\s*=\s*\{[^}\n]*\bpath\s*=\s*)"[^"]+"',
                         lambda m: m[1] + '"' + engine + '"', manifest.read_text())
           manifest.write_text(text)
+      - name: Build the shared hub for Deadfall's real room tests
+        if: matrix.slug == 'deadfall'
+        shell: pwsh
+        run: |
+          cargo build --locked --manifest-path _engine/Cargo.toml --no-default-features --bin be2-hub
+          if ($LASTEXITCODE -ne 0) { throw 'Hub build failed' }
+          $suffix = if ($IsWindows) { '.exe' } else { '' }
+          "BE2_HUB=$env:CARGO_TARGET_DIR/debug/be2-hub$suffix" >> $env:GITHUB_ENV
       - name: Rules, networking, identity and code checks
         shell: pwsh
         run: |

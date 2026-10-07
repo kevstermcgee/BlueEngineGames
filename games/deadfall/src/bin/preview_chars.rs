@@ -119,7 +119,7 @@ async fn main() {
 
     if what == "team0" || what == "team1" {
         let team = Team::from_index(if what == "team0" { 0 } else { 1 });
-        let rig = Rig::new(team, skin.min(3));
+        let rig = Rig::variant(team, skin.min(3), num(&args, "--avatar", 0.) as u8);
         let pose = pose_named(&pose_name, hold, t, num(&args, "--phase", 0.8));
         println!("{} vertices per soldier: {:?}", rig.vertex_count(), rig.part_sizes());
         for &a in &args.angles {
@@ -144,9 +144,9 @@ async fn main() {
     } else if what == "lineup" {
         let rigs = [
             Rig::new(Team::Ironclad, 1),
-            Rig::new(Team::Nightwatch, 2),
-            Rig::new(Team::Ironclad, 3),
-            Rig::new(Team::Nightwatch, 0),
+            Rig::variant(Team::Nightwatch, 2, 1),
+            Rig::variant(Team::Ironclad, 3, 2),
+            Rig::variant(Team::Nightwatch, 0, 3),
         ];
         let pose = pose_named(if pose_name == "stand" { "walk" } else { &pose_name }, hold, t, 0.);
         for &a in &args.angles {
@@ -209,7 +209,11 @@ async fn main() {
         let fp = args.has("--fp");
         // Same placement as the game's viewmodel: hip position, or the sight point on the eye.
         let hip = if hold == Hold::Melee { vec3(0.18, -0.17, -0.38) } else { vec3(0.15, -0.14, -0.32) };
-        let aimed = -anchors.sight + vec3(0., 0., -0.4);
+        let relief = flag_value(&args.raw, "--weapon")
+            .and_then(weapons::id_of)
+            .and_then(weapons::get)
+            .map_or(0.4, deadfall::client::render::viewmodel_eye_relief);
+        let aimed = -anchors.sight + vec3(0., 0., -relief);
         let mut place = if fp { Mat4::from_translation(hip.lerp(aimed, ads)) } else { Mat4::IDENTITY };
         if hold == Hold::Melee {
             let (offset, angles) = deadfall::client::render::melee_motion(pose.swing, args.has("--heavy"));

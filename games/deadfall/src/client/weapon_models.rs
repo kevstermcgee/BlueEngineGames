@@ -1,3 +1,5 @@
+// Authored metre dimensions may happen to resemble mathematical constants.
+#![allow(clippy::approx_constant)]
 //! Procedural 3D models of the 33 weapons, built from kit [`Template`]s in real-world metres.
 //!
 //! Weapon-local space (see [`WeaponAnchors`]): the origin is the centre of the firing hand's grip, -Z points out
@@ -43,10 +45,10 @@ impl WeaponModel {
     }
 }
 
-const KEYS: [&str; 33] = [
+const KEYS: [&str; 36] = [
     "k9", "m45", "hc50", "rv357", "mp9", "ump", "pdw", "vkr", "k47", "m4c", "fm2", "bpa", "gl4", "dmr20", "svd",
     "scout", "awm", "m82", "pump12", "auto12", "sawn", "para", "pk", "rpg", "thumper", "frag", "flash", "smoke",
-    "incen", "knife", "machete", "axe", "crowbar",
+    "incen", "knife", "machete", "axe", "crowbar", "hornet", "ranger", "breach8",
 ];
 
 /// All 33 roster keys, in roster order.
@@ -90,8 +92,65 @@ pub fn build(key: &str) -> Option<WeaponModel> {
         "machete" => machete(),
         "axe" => axe(),
         "crowbar" => crowbar(),
+        "hornet" => hornet(),
+        "ranger" => ranger(),
+        "breach8" => breach8(),
         _ => return None,
     })
+}
+
+// Familiar manufacturing forms, with distinct furniture and hardware; grip/sight anchors stay calibrated.
+fn hornet() -> WeaponModel {
+    let mut m = k9();
+    let mut detail = M::new();
+    // A vented compensator continues the bore without covering the iron-sight axis.
+    detail.rbx([-0.014, 0.014], [0.043, 0.070], [-0.218, -0.173], 0.004, [0.16, 0.19, 0.21]);
+    detail.bore(0., 0.0565, -0.2185, 0.005);
+    for z in [-0.206, -0.190] {
+        detail.bx([-0.006, 0.006], [0.069, 0.071], [z - 0.002, z + 0.002], GROOVE);
+    }
+    detail.rbx([0.014, 0.017], [0.029, 0.041], [-0.026, -0.010], 0.001, BRASS);
+    m.body.append(&detail.t);
+    m.anchors.muzzle.z = -0.219;
+    m.length = 0.30;
+    m
+}
+fn ranger() -> WeaponModel {
+    let mut m = scout();
+    let mut detail = M::new();
+    // Walnut furniture and an open metal lever loop keep the profile readable from either side.
+    for vertex in &mut m.body.verts {
+        if vertex.c == [0.17, 0.19, 0.15] {
+            vertex.c = WOOD;
+        }
+        if vertex.c == [0.11, 0.125, 0.10] {
+            vertex.c = WOOD_D;
+        }
+    }
+    detail.sweep(
+        &[
+            vec3(0., -0.01, -0.035),
+            vec3(0., -0.065, -0.035),
+            vec3(0., -0.09, 0.02),
+            vec3(0., -0.09, 0.075),
+            vec3(0., -0.035, 0.075),
+            vec3(0., -0.01, 0.035),
+        ],
+        Vec3::X,
+        [0.005; 2],
+        [0.004; 2],
+        true,
+        [0.43, 0.33, 0.19],
+    );
+    detail.rbx([0.018, 0.021], [0.035, 0.060], [-0.074, 0.060], 0.002, BRASS);
+    m.body.append(&detail.t);
+    m
+}
+fn breach8() -> WeaponModel {
+    let mut m = auto12();
+    m.body.box_(vec3(0., 0.095, -0.04), vec3(0.023, 0.018, 0.033), [0.12, 0.14, 0.16], 0.);
+    m.body.box_(vec3(0.029, 0.04, -0.19), vec3(0.003, 0.008, 0.055), [0.83, 0.55, 0.18], 0.);
+    m
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -306,8 +365,7 @@ fn loft_mesh(secs: &[Sec], ring: Ring, caps: bool, col: C, glow: f32) -> Templat
     let rings: Vec<Vec<(Vec3, Vec3)>> = secs.iter().map(|s| ring_pts(s, ring, soft_t, soft_b)).collect();
     let m = rings[0].len();
     for i in 0..k {
-        for j in 0..m {
-            let (p, np) = rings[i][j];
+        for (j, &(p, np)) in rings[i].iter().enumerate() {
             let d = (rings[(i + 1).min(k - 1)][j].0 - rings[i.saturating_sub(1)][j].0).normalize_or_zero();
             let n = (np - d * np.dot(d)).normalize_or_zero();
             let n = if n == Vec3::ZERO { np } else { n };
@@ -347,8 +405,8 @@ fn loft_mesh(secs: &[Sec], ring: Ring, caps: bool, col: C, glow: f32) -> Templat
             }
             let hub = t.verts.len();
             t.verts.push(Vert { p: s.c, n: nrm, c: col, e: glow, a: 1. });
-            for j in 0..m {
-                t.verts.push(Vert { p: rings[i][j].0, n: nrm, c: col, e: glow, a: 1. });
+            for &(p, _) in &rings[i] {
+                t.verts.push(Vert { p, n: nrm, c: col, e: glow, a: 1. });
             }
             for j in 0..m {
                 tri(&mut t, hub, hub + 1 + j, hub + 1 + (j + 1) % m);
@@ -376,6 +434,7 @@ fn yz(x: f32, pts: &[(f32, f32)]) -> Vec<Vec3> {
 
 /// Points on an ellipse arc in the YZ plane: centre (cy, cz), radii (ry, rz), angles in degrees
 /// (0 = +Z, 90 = +Y).
+#[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
 fn arc_yz(x: f32, cy: f32, cz: f32, ry: f32, rz: f32, a0: f32, a1: f32, n: usize) -> Vec<Vec3> {
     (0..=n)
         .map(|i| {
@@ -3158,10 +3217,10 @@ fn crowbar() -> WeaponModel {
 mod tests {
     use super::*;
 
-    const ROSTER: [&str; 33] = [
+    const ROSTER: [&str; 36] = [
         "k9", "m45", "hc50", "rv357", "mp9", "ump", "pdw", "vkr", "k47", "m4c", "fm2", "bpa", "gl4", "dmr20", "svd",
         "scout", "awm", "m82", "pump12", "auto12", "sawn", "para", "pk", "rpg", "thumper", "frag", "flash", "smoke",
-        "incen", "knife", "machete", "axe", "crowbar",
+        "incen", "knife", "machete", "axe", "crowbar", "hornet", "ranger", "breach8",
     ];
 
     /// (key, min length, max length) in metres: the real-world size class of each weapon.
@@ -3286,8 +3345,10 @@ mod tests {
     fn support_hand_only_on_two_handed_weapons() {
         for k in keys() {
             let m = build(k).unwrap();
-            let one_handed =
-                ["k9", "m45", "hc50", "rv357", "frag", "flash", "smoke", "incen", "knife", "machete", "axe", "crowbar"];
+            let one_handed = [
+                "k9", "m45", "hc50", "rv357", "hornet", "frag", "flash", "smoke", "incen", "knife", "machete", "axe",
+                "crowbar",
+            ];
             assert_eq!(m.anchors.support.is_none(), one_handed.contains(k), "{k}");
         }
     }

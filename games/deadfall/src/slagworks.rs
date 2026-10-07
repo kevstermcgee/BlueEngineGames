@@ -317,10 +317,13 @@ impl Map {
         self.wall_z(21.2, 32.4, 45., t, 0., h, M::Concrete, &[gate(36., 40., h)]);
         // Hazard cap along the front wall top is drawn by the renderer; here the cover behind the gates.
         for (x0, x1) in [(-16., -14.), (-1., 1.), (14., 16.)] {
-            self.bx(x0, 34.6, x1, 35.2, 0., 1.1, M::Concrete);
+            self.bx(x0, 34.6, x1, 35.2, 0., 1.6, M::Concrete);
         }
         self.bx(-8., 38., -5., 38.7, 0., 1.1, M::Concrete);
         self.bx(5., 38., 8., 38.7, 0., 1.1, M::Concrete);
+        // Fast forward loadout choices in both bases; the middle rifle remains a contested reward.
+        self.loot(crate::weapons::id_of("hornet").unwrap(), -3.8, 0., 36.4);
+        self.loot(crate::weapons::id_of("breach8").unwrap(), 3.8, 0., 36.4);
         // Guard hut.
         self.shell((14., 39., 19.6, 44.4), 0.3, 0., 2.8, M::Brick, &[win(15., 16.6)], &[], &[door(40., 41.6)], &[]);
         self.roof(13.9, 38.9, 19.7, 44.5, 2.8, M::Metal);
@@ -1046,6 +1049,8 @@ pub fn build() -> Level {
     m.flip = 1.;
     m.container_centre();
     m.tank_yard();
+    m.loot(crate::weapons::id_of("ranger").unwrap(), -15., 0., 8.);
+    m.loot(crate::weapons::id_of("ranger").unwrap(), 15., 0., -8.);
     m.plaza();
     m.streets();
     m.cooling_tower(50.5, 36.5);
@@ -1235,12 +1240,12 @@ mod level_tests {
     fn counts_are_sane() {
         let l = level();
         assert!(l.blocks.len() < 900, "{} blocks", l.blocks.len());
-        assert!((40..=48).contains(&l.loot.len()), "{} loot", l.loot.len());
+        assert!((40..=64).contains(&l.loot.len()), "{} loot", l.loot.len());
         assert!((150..=900).contains(&l.decor.len()), "{} decor", l.decor.len());
         assert!(l.lights.len() >= 25 && l.ambient.len() >= 25);
         assert!(l.blocks.iter().all(|b| b.min.0 < b.max.0 && b.min.1 < b.max.1 && b.min.2 < b.max.2));
         for s in &l.loot {
-            assert!((1..=33).contains(&s.weapon));
+            assert!(crate::weapons::get(s.weapon).is_some());
             assert_eq!(s.respawn_s, if is_rare(s.weapon) { 90. } else { 45. });
         }
     }

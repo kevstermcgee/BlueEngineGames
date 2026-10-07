@@ -1144,6 +1144,60 @@ pub static WEAPONS: &[WeaponDef] = &[
         melee: Some(Melee { reach: 1.8, light: 30., heavy: 60., light_s: 0.5, heavy_s: 0.9, back_mult: 1.9 }),
         ..MELEE
     },
+    WeaponDef {
+        key: "hornet",
+        name: "Hornet Burst",
+        real: "three-round burst machine pistol",
+        slot: Slot::Secondary,
+        class: Class::Pistol,
+        fire: Fire::Burst { rounds: 3, gap_s: 0.055 },
+        damage: 22.,
+        mag: 18,
+        reserve: 72,
+        rpm: 240.,
+        recoil_up_deg: 0.7,
+        ..BASE
+    },
+    WeaponDef {
+        key: "ranger",
+        name: "Ranger Lever Rifle",
+        real: "lever-action precision rifle",
+        slot: Slot::Primary,
+        class: Class::Dmr,
+        fire: Fire::Cycle { cycle_s: 0.6 },
+        sight: Sight::Scope { zoom: 2. },
+        ads_fov: 53.13,
+        ads_s: 0.25,
+        damage: 78.,
+        mag: 8,
+        reserve: 40,
+        rpm: 0.,
+        range_m: 95.,
+        spread_deg: 1.9,
+        ads_spread_mult: 0.063,
+        reload_s: 2.6,
+        move_speed: 0.98,
+        ..BASE
+    },
+    WeaponDef {
+        key: "breach8",
+        name: "Breach-8 Slug",
+        real: "compact semi-automatic slug shotgun",
+        slot: Slot::Primary,
+        class: Class::Shotgun,
+        fire: Fire::Semi,
+        damage: 96.,
+        pellets: 1,
+        mag: 8,
+        reserve: 32,
+        rpm: 180.,
+        range_m: 45.,
+        spread_deg: 2.4,
+        ads_spread_mult: 0.125,
+        reload_s: 2.5,
+        move_speed: 0.94,
+        ..BASE
+    },
 ];
 
 /// Look a weapon up by wire id (`0` and unknown ids are `None`).
@@ -1158,7 +1212,7 @@ pub fn id_of(key: &str) -> Option<WeaponId> {
 
 /// Seconds rounded up to whole 60 Hz ticks (never below one tick for a positive duration).
 pub fn seconds_to_ticks(seconds: f32) -> u32 {
-    if !(seconds > 0.) {
+    if seconds.is_nan() || seconds <= 0. {
         return 0;
     }
     ((seconds * TICK_HZ - 1e-3).ceil().max(1.)) as u32
@@ -1287,7 +1341,7 @@ impl WeaponDef {
     /// As [`shots_to_kill`](Self::shots_to_kill) at a distance.
     pub fn shots_to_kill_at(&self, health: f32, headshot: bool, distance_m: f32) -> u32 {
         let per = self.damage_per_shot(headshot, distance_m);
-        if !(per > 0.) {
+        if per.is_nan() || per <= 0. {
             return u32::MAX;
         }
         if health <= 0. {
@@ -1395,10 +1449,10 @@ pub fn armoury_markdown() -> String {
 mod tests {
     use super::*;
 
-    const KEYS: [&str; 33] = [
+    const KEYS: [&str; 36] = [
         "k9", "m45", "hc50", "rv357", "mp9", "ump", "pdw", "vkr", "k47", "m4c", "fm2", "bpa", "gl4", "dmr20", "svd",
         "scout", "awm", "m82", "pump12", "auto12", "sawn", "para", "pk", "rpg", "thumper", "frag", "flash", "smoke",
-        "incen", "knife", "machete", "axe", "crowbar",
+        "incen", "knife", "machete", "axe", "crowbar", "hornet", "ranger", "breach8",
     ];
 
     fn w(key: &str) -> &'static WeaponDef {
@@ -1411,9 +1465,20 @@ mod tests {
 
     #[test]
     fn table_has_the_roster_in_order() {
-        assert_eq!(WEAPONS.len(), 33);
+        assert_eq!(WEAPONS.len(), 36);
         let keys: Vec<&str> = WEAPONS.iter().map(|x| x.key).collect();
         assert_eq!(keys, KEYS);
+    }
+
+    #[test]
+    fn new_weapons_have_distinct_roles_and_append_only_ids() {
+        assert_eq!((id_of("hornet"), id_of("ranger"), id_of("breach8")), (Some(34), Some(35), Some(36)));
+        assert!(matches!(w("hornet").fire, Fire::Burst { rounds: 3, .. }));
+        assert!((0.35..0.6).contains(&w("hornet").time_to_kill(100., false, 10.)));
+        assert!(w("ranger").damage > w("dmr20").damage && w("ranger").rpm < w("dmr20").rpm);
+        assert_eq!(w("breach8").pellets, 1);
+        assert!(w("breach8").range_m > w("auto12").range_m && w("breach8").ads_spread_mult < 0.2);
+        assert!(!w("breach8").shell_reload);
     }
 
     #[test]
@@ -1473,7 +1538,7 @@ mod tests {
     #[test]
     fn id_and_key_round_trip() {
         assert!(get(0).is_none());
-        assert!(get(34).is_none());
+        assert!(get(37).is_none());
         assert!(get(255).is_none());
         assert!(id_of("nope").is_none());
         for (i, x) in WEAPONS.iter().enumerate() {
@@ -1564,11 +1629,11 @@ mod tests {
         ] {
             assert!(of_class(c).count() > 0, "no {c:?}");
         }
-        assert_eq!(of_class(Class::Pistol).count(), 4);
+        assert_eq!(of_class(Class::Pistol).count(), 5);
         assert_eq!(of_class(Class::Smg).count(), 4);
         assert_eq!(of_class(Class::Grenade).count(), 4);
         assert_eq!(of_class(Class::Melee).count(), 4);
-        assert_eq!(of_class(Class::Shotgun).count(), 3);
+        assert_eq!(of_class(Class::Shotgun).count(), 4);
         assert_eq!(of_class(Class::Launcher).count(), 2);
         assert_eq!(of_class(Class::Lmg).count(), 2);
     }
@@ -1587,7 +1652,7 @@ mod tests {
             n[x.slot as usize] += 1;
         }
         // Primary, Secondary, Melee, Grenade.
-        assert_eq!(n, [21, 4, 4, 4]);
+        assert_eq!(n, [23, 5, 4, 4]);
     }
 
     #[test]
@@ -1613,7 +1678,7 @@ mod tests {
                 assert!(x.melee.is_none(), "{}", x.key);
             }
             // Only the burst gun bursts; only bolt/pump guns cycle.
-            assert_eq!(matches!(x.fire, Fire::Burst { .. }), x.key == "fm2");
+            assert_eq!(matches!(x.fire, Fire::Burst { .. }), matches!(x.key, "fm2" | "hornet"));
         }
         assert!(matches!(w("scout").fire, Fire::Cycle { .. }));
         assert!(matches!(w("awm").fire, Fire::Cycle { .. }));
@@ -1718,7 +1783,7 @@ mod tests {
                 }
                 Class::Shotgun => {
                     assert!((24..=32).contains(&x.reserve), "{}", x.key);
-                    assert_eq!(x.shell_reload, x.key != "sawn", "{}", x.key);
+                    assert_eq!(x.shell_reload, !matches!(x.key, "sawn" | "breach8"), "{}", x.key);
                 }
                 Class::Launcher => {
                     assert_eq!(x.reserve, if x.key == "rpg" { 2 } else { 6 });
@@ -1764,13 +1829,13 @@ mod tests {
         for x in of_class(Class::AssaultRifle) {
             assert!((24. ..=36.).contains(&x.damage), "{}", x.key);
         }
-        for x in of_class(Class::Dmr) {
+        for x in of_class(Class::Dmr).filter(|x| x.key != "ranger") {
             assert!((40. ..=50.).contains(&x.damage), "{}", x.key);
         }
         for x in of_class(Class::Lmg) {
             assert!((28. ..=32.).contains(&x.damage), "{}", x.key);
         }
-        for x in of_class(Class::Shotgun) {
+        for x in of_class(Class::Shotgun).filter(|x| x.key != "breach8") {
             assert!((8. ..=12.).contains(&x.damage) && (8..=9).contains(&x.pellets), "{}", x.key);
         }
         assert!((85. ..=130.).contains(&w("scout").damage));
@@ -1892,7 +1957,7 @@ mod tests {
     fn time_to_kill_bands_at_ten_metres() {
         // Seconds of shooting (first round to killing round) for a 100-health target, body shots, 10 m.
         let band = |c: Class, lo: f32, hi: f32| {
-            for x in of_class(c) {
+            for x in of_class(c).filter(|x| !matches!(x.key, "hornet" | "ranger" | "breach8")) {
                 let t = x.time_to_kill(MAX_HEALTH, false, 10.);
                 assert!(t >= lo && t <= hi, "{} ({c:?}) TTK {t:.3} s outside {lo}..{hi}", x.key);
             }
@@ -1937,7 +2002,7 @@ mod tests {
 
     #[test]
     fn shotguns_are_short_ranged_wide_and_lethal_up_close() {
-        for x in of_class(Class::Shotgun) {
+        for x in of_class(Class::Shotgun).filter(|x| x.key != "breach8") {
             assert!(x.pellets >= 8);
             assert!(x.range_m <= 16.);
             assert!(x.spread_deg >= 3.0);
@@ -2003,7 +2068,7 @@ mod tests {
     #[test]
     fn markdown_has_a_row_per_weapon() {
         let md = armoury_markdown();
-        assert_eq!(md.lines().filter(|l| l.starts_with("| ")).count(), 34);
+        assert_eq!(md.lines().filter(|l| l.starts_with("| ")).count(), 37);
         for x in WEAPONS {
             assert!(md.contains(&format!("| {} |", x.key)), "{}", x.key);
             assert!(md.contains(x.real), "{}", x.key);

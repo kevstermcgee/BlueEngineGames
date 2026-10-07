@@ -7,6 +7,8 @@ use std::net::SocketAddr;
 use std::time::Instant;
 use vesper3d::viewer::net::loopback::{LoopEnd, LoopNet};
 use vesper3d::viewer::netplay::{ClientConfig, ClientState, NetClient, NetServer, ServerConfig, Stage};
+// NetGame room settings are process-global, so fixtures in this test process must not race.
+static SETTINGS_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 fn addr(port: u16) -> SocketAddr {
     format!("10.0.0.{}:{}", port % 200 + 1, 4000 + port).parse().unwrap()
@@ -22,7 +24,7 @@ struct World {
 }
 
 fn world(latency: u64, jitter: u64, loss: f32, teams: &[u8], bots: bool) -> World {
-    set_settings(Settings { end: EndRule::Kills { target: 500 }, bots, bot_skill: 1 });
+    set_settings(Settings { end: EndRule::Kills { target: 500 }, bots, bot_skill: 1, ..Default::default() });
     let net = LoopNet::new(latency, jitter, loss, 99);
     let cfg = ServerConfig {
         participants: 12,
@@ -83,15 +85,15 @@ impl World {
                             (a.eye - m).length().partial_cmp(&(b.eye - m).length()).unwrap()
                         });
                     let eye = view.eye().unwrap_or(mine.map_or(vesper3d::math::V::ZERO, |m| m.eye));
-                    let mut input = Input { seen_tick: render.max(0.) as u16, ..Default::default() };
+                    let mut input = Input { seen_tick: deadfall::input::wrapped_tick(render), ..Default::default() };
                     if let Some(e) = enemy {
                         let d = e.eye - eye;
                         input.yaw = d.0.atan2(-d.2);
                         input.pitch = (d.1 - 0.3).atan2((d.0 * d.0 + d.2 * d.2).sqrt());
                         if d.length() > 6. {
-                            input.set_axes(if (tick / 50) % 2 == 0 { 0.5 } else { -0.5 }, 1.);
+                            input.set_axes(if (tick / 50).is_multiple_of(2) { 0.5 } else { -0.5 }, 1.);
                         }
-                        if (tick / 4) % 2 == 0 {
+                        if (tick / 4).is_multiple_of(2) {
                             input.buttons |= FIRE;
                         }
                     } else {
@@ -121,7 +123,8 @@ impl World {
 
 #[test]
 fn two_players_on_a_laggy_lossy_network_fight_and_the_predicted_body_keeps_up() {
-    let mut w = world(3, 1, 0.04, &[0, 1], false);
+    let _lock = SETTINGS_LOCK.lock().unwrap();
+    let mut w = world(3, 1, 4., &[0, 1], false);
     for _ in 0..60 * 50 {
         w.step();
     }
@@ -152,13 +155,14 @@ fn two_players_on_a_laggy_lossy_network_fight_and_the_predicted_body_keeps_up() 
 
 #[test]
 fn teams_are_balanced_to_six_a_side_and_bots_fill_the_rest_only_when_asked() {
+    let _lock = SETTINGS_LOCK.lock().unwrap();
     let mut w = world(2, 0, 0., &[0, 0, 0, 0, 0, 0, 0, 0], false);
     for _ in 0..60 * 4 {
         w.step();
     }
     let m = w.server.current().expect("the match started");
     let ironclad = m.players.iter().filter(|p| p.team == deadfall::Team::Ironclad).count();
-    assert_eq!((ironclad, m.players.len()), (6, 8), "eight humans who all chose one team end up six and two");
+    assert_eq!((ironclad, m.players.len()), (4, 8), "eight humans choosing one team are balanced four against four");
     let mut w = world(2, 0, 0., &[0, 1], true);
     for _ in 0..60 * 4 {
         w.step();
@@ -170,6 +174,7 @@ fn teams_are_balanced_to_six_a_side_and_bots_fill_the_rest_only_when_asked() {
 
 #[test]
 fn a_client_that_leaves_is_replaced_by_a_bot() {
+    let _lock = SETTINGS_LOCK.lock().unwrap();
     let mut w = world(2, 0, 0., &[0, 1], false);
     for _ in 0..60 * 4 {
         w.step();

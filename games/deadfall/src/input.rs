@@ -13,6 +13,8 @@ pub const ADS: u8 = 2;
 pub const CROUCH: u8 = 4;
 pub const WALK: u8 = 8;
 pub const JUMP: u8 = 16;
+/// Held interaction for planting and defusing; use_seq still protects pickup presses.
+pub const USE_HELD: u8 = 32;
 
 /// The most an aim may point up or down (radians).
 pub const PITCH_LIMIT: f32 = 1.5;
@@ -36,6 +38,11 @@ pub struct Input {
     /// Low 16 bits of the server tick of the newest world state this player had on screen when they acted:
     /// lag compensation rewinds other players to it.
     pub seen_tick: u16,
+}
+
+/// Low 16 bits of the displayed tick. Convert to an integer first: a direct float-to-u16 cast saturates.
+pub fn wrapped_tick(render_tick: f32) -> u16 {
+    render_tick.max(0.) as u32 as u16
 }
 
 impl Input {
@@ -84,7 +91,7 @@ impl Input {
             forward: forward.max(-127),
             yaw,
             pitch: pitch.clamp(-PITCH_LIMIT, PITCH_LIMIT),
-            buttons: r.u8()? & (FIRE | ADS | CROUCH | WALK | JUMP),
+            buttons: r.u8()? & (FIRE | ADS | CROUCH | WALK | JUMP | USE_HELD),
             reload_seq: r.u8()?,
             use_seq: r.u8()?,
             melee_seq: r.u8()?,
@@ -107,6 +114,14 @@ pub fn quantise_angles(yaw: f32, pitch: f32) -> (f32, f32) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn displayed_ticks_wrap_after_eighteen_minutes_instead_of_saturating() {
+        assert_eq!(super::wrapped_tick(65535.75), 65535);
+        assert_eq!(super::wrapped_tick(65536.), 0);
+        assert_eq!(super::wrapped_tick(65537.75), 1);
+        assert_eq!(super::wrapped_tick(131075.25), 3);
+        assert_eq!(super::wrapped_tick(-1.), 0);
+    }
     use super::*;
 
     #[test]

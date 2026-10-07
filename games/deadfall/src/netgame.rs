@@ -12,7 +12,7 @@ use vesper3d::viewer::net::codec::{Reader, WireError, WireResult, Writer};
 use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat, SettingKind, SettingSpec};
 
 /// Bump when any layout or rule both sides must agree on changes (the fingerprint folds it in).
-pub const PROTOCOL: u32 = 1;
+pub const PROTOCOL: u32 = 2;
 /// Remote players are drawn this far in the past so there is always a snapshot to interpolate to (seconds).
 pub const INTERP_DELAY: f32 = 0.1;
 /// How much history a client keeps, for the killcam (seconds).
@@ -37,14 +37,15 @@ pub mod flag {
 pub struct PlayerView {
     pub slot: u8,
     pub flags: u8,
+    pub appearance: u8,
     /// The eye.
     pub eye: V,
     pub yaw: f32,
     pub pitch: f32,
     pub health: u8,
     pub weapon: u8,
-    pub kills: u8,
-    pub deaths: u8,
+    pub kills: u16,
+    pub deaths: u16,
     /// Floor height under the player (for the body model).
     pub feet: f32,
 }
@@ -99,6 +100,11 @@ pub struct DroppedView {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
     pub tick: u32,
+    pub map: crate::maps::MapId,
+    pub mode: crate::modes::GameMode,
+    pub objective: crate::modes::Objectives,
+    pub objective_target: u16,
+    pub winner_slot: u8,
     /// 0 live, 1 over.
     pub over: bool,
     /// 0 Ironclad, 1 Nightwatch, 2 draw (meaningful when over).
@@ -265,8 +271,27 @@ fn r_ctrl(r: &mut Reader) -> WireResult<ControllerState> {
 }
 
 impl Snapshot {
-    pub fn write(&self, w: &mut Writer) {
+    fn write_required(&self, w: &mut Writer) {
         w.u32(self.tick);
+        w.u8(self.map as u8);
+        w.u8(self.mode as u8);
+        w.u16(self.objective_target);
+        w.u8(self.winner_slot);
+        let o = self.objective;
+        for f in o.flags {
+            w_pos(w, f.pos);
+            w.u8(f.carrier);
+            w.u32(f.dropped_at);
+        }
+        w.u16(o.round);
+        w.u8(o.phase);
+        w.u32(o.deadline);
+        w_pos(w, o.bomb);
+        w.u8(o.carrier);
+        w.u8(o.site);
+        w.u8(o.actor);
+        w.u16(o.progress);
+        w.u8(o.winner);
         w.u8(self.over as u8 | self.winner << 1);
         w.u16(self.scores[0]);
         w.u16(self.scores[1]);
@@ -276,14 +301,15 @@ impl Snapshot {
         for p in &self.players {
             w.u8(p.slot);
             w.u8(p.flags);
+            w.u8(p.appearance);
             w_pos(w, p.eye);
             w_pos(w, V(p.feet, 0., 0.));
             w_angle(w, p.yaw);
             w_pitch(w, p.pitch);
             w.u8(p.health);
             w.u8(p.weapon);
-            w.u8(p.kills);
-            w.u8(p.deaths);
+            w.u16(p.kills);
+            w.u16(p.deaths);
         }
         match &self.me {
             None => w.u8(0),
@@ -307,6 +333,9 @@ impl Snapshot {
                 w.u8(o.alive as u8);
             }
         }
+    }
+    pub fn write(&self, w: &mut Writer) {
+        self.write_required(w);
         w.u8(self.projectiles.len().min(24) as u8);
         for p in self.projectiles.iter().take(24) {
             w.u16(p.id);
@@ -329,8 +358,53 @@ impl Snapshot {
         }
     }
 
+    pub fn fit_budget(&mut self, max_bytes: usize) {
+        let mut required = Writer::new();
+        self.write_required(&mut required);
+        // Each optional world object uses nine bytes, with eleven bytes of counts and loot state.
+        let mut room = max_bytes.saturating_sub(required.len() + 11) / 9;
+        self.projectiles.truncate(room.min(24));
+        room = room.saturating_sub(self.projectiles.len());
+        self.zones.truncate(room.min(12));
+        room = room.saturating_sub(self.zones.len());
+        self.dropped.truncate(room.min(24));
+    }
     pub fn read(r: &mut Reader) -> WireResult<Snapshot> {
         let tick = r.u32()?;
+        let map_id = r.u8()?;
+        let mode_id = r.u8()?;
+        if map_id > 2 || mode_id > 3 {
+            return Err(WireError("invalid map or mode"));
+        }
+        let map = crate::maps::MapId::from_id(map_id);
+        let mode = crate::modes::GameMode::from_id(mode_id);
+        let objective_target = r.u16()?;
+        let winner_slot = r.u8()?;
+        let mut objective = crate::modes::Objectives::new(map.bases());
+        for f in &mut objective.flags {
+            f.pos = r_pos(r)?;
+            f.carrier = r.u8()?;
+            f.dropped_at = r.u32()?;
+            if f.carrier != 255 && f.carrier as usize >= MAX_PLAYERS {
+                return Err(WireError("flag carrier"));
+            }
+        }
+        objective.round = r.u16()?;
+        objective.phase = r.u8()?;
+        objective.deadline = r.u32()?;
+        objective.bomb = r_pos(r)?;
+        objective.carrier = r.u8()?;
+        objective.site = r.u8()?;
+        objective.actor = r.u8()?;
+        objective.progress = r.u16()?;
+        objective.winner = r.u8()?;
+        if objective.phase > 3
+            || objective.carrier != 255 && objective.carrier as usize >= MAX_PLAYERS
+            || objective.actor != 255 && objective.actor as usize >= MAX_PLAYERS
+            || objective.site != 255 && objective.site > 1
+        {
+            return Err(WireError("invalid objective"));
+        }
         let bits = r.u8()?;
         let scores = [r.u16()?, r.u16()?];
         let tl = r.u16()?;
@@ -343,6 +417,7 @@ impl Snapshot {
         for _ in 0..n {
             let slot = r.u8()?;
             let flags = r.u8()?;
+            let appearance = r.u8()? & 31;
             let eye = r_pos(r)?;
             let feet = r_pos(r)?.0;
             let yaw = r_angle(r)?;
@@ -350,14 +425,15 @@ impl Snapshot {
             players.push(PlayerView {
                 slot,
                 flags,
+                appearance,
                 eye,
                 feet,
                 yaw,
                 pitch,
                 health: r.u8()?,
                 weapon: r.u8()?,
-                kills: r.u8()?,
-                deaths: r.u8()?,
+                kills: r.u16()?,
+                deaths: r.u16()?,
             });
         }
         let me = if r.u8()? == 1 {
@@ -405,6 +481,11 @@ impl Snapshot {
         }
         Ok(Snapshot {
             tick,
+            map,
+            mode,
+            objective,
+            objective_target,
+            winner_slot,
             over: bits & 1 != 0,
             winner: (bits >> 1).min(2),
             scores,
@@ -566,27 +647,129 @@ pub fn fingerprint() -> u32 {
             for b in w.key.bytes() {
                 mix(b as u32);
             }
-            for f in [w.damage, w.rpm, w.range_m, w.reload_s, w.spread_deg, w.move_speed, w.blast_damage] {
+            for f in [
+                w.damage,
+                w.head_mult,
+                w.armor_pen,
+                w.far_fraction,
+                w.rpm,
+                w.range_m,
+                w.reload_s,
+                w.spread_deg,
+                w.move_spread_deg,
+                w.ads_spread_mult,
+                w.recoil_up_deg,
+                w.recoil_side_deg,
+                w.recoil_recover,
+                w.move_speed,
+                w.draw_s,
+                w.ads_fov,
+                w.ads_s,
+                w.blast_damage,
+            ] {
                 mix(f.to_bits());
+            }
+            mix(w.class as u32);
+            mix(w.slot as u32);
+            mix(w.shell_reload as u32);
+            mix(w.pellets as u32);
+            match w.fire {
+                weapons::Fire::Semi => mix(0),
+                weapons::Fire::Auto => mix(1),
+                weapons::Fire::Burst { rounds, gap_s } => {
+                    mix(2);
+                    mix(rounds as u32);
+                    mix(gap_s.to_bits());
+                }
+                weapons::Fire::Cycle { cycle_s } => {
+                    mix(3);
+                    mix(cycle_s.to_bits());
+                }
+                weapons::Fire::Throw => mix(4),
+                weapons::Fire::Swing => mix(5),
+            }
+            match w.sight {
+                weapons::Sight::Iron => mix(0),
+                weapons::Sight::Dot => mix(1),
+                weapons::Sight::Scope { zoom } => {
+                    mix(2);
+                    mix(zoom.to_bits());
+                }
+                weapons::Sight::None => mix(3),
+            }
+            if let Some(p) = w.projectile {
+                mix(1);
+                for f in [p.speed, p.gravity, p.fuse_s] {
+                    mix(f.to_bits());
+                }
+                mix(p.bounces as u32);
+                match p.effect {
+                    weapons::Effect::Explosion { radius } => {
+                        mix(0);
+                        mix(radius.to_bits());
+                    }
+                    weapons::Effect::Flash { radius, blind_s } => {
+                        mix(1);
+                        mix(radius.to_bits());
+                        mix(blind_s.to_bits());
+                    }
+                    weapons::Effect::Smoke { radius, seconds } => {
+                        mix(2);
+                        mix(radius.to_bits());
+                        mix(seconds.to_bits());
+                    }
+                    weapons::Effect::Fire { radius, seconds } => {
+                        mix(3);
+                        mix(radius.to_bits());
+                        mix(seconds.to_bits());
+                    }
+                }
+            } else {
+                mix(0);
+            }
+            if let Some(m) = w.melee {
+                mix(1);
+                for f in [m.reach, m.light, m.heavy, m.light_s, m.heavy_s, m.back_mult] {
+                    mix(f.to_bits());
+                }
+            } else {
+                mix(0);
             }
             mix(w.mag as u32);
             mix(w.reserve as u32);
         }
-        let world = sim::world();
-        mix(world.level.blocks.len() as u32);
-        for b in &world.level.blocks {
-            for f in [b.min.0, b.min.1, b.min.2, b.max.0, b.max.1, b.max.2] {
-                mix(f.to_bits());
+        for map in crate::maps::MapId::ALL {
+            let world = map.level();
+            mix(world.blocks.len() as u32);
+            for b in &world.blocks {
+                mix(b.material as u32);
+                for f in [b.min.0, b.min.1, b.min.2, b.max.0, b.max.1, b.max.2] {
+                    mix(f.to_bits());
+                }
+            }
+            for t in 0..2 {
+                for s in &world.spawns[t] {
+                    mix(s.pos.0.to_bits());
+                    mix(s.pos.1.to_bits());
+                    mix(s.pos.2.to_bits());
+                    mix(s.yaw.to_bits());
+                }
+            }
+            for l in &world.loot {
+                mix(l.weapon as u32);
+                for f in [l.pos.0, l.pos.1, l.pos.2, l.respawn_s] {
+                    mix(f.to_bits());
+                }
+            }
+            for p in map.bases().into_iter().chain(map.sites()) {
+                for f in [p.0, p.1, p.2] {
+                    mix(f.to_bits());
+                }
             }
         }
-        for t in 0..2 {
-            for s in &world.level.spawns[t] {
-                mix(s.pos.0.to_bits());
-                mix(s.pos.2.to_bits());
-            }
-        }
-        for l in &world.level.loot {
-            mix(l.weapon as u32);
+        let profile = sim::profile();
+        for f in [profile.walk_speed, profile.jump_height, profile.crouch_speed, sim::KILLCAM_SECONDS, sim::GRAVITY] {
+            mix(f.to_bits());
         }
         h
     })
@@ -602,8 +785,23 @@ impl NetGame for DeadfallGame {
     const NAME: &'static str = "deadfall";
     const MAX_SEATS: usize = MAX_PLAYERS;
     /// The lobby choice is the team: 0 Ironclad, 1 Nightwatch.
-    const CHOICES: u8 = 2;
+    const CHOICES: u8 = 32;
     const UNIQUE_CHOICES: bool = false;
+    const RELIABLE_EVENTS: bool = true;
+    fn lobby_capacity() -> usize {
+        if sim::settings().duel {
+            2
+        } else {
+            MAX_PLAYERS
+        }
+    }
+    fn minimum_players() -> usize {
+        if sim::settings().bots && !sim::settings().duel {
+            1
+        } else {
+            2
+        }
+    }
 
     fn fingerprint() -> u32 {
         fingerprint()
@@ -652,6 +850,11 @@ impl NetGame for DeadfallGame {
     fn snapshot(m: &Match, participant: Option<usize>) -> Snapshot {
         snapshot_of(m, participant)
     }
+    fn snapshot_with_budget(m: &Match, participant: Option<usize>, max_bytes: usize) -> Snapshot {
+        let mut s = snapshot_of(m, participant);
+        s.fit_budget(max_bytes);
+        s
+    }
     fn is_over(m: &Match) -> bool {
         m.is_over()
     }
@@ -659,6 +862,7 @@ impl NetGame for DeadfallGame {
         serde_json::json!({
             "game": "deadfall",
             "ticks": m.tick,
+            "map":m.settings.map.name(),"mode":m.settings.mode.name(),"duel":m.settings.duel,"rounds":m.objective.round,"winner_slot":m.winner_slot,
             "scores": m.scores,
             "winner": match m.phase { Phase::Over { winner: Some(t), .. } => t.name(), _ => "draw" },
             "players": m.players.iter().map(|p| serde_json::json!({
@@ -695,13 +899,14 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
             PlayerView {
                 slot: p.slot as u8,
                 flags,
+                appearance: p.appearance,
                 eye: p.eye(),
                 yaw: p.ctrl.yaw,
                 pitch: p.ctrl.pitch,
                 health: p.health.round().clamp(0., 255.) as u8,
                 weapon: p.weapon(),
-                kills: p.kills.min(255) as u8,
-                deaths: p.deaths.min(255) as u8,
+                kills: p.kills,
+                deaths: p.deaths,
                 feet: p.ctrl.feet_height(),
             }
         })
@@ -735,8 +940,14 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
             loot |= 1 << i;
         }
     }
-    Snapshot {
+    let eye = participant.and_then(|p| m.players.get(p)).map_or(V::ZERO, |p| p.eye());
+    let mut result = Snapshot {
         tick: m.tick,
+        map: m.settings.map,
+        mode: m.settings.mode,
+        objective: m.objective,
+        objective_target: m.settings.objective_target,
+        winner_slot: m.winner_slot,
         over: matches!(m.phase, Phase::Over { .. }),
         winner: match m.phase {
             Phase::Over { winner: Some(t), .. } => t.index() as u8,
@@ -763,7 +974,11 @@ pub fn snapshot_of(m: &Match, participant: Option<usize>) -> Snapshot {
             .collect(),
         loot,
         dropped: m.dropped.iter().map(|d| DroppedView { id: d.id, weapon: d.gun.id, pos: d.pos }).collect(),
-    }
+    };
+    result.projectiles.sort_by(|a, b| (a.pos - eye).length().total_cmp(&(b.pos - eye).length()));
+    result.zones.sort_by(|a, b| (a.pos - eye).length().total_cmp(&(b.pos - eye).length()));
+    result.dropped.sort_by(|a, b| (a.pos - eye).length().total_cmp(&(b.pos - eye).length()));
+    result
 }
 
 // ---- what a client keeps ------------------------------------------------------------------------------------------
@@ -795,6 +1010,7 @@ pub struct DeadfallView {
     previous_eye: Option<V>,
     /// Effects received with each snapshot, retained alongside the killcam world history.
     pub replay_events: VecDeque<(u32, Event)>,
+    server_tick_offset: Option<u32>,
     pub hands: Hands,
     pub inv: Inventory,
     pub own: Option<OwnView>,
@@ -875,6 +1091,20 @@ impl DeadfallView {
             .map(|b| self.previous_eye.unwrap_or(b.position).lerp(b.position, fraction.clamp(0., 1.)) + self.error)
     }
 
+    pub fn remember_timed_events(&mut self, server_tick: u32, events: &[(u32, Event)]) {
+        let game_tick = self.latest().map_or(0, |s| s.snap.tick);
+        let measured = server_tick.saturating_sub(game_tick);
+        let offset = *self.server_tick_offset.get_or_insert(measured);
+        let offset = offset.min(measured);
+        self.server_tick_offset = Some(offset);
+        for (tick, e) in events {
+            self.replay_events.push_back((tick.saturating_sub(offset), e.clone()));
+        }
+        let cutoff = game_tick.saturating_sub((HISTORY_SECONDS * 60.) as u32);
+        while self.replay_events.front().is_some_and(|(t, _)| *t < cutoff) {
+            self.replay_events.pop_front();
+        }
+    }
     pub fn remember_events(&mut self, events: &[Event]) {
         let tick = self.latest().map_or(0, |s| s.snap.tick);
         self.replay_events.extend(events.iter().cloned().map(|e| (tick, e)));
@@ -885,7 +1115,7 @@ impl DeadfallView {
     }
 
     fn apply_input(&mut self, input: &Input, emit: bool) {
-        let world = sim::world();
+        let world = sim::world_on(self.latest().map_or(crate::maps::MapId::Slagworks, |s| s.snap.map));
         let Some(body) = self.body.as_mut() else { return };
         self.previous_eye = Some(body.position);
         let speed = weapons::get(self.inv.id_in(self.hands.sel)).map_or(1., |d| d.move_speed);
@@ -941,6 +1171,7 @@ impl ClientView<DeadfallGame> for DeadfallView {
             body: None,
             previous_eye: None,
             replay_events: VecDeque::new(),
+            server_tick_offset: None,
             hands: Hands::default(),
             inv: Inventory::default(),
             own: None,
@@ -968,7 +1199,12 @@ impl ClientView<DeadfallGame> for DeadfallView {
             self.own = None;
             return;
         };
-        let before = self.body.as_ref().map(|b| b.position);
+        let respawned = own.alive && self.own.as_ref().is_none_or(|old| !old.alive || old.died_tick != own.died_tick);
+        let before = if respawned { None } else { self.body.as_ref().map(|b| b.position) };
+        if respawned {
+            self.error = V::ZERO;
+            self.previous_eye = Some(own.ctrl.position);
+        }
         let previous_eye = self.previous_eye;
         let body = self.body.get_or_insert_with(|| sim::new_body(V::ZERO, 0.));
         body.restore_network_state(&own.ctrl);
@@ -1045,14 +1281,54 @@ pub const SETTING_BOTS: u8 = 1;
 pub const SETTING_KILLS: u8 = 2;
 pub const SETTING_SKILL: u8 = 3;
 pub const SETTING_MINUTES: u8 = 4;
+pub const SETTING_MODE: u8 = 5;
+pub const SETTING_MAP: u8 = 6;
+pub const SETTING_DUEL: u8 = 7;
+pub const SETTING_OBJECTIVE: u8 = 8;
 
 /// What a room may be asked for: `--bots`, `--kills N`, `--skill N`, `--minutes N` on `deadfall-server`, or
 /// `--set ID=VALUE` from a hub.
 pub static SETTINGS: &[SettingSpec] = &[
     SettingSpec { id: SETTING_BOTS, name: "bots", flag: "bots", kind: SettingKind::Bool, min: 0, max: 1, default: 0 },
-    SettingSpec { id: SETTING_KILLS, name: "kills", flag: "kills", kind: SettingKind::Int, min: 1, max: 500, default: 40 },
-    SettingSpec { id: SETTING_SKILL, name: "skill", flag: "skill", kind: SettingKind::Choice, min: 0, max: 2, default: 1 },
-    SettingSpec { id: SETTING_MINUTES, name: "minutes", flag: "minutes", kind: SettingKind::Int, min: 0, max: 60, default: 0 },
+    SettingSpec {
+        id: SETTING_KILLS,
+        name: "kills",
+        flag: "kills",
+        kind: SettingKind::Int,
+        min: 1,
+        max: 500,
+        default: 40,
+    },
+    SettingSpec {
+        id: SETTING_SKILL,
+        name: "skill",
+        flag: "skill",
+        kind: SettingKind::Choice,
+        min: 0,
+        max: 2,
+        default: 1,
+    },
+    SettingSpec {
+        id: SETTING_MINUTES,
+        name: "minutes",
+        flag: "minutes",
+        kind: SettingKind::Int,
+        min: 0,
+        max: 60,
+        default: 0,
+    },
+    SettingSpec { id: SETTING_MODE, name: "mode", flag: "mode", kind: SettingKind::Choice, min: 0, max: 3, default: 0 },
+    SettingSpec { id: SETTING_MAP, name: "map", flag: "map", kind: SettingKind::Choice, min: 0, max: 2, default: 0 },
+    SettingSpec { id: SETTING_DUEL, name: "duel", flag: "duel", kind: SettingKind::Bool, min: 0, max: 1, default: 0 },
+    SettingSpec {
+        id: SETTING_OBJECTIVE,
+        name: "objective",
+        flag: "objective",
+        kind: SettingKind::Int,
+        min: 1,
+        max: 20,
+        default: 3,
+    },
 ];
 
 /// The match [`Settings`] for the `(id, value)` pairs a server was started with (a missing id takes its default).
@@ -1077,8 +1353,12 @@ pub fn settings_from(values: &[(u8, u32)]) -> Result<Settings, String> {
         } else {
             sim::EndRule::Kills { target: get(SETTING_KILLS)? as u16 }
         },
-        bots: get(SETTING_BOTS)? != 0,
+        bots: get(SETTING_BOTS)? != 0 && get(SETTING_DUEL)? == 0,
         bot_skill: get(SETTING_SKILL)? as u8,
+        mode: crate::modes::GameMode::from_id(get(SETTING_MODE)? as u8),
+        map: crate::maps::MapId::from_id(get(SETTING_MAP)? as u8),
+        duel: get(SETTING_DUEL)? != 0,
+        objective_target: get(SETTING_OBJECTIVE)? as u16,
     })
 }
 
@@ -1088,7 +1368,23 @@ pub fn describe(s: &Settings) -> String {
         sim::EndRule::Time { minutes } => format!("{minutes} minutes"),
         sim::EndRule::Kills { target } => format!("first to {target} kills"),
     };
-    format!("{end}{}", if s.bots { ", bots fill the teams" } else { "" })
+    format!(
+        "{} / {} / {}{}",
+        s.map.name(),
+        s.mode.name(),
+        if s.mode == crate::modes::GameMode::CaptureFlag || s.mode == crate::modes::GameMode::SearchDestroy {
+            format!("first to {}", s.objective_target)
+        } else {
+            end
+        },
+        if s.duel {
+            " / 1v1"
+        } else if s.bots {
+            " / bots"
+        } else {
+            ""
+        }
+    )
 }
 
 #[cfg(test)]
@@ -1105,6 +1401,10 @@ mod tests {
                 (2, "kills", "kills", SettingKind::Int, 1, 500, 40),
                 (3, "skill", "skill", SettingKind::Choice, 0, 2, 1),
                 (4, "minutes", "minutes", SettingKind::Int, 0, 60, 0),
+                (5, "mode", "mode", SettingKind::Choice, 0, 3, 0),
+                (6, "map", "map", SettingKind::Choice, 0, 2, 0),
+                (7, "duel", "duel", SettingKind::Bool, 0, 1, 0),
+                (8, "objective", "objective", SettingKind::Int, 1, 20, 3),
             ]
         );
         assert_eq!(settings_from(&[]), Ok(Settings::default()), "no values means the old server's defaults");
@@ -1114,7 +1414,11 @@ mod tests {
         assert_eq!(s.end, sim::EndRule::Time { minutes: 10 }, "minutes win over kills");
         assert_eq!(settings_from(&[(4, 0), (2, 7)]).unwrap().end, sim::EndRule::Kills { target: 7 });
         assert!(settings_from(&[(2, 0)]).is_err() && settings_from(&[(2, 501)]).is_err());
-        assert!(settings_from(&[(3, 3)]).is_err() && settings_from(&[(4, 61)]).is_err() && settings_from(&[(9, 1)]).is_err());
+        assert!(
+            settings_from(&[(3, 3)]).is_err()
+                && settings_from(&[(4, 61)]).is_err()
+                && settings_from(&[(9, 1)]).is_err()
+        );
     }
 
     /// The join fingerprint of the shipped clients and the deployed server. A change to a weapon number, the map or
@@ -1122,7 +1426,7 @@ mod tests {
     /// accept that the next release is a breaking one and update the pin on purpose.
     #[test]
     fn the_join_fingerprint_is_pinned() {
-        assert_eq!(fingerprint(), 0x2BAF_E9C8, "netgame::fingerprint() changed");
+        assert_eq!(fingerprint(), 0x92E9DA56, "netgame::fingerprint() changed");
         assert_eq!(<DeadfallGame as NetGame>::fingerprint(), fingerprint());
     }
 
@@ -1202,12 +1506,38 @@ mod tests {
         assert!((back.players[3].eye - s.players[3].eye).length() < 0.03);
         // The worst case: twelve players, full inventory, 24 projectiles, 12 zones, 24 dropped weapons.
         let mut big = s.clone();
+        for p in &mut big.players {
+            p.kills = 500;
+            p.deaths = 500;
+        }
         big.projectiles = vec![ProjView { id: 1, weapon: 26, pos: V(1., 1., 1.) }; 24];
         big.zones = vec![ZoneView { kind: 0, pos: V(1., 1., 1.), radius: 5., seconds_left: 10. }; 12];
         big.dropped = vec![DroppedView { id: 1, weapon: 9, pos: V(1., 0., 1.) }; 24];
         let mut w = Writer::new();
         big.write(&mut w);
-        assert!(w.len() < 900, "the largest snapshot is {} bytes; a datagram holds 1200 with events", w.len());
+        assert!(
+            w.len() + 29 + 18 <= vesper3d::viewer::net::MAX_PACKET_BYTES,
+            "snapshot plus authenticated state framing is {} bytes",
+            w.len() + 47
+        );
+        for budget in [600, 750, 900, 1055] {
+            let mut bounded = big.clone();
+            bounded.fit_budget(budget);
+            let mut w = Writer::new();
+            bounded.write(&mut w);
+            assert!(w.len() <= budget, "{} > {budget}", w.len());
+            let back = Snapshot::read(&mut Reader::new(w.as_slice())).unwrap();
+            assert_eq!(back.players.len(), big.players.len());
+            for (a, b) in back.players.iter().zip(&big.players) {
+                assert_eq!(
+                    (a.slot, a.flags, a.appearance, a.kills, a.deaths),
+                    (b.slot, b.flags, b.appearance, b.kills, b.deaths)
+                );
+                assert!((a.eye - b.eye).length() < 0.03);
+            }
+            assert_eq!(back.objective, big.objective);
+            assert_eq!(back.me.as_ref().unwrap().inv, big.me.as_ref().unwrap().inv);
+        }
     }
 
     #[test]

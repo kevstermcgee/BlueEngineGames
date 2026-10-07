@@ -1,20 +1,20 @@
 # Deadfall: guide for the next person (or agent) to touch it
 
-Deadfall is a six-versus-six team deathmatch shooter on BlueEngine, built with the engine's `netplay` kit. Read
+Deadfall is a two-to-twelve-player shooter with four modes and three maps on BlueEngine, built with the engine's `netplay` kit. Read
 `DESIGN.md` (the brief and the weapon roster) and `README.md` (how it plays) first.
 
 ## Layout
-* `src/lib.rs`: the game as a plain library, no window. `weapons` (the 33-weapon armoury), `hands` (the per-player weapon state
+* `src/lib.rs`: the game as a plain library, no window. `weapons` (the 36-weapon armoury), `hands` (the per-player weapon state
   machine: fire, reload, ADS, grenades, melee; shared by the server and the predicting client), `sim` (the authoritative
   match), `bots` + `nav` (computer players on a 3D walkable graph), `netgame` (wire layouts, the `NetGame` impl, the client
-  view with prediction and the killcam history), `slagworks` (the map as boxes, spawns, loot, decor), `stats` and `prefs`.
+  view with prediction and the killcam history), `maps` + `slagworks` (three maps as boxes, spawns, loot, decor), `modes` (authoritative flag/bomb rules), `stats` and `prefs`.
 * `src/client/`: the window (feature `client`): `app` (screens and the frame loop), `render`, `level_view`, `character`, `arms`,
   `weapon_models`, `overlay` (HUD), `ui` (menus, text fields with paste), `online` (Play Online: Deadfall's side of the engine's hub client,
   `netplay::hub::client`: build id and `DEADFALL_FAKE_BUILD`, strings, `visible_rows`; the state machine and rules are the engine's), `controls`, `sound` + `audio` (all sound is synthesised).
 * Binaries: `deadfall` (the game), `deadfall-server` (headless dedicated server: `netplay::cli::serve::<DeadfallGame>`, nothing hand-rolled),
   `preview*` and `audio_dump` (look at one thing). There is no Deadfall hub any more: rooms are listed and started by the engine's
   shared `be2-hub` (ADR 0037), which runs `deadfall-server` once per room (see `deploy/README.md`).
-* Room settings are `netgame::SETTINGS` (ids 1 `bots`, 2 `kills`, 3 `skill`, 4 `minutes`): ids are on the hub's wire and in its registry, so never
+* Room settings are `netgame::SETTINGS` (ids 1 `bots`, 2 `kills`, 3 `skill`, 4 `minutes`, 5 `mode`, 6 `map`, 7 `duel`, 8 `objective`): ids are on the hub's wire and in its registry, so never
   renumber or reuse one, and keep the names `bots` and `kills`, which the hub's legacy adapter maps the old clients' Create request to.
   `NetGame::configure` turns them into `sim::Settings` (the process-global; one process per room).
 
@@ -32,7 +32,7 @@ Deadfall is a six-versus-six team deathmatch shooter on BlueEngine, built with t
   engine's `kit::Shadows`: Simple draws a blob under each soldier and loot item (ground from the level's block tops), Full adds
   one shadow pass of the same batches. `LevelScene::solid` and `decor` cast; `LevelScene::ground` (the slabs, ground cover and far
   scenery) only receives. Casting meshes are sorted into 20 m cells (`level_view::Grid`) so the pass can skip those outside the box.
-* Gameplay keys are read straight from macroquad in `controls.rs`: the engine's `ClientInput` tracks only a fixed list of keys on Windows.
+* Gameplay keys use the engine's current native `ClientInput` in `controls.rs`; focus loss clears movement, fire and held interactions.
 
 ## Looking at it without a screen
 `xvfb-run` plus `deadfall --solo --capture DIR --frames 200,600 --mute` saves screenshots; `--script "ads:100-300,fire:150-200,slot1@10,accept@400"`
@@ -52,5 +52,5 @@ without a moving match.
 ## Tests
 `cargo test` runs the armoury checks, combat rules, 12-bot soaks, an online match on a lossy simulated network and a 20-second
 match over real UDP sockets. They need no window. `tests/engine_hub.rs` runs the engine's `be2-hub` binary with the real `deadfall-server`
-on loopback (BEHB, the old DFHB v1 with a hand-written copy of the shipped codec, and two real clients joining); it skips with a message
+on loopback (BEHB, the old DFHB v1 with a hand-written copy of the shipped codec, and two real clients joining); it is mandatory in CI or when BE2_HUB is set; local runs skip with a message
 when `be2-hub` is not built (set `BE2_HUB=/path/to/be2-hub` or build it into `~/.cache/be-engine-target`).

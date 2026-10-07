@@ -20,11 +20,24 @@ fn stand_on_loot(m: &mut Match, slot: usize, i: usize) {
 
 fn idle(m: &Match, slot: usize, use_press: bool) -> Input {
     let s = m.players[slot].hands.seen;
-    Input { yaw: m.players[slot].ctrl.yaw, use_seq: s.use_.wrapping_add(use_press as u8), reload_seq: s.reload, melee_seq: s.melee, drop_seq: s.drop, switch_seq: s.switch, ..Default::default() }
+    Input {
+        yaw: m.players[slot].ctrl.yaw,
+        use_seq: s.use_.wrapping_add(use_press as u8),
+        reload_seq: s.reload,
+        melee_seq: s.melee,
+        drop_seq: s.drop,
+        switch_seq: s.switch,
+        ..Default::default()
+    }
 }
 
 fn first_loot_of(m: &Match, slot: Slot) -> usize {
-    m.world.level.loot.iter().position(|l| weapons::get(l.weapon).is_some_and(|d| d.slot == slot)).expect("the map has one")
+    m.world
+        .level
+        .loot
+        .iter()
+        .position(|l| weapons::get(l.weapon).is_some_and(|d| d.slot == slot))
+        .expect("the map has one")
 }
 
 fn step(m: &mut Match, press: bool) {
@@ -51,10 +64,16 @@ fn walking_over_a_primary_fills_the_empty_slot_with_a_full_gun() {
 #[test]
 fn a_second_primary_needs_e_and_drops_the_first_with_its_ammunition() {
     let mut m = match_with_one_player();
-    let mut primaries = (0..m.world.level.loot.len()).filter(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Primary));
-    let (a, b) = (primaries.next().unwrap(), primaries.find(|i| m.world.level.loot[*i].weapon != m.world.level.loot[a_id(&m)].weapon).unwrap());
+    let mut primaries = (0..m.world.level.loot.len())
+        .filter(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Primary));
+    let (a, b) = (
+        primaries.next().unwrap(),
+        primaries.find(|i| m.world.level.loot[*i].weapon != m.world.level.loot[a_id(&m)].weapon).unwrap(),
+    );
     fn a_id(m: &Match) -> usize {
-        (0..m.world.level.loot.len()).find(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Primary)).unwrap()
+        (0..m.world.level.loot.len())
+            .find(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Primary))
+            .unwrap()
     }
     stand_on_loot(&mut m, 0, a);
     step(&mut m, false);
@@ -73,7 +92,9 @@ fn a_second_primary_needs_e_and_drops_the_first_with_its_ammunition() {
 #[test]
 fn at_most_two_grenades_and_a_dead_player_drops_what_they_carried() {
     let mut m = match_with_one_player();
-    let grenades: Vec<usize> = (0..m.world.level.loot.len()).filter(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Grenade)).collect();
+    let grenades: Vec<usize> = (0..m.world.level.loot.len())
+        .filter(|i| weapons::get(m.world.level.loot[*i].weapon).is_some_and(|d| d.slot == Slot::Grenade))
+        .collect();
     assert!(grenades.len() >= 3, "the map has grenades");
     for i in grenades.iter().take(3) {
         stand_on_loot(&mut m, 0, *i);

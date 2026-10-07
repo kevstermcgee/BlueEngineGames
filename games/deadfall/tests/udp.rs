@@ -10,13 +10,26 @@ use vesper3d::viewer::netplay::{ClientConfig, ClientState, NetClient, NetServer,
 
 #[test]
 fn six_players_and_six_bots_over_real_udp_stay_in_step_within_a_modest_bandwidth() {
-    set_settings(Settings { end: EndRule::Kills { target: 500 }, bots: true, bot_skill: 1 });
-    let cfg = ServerConfig { participants: 12, countdown_seconds: 1, auto_start_seconds: 0, seed: Some(3), ..Default::default() };
-    let mut server = NetServer::<DeadfallGame, _>::new(server_transport(TransportProfile::Development, "127.0.0.1:0").unwrap(), cfg).unwrap();
+    set_settings(Settings { end: EndRule::Kills { target: 500 }, bots: true, bot_skill: 1, ..Default::default() });
+    let cfg = ServerConfig {
+        participants: 12,
+        countdown_seconds: 1,
+        auto_start_seconds: 0,
+        seed: Some(3),
+        ..Default::default()
+    };
+    let mut server =
+        NetServer::<DeadfallGame, _>::new(server_transport(TransportProfile::Development, "127.0.0.1:0").unwrap(), cfg)
+            .unwrap();
     let addr = server.local_addr().unwrap();
     let mut clients: Vec<_> = (0..6)
         .map(|i| {
-            NetClient::<DeadfallGame, _>::new(client_transport(TransportProfile::Development, addr).unwrap(), addr, ClientConfig { name: format!("P{i}"), key: String::new(), choice: (i % 2) as u8 }).unwrap()
+            NetClient::<DeadfallGame, _>::new(
+                client_transport(TransportProfile::Development, addr).unwrap(),
+                addr,
+                ClientConfig { name: format!("P{i}"), key: String::new(), choice: (i % 2) as u8 },
+            )
+            .unwrap()
         })
         .collect();
     let start = Instant::now();
@@ -24,11 +37,18 @@ fn six_players_and_six_bots_over_real_udp_stay_in_step_within_a_modest_bandwidth
     let mut next = Instant::now();
     let mut ticks = 0u64;
     let mut worst_server_ms = 0f64;
+    let mut worst_tick = 0;
+    let mut worst_stage = Stage::Lobby;
     while start.elapsed() < Duration::from_secs(20) {
         let t0 = Instant::now();
         server.poll(t0);
         server.step(t0);
-        worst_server_ms = worst_server_ms.max(t0.elapsed().as_secs_f64() * 1000.);
+        let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.;
+        if elapsed_ms > worst_server_ms {
+            worst_server_ms = elapsed_ms;
+            worst_tick = ticks;
+            worst_stage = server.stage();
+        }
         ticks += 1;
         let now = start.elapsed().as_secs_f64();
         for (i, c) in clients.iter_mut().enumerate() {
@@ -43,14 +63,20 @@ fn six_players_and_six_bots_over_real_udp_stay_in_step_within_a_modest_bandwidth
                     let render = view.render_tick();
                     let players = view.players_at(render);
                     let eye = view.eye().unwrap_or_default_v();
-                    let enemy = players.iter().filter(|p| p.slot as usize != me && p.has(flag::ALIVE)).min_by(|a, b| (a.eye - eye).length().partial_cmp(&(b.eye - eye).length()).unwrap());
-                    let mut input = Input { seen_tick: render.max(0.) as u16, ..Default::default() };
+                    let enemy = players
+                        .iter()
+                        .filter(|p| p.slot as usize != me && p.has(flag::ALIVE))
+                        .min_by(|a, b| (a.eye - eye).length().partial_cmp(&(b.eye - eye).length()).unwrap());
+                    let mut input = Input { seen_tick: deadfall::input::wrapped_tick(render), ..Default::default() };
                     if let Some(e) = enemy {
                         let d = e.eye - eye;
                         input.yaw = d.0.atan2(-d.2);
                         input.pitch = (d.1 - 0.3).atan2((d.0 * d.0 + d.2 * d.2).sqrt());
-                        input.set_axes(((ticks / 40 + i as u64) % 2) as f32 - 0.5, if d.length() > 8. { 1. } else { 0. });
-                        if (ticks / 5) % 2 == 0 {
+                        input.set_axes(
+                            ((ticks / 40 + i as u64) % 2) as f32 - 0.5,
+                            if d.length() > 8. { 1. } else { 0. },
+                        );
+                        if (ticks / 5).is_multiple_of(2) {
                             input.buttons |= FIRE;
                         }
                     }
@@ -63,7 +89,10 @@ fn six_players_and_six_bots_over_real_udp_stay_in_step_within_a_modest_bandwidth
                     }
                     c.tick(input);
                 }
-                other => assert!(matches!(other, ClientState::Connecting | ClientState::Lobby | ClientState::Playing), "client {i}: {other:?}"),
+                other => assert!(
+                    matches!(other, ClientState::Connecting | ClientState::Lobby | ClientState::Playing),
+                    "client {i}: {other:?}"
+                ),
             }
         }
         next += tick;
@@ -81,12 +110,22 @@ fn six_players_and_six_bots_over_real_udp_stay_in_step_within_a_modest_bandwidth
         assert_eq!(*c.state(), ClientState::Playing, "client {i} is still in the match");
         let s = c.stats();
         let kbps = s.bytes_in as f64 * 8. / 1000. / seconds;
-        println!("client {i}: {:.0} kbit/s down, {} snapshots, rtt {:.1} ms, corrections {} (max {:.2} m)", kbps, s.snapshots, s.rtt_ms, s.prediction.corrections, s.prediction.max_error);
+        println!(
+            "client {i}: {:.0} kbit/s down, {} snapshots, rtt {:.1} ms, corrections {} (max {:.2} m)",
+            kbps, s.snapshots, s.rtt_ms, s.prediction.corrections, s.prediction.max_error
+        );
         assert!(s.snapshots > 400, "client {i} received {} snapshots", s.snapshots);
         assert!(kbps < 400., "client {i} needs {kbps:.0} kbit/s");
     }
     let kills: u32 = m.players.iter().map(|p| p.kills as u32).sum();
-    println!("server: worst tick {worst_server_ms:.2} ms, {} kills in {:.0} s", kills, seconds);
+    assert_eq!(server.send_stats().errors, 0);
+    assert_eq!(server.send_stats().oversized, 0);
+    assert_eq!(server.event_stats().oversized, 0);
+    assert!(clients.iter().all(|c| c.event_gaps() == 0));
+    println!(
+        "server: worst tick {worst_server_ms:.2} ms at {worst_tick} ({worst_stage:?}), {} kills in {:.0} s",
+        kills, seconds
+    );
     assert!(worst_server_ms < 12., "the server's slowest tick took {worst_server_ms:.1} ms");
 }
 

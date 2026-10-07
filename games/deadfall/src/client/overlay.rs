@@ -6,6 +6,7 @@ use crate::netgame::{PlayerView, Snapshot};
 use crate::sim::RosterEntry;
 use crate::weapons::{self, WeaponDef};
 use macroquad::prelude::*;
+use vesper3d::math::V;
 use vesper3d::viewer::kit::hud;
 
 const HEALTH_OK: Color = Color::new(0.92, 0.93, 0.94, 1.);
@@ -63,6 +64,7 @@ pub fn damage_arc(angle: f32, amount: f32) {
     draw_triangle(p - side, p + side, tip, Color::new(0.95, 0.15, 0.1, 0.75 * amount));
 }
 
+#[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
 pub fn health_and_ammo(
     health: f32,
     armor: f32,
@@ -112,15 +114,78 @@ pub fn score_strip(snap: &Snapshot, my_team: usize) {
     let ui = hud::ui_scale();
     let cx = screen_width() * 0.5;
     let y = 34. * ui;
+    if snap.mode == crate::modes::GameMode::FreeForAll {
+        let leader = snap.players.iter().max_by_key(|p| p.kills).map_or(0, |p| p.kills);
+        hud::text_centered(&format!("FFA  /  LEAD {leader}  /  FIRST TO {}", snap.kill_target), cx, y, 24. * ui, TEXT);
+        return;
+    }
     let (a, b) = (snap.scores[0], snap.scores[1]);
     hud::text_right(&format!("{a}"), cx - 34. * ui, y, 34. * ui, team_colour(0));
     hud::text_outlined(&format!("{b}"), cx + 34. * ui, y, 34. * ui, team_colour(1));
     let mid = match snap.time_left {
         Some(t) => ui::clock(t),
-        None => format!("{}", snap.kill_target),
+        None => {
+            if snap.mode == crate::modes::GameMode::TeamDeathmatch {
+                format!("{}", snap.kill_target)
+            } else {
+                format!("{}", snap.objective_target)
+            }
+        }
     };
     hud::text_centered(&mid, cx, y - 2. * ui, 22. * ui, DIM);
-    let _ = my_team;
+    if snap.mode == crate::modes::GameMode::CaptureFlag {
+        let own = snap.objective.flags[my_team.min(1)];
+        let enemy = snap.objective.flags[1 - my_team.min(1)];
+        let words = if enemy.carrier != 255 {
+            "ENEMY FLAG TAKEN — RETURN TO YOUR BASE"
+        } else if own.carrier != 255 {
+            "YOUR FLAG HAS BEEN TAKEN"
+        } else if own.dropped_at != 0 {
+            "RETURN YOUR DROPPED FLAG"
+        } else {
+            "TAKE THE ENEMY FLAG / DEFEND YOUR BASE"
+        };
+        hud::text_centered(words, cx, 60. * ui, 17. * ui, DIM);
+    } else if snap.mode == crate::modes::GameMode::SearchDestroy {
+        let o = snap.objective;
+        let attack = (o.round as usize - 1) % 2;
+        let role = if my_team == attack { "ATTACK" } else { "DEFEND" };
+        let phase = match o.phase {
+            0 => "GET READY",
+            1 => "PLANT AT A OR B",
+            2 => "BOMB PLANTED",
+            _ => "ROUND COMPLETE",
+        };
+        let left = o.deadline.saturating_sub(snap.tick) as f32 / 60.;
+        hud::text_centered(
+            &format!("ROUND {} / {role} / {phase} / {}", o.round, ui::clock(left)),
+            cx,
+            60. * ui,
+            17. * ui,
+            DIM,
+        );
+        if let Some(me) = &snap.me {
+            if me.alive {
+                let feet = V(me.ctrl.position.0, me.ctrl.position.1 - 1.68, me.ctrl.position.2);
+                let can = if o.phase == 1 {
+                    my_team == attack
+                        && snap
+                            .players
+                            .iter()
+                            .find(|p| p.slot == o.carrier)
+                            .is_some_and(|p| (p.eye - me.ctrl.position).length() < 0.1)
+                        && snap.map.sites().iter().any(|p| (*p - feet).length() < 2.)
+                } else {
+                    o.phase == 2 && my_team != attack && (o.bomb - feet).length() < 2.
+                };
+                if can {
+                    let action = if o.phase == 1 { "PLANT" } else { "DEFUSE" };
+                    let goal = if o.phase == 1 { 180. } else { 300. };
+                    prompt(&format!("HOLD E / RB TO {action}  {}%", (o.progress as f32 / goal * 100.) as u32));
+                }
+            }
+        }
+    }
 }
 
 pub fn killfeed(feed: &[Feed]) {
@@ -187,7 +252,7 @@ pub fn scope(zoom: f32, amount: f32) {
 }
 
 /// The killcam frame: bars, who killed you with what, and the countdown.
-pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool, progress: f32) {
+pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool, progress: f32, round_elimination: bool) {
     let ui = hud::ui_scale();
     let (w, h) = (screen_width(), screen_height());
     let bar = (h * 0.075).max(48. * ui);
@@ -198,7 +263,13 @@ pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool, pr
         if killer == "the fall" { "ELIMINATED".to_string() } else { format!("KILLED BY {}", killer.to_uppercase()) };
     hud::text_centered(&label, w * 0.5, bar * 0.66, 24. * ui, TEXT);
     hud::text_outlined(
-        if progress < 1. { "REPLAY" } else { "REPLAY COMPLETE" },
+        if round_elimination && seconds_left <= 0. {
+            "SPECTATING"
+        } else if progress < 1. {
+            "REPLAY"
+        } else {
+            "REPLAY COMPLETE"
+        },
         24. * ui,
         bar * 0.66,
         15. * ui,
@@ -207,7 +278,11 @@ pub fn killcam(killer: &str, weapon: &str, seconds_left: f32, headshot: bool, pr
     draw_rectangle(0., bar - 2. * ui, w * progress.clamp(0., 1.), 2. * ui, ACCENT);
     hud::text_centered(&how, w * 0.5, h - bar * 0.34, 22. * ui, DIM);
     hud::text_right(
-        &format!("RESPAWN IN {}", seconds_left.ceil() as i32),
+        &if round_elimination {
+            "NEXT ROUND".to_string()
+        } else {
+            format!("RESPAWN IN {}", seconds_left.ceil() as i32)
+        },
         w - 24. * ui,
         h - bar * 0.34,
         18. * ui,
@@ -219,8 +294,8 @@ pub struct Row {
     pub slot: u8,
     pub name: String,
     pub team: usize,
-    pub kills: u8,
-    pub deaths: u8,
+    pub kills: u16,
+    pub deaths: u16,
     pub bot: bool,
     pub alive: bool,
 }
@@ -247,12 +322,12 @@ pub fn rows(roster: &[RosterEntry], players: &[PlayerView]) -> Vec<Row> {
 pub fn scoreboard(rows: &[Row], scores: [u16; 2], me: Option<u8>, x: f32, y: f32, w: f32) {
     let ui = hud::ui_scale();
     let colw = (w - 24. * ui) / 2.;
-    for team in 0..2 {
+    for (team, score) in scores.iter().enumerate() {
         let px = x + team as f32 * (colw + 24. * ui);
         let c = team_colour(team);
         draw_rectangle(px, y, colw, 40. * ui, Color::new(c.r * 0.35, c.g * 0.35, c.b * 0.35, 0.92));
         hud::text_outlined(crate::Team::from_index(team).name(), px + 14. * ui, y + 29. * ui, 26. * ui, c);
-        hud::text_right(&format!("{}", scores[team]), px + colw - 14. * ui, y + 29. * ui, 30. * ui, TEXT);
+        hud::text_right(&format!("{score}"), px + colw - 14. * ui, y + 29. * ui, 30. * ui, TEXT);
         let mut mine: Vec<&Row> = rows.iter().filter(|r| r.team == team).collect();
         mine.sort_by(|a, b| b.kills.cmp(&a.kills).then(a.deaths.cmp(&b.deaths)));
         draw_rectangle(px, y + 40. * ui, colw, 34. * ui + mine.len() as f32 * 32. * ui, PANEL_DARK);
@@ -273,3 +348,20 @@ pub fn scoreboard(rows: &[Row], scores: [u16; 2], me: Option<u8>, x: f32, y: f32
 }
 
 const PANEL_DARK: Color = Color::new(0.03, 0.04, 0.05, 0.85);
+
+/// Individual standings for free-for-all; team cosmetics never imply a friendly player.
+pub fn ffa_scoreboard(rows: &[Row], me: Option<u8>, x: f32, y: f32, w: f32) {
+    let ui = hud::ui_scale();
+    let mut ranked = rows.iter().collect::<Vec<_>>();
+    ranked.sort_by(|a, b| b.kills.cmp(&a.kills).then(a.deaths.cmp(&b.deaths)));
+    draw_rectangle(x, y, w, 74. * ui + ranked.len() as f32 * 32. * ui, PANEL_DARK);
+    hud::text_outlined("FREE FOR ALL", x + 14. * ui, y + 29. * ui, 26. * ui, TEXT);
+    for (i, r) in ranked.iter().enumerate() {
+        let ry = y + 50. * ui + i as f32 * 32. * ui;
+        if Some(r.slot) == me {
+            draw_rectangle(x, ry, w, 30. * ui, Color::new(1., 1., 1., 0.1));
+        }
+        hud::text_outlined(&r.name, x + 14. * ui, ry + 22. * ui, 21. * ui, if r.alive { TEXT } else { DIM });
+        hud::text_right(&format!("{} K   {} D", r.kills, r.deaths), x + w - 16. * ui, ry + 22. * ui, 21. * ui, TEXT);
+    }
+}

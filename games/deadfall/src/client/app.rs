@@ -14,7 +14,7 @@ use crate::sim::{self, hit, EndRule, Event, Settings};
 use crate::stats::{MatchTracker, Stats};
 use crate::weapons;
 use macroquad::prelude::*;
-use std::net::{SocketAddr, ToSocketAddrs, UdpSocket};
+use std::net::{SocketAddr, UdpSocket};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use vesper3d::math::V;
@@ -146,8 +146,47 @@ struct Session {
     died_by_headshot: bool,
 }
 
+struct PendingConnect {
+    resolved: std::sync::mpsc::Receiver<Result<SocketAddr, String>>,
+    key: String,
+    team: u8,
+    server: Option<LocalServer>,
+    solo: bool,
+    hosting: Option<String>,
+    started: f64,
+}
+// A single bounded worker keeps DNS off the render thread without creating a thread per retry.
+fn resolve_server(target: String) -> Result<std::sync::mpsc::Receiver<Result<SocketAddr, String>>, String> {
+    use std::sync::{mpsc, OnceLock};
+    type Request = (String, mpsc::Sender<Result<SocketAddr, String>>);
+    static WORKER: OnceLock<Result<mpsc::SyncSender<Request>, String>> = OnceLock::new();
+    let (answer, rx) = mpsc::channel();
+    if let Ok(addr) = target.parse::<SocketAddr>() {
+        let _ = answer.send(Ok(addr));
+        return Ok(rx);
+    }
+    let worker = WORKER.get_or_init(|| {
+        let (tx, requests) = mpsc::sync_channel::<Request>(1);
+        std::thread::Builder::new()
+            .name("deadfall-resolve".into())
+            .spawn(move || {
+                while let Ok((target, answer)) = requests.recv() {
+                    let result = vesper3d::viewer::devkit::resolve_ipv4(&target, PORT).map_err(|e| e.to_string());
+                    let _ = answer.send(result);
+                }
+            })
+            .map(|_| tx)
+            .map_err(|e| format!("Could not start address lookup: {e}"))
+    });
+    worker.as_ref().map_err(Clone::clone)?.try_send((target, answer)).map_err(|_| {
+        "Address lookup is busy. Wait a moment and retry, or enter the server's IP address.".to_string()
+    })?;
+    Ok(rx)
+}
 pub struct App {
     prefs: Prefs,
+    pending_connect: Option<PendingConnect>,
+    renderer_map: crate::maps::MapId,
     /// The shadow tier the Settings row last showed or set (a `--shadows` flag can differ from `prefs`).
     shadow_choice: ShadowQuality,
     stats: Stats,
@@ -226,8 +265,17 @@ fn pick(options: &[u16], v: u16) -> usize {
 
 impl App {
     pub async fn new(args: &[String]) -> App {
-        let prefs = Prefs::load();
+        let mut prefs = Prefs::load();
         let hub = hub::default_hub(flag_value(args, "--hub"), prefs.last_hub.as_deref());
+        if let Some(m) = flag_value(args, "--map").and_then(|v| v.parse::<u8>().ok()) {
+            prefs.map = m.min(2);
+        }
+        if let Some(m) = flag_value(args, "--mode").and_then(|v| v.parse::<u8>().ok()) {
+            prefs.mode = m.min(3);
+        }
+        if has_flag(args, "--duel") {
+            prefs.duel = true;
+        }
         let level = crate::map();
         let mut renderer = Renderer::new(&level);
         // `--shadows off|simple|full` wins for this run without changing what is remembered.
@@ -262,6 +310,8 @@ impl App {
             host_items: Vec::new(),
             join_items: Vec::new(),
             settings_items: Vec::new(),
+            pending_connect: None,
+            renderer_map: crate::maps::MapId::Slagworks,
             results_menu: Menu::new(),
             hub_spec: hub.address,
             hub_origin: hub.origin,
@@ -329,6 +379,16 @@ impl App {
             Item::Choice("Ends".into(), end_choices(), p.end_by_time as usize),
             options(p.end_by_time),
             Item::Choice("Bot skill".into(), skill.clone(), p.bot_skill as usize),
+            Item::Choice(
+                "Map".into(),
+                crate::maps::MapId::ALL.iter().map(|m| m.name().into()).collect(),
+                p.map as usize,
+            ),
+            Item::Choice(
+                "Mode".into(),
+                crate::modes::GameMode::ALL.iter().map(|m| m.name().into()).collect(),
+                p.mode as usize,
+            ),
             Item::Gap,
             Item::Button("Start".into()),
             Item::Button("Back".into()),
@@ -365,6 +425,12 @@ impl App {
                 ShadowQuality::ALL.iter().map(|q| q.label().to_string()).collect(),
                 ShadowQuality::ALL.iter().position(|q| *q == self.shadow_choice).unwrap_or(1),
             ),
+            Item::Choice(
+                "Character".into(),
+                vec!["Rifleman".into(), "Scout".into(), "Recon".into(), "Breacher".into()],
+                p.avatar as usize,
+            ),
+            Item::Choice("Skin tone".into(), vec!["1".into(), "2".into(), "3".into(), "4".into()], p.skin as usize),
             Item::Gap,
             Item::Button("Back".into()),
         ];
@@ -392,6 +458,7 @@ impl App {
     }
 
     fn leave(&mut self) {
+        self.pending_connect = None;
         if let Some(mut s) = self.session.take() {
             s.client.leave();
             self.flush_match(&mut s, None);
@@ -426,6 +493,7 @@ impl App {
     fn show_failure(&mut self, message: String) {
         self.wait = None;
         self.session = None;
+        self.pending_connect = None;
         self.screen = if self.last_join.is_some() { Screen::ConnectFailed(message) } else { Screen::Error(message) };
     }
 
@@ -446,22 +514,60 @@ impl App {
         solo: bool,
         hosting: Option<String>,
     ) {
-        let target = if addr.contains(':') { addr.to_string() } else { format!("{addr}:{PORT}") };
-        let resolved = target.to_socket_addrs().ok().and_then(|mut a| a.next());
-        let Some(address) = resolved else {
-            self.show_failure(format!("Cannot find a server at {target}"));
-            return;
+        let rx = match resolve_server(addr.to_string()) {
+            Ok(rx) => rx,
+            Err(e) => {
+                self.show_failure(e);
+                return;
+            }
         };
+        self.pending_connect =
+            Some(PendingConnect { resolved: rx, key: key.into(), team, server, solo, hosting, started: self.now });
+        self.screen = if self.wait.is_some() { Screen::Waiting } else { Screen::Connecting };
+    }
+    fn poll_connect(&mut self) {
+        let Some(p) = self.pending_connect.as_ref() else { return };
+        let result = match p.resolved.try_recv() {
+            Ok(r) => Some(r),
+            Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                Some(Err("Address lookup stopped. Retry the connection.".into()))
+            }
+            Err(_) => None,
+        };
+        if let Some(result) = result {
+            let p = self.pending_connect.take().unwrap();
+            match result {
+                Ok(address) => self.connect_resolved(address, &p.key, p.team, p.server, p.solo, p.hosting),
+                Err(e) => self.show_failure(e),
+            }
+        } else if self.now - p.started > 8. {
+            self.show_failure("Address lookup timed out. Check the server name and retry.".into());
+        }
+    }
+    fn connect_resolved(
+        &mut self,
+        address: SocketAddr,
+        key: &str,
+        team: u8,
+        server: Option<LocalServer>,
+        solo: bool,
+        hosting: Option<String>,
+    ) {
         let name = self.prefs.display_name();
-        let made = client_transport(TransportProfile::Development, address)
-            .and_then(|t| NetClient::new(t, address, ClientConfig { name, key: key.to_string(), choice: team }));
+        let made = client_transport(TransportProfile::Development, address).and_then(|t| {
+            NetClient::new(
+                t,
+                address,
+                ClientConfig {
+                    name,
+                    key: key.to_string(),
+                    choice: (team & 1) | ((self.prefs.avatar & 3) << 1) | ((self.prefs.skin & 3) << 3),
+                },
+            )
+        });
         match made {
             Ok(client) => {
-                let skin = (std::process::id() as u8) % 4;
-                let mut skins = [0u8; 16];
-                for (i, s) in skins.iter_mut().enumerate() {
-                    *s = (i as u8 * 3 + skin) % 4;
-                }
+                let skins = [self.prefs.skin; 16];
                 self.session = Some(Session {
                     client,
                     _server: server,
@@ -477,12 +583,12 @@ impl App {
                     over_handled: false,
                     solo,
                     hosting,
-                    room: None,
+                    room: self.last_join.as_ref().and_then(|t| t.room.clone()),
                     skins,
                     last_alive: false,
                     motion: render::ViewMotion::default(),
                     last_angles: (0., 0.),
-                    my_team: team as usize,
+                    my_team: (team & 1) as usize,
                     kills_by_me: Vec::new(),
                     died_by_headshot: false,
                 });
@@ -496,6 +602,12 @@ impl App {
         let team = if let Some(Item::Choice(_, _, t)) = items.first() { *t as u8 } else { 0 };
         let (by_time, kills, minutes) = self.settings_from(items, 1, 2);
         let skill = if let Some(Item::Choice(_, _, s)) = items.get(3) { *s as u8 } else { 1 };
+        if let Some(Item::Choice(_, _, v)) = items.get(4) {
+            self.prefs.map = *v as u8;
+        }
+        if let Some(Item::Choice(_, _, v)) = items.get(5) {
+            self.prefs.mode = *v as u8;
+        }
         self.last_join = None;
         self.prefs.team = team;
         self.prefs.end_by_time = by_time;
@@ -507,6 +619,10 @@ impl App {
             end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } },
             bots: true,
             bot_skill: skill,
+            mode: crate::modes::GameMode::from_id(self.prefs.mode),
+            map: crate::maps::MapId::from_id(self.prefs.map),
+            duel: false,
+            objective_target: self.prefs.objective_target,
         };
         let cfg = ServerConfig {
             participants: 12,
@@ -543,6 +659,10 @@ impl App {
             end: if by_time { EndRule::Time { minutes } } else { EndRule::Kills { target: kills } },
             bots,
             bot_skill: skill,
+            mode: crate::modes::GameMode::from_id(self.prefs.mode),
+            map: crate::maps::MapId::from_id(self.prefs.map),
+            duel: false,
+            objective_target: self.prefs.objective_target,
         };
         let cfg = ServerConfig {
             participants: 12,
@@ -591,6 +711,7 @@ impl App {
         let dt = self.input.frame_seconds();
         self.time += dt;
         self.now = now;
+        self.poll_connect();
         self.audio.poll().await;
         let mut nav =
             Nav::gather(self.input.menu_step(), self.input.menu_select(), self.input.menu_back(), &mut self.last_mouse);
@@ -663,7 +784,7 @@ impl App {
     fn backdrop(&mut self, dt: f32) {
         // A slow flight over the map behind the menus.
         let t = self.time * 0.05;
-        let level = crate::level();
+        let level = self.renderer_map.level();
         let (r, y) = (level.half_x.min(level.half_z) * 0.55, 18.);
         let eye = vec3((t).cos() * r, y, (t).sin() * r * 0.7);
         let target = vec3(0., 2., 0.);
@@ -697,7 +818,7 @@ impl App {
         };
         match screen {
             Screen::Main => {
-                self.title("team deathmatch");
+                self.title("fast combat / four modes / three maps");
                 let mut items = vec![
                     Item::Button("Play Online".into()),
                     Item::Button("Solo".into()),
@@ -737,14 +858,14 @@ impl App {
             Screen::Solo => {
                 self.title("solo: you and bots against bots");
                 let mut items = std::mem::take(&mut self.solo_items);
-                let hit = self.menu.run(nav, &mut items, cx, 200., 520., dt);
+                let hit = self.menu.run(nav, &mut items, cx, 180., 520., dt);
                 self.sync_target_row(&mut items, 1, 2);
                 match hit {
-                    Hit::Item(5) => {
+                    Hit::Item(7) => {
                         self.audio.ui(Sfx::MenuConfirm, 0.5);
                         self.start_solo(&items);
                     }
-                    Hit::Item(6) | Hit::Back => back(self),
+                    Hit::Item(8) | Hit::Back => back(self),
                     _ => {}
                 }
                 if self.screen == Screen::Solo {
@@ -843,9 +964,15 @@ impl App {
                         self.renderer.set_shadows(q);
                     }
                 }
-                hud::text_centered("Keyboard: WASD move, mouse look, LMB fire, RMB aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores", cx, screen_height() - 60. * ui, 17. * ui, DIM);
-                hud::text_centered("Controller: sticks, RT fire, LT aim, A jump, B crouch, X reload, RB use, D-pad weapons, Back scores", cx, screen_height() - 36. * ui, 17. * ui, DIM);
-                if matches!(hit, Hit::Item(8) | Hit::Back) {
+                hud::text_centered("Keyboard: WASD move, mouse look, LMB fire, RMB aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores", cx, screen_height() - 18. * ui, 15. * ui, DIM);
+
+                if let Some(Item::Choice(_, _, v)) = items.get(7) {
+                    self.prefs.avatar = *v as u8;
+                }
+                if let Some(Item::Choice(_, _, v)) = items.get(8) {
+                    self.prefs.skin = *v as u8;
+                }
+                if matches!(hit, Hit::Item(10) | Hit::Back) {
                     self.prefs.sanitize();
                     self.prefs.store();
                     back(self);
@@ -1131,9 +1258,9 @@ impl App {
         let ui = hud::ui_scale();
         let cx = screen_width() * 0.5;
         let w = 700. * ui;
-        let y = 215. * ui;
+        let y = 50. * ui;
         draw_rectangle(0., 0., screen_width(), screen_height(), Color::new(0., 0., 0., 0.35));
-        ui::panel(cx - w * 0.5, y, w, 330. * ui, "CREATE A ROOM");
+        ui::panel(cx - w * 0.5, y, w, 620. * ui, "CREATE A ROOM");
         hud::text_centered(
             "Friends will see this name under Play Online and join with one click.",
             cx,
@@ -1147,11 +1274,37 @@ impl App {
             DialogPhase::Editing => {
                 let mut items = vec![
                     Item::Text("Room name".into(), dialog.name.clone(), "name", TextRules::ROOM),
+                    Item::Choice(
+                        "Map".into(),
+                        crate::maps::MapId::ALL.iter().map(|m| m.name().into()).collect(),
+                        self.prefs.map as usize,
+                    ),
+                    Item::Choice(
+                        "Mode".into(),
+                        crate::modes::GameMode::ALL.iter().map(|m| m.name().into()).collect(),
+                        self.prefs.mode as usize,
+                    ),
+                    Item::Toggle("1v1 (two humans, no bots)".into(), self.prefs.duel),
+                    Item::Toggle("Fill with bots".into(), self.prefs.bots && !self.prefs.duel),
+                    Item::Choice(
+                        "Kills to win (TDM / FFA)".into(),
+                        target_labels(false),
+                        pick(&KILL_TARGETS, self.prefs.kills_target),
+                    ),
+                    Item::Choice(
+                        "Captures / rounds to win".into(),
+                        vec!["1".into(), "3".into(), "5".into(), "7".into()],
+                        match self.prefs.objective_target {
+                            1 => 0,
+                            3 => 1,
+                            5 => 2,
+                            _ => 3,
+                        },
+                    ),
                     Item::Gap,
                     Item::Button("Create".into()),
                     Item::Button("Cancel".into()),
                 ];
-                let enter_in_field = nav.accept && self.dialog_menu.sel == 0;
                 let hit = self.dialog_menu.run(nav, &mut items, cx, y / ui + 84., 640., dt);
                 if let Some(Item::Text(_, v, _, _)) = items.first() {
                     if *v != dialog.name {
@@ -1159,24 +1312,52 @@ impl App {
                         dialog.error = None;
                     }
                 }
+                if let Some(Item::Choice(_, _, v)) = items.get(1) {
+                    self.prefs.map = *v as u8;
+                }
+                if let Some(Item::Choice(_, _, v)) = items.get(2) {
+                    self.prefs.mode = *v as u8;
+                }
+                if let Some(Item::Toggle(_, v)) = items.get(3) {
+                    self.prefs.duel = *v;
+                }
+                if let Some(Item::Toggle(_, v)) = items.get(4) {
+                    self.prefs.bots = *v && !self.prefs.duel;
+                }
+                if let Some(Item::Choice(_, _, v)) = items.get(5) {
+                    self.prefs.kills_target = KILL_TARGETS[*v % KILL_TARGETS.len()];
+                }
+                if let Some(Item::Choice(_, _, v)) = items.get(6) {
+                    self.prefs.objective_target = [1, 3, 5, 7][*v % 4];
+                }
                 if let Some(e) = &dialog.error {
                     for (i, line) in ui::wrap(e, w - 60. * ui, 19. * ui).iter().enumerate() {
                         hud::text_centered(
                             line,
                             cx,
-                            y + 292. * ui + i as f32 * 24. * ui,
+                            y + 590. * ui + i as f32 * 24. * ui,
                             19. * ui,
                             Color::new(1., 0.55, 0.5, 1.),
                         );
                     }
                 }
                 match hit {
-                    Hit::Item(2) => {
+                    Hit::Item(8) => {
                         self.audio.ui(Sfx::MenuConfirm, 0.5);
+                        online.set_create_settings(&[
+                            (1, self.prefs.bots as u32),
+                            (2, self.prefs.kills_target as u32),
+                            (3, self.prefs.bot_skill as u32),
+                            (4, 0),
+                            (5, self.prefs.mode as u32),
+                            (6, self.prefs.map as u32),
+                            (7, self.prefs.duel as u32),
+                            (8, self.prefs.objective_target as u32),
+                        ]);
+                        self.save_prefs();
                         online.create();
                     }
-                    Hit::Item(3) | Hit::Back => close = true,
-                    _ if enter_in_field => online.create(),
+                    Hit::Item(9) | Hit::Back => close = true,
                     _ => {}
                 }
             }
@@ -1200,6 +1381,9 @@ impl App {
 
     /// "A match is running": ask the lobby again on schedule.
     fn retry_waiting(&mut self, now: f64) {
+        if self.pending_connect.is_some() {
+            return;
+        }
         let Some(wait) = self.wait.as_mut() else { return };
         match wait.step(now) {
             RetryStep::Wait => {}
@@ -1294,20 +1478,20 @@ impl App {
         let lobby = session.client.lobby().cloned();
         let me = session.client.seat();
         let mine = lobby.as_ref().and_then(|l| l.entries.iter().find(|e| e.slot == me)).cloned();
-        let my_team = mine.as_ref().map_or(session.my_team as u8, |e| e.choice);
+        let my_team = mine.as_ref().map_or(session.my_team as u8, |e| e.choice & 1);
         session.my_team = my_team as usize;
         let ready = mine.as_ref().is_some_and(|e| e.ready);
         // Team columns, sized to the window.
         let w = 340. * ui;
         let py = if room.is_some() { 200. * ui } else { 190. * ui };
-        let ph = (screen_height() - py - 250. * ui).max(150. * ui);
+        let ph = (screen_height() - py - 300. * ui).max(120. * ui);
         let mut counts = [0usize; 2];
-        for t in 0..2 {
+        for (t, count) in counts.iter_mut().enumerate() {
             let x = cx - w - 16. * ui + t as f32 * (w + 32. * ui);
             ui::panel(x, py, w, ph, crate::Team::from_index(t).name());
             let mut n = 0;
             if let Some(l) = &lobby {
-                for e in l.entries.iter().filter(|e| e.choice as usize == t) {
+                for e in l.entries.iter().filter(|e| (e.choice & 1) as usize == t) {
                     let mut c = if e.slot == me { ACCENT } else { TEXT };
                     if !e.ready {
                         c.a = 0.7;
@@ -1322,7 +1506,7 @@ impl App {
                     n += 1;
                 }
             }
-            counts[t] = n;
+            *count = n;
         }
         if session.solo && session.want_again && !ready {
             session.client.ready(true);
@@ -1330,7 +1514,10 @@ impl App {
         let waiting = lobby.as_ref().map_or(0, |l| l.entries.len());
         let status = match &lobby {
             Some(l) if l.seconds_left > 0 => format!("Match starts in {}", l.seconds_left),
-            _ => format!("{waiting} in the lobby. The match starts when everyone is ready."),
+            _ if waiting < 2 && !session.solo => {
+                "Share the invite for a friend match. Ready starts when enough players join (or bots fill).".into()
+            }
+            _ => format!("{waiting} in the lobby. Everyone Ready starts the match; teams are balanced."),
         };
         hud::text_centered(&status, cx, py + ph + 30. * ui, 22. * ui, TEXT);
         if let Some(h) = &session.hosting {
@@ -1339,6 +1526,7 @@ impl App {
         let mut items = vec![
             Item::Choice("Team".into(), vec!["Ironclad".into(), "Nightwatch".into()], my_team as usize),
             Item::Button(if ready { "Not ready".into() } else { "Ready".into() }),
+            Item::Button("Copy invite".into()),
             Item::Button("Leave".into()),
         ];
         let hit = self.menu.run(nav, &mut items, cx, (py + ph + 80. * ui) / ui, 420., dt);
@@ -1350,7 +1538,7 @@ impl App {
                     if counts[*t] >= crate::sim::TEAM_SIZE && *t as u8 != my_team {
                         session.notice = ("That team is full".into(), 2.);
                     } else {
-                        session.client.select(*t as u8);
+                        session.client.select(*t as u8 | ((self.prefs.avatar & 3) << 1) | ((self.prefs.skin & 3) << 3));
                         self.prefs.team = *t as u8;
                     }
                 }
@@ -1360,7 +1548,20 @@ impl App {
                 session.client.ready(!ready);
                 self.audio.ui(Sfx::MenuConfirm, 0.5);
             }
-            Hit::Item(2) | Hit::Back => self.leave(),
+            Hit::Item(2) => {
+                let invite = self.last_join.as_ref().map_or_else(
+                    || "Deadfall — Play Online".into(),
+                    |t| {
+                        t.room.as_ref().map_or_else(
+                            || format!("Deadfall server: {}", t.addr),
+                            |r| format!("Deadfall — Play Online → {} (hub {})", r.name, self.hub_spec),
+                        )
+                    },
+                );
+                vesper3d::viewer::game_input::copy_to_clipboard(&invite);
+                session.notice = ("Invite copied. Send it to your friend.".into(), 2.);
+            }
+            Hit::Item(3) | Hit::Back => self.leave(),
             _ => {}
         }
         if let Some(s) = self.session.as_mut() {
@@ -1448,7 +1649,29 @@ impl App {
         }
         let Some(s) = self.session.as_mut() else { return };
         s.client.frame(now, dt);
-        let events = s.client.drain_events();
+        let map = s.client.view().latest().map(|l| l.snap.map);
+        if let Some(snap) = s.client.view().latest().map(|l| l.snap.clone()) {
+            for p in &snap.players {
+                s.skins[p.slot.min(15) as usize] = (p.appearance >> 3) & 3;
+                if Some(p.slot as usize) == s.client.participant() {
+                    s.my_team = (p.appearance & 1) as usize;
+                }
+            }
+        }
+        let timed = s.client.drain_timed_events();
+        let server_tick = s.client.server_tick();
+        s.client.view_mut().remember_timed_events(server_tick, &timed);
+        let events: Vec<Event> = timed.into_iter().map(|(_, e)| e).collect();
+        if let Some(map) = map {
+            if map != self.renderer_map {
+                let mut renderer = Renderer::new(map.level());
+                renderer.set_shadows(self.shadow_choice);
+                self.renderer = renderer;
+                self.renderer_map = map;
+                self.audio.clear_match_state();
+            }
+        }
+
         if !events.is_empty() {
             self.handle_events(events);
         }
@@ -1456,7 +1679,7 @@ impl App {
 
     fn handle_events(&mut self, events: Vec<Event>) {
         let Some(s) = self.session.as_mut() else { return };
-        s.client.view_mut().remember_events(&events);
+
         let me = s.client.participant().map(|p| p as u8);
         s.tracker.me = me;
         for e in &events {
@@ -1471,7 +1694,7 @@ impl App {
             }
         }
         let view = s.client.view();
-        let level = crate::level();
+        let level = self.renderer_map.level();
         let listener = match view.eye() {
             Some(eye) => Listener { pos: eye, yaw: self.controls.yaw },
             None => Listener { pos: V::ZERO, yaw: 0. },
@@ -1730,7 +1953,7 @@ impl App {
         let render_tick = s.client.view().render_tick().max(0.);
         while s.acc >= TICK {
             s.acc -= TICK;
-            let mut input = self.controls.tick(render_tick as u16);
+            let mut input = self.controls.tick(crate::input::wrapped_tick(render_tick));
             if !live {
                 input.buttons = 0;
                 input.right = 0;
@@ -1751,7 +1974,17 @@ impl App {
         }
         if over && !s.over_handled {
             s.over_handled = true;
-            let winner = Some(snap.winner);
+            let winner = if snap.mode == crate::modes::GameMode::FreeForAll {
+                Some(if snap.winner_slot == 255 {
+                    2
+                } else if Some(snap.winner_slot as usize) == s.client.participant() {
+                    s.my_team as u8
+                } else {
+                    1 - s.my_team as u8
+                })
+            } else {
+                Some(snap.winner)
+            };
             self.flush_match(&mut s, winner);
         }
 
@@ -1822,16 +2055,27 @@ impl App {
             let replay = (from + elapsed * 60.).min(end);
             let v = s.client.view();
             let newest = v.latest().map_or(snap.tick as f32, |l| l.snap.tick as f32) - 3.;
-            let at = replay.min(newest);
+            let spectating =
+                snap.mode == crate::modes::GameMode::SearchDestroy && elapsed >= sim::RESPAWN_TICKS as f32 / 60.;
+            let at = if spectating { render_tick } else { replay.min(newest) };
             scene_tick = at;
             replay_progress = ((at - from) / (end - from).max(1.)).clamp(0., 1.);
             let ps = v.players_at(at);
-            let killer_view = ps.iter().find(|p| p.slot == killer).copied();
+            let killer_view = if spectating {
+                ps.iter()
+                    .filter(|p| p.has(flag::ALIVE))
+                    .min_by_key(|p| ((p.appearance & 1) as usize != s.my_team, p.slot))
+                    .copied()
+            } else {
+                ps.iter().find(|p| p.slot == killer).copied()
+            };
             let (eye, yaw, pitch, hands, wid) = match killer_view {
                 Some(kv) => {
-                    let mut h = Hands::default();
-                    h.ads = if kv.has(flag::ADS) { 1. } else { 0. };
-                    h.recoil = if kv.has(flag::FIRING) { 1.5 } else { 0. };
+                    let mut h = Hands {
+                        ads: if kv.has(flag::ADS) { 1. } else { 0. },
+                        recoil: if kv.has(flag::FIRING) { 1.5 } else { 0. },
+                        ..Default::default()
+                    };
                     if kv.has(flag::RELOAD) {
                         h.busy = Busy::Reload;
                         h.total = 100;
@@ -1874,7 +2118,7 @@ impl App {
             let ads_ratio = weapons::get(wid).map_or(1., |d| 1. + (d.ads_fov / 90. - 1.) * hands.ads);
             (
                 View { eye: to_v3(eye), yaw, pitch, roll: 0., fov: render::vfov(render::HFOV, aspect) * ads_ratio },
-                Some(killer as usize),
+                killer_view.map(|p| p.slot as usize),
                 hands,
                 wid,
                 0.,
@@ -1911,10 +2155,8 @@ impl App {
                             self.renderer.fx.fireball(to_v3(*pos), *radius * 0.6, 0.6, [1., 0.65, 0.25]);
                             self.audio.at(Sfx::Explosion, *pos, &listener, 0.8, 160.);
                         }
-                        Event::Strike { attacker, heavy, .. } => {
-                            if *attacker == kc.killer {
-                                self.audio.ui(if *heavy { Sfx::HeavySwing } else { Sfx::KnifeSwing }, 0.6);
-                            }
+                        Event::Strike { attacker, heavy, .. } if *attacker == kc.killer => {
+                            self.audio.ui(if *heavy { Sfx::HeavySwing } else { Sfx::KnifeSwing }, 0.6);
                         }
                         _ => {}
                     }
@@ -1950,9 +2192,15 @@ impl App {
         if alive {
             let ui = hud::ui_scale();
             for f in &figures {
-                if f.team.index() == s.my_team && Some(f.slot) != me_slot && f.view.has(flag::ALIVE) {
+                if snap.mode != crate::modes::GameMode::FreeForAll
+                    && f.team.index() == s.my_team
+                    && Some(f.slot) != me_slot
+                    && f.view.has(flag::ALIVE)
+                {
                     let head = vec3(f.view.eye.0, f.view.eye.1 + 0.35, f.view.eye.2);
-                    if (head - view.eye).length() < 45. && crate::level().line_of_sight(to_v(view.eye), to_v(head)) {
+                    if (head - view.eye).length() < 45.
+                        && self.renderer_map.level().line_of_sight(to_v(view.eye), to_v(head))
+                    {
                         if let Some(p) = view.project(head, screen_width(), screen_height()) {
                             let name =
                                 roster.iter().find(|r| r.slot as usize == f.slot).map_or("", |r| r.name.as_str());
@@ -1968,7 +2216,7 @@ impl App {
         }
 
         // Footsteps and ambience.
-        let level = crate::level();
+        let level = self.renderer_map.level();
         let listener = Listener { pos: view.eye.into_v(), yaw: view.yaw };
         let walkers: Vec<(usize, V, bool, bool)> = players_now
             .iter()
@@ -1978,6 +2226,7 @@ impl App {
         self.audio.update(dt, &listener, level);
 
         // Weapon in hand.
+        self.renderer.draw_objectives(&view, &snap);
         if alive {
             let team = crate::Team::from_index(s.my_team);
             let skin = s.skins[me_slot.unwrap_or(0).min(15)];
@@ -1994,8 +2243,9 @@ impl App {
                 s.acc / TICK,
             );
         } else if let Some(k) = s.killcam.as_ref() {
-            let team = roster_team(k.killer);
-            let skin = s.skins[(k.killer as usize).min(15)];
+            let slot = skip.unwrap_or(k.killer as usize).min(15);
+            let team = roster_team(slot as u8);
+            let skin = s.skins[slot];
             self.renderer.draw_viewmodel(&view, &vm_hands, vm_weapon, team, skin, 0., 0., (0., 0.), 0., 0.);
         }
 
@@ -2051,7 +2301,14 @@ impl App {
         }
         if let Some((name, weapon, left, head)) = &killcam_info {
             if !over {
-                overlay::killcam(name, weapon, *left, *head, replay_progress);
+                overlay::killcam(
+                    name,
+                    weapon,
+                    *left,
+                    *head,
+                    replay_progress,
+                    snap.mode == crate::modes::GameMode::SearchDestroy,
+                );
             }
         }
         if self.controls.scoreboard || over {
@@ -2124,6 +2381,10 @@ impl App {
         let w = (980. * ui).min(screen_width() - 40.);
         let x = (screen_width() - w) * 0.5;
         let rows = overlay::rows(roster, &snap.players);
+        if snap.mode == crate::modes::GameMode::FreeForAll {
+            overlay::ffa_scoreboard(&rows, s.client.participant().map(|p| p as u8), x, 110. * ui, w);
+            return;
+        }
         overlay::scoreboard(&rows, snap.scores, s.client.participant().map(|p| p as u8), x, 110. * ui, w);
     }
 
@@ -2136,20 +2397,50 @@ impl App {
             1 => ("NIGHTWATCH WIN", ui::NIGHTWATCH),
             _ => ("DRAW", TEXT),
         };
-        hud::text_centered(text, cx, 90. * ui, 56. * ui, colour);
+        let ffa_title = if snap.winner_slot == 255 {
+            "DRAW".into()
+        } else {
+            s.client
+                .view()
+                .roster
+                .iter()
+                .find(|p| p.slot == snap.winner_slot)
+                .map_or("WINNER".into(), |p| format!("{} WINS", p.name))
+        };
+        hud::text_centered(
+            if snap.mode == crate::modes::GameMode::FreeForAll { &ffa_title } else { text },
+            cx,
+            90. * ui,
+            56. * ui,
+            colour,
+        );
         let roster = s.client.view().roster.clone();
         let rows = overlay::rows(&roster, &snap.players);
         let w = (980. * ui).min(screen_width() - 40.);
-        overlay::scoreboard(
-            &rows,
-            snap.scores,
-            s.client.participant().map(|p| p as u8),
-            (screen_width() - w) * 0.5,
-            130. * ui,
-            w,
-        );
+        if snap.mode == crate::modes::GameMode::FreeForAll {
+            overlay::ffa_scoreboard(
+                &rows,
+                s.client.participant().map(|p| p as u8),
+                (screen_width() - w) * 0.5,
+                110. * ui,
+                w,
+            );
+        } else {
+            overlay::scoreboard(
+                &rows,
+                snap.scores,
+                s.client.participant().map(|p| p as u8),
+                (screen_width() - w) * 0.5,
+                130. * ui,
+                w,
+            );
+        }
         let mut items = vec![Item::Button("Play again".into()), Item::Button("Home".into())];
-        let top = (130. + 110. + 6. * 32. + 40.) * 1.0;
+        let top = if snap.mode == crate::modes::GameMode::FreeForAll {
+            110. + 74. + rows.len() as f32 * 32. + 10.
+        } else {
+            130. + 110. + 6. * 32. + 40.
+        };
         let hit = self.results_menu.run(nav, &mut items, cx, top, 360., dt);
         match hit {
             Hit::Item(0) => {
@@ -2167,7 +2458,7 @@ impl App {
             _ => {}
         }
         if s.want_again {
-            hud::text_centered("Waiting for the next round...", cx, top + 150. * ui, 20. * ui, DIM);
+            hud::text_centered("Waiting for the next round...", cx, screen_height() - 14. * ui, 18. * ui, DIM);
         }
     }
 }
@@ -2195,7 +2486,7 @@ fn latest_dropped(snap: &Snapshot) -> (Vec<crate::netgame::DroppedView>,) {
 
 /// "E  Pick up K-47" when something wanted is within reach.
 fn pickup_prompt(_s: &Session, snap: &Snapshot, inv: &crate::hands::Inventory, eye: V) -> Option<String> {
-    let level = crate::level();
+    let level = snap.map.level();
     let feet = V(eye.0, eye.1 - 1.68, eye.2);
     let near = |p: V| {
         let d = p - feet;
@@ -2219,5 +2510,5 @@ fn pickup_prompt(_s: &Session, snap: &Snapshot, inv: &crate::hands::Inventory, e
         weapons::Slot::Grenade => inv.grenades.iter().all(|g| *g != 0),
         weapons::Slot::Melee => true,
     };
-    Some(if have { format!("E   swap for {}", w.name) } else { format!("{}", w.name) })
+    Some(if have { format!("E   swap for {}", w.name) } else { w.name.to_string() })
 }

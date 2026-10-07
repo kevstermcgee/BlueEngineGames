@@ -143,6 +143,7 @@ impl Palette {
 pub struct Rig {
     pub team: Team,
     pub skin: u8,
+    pub avatar: u8,
     palette: Palette,
     pelvis: Template,
     torso: Template,
@@ -157,15 +158,20 @@ pub struct Rig {
 
 impl Rig {
     pub fn new(team: Team, skin: u8) -> Rig {
+        Self::variant(team, skin, 0)
+    }
+    pub fn variant(team: Team, skin: u8, avatar: u8) -> Rig {
+        let avatar = avatar.min(3);
         let skin = skin.min(3);
         let p = Palette::new(team, skin);
         Rig {
             team,
             skin,
+            avatar,
             palette: p,
             pelvis: build_pelvis(&p, team),
             torso: build_torso(&p, team),
-            head: build_head(&p, team),
+            head: build_head(&p, team, avatar),
             upper_arm: build_upper_arm(&p, team),
             forearm: build_forearm(&p, team),
             glove: [glove(&p, false, 0.), glove(&p, true, 0.)],
@@ -521,8 +527,8 @@ impl Rig {
             let droop = -0.10 * (1. - aim) - 0.35 * smooth(4.5, 6.5, speed) * (1. - aim);
             let mut wp = pitch + droop + 0.07 * recoil;
             let mut roll = 0.;
-            let right_frame: Mat4;
-            match hold {
+
+            let right_frame: Mat4 = match hold {
                 Hold::Grenade => {
                     let rest = vec3(-0.03, -0.30, -0.27);
                     let p = if throwing > 0. {
@@ -539,7 +545,7 @@ impl Rig {
                     } else {
                         rest
                     };
-                    right_frame = torso * Mat4::from_translation(sh_local(0) + p);
+                    torso * Mat4::from_translation(sh_local(0) + p)
                 }
                 Hold::Melee => {
                     let th = if swing > 0. {
@@ -559,7 +565,7 @@ impl Rig {
                     let local = sh_local(0)
                         + vec3(-0.03, 0., 0.)
                         + Mat4::from_rotation_x(th).transform_vector3(vec3(0., 0., -0.45));
-                    right_frame = torso * Mat4::from_translation(local) * Mat4::from_rotation_x(th);
+                    torso * Mat4::from_translation(local) * Mat4::from_rotation_x(th)
                 }
                 _ => {
                     let (hip_off, aim_off) = match hold {
@@ -582,12 +588,12 @@ impl Rig {
                         off.y -= 0.04 * bump;
                     }
                     // the aim frame sits on the right shoulder and follows the look pitch, not the body lean
-                    right_frame = Mat4::from_translation(sh[0])
+                    Mat4::from_translation(sh[0])
                         * Mat4::from_rotation_x(wp)
                         * Mat4::from_translation(off)
-                        * Mat4::from_rotation_z(roll);
+                        * Mat4::from_rotation_z(roll)
                 }
-            }
+            };
             mount = right_frame;
             have_mount = true;
             let grip_pos = right_frame.transform_point3(Vec3::ZERO);
@@ -725,6 +731,7 @@ fn strap(t: &mut Template, a: Vec3, b: Vec3, hw: f32, ht: f32, c: Rgb) {
     obox(t, (a + b) * 0.5, Quat::from_rotation_arc(Vec3::Z, d / len), vec3(hw, ht, len * 0.5 + 0.004), c);
 }
 
+#[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
 fn bx(t: &mut Template, cx: f32, cy: f32, cz: f32, hx: f32, hy: f32, hz: f32, c: Rgb) {
     t.box_(vec3(cx, cy, cz), vec3(hx, hy, hz), c, 0.);
 }
@@ -736,6 +743,7 @@ fn bx2(t: &mut Template, cx: f32, cy: f32, cz: f32, hx: f32, hy: f32, hz: f32, c
     bx(t, -cx, cy, cz, hx, hy, hz, c);
 }
 
+#[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
 fn ball(t: &mut Template, cx: f32, cy: f32, cz: f32, rx: f32, ry: f32, rz: f32, c: Rgb, segs: usize) {
     t.ball(vec3(cx, cy, cz), vec3(rx, ry, rz), c, 0., segs, (segs / 2).max(4));
 }
@@ -958,7 +966,7 @@ fn build_torso(p: &Palette, team: Team) -> Template {
     t
 }
 
-fn build_head(p: &Palette, team: Team) -> Template {
+fn build_head(p: &Palette, team: Team, avatar: u8) -> Template {
     let mut t = Template::new();
     // pivot is the top of the neck (under the jaw); the skull centre is 0.115 above it
     let neck_c = if team == Team::Nightwatch { p.vest_dark } else { p.skin_dark };
@@ -983,6 +991,41 @@ fn build_head(p: &Palette, team: Team) -> Template {
     ball(&mut t, 0.079, sk - 0.008, 0.012, 0.011, 0.026, 0.019, p.skin_dark, 8);
     ball(&mut t, -0.079, sk - 0.008, 0.012, 0.011, 0.026, 0.019, p.skin_dark, 8);
 
+    // Scout: beret and headset. Recon: fabric hood and goggles. Their bodies and hitboxes stay identical.
+    if avatar == 1 {
+        loft(
+            &mut t,
+            &[
+                [0.172, 0., 0.008, 0.098, 0.107],
+                [0.209, -0.02, 0.012, 0.109, 0.104],
+                [0.237, -0.026, 0.012, 0.071, 0.075],
+            ],
+            p.uniform,
+            16,
+            true,
+        );
+        bx(&mut t, 0.045, 0.201, -0.09, 0.013, 0.017, 0.006, p.metal);
+        bx2(&mut t, 0.089, 0.116, 0.01, 0.015, 0.027, 0.021, p.vest_dark);
+        strap(&mut t, vec3(-0.087, 0.09, 0.005), vec3(-0.05, 0.046, -0.11), 0.004, 0.004, p.metal);
+        return t;
+    }
+    if avatar == 2 {
+        loft(
+            &mut t,
+            &[
+                [0.045, 0., 0.025, 0.088, 0.103],
+                [0.16, 0., 0.025, 0.099, 0.11],
+                [0.23, 0., 0.025, 0.089, 0.087],
+                [0.26, 0., 0.026, 0.04, 0.046],
+            ],
+            p.uniform,
+            16,
+            true,
+        );
+        bx(&mut t, 0., 0.12, -0.095, 0.059, 0.018, 0.012, p.vest_dark);
+        bx2(&mut t, 0.028, 0.12, -0.108, 0.024, 0.013, 0.004, [0.20, 0.30, 0.33]);
+        return t;
+    }
     // ---- helmet: an elliptical dome of smooth rings, rim, nape cover, ear flaps, chin strap, mount ----
     let hb = 0.158; // rim height above the pivot
     let (rx, rz, cz, hh) = (0.108, 0.128, 0.010, 0.110);
@@ -1051,6 +1094,12 @@ fn build_head(p: &Palette, team: Team) -> Template {
             bx(&mut t, 0., hb + 0.07, -0.145, 0.018, 0.012, 0.008, [0.04, 0.05, 0.05]);
             bx2(&mut t, 0.108, hb + 0.012, 0.0, 0.007, 0.012, 0.06, p.plate); // rails
         }
+    }
+    if avatar == 3 {
+        bx(&mut t, 0., 0.105, -0.132, 0.10, 0.058, 0.010, p.metal);
+        bx(&mut t, 0., 0.13, -0.145, 0.080, 0.022, 0.004, [0.23, 0.34, 0.40]);
+        bx(&mut t, 0., 0.068, -0.142, 0.073, 0.016, 0.005, p.vest_dark);
+        bx2(&mut t, 0.103, 0.105, -0.085, 0.009, 0.053, 0.057, p.plate);
     }
     t
 }

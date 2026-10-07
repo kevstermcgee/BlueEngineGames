@@ -1,19 +1,19 @@
 # Deadfall: design brief (read this first)
 
-Deadfall is a team-deathmatch shooter for up to 12 players (two teams of six), built on the BlueEngine
+Deadfall is a fast shooter for 2–12 players: TDM, CTF, S&D and FFA, including 1v1, built on the BlueEngine
 (`vesper3d` = the engine crate `be2`, path dependency). It ships as one Windows `.exe`: **every model, texture-less
 surface, sound and map is generated in code**, there are no asset files. The look is clean low-poly: flat-coloured
 boxes, cylinders, cones and ellipsoids lit by the engine's `kit` materials (hemispheric ambient, one key light, rim
-light, fog, up to four point lights). There are no textures and no shadows.
+light, fog, up to four point lights). There are no textures. Players choose Off, Simple contact shadows, or Full cast shadows.
 
 ## Hard rules from the brief
 * First-person by default, 90 degree vertical FOV (aiming narrows it), iron sights and scopes, crouching.
 * **No blood. No music. No radio chatter.** Natural sounds of the place, weapons, explosions only.
 * HUD extremely minimal.
 * Teams: **Ironclad** (army green uniform, tan vest, boots and gloves, olive helmet with a tan net) and
-  **Nightwatch** (navy uniform, black vest, black helmet, black gloves and boots). Both wear military helmets.
+  **Nightwatch** (navy uniform, black vest, black helmet, black gloves and boots). Rifleman retains the helmet; Scout, Recon and Breacher add matching beret, hood and shield variants.
   Hands and arms in first person must match the wearer: same sleeve colour, same gloves.
-* At least 25 distinct weapons; 33 are planned (the roster below). Two firearms (one primary, one secondary), one
+* At least 25 distinct weapons; 36 are available (the roster below). Two firearms (one primary, one secondary), one
   melee weapon, up to two grenades per player. Every weapon has its own ammunition (magazine and reserve).
 * Units: metres. +Y up. Yaw 0 faces -Z, positive yaw turns towards +X. A standing player is 1.80 m tall, eye at
   1.68 m; crouched 1.10 m (eye at about 0.98 m); radius 0.23 m.
@@ -99,3 +99,11 @@ is no texture support: detail comes from many small, well-coloured parts. Use su
   `cargo test --lib`.
 * Commit your work on your branch with clear messages. Do not push.
 * Final report: what you built, what you verified and how (name the screenshots you looked at), what is missing.
+
+## Multiplayer expansion
+
+Stable maps: 0 Slagworks, 1 Switchyard, 2 Stormbreak. Stable modes: 0 TDM, 1 CTF, 2 S&D, 3 FFA. Settings append IDs 5 mode, 6 map, 7 duel, 8 objective; original IDs 1–4 remain unchanged. A duel admits exactly two humans, disables bots, and waits for both before starting. Objective rules live in `modes.rs`, independent of rendering; map geometry, navigation and prediction share `maps.rs`.
+
+Appended weapon IDs: 34 `hornet` (Hornet Burst, compact three-shot pistol), 35 `ranger` (Ranger Lever Rifle, deliberate accurate lever-action), 36 `breach8` (Breach-8 Slug, a single-projectile shotgun). Existing IDs remain unchanged.
+
+Protocol 2 deliberately requires updated clients and servers. The engine's acknowledged event stream carries original event ticks separately from budgeted state snapshots. Cosmetic choices share the existing choice byte; body and hitboxes remain the same across variants. No blood, music or voices.

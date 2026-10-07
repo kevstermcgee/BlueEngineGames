@@ -223,7 +223,7 @@ pub fn impact(surface: Surface) -> Sfx {
 pub fn shot_for_key(key: &str) -> Option<Sfx> {
     use Sfx::*;
     Some(match key {
-        "k9" => ShotK9,
+        "k9" | "hornet" => ShotK9,
         "m45" => ShotM45,
         "hc50" => ShotHc50,
         "rv357" => ShotRv357,
@@ -238,11 +238,11 @@ pub fn shot_for_key(key: &str) -> Option<Sfx> {
         "gl4" => ShotGl4,
         "dmr20" => ShotDmr20,
         "svd" => ShotSvd,
-        "scout" => ShotScout,
+        "scout" | "ranger" => ShotScout,
         "awm" => ShotAwm,
         "m82" => ShotM82,
         "pump12" => ShotPump12,
-        "auto12" => ShotAuto12,
+        "auto12" | "breach8" => ShotAuto12,
         "sawn" => ShotSawn,
         "para" => ShotPara,
         "pk" => ShotPk,
@@ -269,15 +269,15 @@ pub fn melee_hit_for_key(key: &str) -> Option<Sfx> {
 pub fn reload_sequence(key: &str) -> &'static [(f32, Sfx)] {
     use Sfx::*;
     match key {
-        "k9" | "m45" | "hc50" => &[(0.0, MagOutLight), (0.55, MagInLight), (0.85, SlideRelease)],
+        "k9" | "m45" | "hc50" | "hornet" => &[(0.0, MagOutLight), (0.55, MagInLight), (0.85, SlideRelease)],
         "mp9" | "ump" | "pdw" | "vkr" => &[(0.0, MagOutLight), (0.55, MagInLight), (0.85, BoltPull)],
         "k47" | "m4c" | "fm2" | "bpa" | "gl4" | "dmr20" | "svd" => {
             &[(0.0, MagOutHeavy), (0.5, MagInHeavy), (0.82, BoltPull)]
         }
         "awm" | "m82" => &[(0.0, MagOutHeavy), (0.5, MagInHeavy), (0.85, BoltCycle)],
-        "scout" => &[(0.0, ShellInsert), (0.25, ShellInsert), (0.5, ShellInsert), (0.8, BoltCycle)],
+        "scout" | "ranger" => &[(0.0, ShellInsert), (0.25, ShellInsert), (0.5, ShellInsert), (0.8, BoltCycle)],
         "rv357" => &[(0.0, RevolverLoad)],
-        "pump12" | "auto12" => &[(0.0, ShellInsert)],
+        "pump12" | "auto12" | "breach8" => &[(0.0, ShellInsert)],
         "sawn" | "thumper" => &[(0.0, BreakAction)],
         "para" | "pk" => &[(0.0, BeltLoad), (0.75, BoltPull)],
         "rpg" => &[(0.0, RocketLoad)],

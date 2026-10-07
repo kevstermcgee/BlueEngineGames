@@ -35,6 +35,12 @@ pub struct Prefs {
     pub bot_count_fill: bool,
     /// Last team picked (0 Ironclad, 1 Nightwatch).
     pub team: u8,
+    pub avatar: u8,
+    pub skin: u8,
+    pub mode: u8,
+    pub map: u8,
+    pub duel: bool,
+    pub objective_target: u16,
 }
 
 impl Default for Prefs {
@@ -57,6 +63,12 @@ impl Default for Prefs {
             bot_skill: 1,
             bot_count_fill: true,
             team: 0,
+            avatar: 0,
+            skin: 0,
+            mode: 0,
+            map: 0,
+            duel: true,
+            objective_target: 3,
         }
     }
 }
@@ -86,9 +98,18 @@ impl Prefs {
         self.minutes = self.minutes.clamp(1, 60);
         self.bot_skill = self.bot_skill.min(2);
         self.team = self.team.min(1);
+        self.avatar = self.avatar.min(3);
+        self.skin = self.skin.min(3);
+        self.mode = self.mode.min(3);
+        self.map = self.map.min(2);
+        self.objective_target = self.objective_target.clamp(1, 20);
         self.name = self.name.chars().filter(|c| !c.is_control()).take(16).collect();
         self.address = self.address.chars().filter(|c| !c.is_control()).take(80).collect();
-        self.last_hub = self.last_hub.take().map(|h| h.chars().filter(|c| !c.is_control()).take(80).collect::<String>()).filter(|h| !h.trim().is_empty());
+        self.last_hub = self
+            .last_hub
+            .take()
+            .map(|h| h.chars().filter(|c| !c.is_control()).take(80).collect::<String>())
+            .filter(|h| !h.trim().is_empty());
         self.key = self.key.chars().filter(|c| !c.is_control()).take(64).collect();
     }
     /// The name shown in matches: what was typed, else the computer's user name, else "Soldier".
@@ -139,8 +160,7 @@ mod tests {
         assert_eq!((p.shadows, p.name.as_str()), (ShadowQuality::Simple, "Kev"));
         // Each tier is remembered.
         for q in ShadowQuality::ALL {
-            let mut p = Prefs::default();
-            p.shadows = q;
+            let p = Prefs { shadows: q, ..Default::default() };
             std::fs::write(&path, serde_json::to_string(&p).unwrap()).unwrap();
             assert_eq!(Prefs::load_from(&path).shadows, q);
         }

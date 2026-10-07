@@ -92,6 +92,7 @@ pub enum DecorKind {
     Vent,
     Chimney,
     WaterTower,
+    RadarDish,
     CoolingTower,
     Crane,
     RailTrack,
@@ -149,7 +150,11 @@ pub struct Level {
 impl Level {
     /// The engine colliders for every solid block, in block order.
     pub fn colliders(&self) -> Vec<Collider> {
-        self.blocks.iter().map(|b| Collider { min: b.min, max: b.max }).collect()
+        self.blocks
+            .iter()
+            .filter(|b| b.material != Material::Water)
+            .map(|b| Collider { min: b.min, max: b.max })
+            .collect()
     }
 
     /// Distance along the ray to the nearest block, if it is within `max`.
@@ -247,6 +252,7 @@ impl Builder {
         self
     }
     /// A block standing on the ground (y from `y0`) with the footprint `x0..x1`, `z0..z1` and `height`.
+    #[allow(clippy::too_many_arguments)] // Established scalar geometry/gameplay interface.
     pub fn solid(&mut self, x0: f32, z0: f32, x1: f32, z1: f32, y0: f32, height: f32, material: Material) -> &mut Self {
         self.block(V(x0, y0, z0), V(x1, y0 + height, z1), material)
     }

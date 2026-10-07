@@ -2,15 +2,15 @@
 //! joined where a player can step (up to the controller's 0.22 m step) or drop (up to 1.5 m).
 use crate::level::Level;
 use std::cmp::Ordering;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 use vesper3d::math::V;
 use vesper3d::viewer::controller::Collider;
 use vesper3d::viewer::devkit::Rng;
 
 pub const CELL: f32 = 0.5;
-/// What a player climbs from one cell to the next: a few stair treads fit in a cell, and a jump clears 0.55 m.
+/// What a player climbs from one cell to the next: a few stair treads fit in a cell, and a jump clears 0.85 m.
 const STEP: f32 = 0.22;
-const EDGE_STEP: f32 = 0.5;
+const EDGE_STEP: f32 = 0.85;
 const DROP: f32 = 1.5;
 const CLEARANCE_RADIUS: f32 = 0.32;
 
@@ -29,6 +29,8 @@ pub struct Nav {
     nodes: Vec<Node>,
     /// For every column, the range of `nodes` in it.
     columns: Vec<(u32, u16)>,
+    /// Short links over expansion joints, precomputed with body clearance.
+    bridges: HashMap<usize, Vec<usize>>,
 }
 
 impl Nav {
@@ -106,7 +108,36 @@ impl Nav {
                 columns[(iz * nx + ix) as usize] = (start, (nodes.len() as u32 - start) as u16);
             }
         }
-        Nav { min_x, min_z, nx, nz, nodes, columns }
+        let mut nav = Nav { min_x, min_z, nx, nz, nodes, columns, bridges: HashMap::new() };
+        for i in 0..nav.nodes.len() {
+            let n = nav.nodes[i];
+            let mut links = Vec::new();
+            for (dx, dz) in [(1, 0), (-1, 0), (0, 1), (0, -1)] {
+                let midpoint = V(
+                    min_x + (n.ix + dx) as f32 * CELL + CELL * 0.5,
+                    n.y,
+                    min_z + (n.iz + dz) as f32 * CELL + CELL * 0.5,
+                );
+                if nav.column(n.ix + dx, n.iz + dz).iter().any(|m| (m.y - n.y).abs() < 0.25) {
+                    continue;
+                }
+                for (k, m) in nav.column(n.ix + 2 * dx, n.iz + 2 * dz).iter().enumerate() {
+                    if (m.y - n.y).abs() > 0.25 {
+                        continue;
+                    }
+                    let obstructed = near(midpoint.0, midpoint.2).iter().any(|b| {
+                        colliders[*b as usize].overlaps_body(midpoint, n.y + STEP + 0.001, 1.8 - STEP, CLEARANCE_RADIUS)
+                    });
+                    if !obstructed {
+                        links.push(nav.index(n.ix + 2 * dx, n.iz + 2 * dz, k));
+                    }
+                }
+            }
+            if !links.is_empty() {
+                nav.bridges.insert(i, links);
+            }
+        }
+        nav
     }
 
     pub fn len(&self) -> usize {
@@ -167,6 +198,11 @@ impl Nav {
     fn neighbours(&self, n: usize, out: &mut Vec<(usize, f32)>) {
         out.clear();
         let node = self.nodes[n];
+        if let Some(links) = self.bridges.get(&n) {
+            for link in links {
+                out.push((*link, CELL * 2.));
+            }
+        }
         for (dx, dz) in [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)] {
             let (cx, cz) = (node.ix + dx, node.iz + dz);
             let diagonal = dx != 0 && dz != 0;
@@ -241,7 +277,11 @@ impl Nav {
         open.push(Item(h(start), start));
         let mut buf = Vec::new();
         let mut expanded = 0;
-        while let Some(Item(_, n)) = open.pop() {
+        while let Some(Item(priority, n)) = open.pop() {
+            // A cheaper route may have queued this node again; do not expand the obsolete entry.
+            if priority > g[n] + h(n) + 0.001 {
+                continue;
+            }
             if n == goal {
                 let mut path = vec![n];
                 let mut c = n;

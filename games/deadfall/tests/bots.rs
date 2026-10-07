@@ -5,12 +5,12 @@ use vesper3d::math::V;
 
 #[test]
 fn twelve_bots_fight_a_full_minute_without_standing_around() {
-    let settings = Settings { bots: true, end: EndRule::Kills { target: 999 }, bot_skill: 1 };
+    let settings = Settings { bots: true, end: EndRule::Kills { target: 999 }, bot_skill: 1, ..Default::default() };
     let (mut m, slots) = Match::new(11, &[], settings);
     assert!(slots.is_empty());
     assert_eq!(m.players.len(), 12);
     let start: Vec<V> = m.players.iter().map(|p| p.feet()).collect();
-    let mut travelled = vec![0f32; 12];
+    let mut travelled = [0f32; 12];
     let mut last = start.clone();
     let clock = Instant::now();
     let inputs = vec![None; 12];
@@ -38,7 +38,12 @@ fn twelve_bots_fight_a_full_minute_without_standing_around() {
 #[test]
 fn bots_collect_weapons_and_survive_a_long_soak_on_several_seeds() {
     for seed in 1..=4u64 {
-        let settings = Settings { bots: true, end: EndRule::Time { minutes: 30 }, bot_skill: (seed % 3) as u8 };
+        let settings = Settings {
+            bots: true,
+            end: EndRule::Time { minutes: 30 },
+            bot_skill: (seed % 3) as u8,
+            ..Default::default()
+        };
         let (mut m, _) = Match::new(seed, &[], settings);
         let inputs = vec![None; 12];
         let mut armed = [false; 12];
@@ -54,9 +59,16 @@ fn bots_collect_weapons_and_survive_a_long_soak_on_several_seeds() {
         let kills: u32 = m.players.iter().map(|p| p.kills as u32).sum();
         assert!(kills >= 20, "seed {seed}: only {kills} kills in four minutes");
         assert!(armed.iter().filter(|a| **a).count() >= 8, "seed {seed}: bots should pick up primaries, {armed:?}");
-        println!("seed {seed}: {kills} kills, {} armed, {grenades} grenades thrown", armed.iter().filter(|a| **a).count());
+        println!(
+            "seed {seed}: {kills} kills, {} armed, {grenades} grenades thrown",
+            armed.iter().filter(|a| **a).count()
+        );
         for p in &m.players {
-            assert!(p.ctrl.position.1 > -5. && p.ctrl.position.0.abs() < 70. && p.ctrl.position.2.abs() < 50., "bot left the map: {:?}", p.ctrl.position);
+            assert!(
+                p.ctrl.position.1 > -5. && p.ctrl.position.0.abs() < 70. && p.ctrl.position.2.abs() < 50.,
+                "bot left the map: {:?}",
+                p.ctrl.position
+            );
         }
     }
 }
@@ -65,7 +77,12 @@ fn bots_collect_weapons_and_survive_a_long_soak_on_several_seeds() {
 fn a_bot_with_a_grenade_throws_it_at_an_enemy_in_range() {
     use deadfall::sim::{world_for, Event};
     let world = world_for(deadfall::level::placeholder());
-    let (mut m, _) = Match::new_in(world, 5, &[], Settings { bots: true, end: EndRule::Kills { target: 999 }, bot_skill: 2 });
+    let (mut m, _) = Match::new_in(
+        world,
+        5,
+        &[],
+        Settings { bots: true, end: EndRule::Kills { target: 999 }, bot_skill: 2, ..Default::default() },
+    );
     // Only bot 0 (Ironclad) and bot 6 (Nightwatch) matter: park everyone else far away behind the crate and freeze them.
     for p in &mut m.players {
         p.protect_until = u32::MAX;
@@ -73,7 +90,7 @@ fn a_bot_with_a_grenade_throws_it_at_an_enemy_in_range() {
     let frag = deadfall::weapons::id_of("frag").unwrap();
     m.players[0].inv.grenades = [frag, 0];
     m.teleport(0, V(-20., 0., 22.), 0., 0.);
-    m.teleport(6, V(-20., 0., 8.), 3.14, 0.);
+    m.teleport(6, V(-20., 0., 8.), std::f32::consts::PI, 0.);
     for i in 1..12 {
         if i != 6 {
             m.teleport(i, V(25. + i as f32, 0., 25.), 0., 0.);

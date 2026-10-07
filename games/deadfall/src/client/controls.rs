@@ -11,9 +11,8 @@
 //! | walk (quiet) | Shift (hold) | left stick click |
 //! | scoreboard / menu | Tab / Esc | Back / Start |
 //!
-//! Gameplay keys are read straight from macroquad, not through `ClientInput`'s native list (which tracks only 23
-//! keys on Windows, so R, G, Tab and the number row would silently read as never pressed).
-use crate::input::{Input, ADS, CROUCH, FIRE, JUMP, PITCH_LIMIT, WALK};
+//! Gameplay keys use the engine native key state so packaged Windows clients share the same input path.
+use crate::input::{Input, ADS, CROUCH, FIRE, JUMP, PITCH_LIMIT, USE_HELD, WALK};
 use crate::prefs::Prefs;
 use macroquad::prelude::*;
 use vesper3d::viewer::game_client::GameShell;
@@ -34,7 +33,6 @@ impl Script {
         let mut cues = Vec::new();
         for part in text.split(',').map(str::trim).filter(|p| !p.is_empty()) {
             let (name, rest) = part.split_once([':', '@']).map_or((part, ""), |(a, b)| (a, b));
-            let press = part.contains('@') && !part.contains(':');
             let (rate, range) = match rest.split_once('@') {
                 Some((r, range)) => (r.parse().unwrap_or(0.), range),
                 None => (1., rest),
@@ -43,7 +41,7 @@ impl Script {
                 Some((a, b)) => (a.parse().unwrap_or(0), b.parse().unwrap_or(0)),
                 None => {
                     let n = range.parse().unwrap_or(0);
-                    (n, if press { n } else { n })
+                    (n, n)
                 }
             };
             cues.push((name.to_string(), rate, a, b));
@@ -71,6 +69,7 @@ pub struct Controls {
     pub pitch: f32,
     reload_seq: u8,
     use_seq: u8,
+    use_held: bool,
     melee_seq: u8,
     drop_seq: u8,
     switch_seq: u8,
@@ -95,6 +94,7 @@ impl Controls {
             pitch: 0.,
             reload_seq: 0,
             use_seq: 0,
+            use_held: false,
             melee_seq: 0,
             drop_seq: 0,
             switch_seq: 0,
@@ -155,6 +155,7 @@ impl Controls {
             self.ads = sc.held("ads");
             self.crouch = sc.held("crouch");
             self.walk = sc.held("walk");
+            self.use_held = sc.held("use");
             self.scoreboard = sc.held("scores");
             if sc.pressed("jump") {
                 self.jump_latch = true;
@@ -181,6 +182,10 @@ impl Controls {
             self.fire = false;
             self.ads = false;
             self.scoreboard = false;
+            self.use_held = false;
+            self.crouch = false;
+            self.walk = false;
+            self.jump_latch = false;
             self.axes = (0., 0.);
             return;
         }
@@ -198,8 +203,8 @@ impl Controls {
         self.pitch = (self.pitch - ly * sign).clamp(-PITCH_LIMIT, PITCH_LIMIT);
 
         let pad = input.gamepad();
-        let key = is_key_down;
-        let pressed = is_key_pressed;
+        let key = |k| input.down(k);
+        let pressed = |k| input.pressed(k);
         // Movement.
         let mut right = f32::from(key(KeyCode::D)) - f32::from(key(KeyCode::A));
         let mut forward = f32::from(key(KeyCode::W)) - f32::from(key(KeyCode::S));
@@ -220,6 +225,7 @@ impl Controls {
         if pressed(KeyCode::R) || pad.pressed(Button::West) {
             self.reload_seq = self.reload_seq.wrapping_add(1);
         }
+        self.use_held = key(KeyCode::E) || pad.down(Button::RightTrigger);
         if pressed(KeyCode::E) || pad.pressed(Button::RightTrigger) {
             self.use_seq = self.use_seq.wrapping_add(1);
         }
@@ -250,9 +256,7 @@ impl Controls {
         let wheel = mouse_wheel().1;
         let step = if wheel > 0. {
             -1
-        } else if wheel < 0. {
-            1
-        } else if pad.pressed(Button::North) {
+        } else if wheel < 0. || pad.pressed(Button::North) {
             1
         } else {
             0
@@ -295,6 +299,9 @@ impl Controls {
         }
         if self.walk {
             i.buttons |= WALK;
+        }
+        if self.use_held {
+            i.buttons |= USE_HELD;
         }
         if self.jump_latch {
             i.buttons |= JUMP;

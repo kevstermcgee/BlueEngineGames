@@ -81,7 +81,7 @@ impl BotState {
             path: Vec::new(),
             path_i: 0,
             goal: None,
-            repath_at: 0,
+            repath_at: rng.below(12) as u32,
             strafe: 1.,
             strafe_until: 0,
             last_pos: V::ZERO,
@@ -158,7 +158,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
     if (tick + slot as u32).is_multiple_of(3) {
         let mut best: Option<(f32, usize)> = None;
         for e in &m.players {
-            if !e.alive || e.team == me.team {
+            if !e.alive || !m.enemies(slot, e.slot) {
                 continue;
             }
             let d = (e.eye() - eye).length();
@@ -292,10 +292,35 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
         }
         goal = b.goal;
     }
+    if let Some(objective) = m.objective_goal(slot) {
+        let carrying = m.objective.flags.iter().any(|f| f.carrier == slot as u8)
+            || m.settings.mode == crate::modes::GameMode::SearchDestroy && m.objective.carrier == slot as u8;
+        // Carriers and two runners per team keep advancing instead of abandoning the objective
+        // whenever an opponent is visible. Other bots get a primary before escorting/defending.
+        let runner = slot.is_multiple_of(3);
+        if (carrying || runner || me.inv.primary.is_some()) && (target.is_none() || carrying || runner) {
+            let team = me.team.index();
+            let home = m.settings.map.bases()[team];
+            let flank = m.settings.map.sites()[(slot / 3) % 2];
+            // Runners approach through a side lane rather than joining every central firefight.
+            let flanking = m.settings.mode == crate::modes::GameMode::CaptureFlag
+                && runner
+                && !carrying
+                && m.objective.flags[team].dropped_at == 0
+                && m.objective.flags[1 - team].carrier == 255
+                && feet.2 * home.2.signum() > flank.2 * home.2.signum() + 1.;
+            goal = Some(if flanking { flank } else { objective });
+            if (feet - objective).length() < 2. {
+                input.buttons |= crate::input::USE_HELD;
+            }
+        }
+    }
     if let Some(g) = goal {
-        let stale = tick >= b.repath_at || b.path.is_empty() && (g - feet).length() > 1.5;
+        // Empty/unreachable paths also obey this deadline; retrying every tick can flood A*.
+        let stale = tick >= b.repath_at;
         if stale {
-            b.repath_at = tick + 45;
+            // Spread bots across ticks instead of synchronizing all their expensive searches.
+            b.repath_at = tick + 45 + (slot as u32 * 7 % 13);
             b.path = world.nav.path(feet, g).unwrap_or_default();
             b.path_i = 0;
             if b.path.is_empty() && b.target.is_none() {
@@ -310,6 +335,9 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
             b.path_i += 1;
         }
         if let Some(p) = b.path.get(b.path_i) {
+            if p.1 - feet.1 > 0.22 && me.ctrl.is_grounded() {
+                input.buttons |= crate::input::JUMP;
+            }
             let d = V(p.0 - feet.0, 0., p.2 - feet.2);
             if d.length() > 0.05 {
                 want_dir = want_dir + d.norm();
@@ -380,7 +408,7 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
         let speed = if target.is_some() && dist_to_target < 10. && b.skill < 2 { 0.7 } else { 1. };
         input.set_axes(right * speed, forward * speed);
     }
-    if tick < b.jump_until && tick % 10 == 0 {
+    if tick < b.jump_until && tick.is_multiple_of(10) {
         input.buttons |= JUMP;
     }
 

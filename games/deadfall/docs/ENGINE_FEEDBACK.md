@@ -1,3 +1,21 @@
+# Current upgrade findings (2026-10-07)
+
+This section supersedes the historical observations below. The original report is retained as development history; its measurements and missing features describe that earlier engine.
+
+* **Fixed in the engine:** packet framing allowed 1200 bytes while the transport accepted 1100. A deterministic busy-combat fixture reproduced state starvation and send errors. The encoder now obeys the effective peer limit and encodes game snapshots once per recipient. Deadfall budgets optional nearby projectiles, zones and drops around essential state.
+* **Fixed in the engine:** tick acknowledgement lost partial batches of same-tick events. Opt-in reliable events have sequence acknowledgements, bounded retention/reordering, observable gaps, and original event ticks. State continues independently. Oversized events produce a counted gap rather than blocking movement or later events.
+* **Fixed in the engine:** delayed lobby messages could reset a new match under reordering. Reliable-event lobby transitions now carry authenticated match generations. Short results screens retry at the usual snapshot cadence so the final combat events can drain. Regression fixtures include repeated matches with 25% loss, event bursts with 30% loss, and oversized events.
+* **Adopted current engine input:** the native key table is complete in this engine. Deadfall now uses `ClientInput` for gameplay keys; the historical 23-key workaround is removed. Losing focus clears movement, fire, aim and interactions.
+* **Fixed in the game:** Slagworks roof pickups were inaccessible to bots. Match navigation now uses the actual player jump height and checks collision before bridging a narrow roof joint. Reachability checks cover every spawn, weapon and objective on all three maps, and standing spawn physics catches raised-floor penetration.
+* **Fixed in the game:** DNS lookup blocked the render loop. A single bounded worker now resolves asynchronously; timeout, cancellation and retries remain usable. Numeric socket addresses bypass the worker. A stuck OS lookup cannot accumulate unbounded threads.
+* **Verification improved:** Deadfall is included in native Linux/Windows game CI. Real hub tests are mandatory there, with the hub built from the catalog engine. Linux-only process-argument inspection is kept optional on Windows while actual room creation, joining, capacity, mode and map checks run on both.
+
+Remaining engine opportunities grounded in this task: typed per-room context would remove process-global `NetGame` configuration and test serialization; a reusable background resolver could replace game-side glue; shared 3D navigation would remove each game's multi-floor implementation; real input injection would verify the hardware event path. Legacy custom-sim projects without `game.project.json` still need their native `scripts/check.py`/`ship.py` path rather than automatic `check --game` shipping. None of these gaps prevents this game's current native release.
+
+Transport/measurement limits: hub rooms use UDP without TLS; session ownership is not encryption. Event retention is bounded, so prolonged loss, oversize events or ending results before catch-up can still produce gaps. Loopback and simulated loss are not an interstate connectivity test. Headless software-render captures prove visible output, not hardware frame rate or subjective audio quality. See the current verification report for measured results.
+
+---
+
 # Feedback on developing with BlueEngine (from building Deadfall)
 
 Ordered by how much each item cost or would save in the next game. "Cost" is time or tokens it actually cost here.

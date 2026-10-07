@@ -29,7 +29,8 @@ use vesper3d::viewer::netplay::{ClientConfig, ClientState, NetClient, NetGame};
 
 const SERVER_BIN: &str = env!("CARGO_BIN_EXE_deadfall-server");
 /// `netgame::fingerprint()` of the shipped clients and the deployed server (pinned in `netgame.rs` too).
-const SHIPPED_FINGERPRINT: u32 = 0x2BAF_E9C8;
+const OLD_SHIPPED_FINGERPRINT: u32 = 0x2BAF_E9C8;
+const CURRENT_FINGERPRINT: u32 = 0x92E9DA56;
 
 // ---- finding and running the hub ------------------------------------------------------------------------------------
 
@@ -39,12 +40,14 @@ fn hub_binary() -> Option<PathBuf> {
         found.push(p.into());
     }
     if let Some(home) = std::env::var_os("HOME") {
-        for profile in ["fast", "release", "debug"] {
+        for profile in ["itest", "fast", "release", "debug"] {
             found.push(Path::new(&home).join(".cache/be-engine-target").join(profile).join("be2-hub"));
         }
     }
-    for profile in ["fast", "release", "debug"] {
-        found.push(Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../BlueEngine/target").join(profile).join("be2-hub"));
+    for profile in ["itest", "fast", "release", "debug"] {
+        found.push(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../BlueEngine/target").join(profile).join("be2-hub"),
+        );
     }
     found.into_iter().find(|p| p.is_file())
 }
@@ -53,6 +56,10 @@ fn hub_binary() -> Option<PathBuf> {
 fn hub_or_skip(test: &str) -> Option<PathBuf> {
     let bin = hub_binary();
     if bin.is_none() {
+        assert!(
+            std::env::var_os("CI").is_none() && std::env::var_os("BE2_HUB").is_none(),
+            "real engine hub integration is mandatory in CI or when BE2_HUB is set"
+        );
         eprintln!(
             "SKIPPED {test}: no be2-hub binary. Build it with: cd ~/BlueEngine && \
              CARGO_TARGET_DIR=~/.cache/be-engine-target cargo build --profile fast --bin be2-hub (or set BE2_HUB)"
@@ -98,7 +105,7 @@ fn registry(base: u16, pool: u16, dir: &Path) -> String {
         "[hub]\nlisten = 127.0.0.1:{base}\npool_start = {}\npool_size = {pool}\nreport_dir = {}\nlegacy = serve\n\
          rate_burst = 1000\nrate_per_sec = 1000\nmax_rooms_per_ip = 10\n\n\
          [game deadfall]\nserver = {SERVER_BIN}\npublic = on\npublic_name = Public\nuser_set = kills=40\n\
-         client_settings = bots,kills\nmax_rooms = 4\nauto_start = 0\n",
+         client_settings = bots,kills,skill,minutes,mode,map,duel,objective\nmax_rooms = 4\nauto_start = 0\n",
         base + 1,
         dir.join("reports").display()
     )
@@ -115,7 +122,8 @@ impl Hub {
         let base = free_ports(pool);
         let conf = dir.join("hub.conf");
         std::fs::write(&conf, registry(base, pool, dir)).unwrap();
-        let child = Command::new(bin).arg("--config").arg(&conf).stdin(Stdio::null()).stdout(Stdio::null()).spawn().unwrap();
+        let child =
+            Command::new(bin).arg("--config").arg(&conf).stdin(Stdio::null()).stdout(Stdio::null()).spawn().unwrap();
         let mut hub = Hub { child, addr: ([127, 0, 0, 1], base).into(), pool: base + 1..=base + pool };
         // Up when the Public room answers a list.
         let mut client = HubClient::new(hub.addr, "deadfall").unwrap();
@@ -141,7 +149,8 @@ impl Hub {
                 continue;
             }
             let Ok(cmd) = std::fs::read(e.path().join("cmdline")) else { continue };
-            let args: Vec<String> = cmd.split(|b| *b == 0).filter(|a| !a.is_empty()).map(|a| String::from_utf8_lossy(a).into()).collect();
+            let args: Vec<String> =
+                cmd.split(|b| *b == 0).filter(|a| !a.is_empty()).map(|a| String::from_utf8_lossy(a).into()).collect();
             out.push((pid, args));
         }
         out
@@ -326,7 +335,7 @@ fn old_ask(sock: &UdpSocket, hub: SocketAddr, request: &[u8], max_reply: usize) 
 /// What the shipped client does with a hub's build: it compares it with its raw `netgame::fingerprint()` and shows its
 /// "This server runs a different version of Deadfall. Update the game, then try again." message when they differ.
 fn old_client_shows_update_message(hub_build: u32) -> bool {
-    hub_build != deadfall::netgame::fingerprint()
+    hub_build != OLD_SHIPPED_FINGERPRINT
 }
 
 // ---- the tests --------------------------------------------------------------------------------------------------------
@@ -345,25 +354,27 @@ fn the_engine_hub_carries_the_real_server_over_behb_and_dfhb_and_two_players_joi
     assert!(public.public && public.name == "Public", "{public:?}");
     assert_eq!((public.capacity, public.state), (12, RoomState::Lobby));
     assert!(hub.pool.contains(&public.port), "the room is on a pool port: {}", public.port);
-    assert_ne!(local_build::<DeadfallGame>(), SHIPPED_FINGERPRINT, "the BEHB build is not the raw fingerprint");
-    assert_eq!(DeadfallGame::fingerprint(), SHIPPED_FINGERPRINT);
+    assert_ne!(local_build::<DeadfallGame>(), CURRENT_FINGERPRINT, "the BEHB build is not the raw fingerprint");
+    assert_eq!(DeadfallGame::fingerprint(), CURRENT_FINGERPRINT);
 
     // The hub started the real server with the typed settings (never player text) and the supervision flags.
-    let args = hub.server_args(public.port);
-    for want in ["--status-lines", "--exit-on-stdin-eof", "--transport"] {
-        assert!(args.iter().any(|a| a == want), "{want} in {args:?}");
+    if cfg!(target_os = "linux") {
+        let args = hub.server_args(public.port);
+        for want in ["--status-lines", "--exit-on-stdin-eof", "--transport"] {
+            assert!(args.iter().any(|a| a == want), "{want} in {args:?}");
+        }
+        assert!(args.iter().any(|a| a.contains("deadfall-server")), "{args:?}");
     }
-    assert!(args.iter().any(|a| a.contains("deadfall-server")), "{args:?}");
 
     // (d) DFHB v1 from a shipped client's point of view.
     let old = UdpSocket::bind("127.0.0.1:0").unwrap();
     old.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
     let (nonce, build, reply) = old_ask(&old, hub.addr, &old_ping(77), 32);
-    assert_eq!((nonce, build, reply), (77, SHIPPED_FINGERPRINT, OldReply::Pong));
+    assert_eq!((nonce, build, reply), (77, CURRENT_FINGERPRINT, OldReply::Pong));
     let (nonce, build, reply) = old_ask(&old, hub.addr, &old_list(78, 0), 1000);
     assert_eq!(nonce, 78);
     assert_eq!(build, deadfall::netgame::fingerprint(), "the hub tells old clients the raw fingerprint");
-    assert!(!old_client_shows_update_message(build), "the shipped client would NOT show its update message");
+    assert!(old_client_shows_update_message(build), "old clients must ask the player to update for the new protocol");
     let OldReply::Rooms { skip, total, rooms } = reply else { panic!("{reply:?}") };
     assert_eq!((skip, total, rooms.len()), (0, 1, 1));
     assert_eq!(
@@ -399,7 +410,11 @@ fn the_engine_hub_carries_the_real_server_over_behb_and_dfhb_and_two_players_joi
         in_lobby = clients.iter().all(|c| *c.state() == ClientState::Lobby);
         std::thread::sleep(Duration::from_millis(10));
     }
-    assert!(in_lobby, "both clients reached the lobby: {:?}", clients.iter().map(|c| c.state().clone()).collect::<Vec<_>>());
+    assert!(
+        in_lobby,
+        "both clients reached the lobby: {:?}",
+        clients.iter().map(|c| c.state().clone()).collect::<Vec<_>>()
+    );
     // The server prints a status line a second; both protocols show the count.
     let mut seen = (0, 0);
     let found = eventually(15, || {
@@ -434,29 +449,36 @@ fn rooms_made_by_a_shipped_client_and_by_an_engine_client_reach_the_server_as_ty
     // The shipped client's Create{bots, kills, name}: the hub maps it to the settings named `bots` and `kills`
     // (ids 1 and 2 of deadfall-server's --info) and starts the room with `--set`.
     let (nonce, build, reply) = old_ask(&old, hub.addr, &old_create(5, "Old crew", true, 20), 128);
-    assert_eq!((nonce, build), (5, SHIPPED_FINGERPRINT));
+    assert_eq!((nonce, build), (5, CURRENT_FINGERPRINT));
     let OldReply::Created(room) = reply else { panic!("{reply:?}") };
     assert_eq!((room.name.as_str(), room.public, room.capacity), ("Old crew", false, 12));
-    let args = hub.server_args(room.port);
-    let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
-    assert!(sets.contains(&"1=1") && sets.contains(&"2=20"), "bots=1, kills=20 in {args:?}");
-    assert!(!args.iter().any(|a| a.contains("Old crew")), "the room name never reaches a command line: {args:?}");
+    if cfg!(target_os = "linux") {
+        let args = hub.server_args(room.port);
+        let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
+        assert!(sets.contains(&"1=1") && sets.contains(&"2=20"), "bots=1, kills=20 in {args:?}");
+        assert!(!args.iter().any(|a| a.contains("Old crew")), "the room name never reaches a command line: {args:?}");
+    }
 
     // The shipped dialog sends only a name: kills 0 means the registry default (user_set kills=40), no bots.
     let (_, _, reply) = old_ask(&old, hub.addr, &old_create(6, "Plain", false, 0), 128);
     let OldReply::Created(plain) = reply else { panic!("{reply:?}") };
-    let args = hub.server_args(plain.port);
-    let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
-    assert!(sets.contains(&"2=40") && !sets.contains(&"1=1"), "{args:?}");
+    if cfg!(target_os = "linux") {
+        let args = hub.server_args(plain.port);
+        let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
+        assert!(sets.contains(&"2=40") && !sets.contains(&"1=1"), "{args:?}");
+    }
 
     // An engine client (this build) chooses kills by id and the room appears in both lists.
     let mut hc = HubClient::new(hub.addr, "deadfall").unwrap();
     hc.request_create_with("New crew", &[(deadfall::netgame::SETTING_KILLS, 25), (deadfall::netgame::SETTING_BOTS, 1)]);
     let HubEvent::Created { room: made, build } = wait_event(&mut hc) else { panic!("create failed") };
     assert_eq!(build, local_build::<DeadfallGame>());
-    let args = hub.server_args(made.port);
-    let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
-    assert!(sets.contains(&"2=25") && sets.contains(&"1=1"), "{args:?}");
+    if cfg!(target_os = "linux") {
+        let args = hub.server_args(made.port);
+        let sets: Vec<&str> = args.windows(2).filter(|w| w[0] == "--set").map(|w| w[1].as_str()).collect();
+        assert!(sets.contains(&"2=25") && sets.contains(&"1=1"), "{args:?}");
+    }
+
     let names: Vec<String> = list(&mut hc).into_iter().map(|r| r.name).collect();
     for n in ["Public", "Old crew", "Plain", "New crew"] {
         assert!(names.iter().any(|x| x == n), "{n} listed in {names:?}");
@@ -465,6 +487,106 @@ fn rooms_made_by_a_shipped_client_and_by_an_engine_client_reach_the_server_as_ty
     assert_eq!(rooms.len(), 4, "the shipped client lists every Deadfall room");
 
     // A setting the registry does not let players choose is refused, not passed on.
-    hc.request_create_with("Too clever", &[(deadfall::netgame::SETTING_MINUTES, 5)]);
-    assert!(matches!(wait_event(&mut hc), HubEvent::Error { .. }), "minutes is not in client_settings");
+    hc.request_create_with("Too clever", &[(99, 5)]);
+    assert!(matches!(wait_event(&mut hc), HubEvent::Error { .. }), "unknown setting IDs must be refused");
+}
+
+#[test]
+fn online_duels_wait_for_two_players_and_start_each_mode_on_the_requested_map() {
+    let Some(bin) = hub_or_skip("online_duels") else { return };
+    let dir = TempDir::new("duels");
+    let hub = Hub::start(&bin, &dir.0, 6);
+    let mut hc = HubClient::new(hub.addr, "deadfall").unwrap();
+    // Public occupies one slot; three private rooms exercise all maps, with a second run for FFA.
+    for (mode, map) in [(0, 0), (1, 1), (2, 2)] {
+        hc.request_create_with(
+            &format!("Cousins {mode}"),
+            &[(1, 0), (2, 10), (3, 1), (4, 0), (5, mode), (6, map), (7, 1), (8, 3)],
+        );
+        let HubEvent::Created { room, build } = wait_event(&mut hc) else { panic!("could not create duel") };
+        assert_eq!(build, local_build::<DeadfallGame>());
+        // Created may use --info's maximum until the first dynamic STATUS arrives.
+        assert!(eventually(10, || list(&mut hc).iter().any(|r| r.port == room.port && r.capacity == 2)));
+        let server = room_addr(hub.addr, room.port);
+        let start = Instant::now();
+        let make = |name: &str, choice: u8| {
+            NetClient::<DeadfallGame, _>::new(
+                client_transport(TransportProfile::Development, server).unwrap(),
+                server,
+                ClientConfig { name: name.into(), key: String::new(), choice },
+            )
+            .unwrap()
+        };
+        let mut first = make("Kevin", 30);
+        assert!(eventually(10, || {
+            first.poll(start.elapsed().as_secs_f64());
+            *first.state() == ClientState::Lobby
+        }));
+        first.ready(true);
+        // A ready host cannot start a duel while their friend is still connecting.
+        for _ in 0..30 {
+            first.poll(start.elapsed().as_secs_f64());
+            assert_eq!(*first.state(), ClientState::Lobby);
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let mut second = make("Cousin", 2);
+        assert!(eventually(10, || {
+            first.poll(start.elapsed().as_secs_f64());
+            second.poll(start.elapsed().as_secs_f64());
+            *second.state() == ClientState::Lobby
+        }));
+        let mut third = make("Extra", 0);
+        assert!(eventually(10, || {
+            first.poll(start.elapsed().as_secs_f64());
+            second.poll(start.elapsed().as_secs_f64());
+            third.poll(start.elapsed().as_secs_f64());
+            matches!(third.state(), ClientState::Rejected(_))
+        }));
+        second.ready(true);
+        assert!(eventually(15, || {
+            first.poll(start.elapsed().as_secs_f64());
+            second.poll(start.elapsed().as_secs_f64());
+            first.view().latest().is_some() && second.view().latest().is_some()
+        }));
+        for client in [&first, &second] {
+            let snapshot = &client.view().latest().unwrap().snap;
+            assert_eq!(snapshot.mode as u32, mode);
+            assert_eq!(snapshot.map as u32, map);
+            assert_eq!(snapshot.players.len(), 2);
+            assert_ne!(snapshot.players[0].appearance & 1, snapshot.players[1].appearance & 1);
+            let appearance: Vec<_> = snapshot.players.iter().map(|p| p.appearance & 30).collect();
+            assert_eq!(appearance, [30, 2]);
+            assert_eq!(client.event_gaps(), 0);
+        }
+        first.leave();
+        second.leave();
+    }
+    drop(hub);
+    // Fresh hub permits another private room without relying on idle-process expiry.
+    let hub = Hub::start(&bin, &dir.0, 4);
+    let mut hc = HubClient::new(hub.addr, "deadfall").unwrap();
+    hc.request_create_with("FFA duel", &[(1, 0), (2, 10), (5, 3), (6, 1), (7, 1)]);
+    let HubEvent::Created { room, .. } = wait_event(&mut hc) else { panic!("could not create FFA duel") };
+    let server = room_addr(hub.addr, room.port);
+    let mut clients: Vec<_> = (0..2)
+        .map(|i| {
+            NetClient::<DeadfallGame, _>::new(
+                client_transport(TransportProfile::Development, server).unwrap(),
+                server,
+                ClientConfig { name: format!("FFA {i}"), key: String::new(), choice: 0 },
+            )
+            .unwrap()
+        })
+        .collect();
+    let start = Instant::now();
+    assert!(eventually(15, || {
+        for c in &mut clients {
+            c.poll(start.elapsed().as_secs_f64());
+            if *c.state() == ClientState::Lobby {
+                c.ready(true);
+            }
+        }
+        clients.iter().all(|c| c.view().latest().is_some())
+    }));
+    assert!(clients.iter().all(|c| c.view().latest().unwrap().snap.mode == deadfall::modes::GameMode::FreeForAll));
 }

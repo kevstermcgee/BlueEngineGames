@@ -1,7 +1,7 @@
 {
   "title": "Deadfall",
-  "tagline": "Team deathmatch for up to twelve players. Six against six, online or against bots.",
-  "controls": "WASD move, mouse look, left mouse fire, right mouse aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores, Esc menu; controller supported",
+  "tagline": "Fast multiplayer combat: three maps, four modes, bots and 1v1 duels.",
+  "controls": "WASD move, mouse look, mouse buttons fire/aim, Space jump, R reload, E use (hold to plant/defuse), Ctrl crouch, 1-4 weapons, Tab scores, Esc menu; controller supported",
   "smoke_args": [
     "--capture",
     "{dir}",
@@ -10,5 +10,5 @@
     "--solo",
     "--mute"
   ],
-  "engine_revision": "d2dc7c212aeb"
+  "engine_revision": "f0657a1b3ee7"
 }

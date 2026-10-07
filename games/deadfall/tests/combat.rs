@@ -155,38 +155,47 @@ fn an_empty_magazine_reloads_by_itself_and_ammunition_adds_up() {
 
 #[test]
 fn a_moving_target_is_hit_where_the_shooter_saw_it() {
-    // Lag compensation: the shooter's view is 8 ticks old. The target has since walked on.
-    let setup = || {
-        let mut m = duel(Settings::default());
-        stage(&mut m, V(-20., 0., 5.), V(-20., 0., -8.));
-        m.players[1].armor = 0.;
-        m.players[1].protect_until = 0;
-        for _ in 0..12 {
-            m.step(&[Some(input_for(&m, 0, 0)), Some(input_for(&m, 1, 0))]);
-        }
-        let mut walk = input_for(&m, 1, 0);
-        walk.set_axes(-1., 0.);
-        for _ in 0..8 {
-            m.step(&[Some(input_for(&m, 0, 0)), Some(walk)]);
-        }
-        (m, walk)
-    };
-    let (mut m, walk) = setup();
-    // Aim at where the target was when the shooter's screen last updated (8 ticks before the coming tick).
-    let then = m.history[m.history.len() - 8][1].eye;
-    let moved = (m.players[1].eye().0 - then.0).abs();
-    assert!(moved > 0.3, "the target has moved {moved} m since");
-    let (yaw, pitch) = facing(V(-20., 1.68, 5.), V(then.0, then.1 - 0.35, then.2));
-    let shot = Input { yaw, pitch, buttons: FIRE, seen_tick: (m.tick + 1 - 8) as u16, ..Default::default() };
-    let before = m.players[1].health;
-    m.step(&[Some(shot), Some(walk)]);
-    assert!(m.players[1].health < before, "hit through lag compensation");
-    // The same aim claiming to have seen the present misses: the target is no longer there.
-    let (mut m2, walk) = setup();
-    let late = Input { seen_tick: (m2.tick + 1) as u16, ..shot };
-    let before = m2.players[1].health;
-    m2.step(&[Some(late), Some(walk)]);
-    assert_eq!(m2.players[1].health, before, "without compensation the shot misses the moved target");
+    for offset in [0, 65530, 65540] {
+        // Lag compensation: the shooter's view is 8 ticks old. The target has since walked on.
+        let setup = || {
+            let mut m = duel(Settings::default());
+            m.tick = offset;
+            stage(&mut m, V(-20., 0., 5.), V(-20., 0., -8.));
+            m.players[1].armor = 0.;
+            m.players[1].protect_until = 0;
+            for _ in 0..12 {
+                m.step(&[Some(input_for(&m, 0, 0)), Some(input_for(&m, 1, 0))]);
+            }
+            let mut walk = input_for(&m, 1, 0);
+            walk.set_axes(-1., 0.);
+            for _ in 0..8 {
+                m.step(&[Some(input_for(&m, 0, 0)), Some(walk)]);
+            }
+            (m, walk)
+        };
+        let (mut m, walk) = setup();
+        // Aim at where the target was when the shooter's screen last updated (8 ticks before the coming tick).
+        let then = m.history[m.history.len() - 8][1].eye;
+        let moved = (m.players[1].eye().0 - then.0).abs();
+        assert!(moved > 0.3, "the target has moved {moved} m since");
+        let (yaw, pitch) = facing(V(-20., 1.68, 5.), V(then.0, then.1 - 0.35, then.2));
+        let shot = Input {
+            yaw,
+            pitch,
+            buttons: FIRE,
+            seen_tick: deadfall::input::wrapped_tick((m.tick + 1 - 8) as f32),
+            ..Default::default()
+        };
+        let before = m.players[1].health;
+        m.step(&[Some(shot), Some(walk)]);
+        assert!(m.players[1].health < before, "hit through lag compensation");
+        // The same aim claiming to have seen the present misses: the target is no longer there.
+        let (mut m2, walk) = setup();
+        let late = Input { seen_tick: deadfall::input::wrapped_tick((m2.tick + 1) as f32), ..shot };
+        let before = m2.players[1].health;
+        m2.step(&[Some(late), Some(walk)]);
+        assert_eq!(m2.players[1].health, before, "without compensation the shot misses the moved target");
+    }
 }
 
 #[test]

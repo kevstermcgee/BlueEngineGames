@@ -41,3 +41,13 @@ the source so no gun kills in under about a third of a second).
 | 31 | machete | Machete | jungle machete | Melee | swing | 42/78 | x1 | 3 | 1.10 | - | - | - | 1.9 m | 0.98 | - |
 | 32 | axe | Breaching Axe | fire axe | Melee | swing | 55/100 | x1 | 2 | 0.80 | - | - | - | 2 m | 0.90 | - |
 | 33 | crowbar | Crowbar | steel crowbar | Melee | swing | 30/60 | x1 | 4 | 1.50 | - | - | - | 1.8 m | 0.96 | - |
+
+## New pickups
+
+The original weapon IDs 1–33 are unchanged.
+
+| ID | Key | Weapon | Role |
+|---|---|---|---|
+| 34 | hornet | Hornet Burst | Three-shot secondary, 18-round magazine, 22 damage per shot; close-range bursts. |
+| 35 | ranger | Ranger Lever Rifle | Eight-round primary, 78 damage, 0.6-second cycle, 2× scope; rewards accurate shots. |
+| 36 | breach8 | Breach-8 Slug | Eight-round primary, one 96-damage slug per shot; precise short-to-medium-range pressure. |

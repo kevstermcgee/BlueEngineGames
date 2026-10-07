@@ -98,9 +98,9 @@ impl Fist {
     fn clamp(k: f32, thumb: [f32; 4]) -> Fist {
         let mut r = Fist::grip(1.0, thumb);
         let base = [[1.30, 0.85, 0.50], [1.35, 0.90, 0.50], [1.40, 0.95, 0.50], [1.40, 1.00, 0.55]];
-        for i in 0..4 {
-            for j in 0..3 {
-                r.ang[i][j] = base[i][j] * k;
+        for (row, original) in r.ang.iter_mut().zip(base) {
+            for (angle, value) in row.iter_mut().zip(original) {
+                *angle = value * k;
             }
         }
         r
@@ -488,6 +488,75 @@ pub fn first_person_arms_detailed(
     out
 }
 
+/// One plain gloved hand: a rounded palm, a block of curled fingers, a thumb, a cuff. `side` is +1 for the right hand,
+/// -1 for the left; `palm_up` turns it to cup something from below.
+fn simple_hand(t: &mut Template, at: Vec3, side: f32, palm_up: bool, glove: Rgb, dark: Rgb) {
+    let up = if palm_up { -1. } else { 1. };
+    blob(t, at + vec3(0., 0.012 * up, 0.012), vec3(0.040, 0.036, 0.052), glove);
+    blob(t, at + vec3(0., -0.004 * up, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
+    blob(t, at + vec3(0.034 * side, 0.024 * up, -0.012), vec3(0.016, 0.016, 0.034), glove);
+    seg(
+        t,
+        at + vec3(0.004 * side, -0.030 * up, 0.052),
+        at + vec3(0.012 * side, -0.058 * up, 0.086),
+        0.040,
+        0.044,
+        dark,
+        8,
+    );
+}
+
+/// One forearm from the wrist out of the screen towards the camera.
+fn simple_sleeve(t: &mut Template, wrist: Vec3, dir: Vec3, colour: Rgb) {
+    seg(t, wrist, wrist + dir.normalize() * 0.62, 0.040, 0.054, colour, 8);
+}
+
+/// The first-person arms: articulated fingers for the exposed knife grip, plain gloves for firearms,
+/// with tapered sleeves in the team's colours. The right hand holds the grip; the left supports under
+/// the handguard, cups the pistol grip, takes the grenade pin, and goes to the magazine on a reload.
+pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
+    let pal = Palette::new(team, skin);
+    let ads = f(pose.ads, 0.).clamp(0., 1.);
+    let draw = f(pose.draw, 1.).clamp(0., 1.);
+    let reload = f(pose.reload, 0.).clamp(0., 1.);
+    let g = anchors.grip;
+    let (glove, dark, sleeve) = (pal.glove, pal.glove_dark, pal.uniform);
+    let mut t = Template::new();
+    let drop = (1. - draw) * 0.5;
+
+    // Right hand and forearm.
+    if hold == Hold::Melee {
+        // Fingers lie across the handle along Z and curl around its cross section.
+        // Keep the thumb on the guard side and the wrist below the palm in a hammer grip.
+        let hp =
+            HandPose::gripping(g, vec3(0.65, -0.75, 0.), -Vec3::Z, false, Fist::grip(1.05, [0.15, 0.12, 0.20, 0.55]));
+        let r = Mat4::from_translation(hp.pos) * orient(hp.z, hp.thumb, false);
+        t.append(&hand(&pal, false, &hp.fist).transformed(r));
+        t.append(&forearm(&pal, &hp, false, vec3(0.30, -0.55 - drop, 1.)));
+        return t;
+    }
+    simple_hand(&mut t, g, 1., false, glove, dark);
+    let wrist = g + vec3(0.012, -0.058, 0.086);
+    simple_sleeve(&mut t, wrist, vec3(0.28, -0.52 - 0.35 * ads, 1.0) + vec3(0., -drop, 0.), sleeve);
+
+    // Left hand: only on the big, two-handed weapons (the ones with a support point: rifles, shotguns, snipers,
+    // launchers). Pistols, grenades and knives are held in one hand.
+    let Some(support) = anchors.support else { return t };
+    let mut pos = support + vec3(0., -0.02, 0.01);
+    let mut reach = vec3(-0.30, -0.55 - 0.3 * ads, 1.0);
+    if reload > 0. {
+        // Down and back to the magazine, then up again to the handguard.
+        let r = (reload * std::f32::consts::PI).sin();
+        let mag = g + vec3(-0.01, -0.13, -0.02);
+        pos = pos.lerp(mag + vec3(0., -0.08, 0.08), r);
+        reach += vec3(0., -0.3 * r, 0.);
+    }
+    pos += vec3(0., -drop, 0.);
+    simple_hand(&mut t, pos, -1., true, glove, dark);
+    simple_sleeve(&mut t, pos + vec3(-0.012, -0.058, 0.086), reach, sleeve);
+    t
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -613,73 +682,4 @@ mod tests {
         assert!((0.17..0.27).contains(&len), "hand + cuff length {len}");
         assert!((0.07..0.14).contains(&(hi.x - lo.x)), "hand width {}", hi.x - lo.x);
     }
-}
-
-/// One plain gloved hand: a rounded palm, a block of curled fingers, a thumb, a cuff. `side` is +1 for the right hand,
-/// -1 for the left; `palm_up` turns it to cup something from below.
-fn simple_hand(t: &mut Template, at: Vec3, side: f32, palm_up: bool, glove: Rgb, dark: Rgb) {
-    let up = if palm_up { -1. } else { 1. };
-    blob(t, at + vec3(0., 0.012 * up, 0.012), vec3(0.040, 0.036, 0.052), glove);
-    blob(t, at + vec3(0., -0.004 * up, -0.030), vec3(0.036, 0.034, 0.030), shade(glove, 0.92));
-    blob(t, at + vec3(0.034 * side, 0.024 * up, -0.012), vec3(0.016, 0.016, 0.034), glove);
-    seg(
-        t,
-        at + vec3(0.004 * side, -0.030 * up, 0.052),
-        at + vec3(0.012 * side, -0.058 * up, 0.086),
-        0.040,
-        0.044,
-        dark,
-        8,
-    );
-}
-
-/// One forearm from the wrist out of the screen towards the camera.
-fn simple_sleeve(t: &mut Template, wrist: Vec3, dir: Vec3, colour: Rgb) {
-    seg(t, wrist, wrist + dir.normalize() * 0.62, 0.040, 0.054, colour, 8);
-}
-
-/// The first-person arms: articulated fingers for the exposed knife grip, plain gloves for firearms,
-/// with tapered sleeves in the team's colours. The right hand holds the grip; the left supports under
-/// the handguard, cups the pistol grip, takes the grenade pin, and goes to the magazine on a reload.
-pub fn first_person_arms(team: Team, skin: u8, anchors: &WeaponAnchors, hold: Hold, pose: &ArmPose) -> Template {
-    let pal = Palette::new(team, skin);
-    let ads = f(pose.ads, 0.).clamp(0., 1.);
-    let draw = f(pose.draw, 1.).clamp(0., 1.);
-    let reload = f(pose.reload, 0.).clamp(0., 1.);
-    let g = anchors.grip;
-    let (glove, dark, sleeve) = (pal.glove, pal.glove_dark, pal.uniform);
-    let mut t = Template::new();
-    let drop = (1. - draw) * 0.5;
-
-    // Right hand and forearm.
-    if hold == Hold::Melee {
-        // Fingers lie across the handle along Z and curl around its cross section.
-        // Keep the thumb on the guard side and the wrist below the palm in a hammer grip.
-        let hp =
-            HandPose::gripping(g, vec3(0.65, -0.75, 0.), -Vec3::Z, false, Fist::grip(1.05, [0.15, 0.12, 0.20, 0.55]));
-        let r = Mat4::from_translation(hp.pos) * orient(hp.z, hp.thumb, false);
-        t.append(&hand(&pal, false, &hp.fist).transformed(r));
-        t.append(&forearm(&pal, &hp, false, vec3(0.30, -0.55 - drop, 1.)));
-        return t;
-    }
-    simple_hand(&mut t, g, 1., false, glove, dark);
-    let wrist = g + vec3(0.012, -0.058, 0.086);
-    simple_sleeve(&mut t, wrist, vec3(0.28, -0.52 - 0.35 * ads, 1.0) + vec3(0., -drop, 0.), sleeve);
-
-    // Left hand: only on the big, two-handed weapons (the ones with a support point: rifles, shotguns, snipers,
-    // launchers). Pistols, grenades and knives are held in one hand.
-    let Some(support) = anchors.support else { return t };
-    let mut pos = support + vec3(0., -0.02, 0.01);
-    let mut reach = vec3(-0.30, -0.55 - 0.3 * ads, 1.0);
-    if reload > 0. {
-        // Down and back to the magazine, then up again to the handguard.
-        let r = (reload * std::f32::consts::PI).sin();
-        let mag = g + vec3(-0.01, -0.13, -0.02);
-        pos = pos.lerp(mag + vec3(0., -0.08, 0.08), r);
-        reach += vec3(0., -0.3 * r, 0.);
-    }
-    pos += vec3(0., -drop, 0.);
-    simple_hand(&mut t, pos, -1., true, glove, dark);
-    simple_sleeve(&mut t, pos + vec3(-0.012, -0.058, 0.086), reach, sleeve);
-    t
 }

@@ -7,6 +7,8 @@ pub mod bots;
 pub mod hands;
 pub mod input;
 pub mod level;
+pub mod maps;
+pub mod modes;
 pub mod nav;
 pub mod netgame;
 pub mod prefs;
@@ -23,8 +25,7 @@ pub mod client;
 
 /// The map every match is played on, built once.
 pub fn level() -> &'static level::Level {
-    static LEVEL: std::sync::OnceLock<level::Level> = std::sync::OnceLock::new();
-    LEVEL.get_or_init(map)
+    maps::MapId::Slagworks.level()
 }
 
 /// Build the map afresh.

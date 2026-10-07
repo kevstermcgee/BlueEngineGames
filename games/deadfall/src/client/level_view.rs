@@ -1055,6 +1055,14 @@ fn build_decor(d: &Decor) -> Template {
                 t.box_(vec3(7., 6.5, 0.), vec3(0.25, 0.22, 0.2), dark, 0.);
             }
         }
+        DecorKind::RadarDish => {
+            t.box_(vec3(0., 0.2, 0.), vec3(1.2, 0.2, 1.2), [0.26, 0.29, 0.32], 0.);
+            t.cone(vec3(0., 0.4, 0.), 0.42, 0.22, 3.2, [0.53, 0.58, 0.62], 0., 10);
+            t.ball(vec3(0., 3.8, 0.), vec3(2.15, 1.8, 0.27), [0.71, 0.77, 0.79], 0., 20, 12);
+            t.ball(vec3(0., 3.8, -0.24), vec3(1.85, 1.53, 0.09), [0.49, 0.57, 0.61], 0., 18, 10);
+            t.box_(vec3(0., 3.8, -1.), vec3(0.08, 0.08, 0.7), [0.3, 0.34, 0.38], 0.);
+            t.ball(vec3(0., 3.8, -1.7), vec3(0.16, 0.16, 0.22), [0.8, 0.56, 0.23], 0., 8, 6);
+        }
         DecorKind::RailTrack => {
             run = true;
             let len = s;
@@ -1243,6 +1251,17 @@ fn silhouettes(t: &mut Template, fog: Rgb) {
 /// the rest is too far to matter and joins the receivers-only `far`.
 fn outside(level: &Level, near: &mut Grid, far: &mut Acc) {
     let (hx, hz) = (level.half_x, level.half_z);
+    if level.name == "Stormbreak" {
+        // Exposed seawall foundations and distant rock outcrops replace the forest ring.
+        far.t().box_top(vec3(0., -4.1, 0.), vec3(hx + 0.7, 4., hz + 0.7), [0.26, 0.31, 0.34], [0.5, 0.53, 0.55], 0.);
+        for i in 0..14 {
+            let a = i as f32 / 14. * TAU;
+            let x = a.cos() * (hx + 25.);
+            let z = a.sin() * (hz + 25.);
+            far.t().ball(vec3(x, -1.5, z), vec3(6., 3.5, 4.), [0.25, 0.30, 0.32], 0., 8, 5);
+        }
+        return;
+    }
     for i in 0..170 {
         let f = i as f32 / 170.;
         // Walk round a rectangle 8-30 m outside the wall.
@@ -1335,10 +1354,14 @@ pub fn build(level: &Level) -> LevelScene {
         let c = vec3(b.min.0 + b.max.0, 0., b.min.2 + b.max.2) * 0.5;
         add_block(solid.at(c.x, c.z), &mut ground, &mut glass, b);
     }
-    ground.t().append(&ground_outer());
+    if level.name == "Stormbreak" {
+        ground.t().box_top(vec3(0., -5., 0.), vec3(330., 0.3, 330.), [0.17, 0.27, 0.33], [0.23, 0.39, 0.47], 0.);
+    } else {
+        ground.t().append(&ground_outer());
+    }
     // Mottled ground where no patch covers the dirt: lighter dust, darker damp, a little green.
     let dirt = base_colour(Material::Dirt);
-    for i in 0..260 {
+    for i in 0..if level.name == "Slagworks" { 260 } else { 0 } {
         let (x, z) = (-58. + 116. * hash(i as f32, 1., 21.), -43. + 86. * hash(i as f32, 2., 21.));
         let w = 1.5 + 3.5 * hash(i as f32, 3., 21.);
         let tone = hash(i as f32, 4., 21.);
@@ -1369,7 +1392,18 @@ pub fn build(level: &Level) -> LevelScene {
             );
         }
     }
-    let look = overcast_afternoon();
+    let mut look = overcast_afternoon();
+    if level.name == "Stormbreak" {
+        look.ambient_sky = [0.40, 0.49, 0.58];
+        look.key_color = [0.60, 0.72, 0.82];
+        look.fog_color = [0.63, 0.73, 0.80];
+        look.fog_density = 0.0022;
+    }
+    if level.name == "Switchyard" {
+        look.key_color = [0.85, 0.72, 0.52];
+        look.fog_color = [0.72, 0.73, 0.68];
+        look.fog_density = 0.0028;
+    }
     let sky = sky_template(&look);
     let mut lights = Vec::new();
     let mut light_pos = Vec::new();

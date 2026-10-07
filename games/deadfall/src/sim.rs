@@ -18,7 +18,7 @@ pub const TICK_HZ: u64 = 60;
 pub const MAX_PLAYERS: usize = 12;
 pub const TEAM_SIZE: usize = 6;
 /// Seconds between dying and returning: the killcam runs for all of it.
-pub const KILLCAM_SECONDS: f32 = 8.;
+pub const KILLCAM_SECONDS: f32 = 4.;
 pub const RESPAWN_TICKS: u32 = (KILLCAM_SECONDS * 60.) as u32;
 pub const PROTECT_TICKS: u32 = 150;
 /// How far back (ticks) lag compensation may rewind other players.
@@ -56,20 +56,41 @@ pub struct Settings {
     pub bots: bool,
     /// 0 easy, 1 normal, 2 hard.
     pub bot_skill: u8,
+    pub mode: crate::modes::GameMode,
+    pub map: crate::maps::MapId,
+    pub duel: bool,
+    pub objective_target: u16,
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { end: EndRule::Kills { target: 40 }, bots: false, bot_skill: 1 }
+        Self {
+            end: EndRule::Kills { target: 40 },
+            bots: false,
+            bot_skill: 1,
+            mode: crate::modes::GameMode::TeamDeathmatch,
+            map: crate::maps::MapId::Slagworks,
+            duel: false,
+            objective_target: 3,
+        }
     }
 }
 
-static SETTINGS: Mutex<Settings> =
-    Mutex::new(Settings { end: EndRule::Kills { target: 40 }, bots: false, bot_skill: 1 });
+static SETTINGS: Mutex<Settings> = Mutex::new(Settings {
+    end: EndRule::Kills { target: 40 },
+    bots: false,
+    bot_skill: 1,
+    mode: crate::modes::GameMode::TeamDeathmatch,
+    map: crate::maps::MapId::Slagworks,
+    duel: false,
+    objective_target: 3,
+});
 
 /// The settings the next match uses. The network kit starts matches through a static function, so a server
 /// process says how it wants them here before its first match.
 pub fn set_settings(s: Settings) {
+    // Build collision/navigation before accepting players, rather than hitching the first match tick.
+    let _ = world_on(s.map);
     *SETTINGS.lock().unwrap_or_else(|e| e.into_inner()) = s;
 }
 
@@ -86,24 +107,18 @@ pub struct World {
     pub nav: crate::nav::Nav,
 }
 
-static WORLD: OnceLock<Arc<World>> = OnceLock::new();
-
-/// A world built from any level (tests and tools use small arenas; matches use [`world`]).
+/// Build a derived world for a test arena.
 pub fn world_for(level: Level) -> Arc<World> {
     let colliders = level.colliders();
     let nav = crate::nav::Nav::build(&level);
     Arc::new(World { level, colliders, nav })
 }
-
 pub fn world() -> Arc<World> {
-    WORLD
-        .get_or_init(|| {
-            let level = crate::level().clone();
-            let colliders = level.colliders();
-            let nav = crate::nav::Nav::build(&level);
-            Arc::new(World { level, colliders, nav })
-        })
-        .clone()
+    world_on(crate::maps::MapId::Slagworks)
+}
+pub fn world_on(map: crate::maps::MapId) -> Arc<World> {
+    static WORLDS: [OnceLock<Arc<World>>; 3] = [const { OnceLock::new() }; 3];
+    WORLDS[map as usize].get_or_init(|| world_for(map.level().clone())).clone()
 }
 
 // ---- bodies ---------------------------------------------------------------------------------------------------
@@ -114,10 +129,10 @@ pub fn profile() -> ControllerProfile {
         crouched_height: 1.1,
         radius: 0.23,
         eye_height: 1.68,
-        walk_speed: 6.0,
-        sprint_speed: 6.0,
-        crouch_speed: 2.4,
-        jump_height: 0.55,
+        walk_speed: 7.2,
+        sprint_speed: 7.2,
+        crouch_speed: 2.8,
+        jump_height: 0.85,
     }
 }
 
@@ -153,6 +168,8 @@ pub fn head_of(eye: V) -> (V, f32) {
 pub struct Player {
     pub slot: usize,
     pub team: Team,
+    /// Cosmetic avatar (bits 1..2) and skin (bits 3..4), with team in bit 0.
+    pub appearance: u8,
     pub name: String,
     pub ctrl: Controller,
     pub alive: bool,
@@ -300,6 +317,8 @@ pub struct Match {
     pub loot: Vec<LootState>,
     pub dropped: Vec<Dropped>,
     pub scores: [u16; 2],
+    pub objective: crate::modes::Objectives,
+    pub winner_slot: u8,
     pub rng: Rng,
     pub events: Vec<Event>,
     pub history: VecDeque<Vec<PoseRecord>>,
@@ -309,21 +328,31 @@ pub struct Match {
 impl Match {
     /// Start a match. `humans` are `(team choice, name)` in seat order; returns the match and each human's slot.
     pub fn new(seed: u64, humans: &[(u8, String)], settings: Settings) -> (Match, Vec<usize>) {
-        Self::new_in(world(), seed, humans, settings)
+        Self::new_in(world_on(settings.map), seed, humans, settings)
     }
 
     /// [`Match::new`] on a chosen world.
-    pub fn new_in(world: Arc<World>, seed: u64, humans: &[(u8, String)], settings: Settings) -> (Match, Vec<usize>) {
+    pub fn new_in(
+        world: Arc<World>,
+        seed: u64,
+        humans: &[(u8, String)],
+        mut settings: Settings,
+    ) -> (Match, Vec<usize>) {
+        if settings.duel {
+            settings.bots = false;
+        }
+        let humans = &humans[..humans.len().min(if settings.duel { 2 } else { MAX_PLAYERS })];
         let mut rng = Rng::new(seed);
         // Team placement: honour the choice, then move the overflow to the other side (at most six a side).
-        let mut teams: Vec<usize> = humans.iter().map(|(c, _)| (*c as usize).min(1)).collect();
+        let mut teams: Vec<usize> = humans.iter().map(|(c, _)| (*c as usize) & 1).collect();
         let mut counts = [0usize; 2];
         for t in &teams {
             counts[*t] += 1;
         }
+        // Balance human teams before bots: two friends choosing the same team still get a fair duel.
         for i in (0..teams.len()).rev() {
             let t = teams[i];
-            if counts[t] > TEAM_SIZE {
+            if counts[t] > counts[1 - t] + 1 {
                 counts[t] -= 1;
                 counts[1 - t] += 1;
                 teams[i] = 1 - t;
@@ -334,6 +363,7 @@ impl Match {
         for (i, (_, name)) in humans.iter().enumerate().take(MAX_PLAYERS) {
             slots.push(players.len());
             let mut p = blank_player(players.len(), Team::from_index(teams[i]), name.clone(), !autopilot());
+            p.appearance = (humans[i].0 & 30) | teams[i] as u8;
             if autopilot() {
                 p.bot = Some(BotState::new(2, &mut rng));
             }
@@ -345,13 +375,14 @@ impl Match {
                 have[p.team.index()] += 1;
             }
             let mut n = 0;
-            for t in 0..2 {
-                while have[t] < TEAM_SIZE && players.len() < MAX_PLAYERS {
+            for (t, count) in have.iter_mut().enumerate() {
+                while *count < TEAM_SIZE && players.len() < MAX_PLAYERS {
                     let slot = players.len();
                     let mut p = blank_player(slot, Team::from_index(t), bots::name(n), false);
+                    p.appearance = ((slot as u8 % 4) << 1) | (((slot as u8 / 3) % 4) << 3) | t as u8;
                     p.bot = Some(BotState::new(settings.bot_skill, &mut rng));
                     players.push(p);
-                    have[t] += 1;
+                    *count += 1;
                     n += 1;
                 }
             }
@@ -369,6 +400,8 @@ impl Match {
             loot,
             dropped: Vec::new(),
             scores: [0, 0],
+            objective: crate::modes::Objectives::new(settings.map.bases()),
+            winner_slot: 255,
             rng,
             events: Vec::new(),
             history: VecDeque::new(),
@@ -414,8 +447,15 @@ impl Match {
     /// Put a player at the team spawn that is farthest from every living enemy (and not crowded by a friend).
     pub fn spawn(&mut self, slot: usize) {
         let team = self.players[slot].team;
-        let spawns = &self.world.level.spawns[team.index()];
-        let enemies: Vec<V> = self.players.iter().filter(|p| p.alive && p.team != team).map(|p| p.feet()).collect();
+        let all_spawns;
+        let spawns = if self.settings.mode == crate::modes::GameMode::FreeForAll {
+            all_spawns = self.world.level.spawns.iter().flatten().copied().collect::<Vec<_>>();
+            &all_spawns
+        } else {
+            &self.world.level.spawns[team.index()]
+        };
+        let enemies: Vec<V> =
+            self.players.iter().filter(|p| p.alive && self.enemies(slot, p.slot)).map(|p| p.feet()).collect();
         let friends: Vec<V> = self.players.iter().filter(|p| p.alive && p.slot != slot).map(|p| p.feet()).collect();
         let mut best = (f32::MIN, 0usize);
         for (i, s) in spawns.iter().enumerate() {
@@ -478,7 +518,10 @@ impl Match {
                 self.step_player(slot, input, &world);
             } else {
                 self.players[slot].last_input = input;
-                if self.phase == Phase::Live && self.tick >= self.players[slot].died_at + RESPAWN_TICKS {
+                if self.phase == Phase::Live
+                    && self.settings.mode != crate::modes::GameMode::SearchDestroy
+                    && self.tick >= self.players[slot].died_at + RESPAWN_TICKS
+                {
                     self.spawn(slot);
                 }
             }
@@ -487,6 +530,7 @@ impl Match {
         self.step_zones();
         self.step_loot();
         self.record_history();
+        self.step_objectives();
         self.check_end();
     }
 
@@ -506,9 +550,38 @@ impl Match {
         if self.phase != Phase::Live {
             return;
         }
+        if self.settings.mode == crate::modes::GameMode::SearchDestroy {
+            return;
+        }
+        if self.settings.mode == crate::modes::GameMode::FreeForAll {
+            let target = match self.settings.end {
+                EndRule::Kills { target } => target,
+                _ => u16::MAX,
+            };
+            let timed = self.seconds_left().is_some_and(|t| t <= 0.);
+            if timed || self.players.iter().any(|p| p.kills >= target) {
+                let top = self.players.iter().map(|p| p.kills).max().unwrap_or(0);
+                let mut leaders = self.players.iter().filter(|p| p.kills == top);
+                self.winner_slot = leaders.next().map_or(255, |p| p.slot as u8);
+                if leaders.next().is_some() {
+                    self.winner_slot = 255;
+                }
+                self.finish(None, 2);
+            }
+            return;
+        }
+        if self.settings.mode == crate::modes::GameMode::CaptureFlag
+            && self.scores.iter().any(|s| *s >= self.settings.objective_target)
+        {
+            let t = usize::from(self.scores[1] > self.scores[0]);
+            self.finish(Some(Team::from_index(t)), t as u8);
+            return;
+        }
         let winner = match self.settings.end {
             EndRule::Kills { target } => {
-                if self.scores[0] >= target || self.scores[1] >= target {
+                if self.settings.mode == crate::modes::GameMode::TeamDeathmatch
+                    && (self.scores[0] >= target || self.scores[1] >= target)
+                {
                     Some(if self.scores[0] >= self.scores[1] { Some(Team::Ironclad) } else { Some(Team::Nightwatch) })
                 } else {
                     None
@@ -527,13 +600,31 @@ impl Match {
             }
         };
         if let Some(w) = winner {
-            self.phase = Phase::Over { winner: w, at: self.tick };
-            self.events.push(Event::Over { winner: w.map_or(2, |t| t.index() as u8), scores: self.scores });
+            self.finish(w, w.map_or(2, |t| t.index() as u8));
         }
+    }
+
+    pub(crate) fn finish(&mut self, winner: Option<Team>, code: u8) {
+        self.phase = Phase::Over { winner, at: self.tick };
+        self.events.push(Event::Over { winner: code, scores: self.scores });
     }
 
     /// A human left: a bot takes the slot over.
     pub fn release(&mut self, slot: usize) {
+        if self.settings.duel {
+            if let Some(p) = self.players.get_mut(slot) {
+                p.human = false;
+                p.alive = false;
+            }
+            if self.phase == Phase::Live {
+                let winner = self.players.iter().find(|p| p.human).map(|p| (p.team, p.slot as u8));
+                if let Some((team, winner_slot)) = winner {
+                    self.winner_slot = winner_slot;
+                    self.finish(Some(team), team.index() as u8);
+                }
+            }
+            return;
+        }
         if let Some(p) = self.players.get_mut(slot) {
             p.human = false;
             if p.bot.is_none() {
@@ -547,7 +638,10 @@ impl Match {
     // ---- one player -------------------------------------------------------------------------------------------
 
     fn step_player(&mut self, slot: usize, mut input: Input, world: &Arc<World>) {
-        if self.phase != Phase::Live {
+        if self.phase != Phase::Live
+            || self.settings.mode == crate::modes::GameMode::SearchDestroy
+                && (self.objective.phase == 0 || self.objective.phase == 3)
+        {
             input.buttons = 0;
             input.right = 0;
             input.forward = 0;
@@ -720,9 +814,8 @@ impl Match {
         let world_hit = self.world.level.raycast(origin, dir, max);
         let limit = world_hit.map_or(max, |(d, _)| d);
         let mut best: Option<(f32, usize, Part)> = None;
-        let team = self.players[shooter].team;
         for p in &self.players {
-            if p.slot == shooter || !p.alive || p.team == team {
+            if p.slot == shooter || !p.alive || !self.enemies(shooter, p.slot) {
                 continue;
             }
             let pose = self.pose_back(p.slot, back);
@@ -756,7 +849,7 @@ impl Match {
             return;
         }
         if let Some(a) = attacker {
-            if a != victim && self.players[a].team == self.players[victim].team {
+            if a != victim && !self.enemies(a, victim) {
                 return; // no friendly fire
             }
         }
@@ -830,7 +923,9 @@ impl Match {
                 if head {
                     self.players[k].headshots += 1;
                 }
-                self.scores[team] += 1;
+                if self.settings.mode == crate::modes::GameMode::TeamDeathmatch {
+                    self.scores[team] += 1;
+                }
             }
         }
         self.events.push(Event::Kill { killer: killer.map_or(255, |k| k as u8), victim: victim as u8, weapon, head });
@@ -1234,11 +1329,10 @@ impl Match {
         let origin = self.players[slot].eye();
         let (yaw, pitch) = (self.players[slot].ctrl.yaw, self.players[slot].ctrl.pitch);
         let dir = Self::aim_dir(yaw, pitch);
-        let team = self.players[slot].team;
         let mut best: Option<(f32, usize, Part)> = None;
         let wall = self.world.level.raycast(origin, dir, m.reach).map_or(m.reach, |(d, _)| d);
         for p in &self.players {
-            if p.slot == slot || !p.alive || p.team == team {
+            if p.slot == slot || !p.alive || !self.enemies(slot, p.slot) {
                 continue;
             }
             // Melee is forgiving: a fat ray (three rays fanned a little) so a swing at the body connects.
@@ -1329,6 +1423,7 @@ fn blank_player(slot: usize, team: Team, name: String, human: bool) -> Player {
     Player {
         slot,
         team,
+        appearance: team.index() as u8,
         name,
         ctrl: new_body(V(0., 0., 0.), 0.),
         alive: false,
