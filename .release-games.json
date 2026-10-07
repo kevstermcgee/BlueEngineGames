@@ -229,9 +229,45 @@
       "name": "Feta",
       "directory": "games/feta",
       "kind": "release-asset"
+    },
+    {
+      "slug": "lantern-run",
+      "name": "Lantern Run",
+      "directory": "games/lantern-run",
+      "kind": "cargo-package",
+      "binary": "lantern-run"
+    },
+    {
+      "slug": "pocket-breaker",
+      "name": "Pocket Breaker",
+      "directory": "games/pocket-breaker",
+      "kind": "cargo-package",
+      "binary": "pocket-breaker"
+    },
+    {
+      "slug": "orchard-watch",
+      "name": "Orchard Watch",
+      "directory": "games/orchard-watch",
+      "kind": "cargo-package",
+      "binary": "orchard-watch"
+    },
+    {
+      "slug": "lantern-grove",
+      "name": "Lantern Grove",
+      "directory": "games/lantern-grove",
+      "kind": "cargo-package",
+      "binary": "lantern-grove"
+    },
+    {
+      "slug": "signal-garden",
+      "name": "Signal Garden",
+      "directory": "games/signal-garden",
+      "kind": "cargo-package",
+      "binary": "signal-garden"
     }
   ],
   "non_playable_directories": [
-    "games/observatory"
+    "games/observatory",
+    "games/timed-relay"
   ]
 }

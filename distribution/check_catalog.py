@@ -16,6 +16,13 @@ def repository_path(root, value):
     return path
 
 
+def repository_file(root, value):
+    path = repository_path(root, value)
+    if not path.is_file():
+        raise ValueError(f'Expected a file, found a directory: {value}')
+    return path
+
+
 def check(root):
     root = Path(root)
     catalog = json.loads((root / '.games-catalog.json').read_text())
@@ -34,11 +41,11 @@ def check(root):
             covered.add(game['directory'])
             kind = game['kind']
             if kind in ('cargo', 'cargo-package'):
-                repository_path(root, game['directory'] + '/Cargo.toml')
+                repository_file(root, game['directory'] + '/Cargo.toml')
                 if not game.get('binary'):
                     raise ValueError(f'{slug} has no playable binary')
                 if kind == 'cargo-package':
-                    repository_path(root, game['directory'] + '/scripts/ship.py')
+                    repository_file(root, game['directory'] + '/scripts/ship.py')
             elif kind == 'release-asset':
                 source = json.loads((directory / 'release-source.json').read_text())
                 if not re.fullmatch(r'https://github\.com/[\w.-]+/[\w.-]+/releases/download/[^/]+/[^/]+', source['url']):

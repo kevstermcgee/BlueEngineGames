@@ -242,3 +242,8 @@ impl Snapshot for Sim {
         self.tick
     }
 }
+
+extern crate self as leo;
+pub mod browser;
+#[cfg(feature = "portable-client")]
+pub mod scene;

@@ -1,10 +1,10 @@
 name: Native game checks
 on:
   pull_request:
-    paths: [games/prop-hunt/**, games/slapstick/**, .github/workflows/native-game-checks.yml]
+    paths: [games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
   push:
     branches: [main]
-    paths: [games/prop-hunt/**, games/slapstick/**, .github/workflows/native-game-checks.yml]
+    paths: [games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        slug: [prop-hunt, slapstick]
+        slug: [prop-hunt, slapstick, lantern-run, pocket-breaker, orchard-watch, lantern-grove, signal-garden]
     runs-on: ${{ matrix.os }}
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target

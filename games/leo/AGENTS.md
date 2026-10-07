@@ -41,6 +41,14 @@ Linux/Windows CI and inspected remote captures. Package with
 `python scripts/ship.py ship --folder PRIVATE_FOLDER --no-launch --no-smoke`.
 Report launch/hardware controls as unverified. Capture flags/scripts: README.
 
+Browser port: read game.project.json, src/browser.rs and engine docs/PORTABLE_GAMES.md.
+Keep the original Sim/SimState; do not fork rules or save layouts. src/scene.rs applies the validated
+viewport to all cameras; native main.rs stays independent. `scripts/blue web build` checks native
+hashes, real desktop/mobile inputs, audio, persistence and offline installation; `scripts/blue publish`
+uses the engine publisher. Standalone published source uses the be2.py from its engine dependency
+path. Browser progress stays on this origin/device, separate from native saves. Original banks and
+credits are declared in browser-identity.json.
+
 Record friction in engine: `python tools/learn.py record --game leo --area AREA
 --tokens 0 --note "..." --keywords "future,query,terms"`. Without keywords it is
 archive-only. Verify a representative query retrieves the lesson. No session logs

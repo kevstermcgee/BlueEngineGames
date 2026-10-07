@@ -10,6 +10,16 @@ fi
 
 cmd="${1:-help}"
 case "$cmd" in
+  web|publish)
+    shift
+    if [ "$cmd" = "web" ]; then
+      sub="${1:-build}"
+      shift || true
+    else
+      sub="publish"
+    fi
+    "$PY" "$ROOT/../../../tools/be2.py" web "$sub" "$ROOT" "$@"
+    ;;
   check)
     shift
     "$PY" scripts/check.py "$@"

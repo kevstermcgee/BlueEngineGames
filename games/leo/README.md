@@ -7,6 +7,18 @@ Each twelve-minute day moves continuously through sunrise, daylight, sunset and
 stars. The main and pause menus show your current day; the walking view has no
 day counter or status panel. There is no score, combat or deadline.
 
+Browser: the same simulation and original character/meadow/sky art. WASD/arrows wander, Shift runs,
+drag inside the game to look, Space hops, F toggles fullscreen, Esc pauses, M/N toggle nature/music,
+and K/L save/load. Mobile: D-pad wanders, A hops, B pauses; drag the game to look. SELECT contains
+sound/music/save/load below the game. Progress resumes on this device; Install app/Add to Home Screen
+supports offline play after the first complete load. Browser and native saves remain independent.
+
+`scripts/blue web build` verifies the isolated static package. `scripts/blue publish --backend
+github-pages --repository OWNER/BlueEngineGames` deploys it. game.project.json explicitly selects the
+browser binary/features, preserving the native client. Browser presentation uses contact shadows
+and shorter decorative view distance to bound mobile memory/work; all 49 authoritative chunks remain.
+Physical-phone performance and hardware audibility require separate testing.
+
 Leo has a soft smile, rounded proportions and swept chestnut hair. He travels
 without a backpack. Trees and the boy cast directional sun/moon shadows using
 the engine's bounded, texel-snapped shadow map, with contact-shadow fallback on

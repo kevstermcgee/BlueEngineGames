@@ -12,6 +12,19 @@ from fetch_release import stage
 
 
 class Coverage(unittest.TestCase):
+    def test_nested_manifest_is_rejected_before_compilation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'games/sample/Cargo.toml').mkdir(parents=True)
+            (root / 'games/sample/Cargo.toml/Cargo.toml').touch()
+            (root / '.games-catalog.json').write_text('{"playables": []}')
+            manifest = dict(version=1, game_roots=['games'], data_playables=[],
+                            native_playables=[dict(slug='sample', name='Sample', directory='games/sample',
+                                                   kind='cargo', binary='sample')], non_playable_directories=[])
+            (root / '.release-games.json').write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, 'Expected a file.*Cargo.toml'):
+                check(root)
+
     def test_unlisted_game_and_duplicate_download_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

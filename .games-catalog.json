@@ -1,7 +1,7 @@
 {
   "collections": {
-    "demos": 79,
-    "games": 183,
+    "demos": 80,
+    "games": 322,
     "prototypes": 10,
     "tests": 64
   },
@@ -33,6 +33,10 @@
     {
       "path": "demos/examples/hello.json",
       "sha256": "f988d9a5c1de80b626e382ae058adbf6e9b10937756f2d6b5c3a23f279113475"
+    },
+    {
+      "path": "demos/examples/imported_room.rs",
+      "sha256": "98df10e9d394cfe28d5ce598624dc5b0a3b325853324e1244c857394781ffbc9"
     },
     {
       "path": "demos/examples/materials.json",
@@ -731,12 +735,212 @@
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
     },
     {
+      "path": "games/lantern-grove/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/lantern-grove/AGENTS.md",
+      "sha256": "77a722331f478927d2d5ad0e2b5546497156b7d60b50bfe73c278d9ef7a77b32"
+    },
+    {
+      "path": "games/lantern-grove/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/lantern-grove/Cargo.lock",
+      "sha256": "6b198036c4a7efc28443aef647b3201ec6b3c6b75de3bf98112ffd8658c83ddd"
+    },
+    {
+      "path": "games/lantern-grove/Cargo.toml",
+      "sha256": "7a3687105f37bbde78efc64bd3a3ce2659568c83e3dc70e467a38d2ecac89b6a"
+    },
+    {
+      "path": "games/lantern-grove/README.md",
+      "sha256": "42bd9534ad38e5c299b63599d55341479bca4a5a99a49ca74cce7fa82ccc55b8"
+    },
+    {
+      "path": "games/lantern-grove/STATUS.md",
+      "sha256": "dcf37b6420812bb6780d18f01279f01bffb56953a05ccec412af7dc227a6da22"
+    },
+    {
+      "path": "games/lantern-grove/assets/icon.ico",
+      "sha256": "cb4e4b2674f223e8123547d90973ac2bdd9424b962f0256faaedf34428a96bbb"
+    },
+    {
+      "path": "games/lantern-grove/assets/icon.png",
+      "sha256": "8de1c950957c0ad5fe1b7106d7b6453acd656d2f3990a41f6d9aa55b42bce201"
+    },
+    {
+      "path": "games/lantern-grove/assets/icon_16.rgba",
+      "sha256": "8f62e0e43b8aadf6ef6e8c7a897c75317b2386e1153688b1c045e24ed041cf5c"
+    },
+    {
+      "path": "games/lantern-grove/assets/icon_32.rgba",
+      "sha256": "5f2f7b8c44f54c474a657ec8b86462bfa28a06d6af3f9c7d786d88c10a34760d"
+    },
+    {
+      "path": "games/lantern-grove/assets/icon_64.rgba",
+      "sha256": "93f5a0c4b37f503eaeb92484bf5fc96d0848d966e4685e9518bfc51ae01443db"
+    },
+    {
+      "path": "games/lantern-grove/assets/identity.json",
+      "sha256": "246943fc388e8ad030c1fd9604baaa4858c16e8b06675b7b8a2494be79fa104b"
+    },
+    {
+      "path": "games/lantern-grove/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/lantern-grove/game.project.json",
+      "sha256": "6a62d0bce052c54c33969a5d01494d5a20d4f7cd2d46155b4fbb60b4787f7bf1"
+    },
+    {
+      "path": "games/lantern-grove/scripts/blue",
+      "sha256": "b1f34ce6b6044d2befe31c0168150db4ae3100f564af4f8cca51b30a1fc5b656"
+    },
+    {
+      "path": "games/lantern-grove/scripts/blue.ps1",
+      "sha256": "ded6316a4916206cf26c5bed8a577bf3aa069095eaefd66df4c477acbcc13cec"
+    },
+    {
+      "path": "games/lantern-grove/scripts/check.py",
+      "sha256": "d9426b493b40fc1ee5ab90f2a4a6de5c28792590a384b6a981a6c212e5e5b629"
+    },
+    {
+      "path": "games/lantern-grove/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/lantern-grove/scripts/project.py",
+      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+    },
+    {
+      "path": "games/lantern-grove/scripts/ship.py",
+      "sha256": "4d95d894222ba6e057de614866f1f938a2ad060f2d9f69f84fbcf355eec81eab"
+    },
+    {
+      "path": "games/lantern-grove/scripts/web.py",
+      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+    },
+    {
+      "path": "games/lantern-grove/src/lib.rs",
+      "sha256": "9a82440546ac65bf7101bdc80887c503bf0a8bf1591fd85c36bfb4869fcc2d46"
+    },
+    {
+      "path": "games/lantern-grove/src/main.rs",
+      "sha256": "679ad9904702973b6c4f5d677d489c689e1351d9b23e155f5cf9c1b6b09a174a"
+    },
+    {
+      "path": "games/lantern-grove/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/lantern-run/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/lantern-run/AGENTS.md",
+      "sha256": "6acb2bcb5ab63b88187de91c964b48ce8b9dd235e1d5fd6596a34eef4648c45c"
+    },
+    {
+      "path": "games/lantern-run/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/lantern-run/Cargo.lock",
+      "sha256": "c87b34d588ea569ef67247c584ef2808c31f9265860e5263cad454db5a6e0e85"
+    },
+    {
+      "path": "games/lantern-run/Cargo.toml",
+      "sha256": "00a4df390cbde89ae38039fb8f5f7c27a220b380aa1ed268bebadcb395acf2f9"
+    },
+    {
+      "path": "games/lantern-run/README.md",
+      "sha256": "faf82d76fc4ded31a3dc3cf0503b7a407bd165be6695f2cac884cd5f012feb89"
+    },
+    {
+      "path": "games/lantern-run/STATUS.md",
+      "sha256": "1737cb2e2b91ada2e9d156f1f11861381fb5e70ec07c5e79de3095da481f9026"
+    },
+    {
+      "path": "games/lantern-run/assets/icon.ico",
+      "sha256": "bc46f1f477b94b668b6b9d3f890297cdffe9d7e69227374d47af2d4338e99035"
+    },
+    {
+      "path": "games/lantern-run/assets/icon.png",
+      "sha256": "1f301b1bc3be0bdaf47b78d80568a2de461b0bfa7888be79f79aa68fb63d493a"
+    },
+    {
+      "path": "games/lantern-run/assets/icon_16.rgba",
+      "sha256": "431f8bea15adc40c2d135943d08a4be36efdf0803ac7e7ad1deb9ef994bf17b3"
+    },
+    {
+      "path": "games/lantern-run/assets/icon_32.rgba",
+      "sha256": "6a4aa507e75abd2b80993cf77939bae5aa514d4f70f4da01e1326fc88bbc9ec6"
+    },
+    {
+      "path": "games/lantern-run/assets/icon_64.rgba",
+      "sha256": "4f07ffd07cadc996efee82e7fc88a49ca85ab9f7a7f19fe9d5e6201fc515ff86"
+    },
+    {
+      "path": "games/lantern-run/assets/identity.json",
+      "sha256": "b3a2da4ac533a157f9d3a6fd9f769d6572151177e67070e385892d01401eed1e"
+    },
+    {
+      "path": "games/lantern-run/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/lantern-run/game.project.json",
+      "sha256": "e4b17c8e8c7600d299c84c5c7a8d1e4b8987553b853e6bd692e6b5c79328955e"
+    },
+    {
+      "path": "games/lantern-run/scripts/blue",
+      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+    },
+    {
+      "path": "games/lantern-run/scripts/blue.ps1",
+      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+    },
+    {
+      "path": "games/lantern-run/scripts/check.py",
+      "sha256": "d9426b493b40fc1ee5ab90f2a4a6de5c28792590a384b6a981a6c212e5e5b629"
+    },
+    {
+      "path": "games/lantern-run/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/lantern-run/scripts/project.py",
+      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+    },
+    {
+      "path": "games/lantern-run/scripts/ship.py",
+      "sha256": "4d95d894222ba6e057de614866f1f938a2ad060f2d9f69f84fbcf355eec81eab"
+    },
+    {
+      "path": "games/lantern-run/scripts/web.py",
+      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+    },
+    {
+      "path": "games/lantern-run/src/lib.rs",
+      "sha256": "aa36e729a3878795998ef84af8d3250e9d4e3bcc77c1a1e00f8dcfb1f7ad5094"
+    },
+    {
+      "path": "games/lantern-run/src/main.rs",
+      "sha256": "5a47da013a4b8711930e5482fb327c619e136d546fe5401fb0b0d4d718aff984"
+    },
+    {
+      "path": "games/lantern-run/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
       "path": "games/leo/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
     {
       "path": "games/leo/AGENTS.md",
-      "sha256": "55e344f803f71136730850f476b724f89ee6ac2b97a6e8c11507dbaeb24e1ef3"
+      "sha256": "2b713e17639399ebca0a66e20e5bea6f0fc0eaa69bb3efc3f58e274c2700b227"
     },
     {
       "path": "games/leo/AUDIO.md",
@@ -752,11 +956,11 @@
     },
     {
       "path": "games/leo/Cargo.toml",
-      "sha256": "18f3d0d14e19b24a8d48893782dbbb70c9fefdedac9a092e36161a27a69f654a"
+      "sha256": "f6480aaeb599c34cc52d5ba663df8759ddbddcd490397c5a416cb5a8fad01ed2"
     },
     {
       "path": "games/leo/README.md",
-      "sha256": "64a2b098561dcbfd93160918b3b60bb41185773d9da1c2acc98ff11248afc2e0"
+      "sha256": "25bce11476ba0b458e81c72c0a15812082891dfaf62227c9b72147fbec02f460"
     },
     {
       "path": "games/leo/STATUS.md",
@@ -831,6 +1035,10 @@
       "sha256": "fe7ee36156e3384331e7d4289ff013b1e8802f7ecbeea0c425e18a1e53d298c6"
     },
     {
+      "path": "games/leo/assets/browser-identity.json",
+      "sha256": "f0e4e5b18adebc419ed9e0509dd411352f99b9458b43c3f955804b37a7c002f1"
+    },
+    {
       "path": "games/leo/assets/icon.ico",
       "sha256": "48596df6bc9f603f053003ad4b40fd713106ccc336352921be43ea2c1343436e"
     },
@@ -859,16 +1067,20 @@
       "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
     },
     {
+      "path": "games/leo/game.project.json",
+      "sha256": "3e6493c69d918256be8cfaf150973a7e4211bebfa1639442abbc94d4dd88035e"
+    },
+    {
       "path": "games/leo/rustfmt.toml",
       "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
     },
     {
       "path": "games/leo/scripts/blue",
-      "sha256": "d0f261161f38b664172172a8f65b97c9147efacc98b6bde525aede6b2607f8dc"
+      "sha256": "25f1b309dff588375d559b6c3bcf56e2648c2b1907d0f61287660c7de2eec208"
     },
     {
       "path": "games/leo/scripts/blue.ps1",
-      "sha256": "88c92cb7e11331cb905c760337503ec21955097e02019318ed7f98bc4b87e7fd"
+      "sha256": "8e1759459666c9d8186ec74131ddf558a5e495cdd543f68809c9be0c58b99b3f"
     },
     {
       "path": "games/leo/scripts/check.py",
@@ -891,8 +1103,16 @@
       "sha256": "050634c5f4ffa2a58b931e526244358ce57b09b0c5a08a934f1bab7587d09e65"
     },
     {
+      "path": "games/leo/src/browser.rs",
+      "sha256": "ab48f872f042ef62cac05140eb07034b7843859894c248768fcca51c8b05813d"
+    },
+    {
+      "path": "games/leo/src/browser_main.rs",
+      "sha256": "7c7133d49de44573d154a5b3514294cd05ba33cbdc7a35f5d36a85846e58ef40"
+    },
+    {
       "path": "games/leo/src/lib.rs",
-      "sha256": "7573d2f2000a70eaf7c5d8f78e36eea6b09cb4ac71431b71cf5f347acb6478c2"
+      "sha256": "30f961a7bdc75c239163255d314951792833705529393704e80000af9da44e84"
     },
     {
       "path": "games/leo/src/main.rs",
@@ -904,7 +1124,7 @@
     },
     {
       "path": "games/leo/src/scene.rs",
-      "sha256": "cbb4ced650e6e06229e97eb372c95620cc3881e8c0efca081ce22f53d5bb273e"
+      "sha256": "a11c17650415b0d8b124c3c57351e6eaa350744e24f86cf49562fe23b7d540fb"
     },
     {
       "path": "games/leo/tests/determinism.rs",
@@ -912,7 +1132,7 @@
     },
     {
       "path": "games/leo/tests/identity.rs",
-      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+      "sha256": "32f8127558e5c37b0503a1d54eed795ca477de6851bb46e893102b028c81321f"
     },
     {
       "path": "games/observatory/README.md",
@@ -1043,6 +1263,318 @@
       "sha256": "8efe70e3f60026dce81ee64aae78cf01171e6960dbda6cb63ad65f38039e5cef"
     },
     {
+      "path": "games/orchard-watch/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/orchard-watch/AGENTS.md",
+      "sha256": "76f19283abb0f9f423df6118c21e0ec99f8ec710f8958cae9a886ba5737946a4"
+    },
+    {
+      "path": "games/orchard-watch/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/orchard-watch/Cargo.lock",
+      "sha256": "2b66620654f5fb272ef6ce1f893f370f2820f67d97d1320da31d357ab0e84cbf"
+    },
+    {
+      "path": "games/orchard-watch/Cargo.toml",
+      "sha256": "e85431b130d99829add6dda376839420540f595605415169468e469b9e6413e6"
+    },
+    {
+      "path": "games/orchard-watch/README.md",
+      "sha256": "0209570d1950ca0b4a9de9bf3be931712d0353da12cccfba1e120c7954db01e7"
+    },
+    {
+      "path": "games/orchard-watch/STATUS.md",
+      "sha256": "1737cb2e2b91ada2e9d156f1f11861381fb5e70ec07c5e79de3095da481f9026"
+    },
+    {
+      "path": "games/orchard-watch/assets/icon.ico",
+      "sha256": "f3b0bbc062d911359f294bbd48dce4fec87c4c7892a82198f3a65f53738dddf3"
+    },
+    {
+      "path": "games/orchard-watch/assets/icon.png",
+      "sha256": "e4ed6f7f3f7b2dec0940daf28499b4f817f3ea206b1167b41ba10c8aae972913"
+    },
+    {
+      "path": "games/orchard-watch/assets/icon_16.rgba",
+      "sha256": "57f4d9936b778cc2c13060d27d850cb7d3504627305ef1bc675760c4a2effdb1"
+    },
+    {
+      "path": "games/orchard-watch/assets/icon_32.rgba",
+      "sha256": "5f3d27796eb653af63d6646ab5132768125548499197e6f469b34c5692b8b0ba"
+    },
+    {
+      "path": "games/orchard-watch/assets/icon_64.rgba",
+      "sha256": "91e18820c38b35da94235530afbc8b4f5b338f7069d1c31638ffc30333f9b3bb"
+    },
+    {
+      "path": "games/orchard-watch/assets/identity.json",
+      "sha256": "22cfc3b3c3c4298075735fd802f662f08eec7c0426e9852d98b57b2cceca3400"
+    },
+    {
+      "path": "games/orchard-watch/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/orchard-watch/game.project.json",
+      "sha256": "655e3ca99c842eff4d168e14fc8d6b26b9a6d25d1c751f39af8cd5c415b7744f"
+    },
+    {
+      "path": "games/orchard-watch/scripts/blue",
+      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+    },
+    {
+      "path": "games/orchard-watch/scripts/blue.ps1",
+      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+    },
+    {
+      "path": "games/orchard-watch/scripts/check.py",
+      "sha256": "d9426b493b40fc1ee5ab90f2a4a6de5c28792590a384b6a981a6c212e5e5b629"
+    },
+    {
+      "path": "games/orchard-watch/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/orchard-watch/scripts/project.py",
+      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+    },
+    {
+      "path": "games/orchard-watch/scripts/ship.py",
+      "sha256": "4d95d894222ba6e057de614866f1f938a2ad060f2d9f69f84fbcf355eec81eab"
+    },
+    {
+      "path": "games/orchard-watch/scripts/web.py",
+      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+    },
+    {
+      "path": "games/orchard-watch/src/lib.rs",
+      "sha256": "ab9dbdc7bddd29c3ee61fc5441233ee57dadeebb1492ba8f14116a75fbd08f14"
+    },
+    {
+      "path": "games/orchard-watch/src/main.rs",
+      "sha256": "aa1b9b86a5f1e7a52f3cfe624d3dc9d8673021d634d0615a8edec79e7e17e0b2"
+    },
+    {
+      "path": "games/orchard-watch/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/pocket-breaker/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/pocket-breaker/AGENTS.md",
+      "sha256": "a209e0bb84e1fd6a1db96aafdfa82e1a9c2c3ef485f2d2ce78a3f149a97ee101"
+    },
+    {
+      "path": "games/pocket-breaker/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/pocket-breaker/Cargo.lock",
+      "sha256": "2e9bc92dce3fcc46e4418429b01ffc11bef57a299721dc913dd34e7d8aa39e95"
+    },
+    {
+      "path": "games/pocket-breaker/Cargo.toml",
+      "sha256": "6207ad3dc117586be2366963c45b080ad716648c8c0ea6364d46c6252bca31a2"
+    },
+    {
+      "path": "games/pocket-breaker/README.md",
+      "sha256": "c9a4739882fb4d319cce63691f41381fe65a8a19177aa5d8ee7f4da7b890ed38"
+    },
+    {
+      "path": "games/pocket-breaker/STATUS.md",
+      "sha256": "1737cb2e2b91ada2e9d156f1f11861381fb5e70ec07c5e79de3095da481f9026"
+    },
+    {
+      "path": "games/pocket-breaker/assets/icon.ico",
+      "sha256": "8e4ead4329a79abe5b5a645dc91e2871c906940af59dac0d1245913f179d39d1"
+    },
+    {
+      "path": "games/pocket-breaker/assets/icon.png",
+      "sha256": "3c4969b05868756dae0034d9162c2e0619b18fff5ae01bdfb5374553f63453f5"
+    },
+    {
+      "path": "games/pocket-breaker/assets/icon_16.rgba",
+      "sha256": "8f5864c7880b365940b10526ef737f4b7cb3811845c2a97058c8cf2fee3c145d"
+    },
+    {
+      "path": "games/pocket-breaker/assets/icon_32.rgba",
+      "sha256": "2b34d4cbe0a0d4749143e82315140834ccb0356e42e24be46b43b43eab76ff9b"
+    },
+    {
+      "path": "games/pocket-breaker/assets/icon_64.rgba",
+      "sha256": "807305d31fed684a077b315d5838b0ec54d00874db373e88226dfad0627f7ac9"
+    },
+    {
+      "path": "games/pocket-breaker/assets/identity.json",
+      "sha256": "25cca472de9ba3954cbd1eaa70cb65232c75b8118fc16309fdb683b66b525f7b"
+    },
+    {
+      "path": "games/pocket-breaker/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/pocket-breaker/game.project.json",
+      "sha256": "8f2b948648be6aa6a98a85aee8b8a48ec6f435da39ed515e03a701638895660d"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/blue",
+      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/blue.ps1",
+      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/check.py",
+      "sha256": "d9426b493b40fc1ee5ab90f2a4a6de5c28792590a384b6a981a6c212e5e5b629"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/project.py",
+      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/ship.py",
+      "sha256": "4d95d894222ba6e057de614866f1f938a2ad060f2d9f69f84fbcf355eec81eab"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/web.py",
+      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+    },
+    {
+      "path": "games/pocket-breaker/src/lib.rs",
+      "sha256": "dd1d6bb5dca8735ecd9ef32d4179c17f5cd472ac3dcd68e42009aefca5bbaaac"
+    },
+    {
+      "path": "games/pocket-breaker/src/main.rs",
+      "sha256": "e45d9de3a5c70b215d0a963918f75e18ea29150839d85b1c8fbf6a5943ae20f7"
+    },
+    {
+      "path": "games/pocket-breaker/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/signal-garden/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/signal-garden/AGENTS.md",
+      "sha256": "21103b4a8b26dfe8e1f50ffcb05f2d42d2552b52e8b660ffa91803c75f0e305f"
+    },
+    {
+      "path": "games/signal-garden/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/signal-garden/Cargo.lock",
+      "sha256": "f9102453602d84a27bc90619f55662d2d3bd59e5ce0bbfce88e47f383a41e7cb"
+    },
+    {
+      "path": "games/signal-garden/Cargo.toml",
+      "sha256": "518062ff41a67d7489b22531d3c03989aca81ca912410c3898644736fad0bb74"
+    },
+    {
+      "path": "games/signal-garden/README.md",
+      "sha256": "055a4e4a05e7e4c85c0ce31789b1c9abd420146b5b9048cf78c9dc6a5b47cb35"
+    },
+    {
+      "path": "games/signal-garden/STATUS.md",
+      "sha256": "711a63f08ab91a04c8c4495e2c0cd954112cfabb682439b9545a2cbec37abcac"
+    },
+    {
+      "path": "games/signal-garden/assets/icon.ico",
+      "sha256": "9321cfccdd86295b89c0e8365f51a238380ca7ba22d50ef40a9d77394d29de2f"
+    },
+    {
+      "path": "games/signal-garden/assets/icon.png",
+      "sha256": "44af6edf5a1e28696ce0525e59f94dec1f3d53f24e4ad82392cd980c3b9dafc4"
+    },
+    {
+      "path": "games/signal-garden/assets/icon_16.rgba",
+      "sha256": "805a4343d4db5c3b0b704e105eea6440147204aaf8a010a3b600297454a458bb"
+    },
+    {
+      "path": "games/signal-garden/assets/icon_32.rgba",
+      "sha256": "2d2b0453c4a9fb82ecc013b69792ea823372d4d42846fbf212d183230d79e720"
+    },
+    {
+      "path": "games/signal-garden/assets/icon_64.rgba",
+      "sha256": "ef1bf6325e7b15d3d7863c272ab02b90ccd686aec26347d9246a962c4273eac6"
+    },
+    {
+      "path": "games/signal-garden/assets/identity.json",
+      "sha256": "7b70c5d60c3af8b2c6d07244e1602b3d40330818d374d49f22592ddae188579a"
+    },
+    {
+      "path": "games/signal-garden/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/signal-garden/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/signal-garden/scripts/blue",
+      "sha256": "d0f261161f38b664172172a8f65b97c9147efacc98b6bde525aede6b2607f8dc"
+    },
+    {
+      "path": "games/signal-garden/scripts/blue.ps1",
+      "sha256": "946ceb1a835be8e6a75a91fabe8297ecc85da995b1e13691b2555aa1e7285fe1"
+    },
+    {
+      "path": "games/signal-garden/scripts/check.py",
+      "sha256": "d85cf6e1553d577c1796cc5518d1bb7b34400f9e9369af607f2d5cb6c5fa630d"
+    },
+    {
+      "path": "games/signal-garden/scripts/dev.py",
+      "sha256": "1ec74470bafba23a42ad134347fd905010704cc8d1e0e4ae6ed783474edad211"
+    },
+    {
+      "path": "games/signal-garden/scripts/ship.py",
+      "sha256": "34de29af6183266a1f622566cbbba590970a06b49953078d491ba6d351c6bbc2"
+    },
+    {
+      "path": "games/signal-garden/src/audio.rs",
+      "sha256": "1cdc0d62e523e7a3f102508a46f28074ef2704a403b6000fbce07f4462a241bf"
+    },
+    {
+      "path": "games/signal-garden/src/lib.rs",
+      "sha256": "29331b57641f169a2b8fb0d25bea0d3da1769e1e4a7cd4bfa2eb32ef82e6d7e7"
+    },
+    {
+      "path": "games/signal-garden/src/main.rs",
+      "sha256": "d5d6b2be1600a0a2a660ac9a2d328c06226ce69356d059393b0632e601798b4d"
+    },
+    {
+      "path": "games/signal-garden/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/signal-garden/tests/audio.rs",
+      "sha256": "18f8e26df235ffb533b087dae202b44facc865ae0e5b687d3ad38ab153d7f4c7"
+    },
+    {
+      "path": "games/signal-garden/tests/determinism.rs",
+      "sha256": "bd63fc8fd37e7ea00fcdcf8899aa630af5c387fefd5c4480d2bb6676fb8af052"
+    },
+    {
+      "path": "games/signal-garden/tests/fixtures/v1.be2save",
+      "sha256": "a598c1556bc5cb70a8f317b42356f650204da95cad017b21a9250c823c07d3e8"
+    },
+    {
+      "path": "games/signal-garden/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
       "path": "games/three-switches/game.json",
       "sha256": "cdc69ba3f13f5d106adc4b1f8d3a39205008f00362e5dfd449b3ee3df2598799"
     },
@@ -1053,6 +1585,34 @@
     {
       "path": "games/three-switches/scenario.json",
       "sha256": "9c15c15d68b916d4c88b2fa6e3400f23cce6d57a9afc2623fd42e6d9cd9ac766"
+    },
+    {
+      "path": "games/timed-relay/README.md",
+      "sha256": "fc4d7b98e2fc78a3bca102d02342706c00fb525a0bdd4a10d0e53231ddcfbe67"
+    },
+    {
+      "path": "games/timed-relay/content/deadline-boundary.json",
+      "sha256": "7a5e62cc2af823c953c83092d4dd7cbdf4632c246e876fe9fd293498a751ecc6"
+    },
+    {
+      "path": "games/timed-relay/content/game.invalid-counter.json",
+      "sha256": "738c04c5f67f97286008325cf63c978ad19063ae1785291c7b80dd904d649214"
+    },
+    {
+      "path": "games/timed-relay/content/game.json",
+      "sha256": "7cbe99d85815c94d3320edf3b8537feb590dc76a233b19fbb8f4b29a3141bc7f"
+    },
+    {
+      "path": "games/timed-relay/content/loss-restart-success.json",
+      "sha256": "697d0942b4aa313b0b048332092fe5785f72c7049bf6cc960539de23c23fedff"
+    },
+    {
+      "path": "games/timed-relay/content/map.json",
+      "sha256": "2c1dd544bafedb573415de2ff1cc9525800e4b9790c57288eab33553d64ab33e"
+    },
+    {
+      "path": "games/timed-relay/content/success.json",
+      "sha256": "e994d9b174c0a2e6785ff7b7482e2084386057912e52337c27cfcc5ca0967dd2"
     },
     {
       "path": "prototypes/multiplayer-game/Cargo.lock",
@@ -1407,6 +1967,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "fc44aa0ae35b9ef15db1fa5dd3b0d1e6702f79ea",
+  "source_revision": "b8a7f9ffba70a5ca155395ce1f5eb5d7108c721a",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

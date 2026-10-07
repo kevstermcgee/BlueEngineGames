@@ -164,6 +164,11 @@ fn plant(kind: usize) -> Template {
     }
     t
 }
+impl Default for Scene {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl Scene {
     pub fn new() -> Self {
         let mut dome = Template::new();
@@ -322,18 +327,43 @@ impl Scene {
         shadows: &mut Shadows,
         portrait: bool,
     ) -> Result<View, String> {
+        self.draw_view(sim, alpha, materials, shadows, portrait, None)
+    }
+    /// Same art and lighting in the browser canvas; cameras include its physical viewport.
+    pub fn draw_view(
+        &mut self,
+        sim: &Sim,
+        alpha: f32,
+        materials: &Materials,
+        shadows: &mut Shadows,
+        portrait: bool,
+        viewport: Option<(i32, i32, i32, i32)>,
+    ) -> Result<View, String> {
+        let p = sim.interpolated(alpha);
+        // Keep the authoritative 49 chunks; the portable client bakes/draws only nearby art.
+        // This bounds first-load geometry/memory on phones without changing terrain or collision.
+        let radius = if viewport.is_some() { 64. } else { 115. };
         if self.seed != Some(sim.seed) {
             self.chunks.clear();
             self.seed = Some(sim.seed);
         }
-        self.chunks.retain(|id, _| sim.chunks.chunks().contains_key(id));
+        self.chunks.retain(|id, _| {
+            if !sim.chunks.chunks().contains_key(id) {
+                return false;
+            }
+            let [x, z] = WorldPoint { chunk: *id, local: [16.; 2] }.relative(sim.origin, CHUNK_SIZE).unwrap();
+            (x - p.0).hypot(z - p.2) <= radius
+        });
         for (id, chunk) in sim.chunks.chunks() {
+            let [x, z] = WorldPoint { chunk: *id, local: [16.; 2] }.relative(sim.origin, CHUNK_SIZE)?;
+            if (x - p.0).hypot(z - p.2) > radius {
+                continue;
+            }
             if !self.chunks.contains_key(id) {
                 let art = self.art(sim, *id, chunk);
                 self.chunks.insert(*id, art);
             }
         }
-        let p = sim.interpolated(alpha);
         let yaw = sim.player.yaw + if portrait { std::f32::consts::PI } else { 0. };
         let focus = V(p.0, p.1 - sim.player.profile().eye_height + 0.95, p.2);
         let (distance, height, pitch) = if portrait { (2.6, 0.45, -0.10) } else { (4.8, 1.05, -0.20) };
@@ -343,8 +373,13 @@ impl Scene {
         view.fov = 65f32.to_radians();
         let phase = sim.time().phase;
         let day = daylight(phase);
-        let mood = look(phase);
-        clear_background(mood.clear_color());
+        let mut mood = look(phase);
+        if viewport.is_some() {
+            mood.fog_density = 0.042;
+        }
+        if viewport.is_none() {
+            clear_background(mood.clear_color());
+        }
         let elevation = -(phase * std::f32::consts::TAU).cos();
         let warm = (1. - elevation.abs() / 0.32).clamp(0., 1.);
         for v in &mut self.dome.verts {
@@ -366,7 +401,10 @@ impl Scene {
         objects.ball(sun, Vec3::splat(2.7), [1., 0.80, 0.48], 1., 16, 10);
         objects.ball(-sun, Vec3::splat(1.4), [0.80, 0.84, 0.95], 1., 16, 10);
         self.sky.add(&objects, Mat4::IDENTITY, Tint::NONE);
-        set_camera(&view.sky_camera());
+        let mut sky_camera = view.sky_camera();
+        sky_camera.viewport = viewport;
+        sky_camera.aspect = viewport.map(|(_, _, w, h)| w as f32 / h as f32);
+        set_camera(&sky_camera);
         gl_use_material(&materials.sky);
         self.sky.draw();
         gl_use_material(&materials.fx_add);
@@ -376,14 +414,14 @@ impl Scene {
         for (id, chunk) in &self.chunks {
             let [x, z] = WorldPoint { chunk: *id, local: [0.; 2] }.relative(sim.origin, CHUNK_SIZE)?;
             let dist = (x + 16. - p.0).hypot(z + 16. - p.2);
-            if dist > 115. {
+            if dist > radius {
                 continue;
             }
             let m = Mat4::from_translation(vec3(x, 0., z));
             for t in &chunk.trees {
                 self.world.add(t, m, Tint::NONE);
             }
-            if dist < 48. {
+            if dist < if viewport.is_some() { 32. } else { 48. } {
                 for t in &chunk.flowers {
                     self.world.add(t, m, Tint::NONE);
                 }
@@ -414,7 +452,10 @@ impl Scene {
             self.world.draw();
             self.actors.draw();
         });
-        set_camera(&view.camera_checked(0.08, 180.));
+        let mut camera = view.camera_checked(0.08, 180.);
+        camera.viewport = viewport;
+        camera.aspect = viewport.map(|(_, _, w, h)| w as f32 / h as f32);
+        set_camera(&camera);
         materials.set_scene(&mood, view.eye, (sim.tick % 2160000) as f32 / 60., 0.);
         shadows.apply(materials);
         gl_use_material(&materials.world);

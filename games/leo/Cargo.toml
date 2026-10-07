@@ -11,12 +11,18 @@ path = "src/lib.rs"
 
 [features]
 default = ["client"]
+portable-client = ["vesper3d/portable", "vesper3d/presentation", "dep:macroquad"]
 client = ["vesper3d/client", "dep:macroquad", "dep:windows-sys"]
 
 [[bin]]
 name = "leo"
 path = "src/main.rs"
 required-features = ["client"]
+
+[[bin]]
+name = "leo-browser"
+path = "src/browser_main.rs"
+required-features = ["portable-client"]
 
 [dependencies]
 vesper3d = { package = "be2", path = "../../..", default-features = false }

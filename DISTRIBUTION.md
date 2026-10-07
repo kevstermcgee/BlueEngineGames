@@ -115,3 +115,18 @@ workflow artifact. The complete catalog still validates first. Selected builds
 never publish a partial GitHub release, including when dispatched on `main`.
 Leave `game_slug` empty for the complete production release. Catalog engine
 versions reflect the actual build pin, rather than stale authoring metadata.
+
+## Former browser games
+
+Lantern Run, Pocket Breaker, Orchard Watch and Lantern Grove use their existing
+portable **native** clients and the standard Cargo package/EXE installer path.
+Leo already has a native installer. These games retain fixed-step simulation,
+keyboard/mouse/controller input, audio and save/load; no browser is required.
+The release definitions also cover the newly exported Signal Garden native game.
+Timed Relay is an authored engine test fixture, not a standalone game product.
+
+Native game checks run on Windows and Linux; Linux is a verification host, not
+a public download target. EXE installers appear on the site only after the
+complete Windows release succeeds. The Pages gate removes all stale web-play
+files when rebuilding output and rejects browser artifacts or non-EXE game links.
+The engine's distribution decision is ADR 0045.
