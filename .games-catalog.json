@@ -960,11 +960,11 @@
     },
     {
       "path": "games/leo/README.md",
-      "sha256": "427b907bdcb45b0312cef544231b5bea42216322eb56cebeef0dc5917b453071"
+      "sha256": "ebfb3f63cb43ab24b65be3654d0247a2315f3ee150f9d6509106da057322fdbd"
     },
     {
       "path": "games/leo/STATUS.md",
-      "sha256": "ba2a27cc65c10a2d0e4bb3d89794a235cb0dbbf52c91f4f6267b8a51b8a6adf7"
+      "sha256": "0f270efd35550a3c75dcc8b6b35801a49b04a1d387da0f7b4e452acae0790fbd"
     },
     {
       "path": "games/leo/assets/audio-source/dawn.wav",
@@ -1108,7 +1108,7 @@
     },
     {
       "path": "games/leo/src/browser.rs",
-      "sha256": "ab48f872f042ef62cac05140eb07034b7843859894c248768fcca51c8b05813d"
+      "sha256": "4a6a9df405e1ad60be8ce145a1936c4ba8f6dd4ea241d7004c97668f72868141"
     },
     {
       "path": "games/leo/src/browser_main.rs",
@@ -1120,7 +1120,7 @@
     },
     {
       "path": "games/leo/src/main.rs",
-      "sha256": "afacea5eec6655d3e5e373e76d9951a88a82d13c980f110b5ff3f98f7d0bb279"
+      "sha256": "a2539e5994629491337da1250863c52945f7088563a4931d5851ad6043ec183e"
     },
     {
       "path": "games/leo/src/platform.rs",
@@ -1128,7 +1128,7 @@
     },
     {
       "path": "games/leo/src/scene.rs",
-      "sha256": "a11c17650415b0d8b124c3c57351e6eaa350744e24f86cf49562fe23b7d540fb"
+      "sha256": "f592cf347d4c26f0535ec255d576cb28fca33c44de9d9797070d79daa6e7f80d"
     },
     {
       "path": "games/leo/tests/determinism.rs",
@@ -1971,6 +1971,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "4a138ebd7a23b563c5012e7b329d281383d45a96",
+  "source_revision": "b4c1b3b2fbc0e50bd3c74512d56b67be3f4d9019",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
