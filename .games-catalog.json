@@ -740,7 +740,7 @@
     },
     {
       "path": "games/lantern-grove/AGENTS.md",
-      "sha256": "9d04bbb27b20381de077f3df91462f55f6765be226af1fad8e36f547b7d9142b"
+      "sha256": "2c6485d3d3dac7e08e582090627e8e6f91a343df64c37b3b655a4ddfba6fe54c"
     },
     {
       "path": "games/lantern-grove/CLAUDE.md",
@@ -756,7 +756,7 @@
     },
     {
       "path": "games/lantern-grove/README.md",
-      "sha256": "bd9c6b473a0207924aec597fc61657b266d4b89e16ed9d7d12aaf5b4e80edf68"
+      "sha256": "6ee72435f7b4dd8645fb9a9c5eb113e5b6f64a5356763aac11694a559a4f2ea6"
     },
     {
       "path": "games/lantern-grove/STATUS.md",
@@ -792,15 +792,15 @@
     },
     {
       "path": "games/lantern-grove/game.project.json",
-      "sha256": "6a62d0bce052c54c33969a5d01494d5a20d4f7cd2d46155b4fbb60b4787f7bf1"
+      "sha256": "8b826563cafacc4b2544b78b893131a03f1b3fbc34f7641cd52884e79be54c6b"
     },
     {
       "path": "games/lantern-grove/scripts/blue",
-      "sha256": "b1f34ce6b6044d2befe31c0168150db4ae3100f564af4f8cca51b30a1fc5b656"
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
     },
     {
       "path": "games/lantern-grove/scripts/blue.ps1",
-      "sha256": "ded6316a4916206cf26c5bed8a577bf3aa069095eaefd66df4c477acbcc13cec"
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
     },
     {
       "path": "games/lantern-grove/scripts/check.py",
@@ -812,7 +812,7 @@
     },
     {
       "path": "games/lantern-grove/scripts/project.py",
-      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
     },
     {
       "path": "games/lantern-grove/scripts/ship.py",
@@ -820,7 +820,7 @@
     },
     {
       "path": "games/lantern-grove/scripts/web.py",
-      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+      "sha256": "d7e97794bd83494babbac27775cfb79c01639c1480d0ec824e45d9a78342769b"
     },
     {
       "path": "games/lantern-grove/src/lib.rs",
@@ -840,7 +840,7 @@
     },
     {
       "path": "games/lantern-run/AGENTS.md",
-      "sha256": "2fea681ea864a13c79a8082b8d4a8dc7c4b89d677629967dadaf93d1d25e2ba8"
+      "sha256": "0becee212aef9dcb26d58cd324f8f22456044473cca43c3b10c5eb5aa9d46218"
     },
     {
       "path": "games/lantern-run/CLAUDE.md",
@@ -856,7 +856,7 @@
     },
     {
       "path": "games/lantern-run/README.md",
-      "sha256": "8f6e4a8d307402bdf66552944977e5c7476724ad07eb5851bda2d2fa1fc1eb6e"
+      "sha256": "41e2b06f76fe81a3920b7b7a43b1cfcff8fa9e70f7f17f6dd52f837431546d03"
     },
     {
       "path": "games/lantern-run/STATUS.md",
@@ -892,15 +892,15 @@
     },
     {
       "path": "games/lantern-run/game.project.json",
-      "sha256": "e4b17c8e8c7600d299c84c5c7a8d1e4b8987553b853e6bd692e6b5c79328955e"
+      "sha256": "69a86484cf7d5eb07053167a7e478ef8cb1bde7f6f23d2f8176d666b7d82cdec"
     },
     {
       "path": "games/lantern-run/scripts/blue",
-      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
     },
     {
       "path": "games/lantern-run/scripts/blue.ps1",
-      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
     },
     {
       "path": "games/lantern-run/scripts/check.py",
@@ -912,7 +912,7 @@
     },
     {
       "path": "games/lantern-run/scripts/project.py",
-      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
     },
     {
       "path": "games/lantern-run/scripts/ship.py",
@@ -920,7 +920,7 @@
     },
     {
       "path": "games/lantern-run/scripts/web.py",
-      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+      "sha256": "d7e97794bd83494babbac27775cfb79c01639c1480d0ec824e45d9a78342769b"
     },
     {
       "path": "games/lantern-run/src/lib.rs",
@@ -940,7 +940,7 @@
     },
     {
       "path": "games/leo/AGENTS.md",
-      "sha256": "2b713e17639399ebca0a66e20e5bea6f0fc0eaa69bb3efc3f58e274c2700b227"
+      "sha256": "18bf5352c29faf8aa7b3e7ee94b55e773f3ee51d48acec6b82803ac6ed2ce524"
     },
     {
       "path": "games/leo/AUDIO.md",
@@ -956,11 +956,11 @@
     },
     {
       "path": "games/leo/Cargo.toml",
-      "sha256": "f6480aaeb599c34cc52d5ba663df8759ddbddcd490397c5a416cb5a8fad01ed2"
+      "sha256": "e7d93f2298ec5d96b5d47876e75b4c307c63b3a0fd7d1ba752082cc877a23fef"
     },
     {
       "path": "games/leo/README.md",
-      "sha256": "25bce11476ba0b458e81c72c0a15812082891dfaf62227c9b72147fbec02f460"
+      "sha256": "427b907bdcb45b0312cef544231b5bea42216322eb56cebeef0dc5917b453071"
     },
     {
       "path": "games/leo/STATUS.md",
@@ -1068,7 +1068,7 @@
     },
     {
       "path": "games/leo/game.project.json",
-      "sha256": "3e6493c69d918256be8cfaf150973a7e4211bebfa1639442abbc94d4dd88035e"
+      "sha256": "be7e3a8476492ed1bd25341d43fc1a49d17fcf8bfd8ff66e5560ecc0b23014b9"
     },
     {
       "path": "games/leo/rustfmt.toml",
@@ -1080,7 +1080,7 @@
     },
     {
       "path": "games/leo/scripts/blue.ps1",
-      "sha256": "8e1759459666c9d8186ec74131ddf558a5e495cdd543f68809c9be0c58b99b3f"
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
     },
     {
       "path": "games/leo/scripts/check.py",
@@ -1096,7 +1096,7 @@
     },
     {
       "path": "games/leo/scripts/project.py",
-      "sha256": "e59ea866a0d621aebfdfbca115fda5e699d7a4cfe723b773303f49e6ca5de6a1"
+      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
     },
     {
       "path": "games/leo/scripts/render_audio.py",
@@ -1272,7 +1272,7 @@
     },
     {
       "path": "games/orchard-watch/AGENTS.md",
-      "sha256": "93e44c0a343bc299980f20d3cd9a83d2d020b433899ac95c94df836330b92939"
+      "sha256": "01809cb4ae766ec1ae7a8bdf3486628893597c2c347186b485a4532c0a4f2c79"
     },
     {
       "path": "games/orchard-watch/CLAUDE.md",
@@ -1288,7 +1288,7 @@
     },
     {
       "path": "games/orchard-watch/README.md",
-      "sha256": "078a0f8bc47c88c552e4123445102709e27d0ef3646d59a32cc257c8bd3b769b"
+      "sha256": "872f2e16a37d2c154ee60c4f557594015422b124c8ae7bad70b7570aeb53ea2b"
     },
     {
       "path": "games/orchard-watch/STATUS.md",
@@ -1324,15 +1324,15 @@
     },
     {
       "path": "games/orchard-watch/game.project.json",
-      "sha256": "655e3ca99c842eff4d168e14fc8d6b26b9a6d25d1c751f39af8cd5c415b7744f"
+      "sha256": "7bd447370ab556ac3e4bcc24878916b94163cfe499529ed6b51c69da73be462f"
     },
     {
       "path": "games/orchard-watch/scripts/blue",
-      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
     },
     {
       "path": "games/orchard-watch/scripts/blue.ps1",
-      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
     },
     {
       "path": "games/orchard-watch/scripts/check.py",
@@ -1344,7 +1344,7 @@
     },
     {
       "path": "games/orchard-watch/scripts/project.py",
-      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
     },
     {
       "path": "games/orchard-watch/scripts/ship.py",
@@ -1352,7 +1352,7 @@
     },
     {
       "path": "games/orchard-watch/scripts/web.py",
-      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+      "sha256": "d7e97794bd83494babbac27775cfb79c01639c1480d0ec824e45d9a78342769b"
     },
     {
       "path": "games/orchard-watch/src/lib.rs",
@@ -1372,7 +1372,7 @@
     },
     {
       "path": "games/pocket-breaker/AGENTS.md",
-      "sha256": "22806455801c854c3f53353c87fde96fb5dc9091ba7928dc81302e9f420ab42b"
+      "sha256": "3dce94651b8d9a71799372ed0f33c87a39216ca8175a10ce90ebeb079f4b8451"
     },
     {
       "path": "games/pocket-breaker/CLAUDE.md",
@@ -1388,7 +1388,7 @@
     },
     {
       "path": "games/pocket-breaker/README.md",
-      "sha256": "1fc98864fae18a80c7d37d12569d1f7d566099531245dbbe169ddbb4afbda9f2"
+      "sha256": "c223c65ec5ffba18ff4b75a1916dd8ba2e7c4a7d84153b3870e901cb3a9fe1d5"
     },
     {
       "path": "games/pocket-breaker/STATUS.md",
@@ -1424,15 +1424,15 @@
     },
     {
       "path": "games/pocket-breaker/game.project.json",
-      "sha256": "8f2b948648be6aa6a98a85aee8b8a48ec6f435da39ed515e03a701638895660d"
+      "sha256": "f6fc31763a05033d542e870e14ddf935543829b6080984d064a30b7d633aff27"
     },
     {
       "path": "games/pocket-breaker/scripts/blue",
-      "sha256": "07ec114def2aa2d0bdcc0fccea1a9226bb6045f16f59eff29462503942137fa6"
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
     },
     {
       "path": "games/pocket-breaker/scripts/blue.ps1",
-      "sha256": "a78fb32e921d2cafed1c36a914add5cb494d4122c19cdfce89218ef7292d3f2e"
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
     },
     {
       "path": "games/pocket-breaker/scripts/check.py",
@@ -1444,7 +1444,7 @@
     },
     {
       "path": "games/pocket-breaker/scripts/project.py",
-      "sha256": "89cf9303dda77a5293f71923df39b1ddf13b13c17d0f12226ec2436a3aeeab62"
+      "sha256": "204a680e9d0d608a92004ae6b603ad19635d2287e176626db343fdc5ed787f3d"
     },
     {
       "path": "games/pocket-breaker/scripts/ship.py",
@@ -1452,7 +1452,7 @@
     },
     {
       "path": "games/pocket-breaker/scripts/web.py",
-      "sha256": "8815253f15dae9c1aca23f64aa2c2ffb69f24fc992bd4a0929550af64e5e6679"
+      "sha256": "d7e97794bd83494babbac27775cfb79c01639c1480d0ec824e45d9a78342769b"
     },
     {
       "path": "games/pocket-breaker/src/lib.rs",
@@ -1971,6 +1971,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "43e7a3754a7fd280c9ab54e3b5872bfd56887986",
+  "source_revision": "933a0dada791cda50aced54e5a68d6d0f5690c37",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
