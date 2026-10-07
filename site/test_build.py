@@ -57,9 +57,9 @@ class Downloads(unittest.TestCase):
             root = Path(temp)
             (root / 'games').mkdir()
             (root / 'thumbs').mkdir()
-            rows = [{'slug': 'game', 'name': 'Game', 'description': '<unsafe>', 'created': '2026-01-01',
+            rows = [{'slug': 'game', 'name': 'Game café ✨', 'description': '<unsafe>', 'created': '2026-01-01',
                      'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'}]
-            with (root / 'catalog.tsv').open('w') as out:
+            with (root / 'catalog.tsv').open('w', encoding='utf-8', newline='') as out:
                 writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
                 writer.writeheader(); writer.writerows(rows)
             current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt', 'INSTALLER-SHA256SUMS.txt'])
@@ -77,8 +77,9 @@ class Downloads(unittest.TestCase):
                 site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
                                           releases_json=root / 'releases.json', games_dir=root / 'games',
                                           thumbs=root / 'thumbs', out=root / 'out'))
-            page = (root / 'out/index.html').read_text()
+            page = (root / 'out/index.html').read_text(encoding='utf-8')
             self.assertIn('<strong>1 free game</strong> for Windows.', page)
+            self.assertIn('Game café ✨', page)
             self.assertFalse((root / 'out/web').exists())
             self.assertFalse(old_page.exists())
             self.assertNotIn('Play / Install', page)
@@ -90,7 +91,7 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('https://example.com/old/game-windows-x64.zip', page)
             self.assertIn('href="games/game/"', page)
             self.assertIn('https://example.com/current/INSTALLER-SHA256SUMS.txt', page)
-            game_page = (root / 'out/games/game/index.html').read_text()
+            game_page = (root / 'out/games/game/index.html').read_text(encoding='utf-8')
             self.assertIn('https://example.com/old/game-setup-windows-x64.exe', game_page)
             self.assertNotIn('game-windows-x64.zip', game_page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', game_page)
@@ -101,7 +102,7 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('https://bad/', page)
             self.assertNotIn('BlueEngine Launcher', page)
             self.assertNotIn('id="missing"', page)
-            with (root / 'catalog.tsv').open('a') as out:
+            with (root / 'catalog.tsv').open('a', encoding='utf-8', newline='') as out:
                 out.write('missing\tMissing\t\t\t\t\t\n')
             previous = {str(p.relative_to(root / 'out')): p.read_bytes()
                         for p in (root / 'out').rglob('*') if p.is_file()}

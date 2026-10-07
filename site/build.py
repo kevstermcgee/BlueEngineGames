@@ -191,16 +191,16 @@ def build_staged(args) -> None:
     thumbs_out = out / "thumbs"
     thumbs_out.mkdir(parents=True, exist_ok=True)
 
-    with open(args.release_json) as f:
+    with open(args.release_json, encoding="utf-8") as f:
         release = json.load(f)
     releases = []
     history_path = getattr(args, "releases_json", None)
     if history_path:
-        with open(history_path) as f:
+        with open(history_path, encoding="utf-8") as f:
             releases = json.load(f)
     releases.sort(key=lambda r: r.get("published_at") or "", reverse=True)
 
-    with open(args.catalog, newline="") as f:
+    with open(args.catalog, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
 
     games = []
@@ -255,7 +255,7 @@ def build_staged(args) -> None:
             version=version_label(row.get("game_version", "")), created=html.escape(created),
             asset=html.escape(asset), download_label=download_label,
             versions=version_rows(versions, slug, release.get("tag_name", "")), repo=REPO,
-        ))
+        ), encoding="utf-8", newline="\n")
 
     # Windows-only download catalog; optional engine web publishing cannot alter this site.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -276,7 +276,7 @@ def build_staged(args) -> None:
     )
 
     page = enhance_page(page)
-    (out / "index.html").write_text(page)
+    (out / "index.html").write_text(page, encoding="utf-8", newline="\n")
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")
     shutil.copy2(site_dir / "app.js", out / "app.js")
