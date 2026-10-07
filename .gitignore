@@ -3,3 +3,5 @@
 /_site/
 __pycache__/
 /.be2-work/
+**/.blue-check/
+/games/deadfall/dist/
