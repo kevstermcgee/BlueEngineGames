@@ -18,7 +18,14 @@ Map navigation is prepared before the server accepts players. Long bot searches 
 
 ## Verification receipts
 
-Final native game checks, engine Linux/Windows checks, package smoke, visual review and publication receipts are recorded below when completed.
+* [Native engine Linux/Windows CI](https://github.com/kevstermcgee/BlueEngine/actions/runs/37701469367) passed all six jobs at `f0657a1b3ee7`, including full checks, release/headless builds and existing game consumers.
+* [Native Deadfall Linux/Windows checks](https://github.com/kevstermcgee/BlueEngineGames/actions/runs/37707584354) passed at `1bfc5f65f15b`: 132 library and 34 integration tests per operating system, with three deliberately ignored library tests. The real shared-hub tests ran on both. Formatting and Clippy with warnings denied passed. Both platforms package the game; Linux also runs the isolated clean-package smoke. The [selected Windows installer review](https://github.com/kevstermcgee/BlueEngineGames/actions/runs/37707587035) passed distribution, updater and installation/upgrade/uninstall gates, and its downloaded installer/package match the SHA-256 manifest. This branch artifact is separate from the eventual published release.
+* The full local engine check passed all 39 gates in 2540.480 seconds; 40 stage/total timing rows are stored in the engine's `docs/perf/metrics.jsonl`. Learning-data validation passed 52 tests after the fixed network entries were marked promoted.
+* Local native project checks passed with a real hub; the rendering-free library passed 64 tests with two deliberately ignored. Timing gates retain their original threshold. The protocol-2 raw join pin is `fed4da58` on both native OSes.
+* Native render review covered the three maps from three overhead angles, all four character variants, the three new weapon models and sights, gameplay in all four modes, settings, the main menu and online room creation/lobby. It caught and repaired floor depth flicker and owner-camera flag obstruction. Bomb-site labels follow visible world markers. A private Linux XTest run confirmed that holding the actual Tab key displays the scoreboard; this is not a claim of physical controller testing.
+* The native friend-room capture created a two-human room, marked the lone player Ready, confirmed that it remained in the lobby and exercised Copy invite. The server candidate passed registry/schema validation and isolated startup with all eight room settings.
+
+Publication uses the main-branch Windows release and Pages workflows. The catalog pins the complete engine revision; release manifests and native `ship.json` receipts identify the exact packaged source. Both players must update before joining the protocol-2 server.
 
 ## Practical limits
 
