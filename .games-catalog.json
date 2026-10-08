@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 378,
+    "games": 406,
     "prototypes": 10,
     "tests": 64
   },
@@ -733,6 +733,118 @@
     {
       "path": "games/blueengine-sandbox/routes/foundry.json",
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
+    },
+    {
+      "path": "games/corkscrew-key/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/corkscrew-key/AGENTS.md",
+      "sha256": "24b727d3d71d762714a29eb5de8c87059e06ab8ce32000fc4627ef7251ccb1b3"
+    },
+    {
+      "path": "games/corkscrew-key/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/corkscrew-key/Cargo.lock",
+      "sha256": "c85e1c62aaae575a87251877be02e7dcb9bac0227b37e2a743ad8d8da5cc6ab9"
+    },
+    {
+      "path": "games/corkscrew-key/Cargo.toml",
+      "sha256": "56442dcd0ec932282f33e666f6c934eb285ce91ec139ee0bf1116703f1a30e37"
+    },
+    {
+      "path": "games/corkscrew-key/README.md",
+      "sha256": "ebe2bef1f8290299cb7a5946bf9fd6ce986abe8ce8b20272fe96a259736e650f"
+    },
+    {
+      "path": "games/corkscrew-key/STATUS.md",
+      "sha256": "22c687343077ed19d3af7dce8449c4ad0153127acf28f7ee43d45eafd5effdb0"
+    },
+    {
+      "path": "games/corkscrew-key/assets/icon.ico",
+      "sha256": "1941163a3ac67ca5dad02f69a70225b84345c3d65d134ae4e08610780540464e"
+    },
+    {
+      "path": "games/corkscrew-key/assets/icon.png",
+      "sha256": "939c5f5c70408742a2f79651a4f12e4add13a28a32c9bd54745f51fc7eceea1c"
+    },
+    {
+      "path": "games/corkscrew-key/assets/icon_16.rgba",
+      "sha256": "fb3111dff31c18b41253f48eec098f0229095fe6ba480e284d857815f4ff38fa"
+    },
+    {
+      "path": "games/corkscrew-key/assets/icon_32.rgba",
+      "sha256": "50af7c3e9b9f88a8a452a2152e0a9071e82180ae56627d32e6e6f78f239c34a4"
+    },
+    {
+      "path": "games/corkscrew-key/assets/icon_64.rgba",
+      "sha256": "423b05ead6ba9f2a019ccad57798e0dd7b61f6c165f230dace4044025cea9dde"
+    },
+    {
+      "path": "games/corkscrew-key/assets/identity.json",
+      "sha256": "dcfeadf3470079ef8b86ca7420079e78bfc916dbb5af0b524d269814c4dc65bd"
+    },
+    {
+      "path": "games/corkscrew-key/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/corkscrew-key/game.project.json",
+      "sha256": "39a2594ba139519e6b9f63f7de9bdfbe914260ca89e1c31cd12851cc6a3a642c"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/check.py",
+      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/ship.py",
+      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+    },
+    {
+      "path": "games/corkscrew-key/src/lib.rs",
+      "sha256": "7fc139d6f174a0c3ffbd75308f64363284b3ffaadf8a7404ffb143a515621855"
+    },
+    {
+      "path": "games/corkscrew-key/src/main.rs",
+      "sha256": "4daac506d0e2ef767a58c120ec1d3e23a56ab8ea1808eb027db8d09bfc279f9b"
+    },
+    {
+      "path": "games/corkscrew-key/src/rules.rs",
+      "sha256": "d62aa84abc81f34c9d11a182dd1f6b59202262a0e5a7cd8f9940fa41502aefb8"
+    },
+    {
+      "path": "games/corkscrew-key/src/sweep_table.rs",
+      "sha256": "2e40b5a3ddff44be849bffe9ff88a2d67f0efbb575b37febf4404c3518cbb2c0"
+    },
+    {
+      "path": "games/corkscrew-key/src/tests.rs",
+      "sha256": "0b061d0eeb499b884f6dd5550cb7dd7acd5327d19f1134f54980ecb01fe2b4be"
+    },
+    {
+      "path": "games/corkscrew-key/src/view.rs",
+      "sha256": "a3409dcb2ba8be5b271c6aa4ca1e5d1bb8dc988dbbe42b064afb13475ecad1bc"
+    },
+    {
+      "path": "games/corkscrew-key/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
       "path": "games/gap-flip/.gitignore",
@@ -2191,6 +2303,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "e4109d3ae7b3e3219b04767c34ffb510fcfe7a88",
+  "source_revision": "cebdaeeda655bf4bcb642e8733da8475d92b058b",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

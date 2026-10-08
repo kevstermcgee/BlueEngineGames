@@ -278,6 +278,13 @@
       "directory": "games/gap-flip",
       "kind": "cargo-package",
       "binary": "gap-flip"
+    },
+    {
+      "slug": "corkscrew-key",
+      "name": "Corkscrew Key",
+      "directory": "games/corkscrew-key",
+      "kind": "cargo-package",
+      "binary": "corkscrew-key"
     }
   ],
   "non_playable_directories": [
