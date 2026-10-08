@@ -159,6 +159,9 @@ async fn main() {
 async fn game_path(args: &Args, level: &deadfall::level::Level, quality: ShadowQuality) {
     let mut renderer = Renderer::new(level);
     renderer.set_shadows(quality);
+    if matches!(args.what.as_str(), "top" | "tiles" | "") {
+        renderer.set_world_near(1.);
+    }
     let figures: Vec<Figure> = flag_value(&args.raw, "--men")
         .map(|v| {
             v.split(',')

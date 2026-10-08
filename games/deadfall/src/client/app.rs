@@ -2226,7 +2226,7 @@ impl App {
         self.audio.update(dt, &listener, level);
 
         // Weapon in hand.
-        self.renderer.draw_objectives(&view, &snap);
+        self.renderer.draw_objectives(&view, scene_snap, skip);
         if alive {
             let team = crate::Team::from_index(s.my_team);
             let skin = s.skins[me_slot.unwrap_or(0).min(15)];
@@ -2247,6 +2247,18 @@ impl App {
             let team = roster_team(slot as u8);
             let skin = s.skins[slot];
             self.renderer.draw_viewmodel(&view, &vm_hands, vm_weapon, team, skin, 0., 0., (0., 0.), 0., 0.);
+        }
+
+        // Site names follow visible world markers, so the planting instruction is actionable.
+        if alive && snap.mode == crate::modes::GameMode::SearchDestroy {
+            for (i, site) in snap.map.sites().iter().enumerate() {
+                let marker = to_v3(*site) + vec3(0., 1., 0.);
+                if self.renderer_map.level().line_of_sight(to_v(view.eye), to_v(marker)) {
+                    if let Some(p) = view.project(marker, screen_width(), screen_height()) {
+                        hud::text_centered(if i == 0 { "A" } else { "B" }, p.x, p.y, 22. * hud::ui_scale(), ORANGE);
+                    }
+                }
+            }
         }
 
         // ---- overlay ----

@@ -228,6 +228,7 @@ pub struct Renderer {
     tracers: Vec<Tracer>,
     flashes: Vec<Flash>,
     vm_target: Option<(RenderTarget, u32, u32)>,
+    world_near: f32,
     pub time: f32,
     pub muzzle_flash: f32,
     arms_cache: Option<(u64, Template)>,
@@ -282,6 +283,7 @@ impl Renderer {
             tracers: Vec::new(),
             flashes: Vec::new(),
             vm_target: None,
+            world_near: 0.15,
             time: 0.,
             muzzle_flash: 0.,
             arms_cache: None,
@@ -291,6 +293,11 @@ impl Renderer {
     /// Switch the shadow tier (Settings and `--shadows`). Full falls back to Simple if the map cannot be made.
     pub fn set_shadows(&mut self, quality: ShadowQuality) {
         self.shadows.set_quality(quality);
+    }
+
+    /// Gameplay keeps this inside the 0.23 m body radius; distant authoring views can use a larger near plane.
+    pub fn set_world_near(&mut self, near: f32) {
+        self.world_near = near.clamp(0.05, 1.);
     }
 
     pub fn model(&self, weapon: u8) -> Option<&WeaponModel> {
@@ -522,7 +529,7 @@ impl Renderer {
         for m in &self.sky_meshes {
             draw_mesh(m);
         }
-        set_camera(&view.camera(0.05, 400.));
+        set_camera(&view.camera(self.world_near, 400.));
         // The nearest fixed lights, plus a flash of light at every muzzle that just fired.
         let mut spots: Vec<&crate::level::LightSpot> = self.level.lights.iter().collect();
         spots.sort_by(|a, b| {
@@ -632,19 +639,23 @@ impl Renderer {
     }
 
     /// Objective markers obey world depth: no wall-revealing overlay or collision geometry.
-    pub fn draw_objectives(&self, view: &View, snap: &crate::netgame::Snapshot) {
+    pub fn draw_objectives(&self, view: &View, snap: &crate::netgame::Snapshot, hide_carrier: Option<usize>) {
         use crate::modes::GameMode;
         if !matches!(snap.mode, GameMode::CaptureFlag | GameMode::SearchDestroy) {
             return;
         }
-        set_camera(&view.camera(0.05, 400.));
+        set_camera(&view.camera(self.world_near, 400.));
         if snap.mode == GameMode::CaptureFlag {
             for (t, f) in snap.objective.flags.iter().enumerate() {
-                let p = v3(f.pos);
                 let c = if t == 0 { Color::new(0.55, 0.73, 0.3, 1.) } else { Color::new(0.35, 0.6, 0.95, 1.) };
+                draw_cube(v3(snap.map.bases()[t]) + vec3(0., 0.025, 0.), vec3(2.4, 0.05, 2.4), None, c);
+                // A carried flag must not cover its carrier's first-person or replay camera.
+                if f.carrier != 255 && hide_carrier == Some(f.carrier as usize) {
+                    continue;
+                }
+                let p = v3(f.pos);
                 draw_cube(p + vec3(0., 0.9, 0.), vec3(0.055, 1.8, 0.055), None, LIGHTGRAY);
                 draw_cube(p + vec3(0.42, 1.5, 0.), vec3(0.84, 0.5, 0.025), None, c);
-                draw_cube(v3(snap.map.bases()[t]) + vec3(0., 0.025, 0.), vec3(2.4, 0.05, 2.4), None, c);
             }
         } else {
             for p in snap.map.sites() {
