@@ -248,7 +248,7 @@ def find_tools(root):
     suffix = '.exe' if os.name == 'nt' else ''
     targets = [Path(os.environ['CARGO_TARGET_DIR'])] if os.environ.get('CARGO_TARGET_DIR') else []
     for base in targets + [engine / 'target']:
-        for profile in ('release', 'fast', 'debug', 'be2-headless/release'):
+        for profile in ('itest', 'release', 'fast', 'debug', 'be2-headless/release'):
             candidate = base / profile / ('be2-tools' + suffix)
             if candidate.is_file():
                 return str(candidate)

@@ -634,6 +634,11 @@ fn read_event(r: &mut Reader) -> WireResult<Event> {
 // ---- the game -----------------------------------------------------------------------------------------------------
 
 /// A number that changes whenever the rules, the armoury or the map change.
+/// Gameplay numbers at 0.1 mm / 0.0001 numeric units. Raw atan2 bits can differ across OS math libraries.
+fn fingerprint_number(value: f32) -> u32 {
+    (f64::from(value) * 10_000.).round() as i32 as u32
+}
+
 pub fn fingerprint() -> u32 {
     use std::sync::OnceLock;
     static F: OnceLock<u32> = OnceLock::new();
@@ -667,7 +672,7 @@ pub fn fingerprint() -> u32 {
                 w.ads_s,
                 w.blast_damage,
             ] {
-                mix(f.to_bits());
+                mix(fingerprint_number(f));
             }
             mix(w.class as u32);
             mix(w.slot as u32);
@@ -679,11 +684,11 @@ pub fn fingerprint() -> u32 {
                 weapons::Fire::Burst { rounds, gap_s } => {
                     mix(2);
                     mix(rounds as u32);
-                    mix(gap_s.to_bits());
+                    mix(fingerprint_number(gap_s));
                 }
                 weapons::Fire::Cycle { cycle_s } => {
                     mix(3);
-                    mix(cycle_s.to_bits());
+                    mix(fingerprint_number(cycle_s));
                 }
                 weapons::Fire::Throw => mix(4),
                 weapons::Fire::Swing => mix(5),
@@ -693,35 +698,35 @@ pub fn fingerprint() -> u32 {
                 weapons::Sight::Dot => mix(1),
                 weapons::Sight::Scope { zoom } => {
                     mix(2);
-                    mix(zoom.to_bits());
+                    mix(fingerprint_number(zoom));
                 }
                 weapons::Sight::None => mix(3),
             }
             if let Some(p) = w.projectile {
                 mix(1);
                 for f in [p.speed, p.gravity, p.fuse_s] {
-                    mix(f.to_bits());
+                    mix(fingerprint_number(f));
                 }
                 mix(p.bounces as u32);
                 match p.effect {
                     weapons::Effect::Explosion { radius } => {
                         mix(0);
-                        mix(radius.to_bits());
+                        mix(fingerprint_number(radius));
                     }
                     weapons::Effect::Flash { radius, blind_s } => {
                         mix(1);
-                        mix(radius.to_bits());
-                        mix(blind_s.to_bits());
+                        mix(fingerprint_number(radius));
+                        mix(fingerprint_number(blind_s));
                     }
                     weapons::Effect::Smoke { radius, seconds } => {
                         mix(2);
-                        mix(radius.to_bits());
-                        mix(seconds.to_bits());
+                        mix(fingerprint_number(radius));
+                        mix(fingerprint_number(seconds));
                     }
                     weapons::Effect::Fire { radius, seconds } => {
                         mix(3);
-                        mix(radius.to_bits());
-                        mix(seconds.to_bits());
+                        mix(fingerprint_number(radius));
+                        mix(fingerprint_number(seconds));
                     }
                 }
             } else {
@@ -730,7 +735,7 @@ pub fn fingerprint() -> u32 {
             if let Some(m) = w.melee {
                 mix(1);
                 for f in [m.reach, m.light, m.heavy, m.light_s, m.heavy_s, m.back_mult] {
-                    mix(f.to_bits());
+                    mix(fingerprint_number(f));
                 }
             } else {
                 mix(0);
@@ -744,32 +749,32 @@ pub fn fingerprint() -> u32 {
             for b in &world.blocks {
                 mix(b.material as u32);
                 for f in [b.min.0, b.min.1, b.min.2, b.max.0, b.max.1, b.max.2] {
-                    mix(f.to_bits());
+                    mix(fingerprint_number(f));
                 }
             }
             for t in 0..2 {
                 for s in &world.spawns[t] {
-                    mix(s.pos.0.to_bits());
-                    mix(s.pos.1.to_bits());
-                    mix(s.pos.2.to_bits());
-                    mix(s.yaw.to_bits());
+                    mix(fingerprint_number(s.pos.0));
+                    mix(fingerprint_number(s.pos.1));
+                    mix(fingerprint_number(s.pos.2));
+                    mix(fingerprint_number(s.yaw));
                 }
             }
             for l in &world.loot {
                 mix(l.weapon as u32);
                 for f in [l.pos.0, l.pos.1, l.pos.2, l.respawn_s] {
-                    mix(f.to_bits());
+                    mix(fingerprint_number(f));
                 }
             }
             for p in map.bases().into_iter().chain(map.sites()) {
                 for f in [p.0, p.1, p.2] {
-                    mix(f.to_bits());
+                    mix(fingerprint_number(f));
                 }
             }
         }
         let profile = sim::profile();
         for f in [profile.walk_speed, profile.jump_height, profile.crouch_speed, sim::KILLCAM_SECONDS, sim::GRAVITY] {
-            mix(f.to_bits());
+            mix(fingerprint_number(f));
         }
         h
     })
@@ -1392,6 +1397,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn the_fingerprint_ignores_platform_roundoff_but_detects_gameplay_changes() {
+        let angle = (-14f32).atan2(50.);
+        let adjacent = f32::from_bits(angle.to_bits() + 1);
+        assert_eq!(fingerprint_number(angle), fingerprint_number(adjacent));
+        assert_eq!(fingerprint_number(-0.), fingerprint_number(0.));
+        assert_ne!(fingerprint_number(7.2), fingerprint_number(7.21));
+    }
+
+    #[test]
     fn room_settings_declare_stable_ids_and_build_the_match_rules() {
         let table: Vec<_> = SETTINGS.iter().map(|s| (s.id, s.name, s.flag, s.kind, s.min, s.max, s.default)).collect();
         assert_eq!(
@@ -1426,7 +1440,7 @@ mod tests {
     /// accept that the next release is a breaking one and update the pin on purpose.
     #[test]
     fn the_join_fingerprint_is_pinned() {
-        assert_eq!(fingerprint(), 0x92E9DA56, "netgame::fingerprint() changed");
+        assert_eq!(fingerprint(), 0xFED4DA58, "netgame::fingerprint() changed");
         assert_eq!(<DeadfallGame as NetGame>::fingerprint(), fingerprint());
     }
 

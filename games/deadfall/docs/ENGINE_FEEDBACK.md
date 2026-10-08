@@ -1,5 +1,7 @@
 # Current upgrade findings (2026-10-07)
 
+The final bot planner also exposed synchronous A* spikes above the 12 ms UDP gate. `nav::PathSearch` now resumes at most 1024 heap pops per bot per tick, counts obsolete entries against the budget, rate-limits failed retries and resets on respawn. Map validation retains full searches. This is useful evidence for an engine-owned, multi-floor navigation API with bounded per-tick work (learning record L-089).
+
 This section supersedes the historical observations below. The original report is retained as development history; its measurements and missing features describe that earlier engine.
 
 * **Fixed in the engine:** packet framing allowed 1200 bytes while the transport accepted 1100. A deterministic busy-combat fixture reproduced state starvation and send errors. The encoder now obeys the effective peer limit and encodes game snapshots once per recipient. Deadfall budgets optional nearby projectiles, zones and drops around essential state.
@@ -7,6 +9,8 @@ This section supersedes the historical observations below. The original report i
 * **Fixed in the engine:** delayed lobby messages could reset a new match under reordering. Reliable-event lobby transitions now carry authenticated match generations. Short results screens retry at the usual snapshot cadence so the final combat events can drain. Regression fixtures include repeated matches with 25% loss, event bursts with 30% loss, and oversized events.
 * **Adopted current engine input:** the native key table is complete in this engine. Deadfall now uses `ClientInput` for gameplay keys; the historical 23-key workaround is removed. Losing focus clears movement, fire, aim and interactions.
 * **Fixed in the game:** Slagworks roof pickups were inaccessible to bots. Match navigation now uses the actual player jump height and checks collision before bridging a narrow roof joint. Reachability checks cover every spawn, weapon and objective on all three maps, and standing spawn physics catches raised-floor penetration.
+* **Fixed in the game:** native CI found different raw join fingerprints for identical procedural maps. Numeric inputs are now rounded to 0.0001 units before hashing; one portable fingerprint is pinned on both operating systems (L-090).
+* **Fixed in the game:** float-to-u16 conversion saturated the displayed tick after about eighteen minutes, breaking lag compensation. Conversion now wraps through u32, with hit tests before, across and after rollover.
 * **Fixed in the game:** DNS lookup blocked the render loop. A single bounded worker now resolves asynchronously; timeout, cancellation and retries remain usable. Numeric socket addresses bypass the worker. A stuck OS lookup cannot accumulate unbounded threads.
 * **Verification improved:** Deadfall is included in native Linux/Windows game CI. Real hub tests are mandatory there, with the hub built from the catalog engine. Linux-only process-argument inspection is kept optional on Windows while actual room creation, joining, capacity, mode and map checks run on both.
 

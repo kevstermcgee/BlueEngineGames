@@ -34,6 +34,7 @@ pub struct BotState {
     seen_at: u32,
     last_known: Option<V>,
     path: Vec<V>,
+    pending_path: Option<crate::nav::PathSearch>,
     path_i: usize,
     goal: Option<V>,
     repath_at: u32,
@@ -62,6 +63,16 @@ pub struct BotState {
 }
 
 impl BotState {
+    pub fn reset_navigation(&mut self, feet: V, tick: u32) {
+        self.path.clear();
+        self.pending_path = None;
+        self.path_i = 0;
+        self.goal = None;
+        self.repath_at = tick;
+        self.last_pos = feet;
+        self.stuck = 0;
+    }
+
     pub fn new(skill: u8, rng: &mut Rng) -> Self {
         let skill = skill.min(2);
         let (react, err_deg, turn) = match skill {
@@ -79,6 +90,7 @@ impl BotState {
             seen_at: 0,
             last_known: None,
             path: Vec::new(),
+            pending_path: None,
             path_i: 0,
             goal: None,
             repath_at: rng.below(12) as u32,
@@ -316,15 +328,26 @@ pub fn think(m: &mut Match, slot: usize, b: &mut BotState) -> Input {
         }
     }
     if let Some(g) = goal {
-        // Empty/unreachable paths also obey this deadline; retrying every tick can flood A*.
-        let stale = tick >= b.repath_at;
-        if stale {
-            // Spread bots across ticks instead of synchronizing all their expensive searches.
+        // Empty/unreachable paths obey a deadline; do not restart a long search every tick.
+        if b.pending_path.is_none() && tick >= b.repath_at {
+            b.pending_path = world.nav.begin_path(feet, g);
             b.repath_at = tick + 45 + (slot as u32 * 7 % 13);
-            b.path = world.nav.path(feet, g).unwrap_or_default();
-            b.path_i = 0;
-            if b.path.is_empty() && b.target.is_none() {
-                b.goal = None;
+        }
+        if let Some(search) = b.pending_path.as_mut() {
+            match world.nav.advance_path(search, 1024) {
+                crate::nav::PathProgress::Pending => {}
+                result => {
+                    b.path = match result {
+                        crate::nav::PathProgress::Found(points) => points,
+                        _ => Vec::new(),
+                    };
+                    b.path_i = usize::from(b.path.len() > 1);
+                    b.pending_path = None;
+                    b.repath_at = tick + 45 + (slot as u32 * 7 % 13);
+                    if b.path.is_empty() && b.target.is_none() {
+                        b.goal = None;
+                    }
+                }
             }
         }
         while b.path_i < b.path.len() && {

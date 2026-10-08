@@ -21,6 +21,35 @@ struct Node {
     y: f32,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct SearchItem(f32, usize);
+impl Eq for SearchItem {}
+impl PartialOrd for SearchItem {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for SearchItem {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.0.partial_cmp(&self.0).unwrap_or(Ordering::Equal)
+    }
+}
+
+/// Resumable A* state. Advance it only against the Nav that created it.
+#[derive(Clone, Debug)]
+pub struct PathSearch {
+    goal: usize,
+    g: Vec<f32>,
+    came: Vec<u32>,
+    open: BinaryHeap<SearchItem>,
+    expanded: usize,
+}
+pub enum PathProgress {
+    Pending,
+    Found(Vec<V>),
+    Unreachable,
+}
+
 pub struct Nav {
     min_x: f32,
     min_z: f32,
@@ -231,9 +260,17 @@ impl Nav {
 
     /// A path of positions from `from` to `to` (feet), smoothed a little; `None` when unreachable.
     pub fn path(&self, from: V, to: V) -> Option<Vec<V>> {
-        let start = self.nearest(from)?;
-        let goal = self.nearest(to)?;
-        let ids = self.astar(start, goal)?;
+        let mut search = self.begin_path(from, to)?;
+        loop {
+            match self.advance_path(&mut search, 120_001) {
+                PathProgress::Pending => {}
+                PathProgress::Found(points) => return Some(points),
+                PathProgress::Unreachable => return None,
+            }
+        }
+    }
+
+    fn smooth_path(&self, ids: &[usize]) -> Vec<V> {
         let mut pts: Vec<V> = ids.iter().map(|&i| self.pos(i)).collect();
         // Drop points on straight runs.
         if pts.len() > 2 {
@@ -245,68 +282,63 @@ impl Nav {
                     keep.push(pts[w]);
                 }
             }
-            keep.push(*pts.last().unwrap_or(&to));
+            keep.push(*pts.last().unwrap());
             pts = keep;
         }
-        Some(pts)
+        pts
     }
 
-    fn astar(&self, start: usize, goal: usize) -> Option<Vec<usize>> {
-        #[derive(PartialEq)]
-        struct Item(f32, usize);
-        impl Eq for Item {}
-        impl PartialOrd for Item {
-            fn partial_cmp(&self, o: &Self) -> Option<Ordering> {
-                Some(self.cmp(o))
-            }
-        }
-        impl Ord for Item {
-            fn cmp(&self, o: &Self) -> Ordering {
-                o.0.partial_cmp(&self.0).unwrap_or(Ordering::Equal)
-            }
-        }
-        let goal_pos = self.pos(goal);
-        let h = |n: usize| {
-            let p = self.pos(n);
-            ((p.0 - goal_pos.0).powi(2) + (p.2 - goal_pos.2).powi(2)).sqrt() + (p.1 - goal_pos.1).abs() * 0.5
-        };
+    fn heuristic(&self, n: usize, goal: usize) -> f32 {
+        let p = self.pos(n);
+        let to = self.pos(goal);
+        ((p.0 - to.0).powi(2) + (p.2 - to.2).powi(2)).sqrt() + (p.1 - to.1).abs() * 0.5
+    }
+
+    pub fn begin_path(&self, from: V, to: V) -> Option<PathSearch> {
+        let start = self.nearest(from)?;
+        let goal = self.nearest(to)?;
         let mut g = vec![f32::INFINITY; self.nodes.len()];
-        let mut came = vec![u32::MAX; self.nodes.len()];
-        let mut open = BinaryHeap::new();
         g[start] = 0.;
-        open.push(Item(h(start), start));
-        let mut buf = Vec::new();
-        let mut expanded = 0;
-        while let Some(Item(priority, n)) = open.pop() {
-            // A cheaper route may have queued this node again; do not expand the obsolete entry.
-            if priority > g[n] + h(n) + 0.001 {
+        let mut open = BinaryHeap::new();
+        open.push(SearchItem(self.heuristic(start, goal), start));
+        Some(PathSearch { goal, g, came: vec![u32::MAX; self.nodes.len()], open, expanded: 0 })
+    }
+
+    /// Pop at most `budget` queue entries, including obsolete entries, then yield unfinished work.
+    pub fn advance_path(&self, search: &mut PathSearch, budget: usize) -> PathProgress {
+        let mut buf = Vec::with_capacity(12);
+        for _ in 0..budget {
+            let Some(SearchItem(priority, n)) = search.open.pop() else {
+                return PathProgress::Unreachable;
+            };
+            if priority > search.g[n] + self.heuristic(n, search.goal) + 0.001 {
                 continue;
             }
-            if n == goal {
-                let mut path = vec![n];
+            if n == search.goal {
+                let mut ids = vec![n];
                 let mut c = n;
-                while came[c] != u32::MAX {
-                    c = came[c] as usize;
-                    path.push(c);
+                while search.came[c] != u32::MAX {
+                    c = search.came[c] as usize;
+                    ids.push(c);
                 }
-                path.reverse();
-                return Some(path);
+                ids.reverse();
+                return PathProgress::Found(self.smooth_path(&ids));
             }
-            expanded += 1;
-            if expanded > 120_000 {
-                return None;
+            search.expanded += 1;
+            if search.expanded > 120_000 {
+                return PathProgress::Unreachable;
             }
             self.neighbours(n, &mut buf);
             for &(m, cost) in &buf {
-                let ng = g[n] + cost;
-                if ng < g[m] {
-                    g[m] = ng;
-                    came[m] = n as u32;
-                    open.push(Item(ng + h(m), m));
+                let ng = search.g[n] + cost;
+                if ng < search.g[m] {
+                    search.g[m] = ng;
+                    search.came[m] = n as u32;
+                    search.open.push(SearchItem(ng + self.heuristic(m, search.goal), m));
                 }
             }
         }
-        None
+        PathProgress::Pending
     }
 
     /// A random walkable position.
@@ -323,6 +355,34 @@ impl Nav {
 mod tests {
     use super::*;
     use crate::level::{placeholder, Builder, Material};
+
+    #[test]
+    fn a_long_search_yields_and_resumes_without_losing_the_route() {
+        let level = placeholder();
+        let nav = Nav::build(&level);
+        let from = V(0., 0., 20.);
+        let to = V(0., 0., -20.);
+        let mut search = nav.begin_path(from, to).unwrap();
+        assert!(matches!(nav.advance_path(&mut search, 1), PathProgress::Pending));
+        let mut turns = 0;
+        loop {
+            let before = search.expanded;
+            let progress = nav.advance_path(&mut search, 16);
+            assert!(search.expanded - before <= 16);
+            match progress {
+                PathProgress::Pending => {
+                    turns += 1;
+                    assert!(turns < 10_000);
+                }
+                PathProgress::Unreachable => panic!("a reachable route was lost across yields"),
+                PathProgress::Found(points) => {
+                    assert_eq!(points, nav.path(from, to).unwrap());
+                    assert!(turns > 0);
+                    break;
+                }
+            }
+        }
+    }
 
     #[test]
     fn a_path_goes_round_an_obstacle() {

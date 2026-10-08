@@ -470,6 +470,9 @@ impl Match {
         let s = spawns.get(best.1).copied().unwrap_or(crate::level::Spawn { pos: V(0., 0., 0.), yaw: 0. });
         let p = &mut self.players[slot];
         p.ctrl = new_body(s.pos, s.yaw);
+        if let Some(bot) = p.bot.as_mut() {
+            bot.reset_navigation(s.pos, self.tick + slot as u32 % 12);
+        }
         p.alive = true;
         p.health = weapons::MAX_HEALTH;
         p.armor = START_ARMOR;
