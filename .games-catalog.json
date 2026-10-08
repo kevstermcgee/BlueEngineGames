@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 350,
+    "games": 378,
     "prototypes": 10,
     "tests": 64
   },
@@ -733,6 +733,118 @@
     {
       "path": "games/blueengine-sandbox/routes/foundry.json",
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
+    },
+    {
+      "path": "games/gap-flip/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/gap-flip/AGENTS.md",
+      "sha256": "f897c19f6878023180bc18f8efa38292a932eb3b16f3334860ae0ff87fb53d87"
+    },
+    {
+      "path": "games/gap-flip/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/gap-flip/Cargo.lock",
+      "sha256": "188c6c454b60ba437a9fb03e6ce0d9adeb938b33fb39afaa37f577a8077cf1e2"
+    },
+    {
+      "path": "games/gap-flip/Cargo.toml",
+      "sha256": "be9817adb79f5b80a4e5f79282b4b85a84e0b905212b1cb6eb6dd5c6e3d8fce0"
+    },
+    {
+      "path": "games/gap-flip/README.md",
+      "sha256": "ed27f164b9d67d7936ed77437d8a39dbf6108110366e70e3b92fd0b92df67a45"
+    },
+    {
+      "path": "games/gap-flip/STATUS.md",
+      "sha256": "64df7ed5eb3126a58765db5e9d9788873cfe09da739e409aac57497b75499a82"
+    },
+    {
+      "path": "games/gap-flip/assets/icon.ico",
+      "sha256": "31b6e870efe74eefd532a5e9c668c88948184c2523fe5f5f801c60b5a02280cc"
+    },
+    {
+      "path": "games/gap-flip/assets/icon.png",
+      "sha256": "71c6e6b97c7c267838c48ff52babeee69d31553388a864e49d6b479f5f2f9c33"
+    },
+    {
+      "path": "games/gap-flip/assets/icon_16.rgba",
+      "sha256": "0beaa172afe45279aeca97dfd21d6f8cfc79ef907df44a2e090ea0552ae53d4f"
+    },
+    {
+      "path": "games/gap-flip/assets/icon_32.rgba",
+      "sha256": "8a98b0e5f083fe8bd12c15775e2863955d527616490bfd588090a6df2ac1ff5d"
+    },
+    {
+      "path": "games/gap-flip/assets/icon_64.rgba",
+      "sha256": "5cf93b8a07425e2ecce9ae0c00f41d8db2727e6a013b101af552a35844904005"
+    },
+    {
+      "path": "games/gap-flip/assets/identity.json",
+      "sha256": "8cd15e4a4ec4e897593f8e6a2907fcf5d790e63acff2627a37f9c34cad1c3a6c"
+    },
+    {
+      "path": "games/gap-flip/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/gap-flip/game.project.json",
+      "sha256": "8ffe8d2b07f88baacc17a6d3a488ff870d41c218b62be625e62d824ed181425e"
+    },
+    {
+      "path": "games/gap-flip/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/gap-flip/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/gap-flip/scripts/check.py",
+      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+    },
+    {
+      "path": "games/gap-flip/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/gap-flip/scripts/native_controls.py",
+      "sha256": "2a385150acd2f30bc60c54fc16788e36189653c82d0029a44c63421ba4a9bdbd"
+    },
+    {
+      "path": "games/gap-flip/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/gap-flip/scripts/ship.py",
+      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+    },
+    {
+      "path": "games/gap-flip/src/lib.rs",
+      "sha256": "6512e84836a86143642f24cfdcabd273ecc4583a29c2b40da58b053a7f9eeaa5"
+    },
+    {
+      "path": "games/gap-flip/src/main.rs",
+      "sha256": "534e23bdc686bdda3aea88b3482887c46d821c12d6fc56a40acdadcd63cf879b"
+    },
+    {
+      "path": "games/gap-flip/src/presentation.rs",
+      "sha256": "83143ad4ebe7c79e72ac3b55fd1b72ce935d54b750a3f46560214a066aa3df77"
+    },
+    {
+      "path": "games/gap-flip/src/rooms.rs",
+      "sha256": "091ff98114355ca2f28494b415920211170432421e1693d5e1adbdbe4b3992c4"
+    },
+    {
+      "path": "games/gap-flip/src/tests.rs",
+      "sha256": "9b67a87d6f949896fa9c1b9c12528c4932f0b382eeebc7e4d1c06e701188c250"
+    },
+    {
+      "path": "games/gap-flip/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
       "path": "games/idea-forge/.gitignore",
@@ -2079,6 +2191,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "aea1f2d739c091209d22aea7c1ea4993b4006d6f",
+  "source_revision": "5ebff160f8d4f04af372f3e372d75afe15c18ae1",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

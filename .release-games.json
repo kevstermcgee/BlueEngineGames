@@ -271,6 +271,13 @@
       "directory": "games/idea-forge",
       "kind": "cargo-package",
       "binary": "idea-forge"
+    },
+    {
+      "slug": "gap-flip",
+      "name": "Gap Flip",
+      "directory": "games/gap-flip",
+      "kind": "cargo-package",
+      "binary": "gap-flip"
     }
   ],
   "non_playable_directories": [
