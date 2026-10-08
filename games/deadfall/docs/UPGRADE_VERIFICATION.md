@@ -35,4 +35,6 @@ Loopback and simulated packet-loss tests establish behavior under their fixtures
 
 Run `cargo fmt --all --check`, `cargo test --locked`, `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked --no-default-features`. Set `BE2_HUB` to the matching engine's built `be2-hub` so actual room tests are mandatory. Run the game's `scripts/check.py` and `scripts/ship.py ship` for native identity/package checks. The catalog CI runs game checks on native Linux and Windows; Windows publication builds the installer.
 
-Engine feedback lives in `docs/ENGINE_FEEDBACK.md` and the engine's `docs/feedback/2026-10-07-deadfall-networking.md`, with regression suites and retrievable learning records L-086 through L-090.
+Engine feedback lives in `docs/ENGINE_FEEDBACK.md` and the engine's `docs/feedback/2026-10-07-deadfall-networking.md`, with regression suites and retrievable learning records L-086 through L-091.
+
+The final engine deployment-tool repair re-hashes retired compiler inputs when moving between worktrees. Its regression suite verifies successful migration and continued rejection of changed, deleted or unreadable inputs; the live game and other rooms are preserved on a refused promotion.
