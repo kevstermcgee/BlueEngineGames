@@ -756,7 +756,7 @@
     },
     {
       "path": "games/idea-forge/README.md",
-      "sha256": "8081399c1f914223a7a45b8268f85b12c1d34fc4aed9c4d5faf5e92d934fa572"
+      "sha256": "0a333a39f0ef8ade40fd9f51a52339d2610a07c9070ddd523edad17dbd6b4b16"
     },
     {
       "path": "games/idea-forge/STATUS.md",
@@ -2079,6 +2079,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "65d35f7f544d61b8f4ee14e0fda8c5bccb409966",
+  "source_revision": "aea1f2d739c091209d22aea7c1ea4993b4006d6f",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
