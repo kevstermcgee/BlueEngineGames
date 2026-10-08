@@ -1,16 +1,16 @@
 name: Native game checks
 on:
   pull_request:
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, .github/workflows/native-game-checks.yml]
   push:
     branches: [main]
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, .github/workflows/native-game-checks.yml]
   workflow_dispatch:
     inputs:
       game_slug:
         description: Check Deadfall alone for review, or every native game
         type: choice
-        options: [all, deadfall]
+        options: [all, deadfall, idea-forge]
         default: all
 permissions:
   contents: read
@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        slug: ${{ fromJSON(github.event.inputs.game_slug == 'deadfall' && '["deadfall"]' || '["deadfall", "prop-hunt", "slapstick", "lantern-run", "pocket-breaker", "orchard-watch", "lantern-grove", "signal-garden"]') }}
+        slug: ${{ fromJSON(github.event.inputs.game_slug == 'deadfall' && '["deadfall"]' || github.event.inputs.game_slug == 'idea-forge' && '["idea-forge"]' || '["deadfall", "prop-hunt", "slapstick", "lantern-run", "pocket-breaker", "orchard-watch", "lantern-grove", "signal-garden", "idea-forge"]') }}
     runs-on: ${{ matrix.os }}
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target

@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 323,
+    "games": 350,
     "prototypes": 10,
     "tests": 64
   },
@@ -733,6 +733,114 @@
     {
       "path": "games/blueengine-sandbox/routes/foundry.json",
       "sha256": "a85091213dc8693bb6b1bf188238fed47931bedfa061a2e21107bbdd61e6cce8"
+    },
+    {
+      "path": "games/idea-forge/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/idea-forge/AGENTS.md",
+      "sha256": "e3613a2e910e8dff3bbc9ba95c6de3f4ca9649d2ca04183ca9254a3c2d42d4b4"
+    },
+    {
+      "path": "games/idea-forge/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/idea-forge/Cargo.lock",
+      "sha256": "ce179ba47605bddf6dee2572176bc4d5fc07629af919061cb2ddf8e780d3d338"
+    },
+    {
+      "path": "games/idea-forge/Cargo.toml",
+      "sha256": "c5065435024f3cc54c6f2d7b77e26c7f4de1ef07e0c857c490b5fc0c2944da4e"
+    },
+    {
+      "path": "games/idea-forge/README.md",
+      "sha256": "8081399c1f914223a7a45b8268f85b12c1d34fc4aed9c4d5faf5e92d934fa572"
+    },
+    {
+      "path": "games/idea-forge/STATUS.md",
+      "sha256": "c38dfdc5f087ef006e3a4f95568884111e4f2322affcf691ae8b6165bd7542b9"
+    },
+    {
+      "path": "games/idea-forge/assets/icon.ico",
+      "sha256": "db39d77876b4dca5623c254caf74e00461163e4979680acc74b2d57996705c8c"
+    },
+    {
+      "path": "games/idea-forge/assets/icon.png",
+      "sha256": "ab7e1b7f4497da7058e20d1288640e437febd2087164a0b9afafc5703bdfc96f"
+    },
+    {
+      "path": "games/idea-forge/assets/icon_16.rgba",
+      "sha256": "5df836a85a8ae130ba2e68e05a5df569304a9453188af9bf478c9654ac0dbae9"
+    },
+    {
+      "path": "games/idea-forge/assets/icon_32.rgba",
+      "sha256": "84fc71b9cf9a3d901d5fc78f98c25d10bd140ac1730e96c1bfc8ff9569cbc9a2"
+    },
+    {
+      "path": "games/idea-forge/assets/icon_64.rgba",
+      "sha256": "5edccc6a26064229f585d7cd1e46e97ef08a488096c0774961cfd7d0ee32e0f6"
+    },
+    {
+      "path": "games/idea-forge/assets/ideas.json",
+      "sha256": "9154ec1c7ed41ed1ffa0d02ef5a233833edae619dc7678b54560ce4add560713"
+    },
+    {
+      "path": "games/idea-forge/assets/identity.json",
+      "sha256": "25faab77304f298a3ad6763b4ec7a140e48e61746cad36701db52ceb8beccc21"
+    },
+    {
+      "path": "games/idea-forge/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/idea-forge/game.project.json",
+      "sha256": "a697b97835a6574770cb8a4acf3634662c6434736708f35853a5743e9669a82e"
+    },
+    {
+      "path": "games/idea-forge/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/idea-forge/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/idea-forge/scripts/check.py",
+      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+    },
+    {
+      "path": "games/idea-forge/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/idea-forge/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/idea-forge/scripts/ship.py",
+      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+    },
+    {
+      "path": "games/idea-forge/src/bin/idea-forge-cli.rs",
+      "sha256": "c7ba617e1fe499d2ebfd96bf97cf9a23e148d14b78866363314b4befc35a7968"
+    },
+    {
+      "path": "games/idea-forge/src/lib.rs",
+      "sha256": "666d9fb68e86bc05f4316957affed58e60e0a4caec95b2d7cf667155e95b5d83"
+    },
+    {
+      "path": "games/idea-forge/src/main.rs",
+      "sha256": "57db1cc4f4406f818811d2004fba44359b2ebbe830e6407d4bf6d3e42e2028c3"
+    },
+    {
+      "path": "games/idea-forge/tests/cli.rs",
+      "sha256": "6f8b0170ea16cedc2a0f10a10570fd4d033e975deefb521b4707cc091579bce5"
+    },
+    {
+      "path": "games/idea-forge/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
       "path": "games/lantern-grove/.gitignore",
@@ -1971,6 +2079,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "4d8572acea96e81eeac56570d602c9cb28f2cbef",
+  "source_revision": "4a26449bee8b84b63e8357c6086a2611bf5a4ca4",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

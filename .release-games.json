@@ -264,6 +264,13 @@
       "directory": "games/signal-garden",
       "kind": "cargo-package",
       "binary": "signal-garden"
+    },
+    {
+      "slug": "idea-forge",
+      "name": "Idea Forge",
+      "directory": "games/idea-forge",
+      "kind": "cargo-package",
+      "binary": "idea-forge"
     }
   ],
   "non_playable_directories": [
