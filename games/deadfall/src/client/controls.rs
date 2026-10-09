@@ -9,7 +9,7 @@
 //! | weapons | 1 primary, 2 secondary, 3 knife, 4 grenade, wheel | D-pad up / right / down, left bumper (grenade), Y (other gun) |
 //! | quick knife / drop | Q / G | right stick click / D-pad left |
 //! | sprint | Shift (hold) | left stick click (hold) |
-//! | walk (quiet) | Alt (hold) | — |
+//! | walk (quiet) | V (hold) | — |
 //! | scoreboard / menu | Tab / Esc | Back / Start |
 //!
 //! Gameplay keys use the engine native key state so packaged Windows clients share the same input path.
@@ -221,7 +221,8 @@ impl Controls {
         self.fire = is_mouse_button_down(MouseButton::Left) || pad.triggers[1] > 0.4 || pad.down(Button::RightTrigger2);
         self.ads = is_mouse_button_down(MouseButton::Right) || pad.triggers[0] > 0.4 || pad.down(Button::LeftTrigger2);
         self.crouch = key(KeyCode::LeftControl) || key(KeyCode::C) || pad.down(Button::East);
-        self.walk = key(KeyCode::LeftAlt) || key(KeyCode::RightAlt);
+        // Alt is reserved by the shared shell for releasing the cursor.
+        self.walk = key(KeyCode::V);
         self.sprint = key(KeyCode::LeftShift) || key(KeyCode::RightShift) || pad.down(Button::LeftThumb);
         self.scoreboard = key(KeyCode::Tab) || pad.down(Button::Select);
         // Presses.

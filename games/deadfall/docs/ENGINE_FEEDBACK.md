@@ -1,6 +1,6 @@
 # Sprint movement follow-up (2026-10-08)
 
-Shift and the left-stick button now request shared-controller sprinting. A new diagonal movement regression exposed weapon-weight and quiet-walk scaling applied before vector normalization; `Input::movement` now normalizes first. The wire round-trip and shared server/prediction movement tests cover sprint, aiming, crouching, quiet walking, weapon weight and smooth return to normal speed. This repair is game-owned and requires no engine API changes.
+Shift and the left-stick button now request shared-controller sprinting. A new diagonal movement regression exposed weapon-weight and quiet-walk scaling applied before vector normalization; `Input::movement` now normalizes first. The wire round-trip and shared server/prediction movement tests cover sprint, aiming, crouching, quiet walking, weapon weight and smooth return to normal speed. The real native keyboard review also reproduced Alt quiet walking opening the shared shell menu, because Alt is reserved for releasing the cursor. Quiet walking now uses V; Escape and the shell cursor-release behavior remain available. These repairs are game-owned and require no engine API changes.
 
 # Current upgrade findings (2026-10-07)
 

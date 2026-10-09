@@ -1,7 +1,7 @@
 {
   "title": "Deadfall",
   "tagline": "Fast multiplayer combat: three maps, four modes, bots and 1v1 duels.",
-  "controls": "WASD move, hold Shift sprint, Alt quiet walk, mouse look, mouse buttons fire/aim, Space jump, R reload, E use (hold to plant/defuse), Ctrl crouch, 1-4 weapons, Tab scores, Esc menu; controller supported",
+  "controls": "WASD move, Shift sprint, V quiet walk, mouse look/fire/aim, Space jump, R reload, E use/plant/defuse, Ctrl crouch, 1-4 weapons, Tab scores, Esc menu; controller supported",
   "smoke_args": [
     "--capture",
     "{dir}",

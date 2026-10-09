@@ -49,7 +49,7 @@ refused rather than clamped).
 | Weapons | 1 primary, 2 secondary, 3 knife, 4 grenade, mouse wheel | D-pad up / right / down, left bumper, Y |
 | Quick knife / drop weapon | Q / G | right stick click / D-pad left |
 | Sprint | hold Shift | hold left stick click |
-| Walk quietly | hold Alt | — |
+| Walk quietly | hold V | — |
 | Scoreboard / menu | Tab / Esc | Back / Start |
 
 You carry two firearms (a primary and a secondary), one melee weapon and up to two grenades. Everyone starts with the K-9 pistol and
