@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 406,
+    "games": 390,
     "prototypes": 10,
     "tests": 64
   },
@@ -328,7 +328,7 @@
     },
     {
       "path": "games/blueengine-sandbox/README.md",
-      "sha256": "7dcc3d4547e0f15dfe63f67ce2b4d7ec7eeaff568a639c469d52152ee7fdc063"
+      "sha256": "0b5990e1a4f6e23a5afc846e450395722eb1676cb7e68a91898c421579f07514"
     },
     {
       "path": "games/blueengine-sandbox/VALIDATION.md",
@@ -340,7 +340,7 @@
     },
     {
       "path": "games/blueengine-sandbox/catalog.json",
-      "sha256": "abf0be8bec94fcb97cea1dc4ebce9fcb42688a1d014d169b857b7e32d4702e3a"
+      "sha256": "28ae871ef36c4b12706cd8d0b38e78b98e54ce964b7524d0f0919976cfc81031"
     },
     {
       "path": "games/blueengine-sandbox/kit/bench.json",
@@ -383,28 +383,12 @@
       "sha256": "1d4743bdcdf6250b7d2e0e709e2893dc97fa8d7c0342c3ce9054877d0a620de7"
     },
     {
-      "path": "games/blueengine-sandbox/maps/convenience-store.json",
-      "sha256": "f3207f86da4db6dc4391a9bef684e07e581f8492c8bd2479b86ed4c0969e2707"
-    },
-    {
       "path": "games/blueengine-sandbox/maps/courtyard.json",
       "sha256": "0adcf426e1b97b2fdce35422298b860c7b3fd58ef85820d0b4f0567358633e34"
     },
     {
       "path": "games/blueengine-sandbox/maps/foundry.json",
       "sha256": "dde6a8a8df03333e0be7a319214f471ee70fd9cae5ca2e7bce5cf619aeec1a93"
-    },
-    {
-      "path": "games/blueengine-sandbox/maps/house.json",
-      "sha256": "1045f9d16f5d8bf1e7a3e00d187ab453447f44954a68fc95865f8812fd99bbaa"
-    },
-    {
-      "path": "games/blueengine-sandbox/maps/office.json",
-      "sha256": "acd79e23c0cb4ec698454c0c61cdbc18db18813cc5ce2d96cf6b9b11e81878a2"
-    },
-    {
-      "path": "games/blueengine-sandbox/maps/school-wing.json",
-      "sha256": "051d7cab6128bdca9607a368542732c6d954f0d194f00048e987056ede7ff0e2"
     },
     {
       "path": "games/blueengine-sandbox/previews/core-interiors-backpack.json",
@@ -748,7 +732,7 @@
     },
     {
       "path": "games/corkscrew-key/Cargo.lock",
-      "sha256": "c85e1c62aaae575a87251877be02e7dcb9bac0227b37e2a743ad8d8da5cc6ab9"
+      "sha256": "44f38695b9072fa3c8de3521eeccf4cbc3dbe8c2bd03ba36f9a664fede2fab01"
     },
     {
       "path": "games/corkscrew-key/Cargo.toml",
@@ -860,7 +844,7 @@
     },
     {
       "path": "games/gap-flip/Cargo.lock",
-      "sha256": "188c6c454b60ba437a9fb03e6ce0d9adeb938b33fb39afaa37f577a8077cf1e2"
+      "sha256": "05177cdd06f6351f30068f1b4a0c9aaa98d3fcbe3e0870a012165b035a9a0f4d"
     },
     {
       "path": "games/gap-flip/Cargo.toml",
@@ -972,7 +956,7 @@
     },
     {
       "path": "games/idea-forge/Cargo.lock",
-      "sha256": "ce179ba47605bddf6dee2572176bc4d5fc07629af919061cb2ddf8e780d3d338"
+      "sha256": "21c687237ca0e69b70d2c693c67c31d70c21f6aa07af977c246b1bae38116e80"
     },
     {
       "path": "games/idea-forge/Cargo.toml",
@@ -1080,7 +1064,7 @@
     },
     {
       "path": "games/lantern-grove/Cargo.lock",
-      "sha256": "6b198036c4a7efc28443aef647b3201ec6b3c6b75de3bf98112ffd8658c83ddd"
+      "sha256": "ce1e32725a40a918f7ea9f1bdba9801207ff916e04054742cb0678008818693f"
     },
     {
       "path": "games/lantern-grove/Cargo.toml",
@@ -1180,7 +1164,7 @@
     },
     {
       "path": "games/lantern-run/Cargo.lock",
-      "sha256": "c87b34d588ea569ef67247c584ef2808c31f9265860e5263cad454db5a6e0e85"
+      "sha256": "e6233191b5266eac35129fb0520253a3ab14fe33edeef1e3828c106b87ad8d0b"
     },
     {
       "path": "games/lantern-run/Cargo.toml",
@@ -1268,15 +1252,15 @@
     },
     {
       "path": "games/leo/.gitignore",
-      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+      "sha256": "14305fb68ef3b264dee40086d062439a23ae6e49e0227cab7c4d8d0679a65eff"
     },
     {
       "path": "games/leo/AGENTS.md",
-      "sha256": "18bf5352c29faf8aa7b3e7ee94b55e773f3ee51d48acec6b82803ac6ed2ce524"
+      "sha256": "96fc27f854a86e0bd0407d1b6097128ff4bf9ffa56ee45e9c4e57a41566ee3e7"
     },
     {
       "path": "games/leo/AUDIO.md",
-      "sha256": "476e05189f46d3544ec5630915e0bcada9dc2dfe8cdd3bf3887d1424af9ac694"
+      "sha256": "9bdd747a3d35c30ee9bf005839b381d4ccdf1bd46967affbd6ab76e8ea9027ad"
     },
     {
       "path": "games/leo/CLAUDE.md",
@@ -1284,7 +1268,7 @@
     },
     {
       "path": "games/leo/Cargo.lock",
-      "sha256": "de4f7855be00d901c5042c707812d5ee102db92891f085c913c56372900c11a6"
+      "sha256": "fb280aacc9b9bf68994eeb9ba130569c6b9775e4478497e4605d286ffb806db4"
     },
     {
       "path": "games/leo/Cargo.toml",
@@ -1292,7 +1276,7 @@
     },
     {
       "path": "games/leo/README.md",
-      "sha256": "ebfb3f63cb43ab24b65be3654d0247a2315f3ee150f9d6509106da057322fdbd"
+      "sha256": "38416f13215ada45a6d35aff2943334363b9b82cb5793a31cdbc288c2dbe14e1"
     },
     {
       "path": "games/leo/STATUS.md",
@@ -1301,10 +1285,6 @@
     {
       "path": "games/leo/assets/audio-source/dawn.wav",
       "sha256": "9cf21f9b18da8ac4e49f89f00baf5f2a3808e1a595ba2fdb18ec1ca70b2e9d31"
-    },
-    {
-      "path": "games/leo/assets/audio-source/leaves.wav",
-      "sha256": "446b013d3e28b577b36cdefbf4953c2f01b58e8cac7cddaca961f9be5e9f126d"
     },
     {
       "path": "games/leo/assets/audio-source/music.json",
@@ -1321,50 +1301,6 @@
     {
       "path": "games/leo/assets/audio-source/wind.wav",
       "sha256": "478b56092d0506873a0ff481a9ffdd127df98d8a5203edfc2fbbb4723cc0f117"
-    },
-    {
-      "path": "games/leo/assets/audio/music/bank.json",
-      "sha256": "0ae996df16796e9ebc31f3f28908e37baaeac346bd72f69b0e0cad89d45d4278"
-    },
-    {
-      "path": "games/leo/assets/audio/music/music-home.wav",
-      "sha256": "cf5e16f2728a6fc2f88620fc962823a1c8ab9349da7be6bfeff61a1c895ce169"
-    },
-    {
-      "path": "games/leo/assets/audio/music/music-starlight.wav",
-      "sha256": "1eaba38e13c8866281539718d185dec839b4c9ade5697d9628b85bfc57e542f6"
-    },
-    {
-      "path": "games/leo/assets/audio/music/music-wander.wav",
-      "sha256": "eac4ee99d235968f4068640649c603f2711da5af40c234ad0c431c5f88336283"
-    },
-    {
-      "path": "games/leo/assets/audio/music/preview-mix.wav",
-      "sha256": "510fea0628b12dcca0996f1b037347faefb162fa493d49ac5b01bec4f3ad4e26"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/bank.json",
-      "sha256": "f9300dcdc4e1e45089a898bbccc761c33aa90563a37c7db071841abaf17bbac6"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/music-birds.wav",
-      "sha256": "186c96f4e73fba62b698cd900fc206268211b494b6f70262a55a7a9e3d13fb86"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/music-leaves.wav",
-      "sha256": "c8e857e6c23a1439ba169a93aaf9e06efc001617758e437ec9891b75c4f31072"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/music-night.wav",
-      "sha256": "62fd3719945ad7d03ae7e488001ebe453cab9193d7a20ead186bb110c7759ea7"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/music-wind.wav",
-      "sha256": "15dc2e81ce07026d0fe0f2bc29e6f4fe5bfe5e139bb615a92dd3fd86f9704916"
-    },
-    {
-      "path": "games/leo/assets/audio/nature/preview-mix.wav",
-      "sha256": "fe7ee36156e3384331e7d4289ff013b1e8802f7ecbeea0c425e18a1e53d298c6"
     },
     {
       "path": "games/leo/assets/browser-identity.json",
@@ -1424,7 +1360,7 @@
     },
     {
       "path": "games/leo/scripts/prepare_ambience.py",
-      "sha256": "894ea3329adb9fd90d23d6c3ecfe089452f136b17e1354c7e068c983152f360d"
+      "sha256": "ff3ca9051e5b7e6b4d161a4a0da26d54132b8fd3ddeb64e4c299a9d2c721d615"
     },
     {
       "path": "games/leo/scripts/project.py",
@@ -1432,11 +1368,11 @@
     },
     {
       "path": "games/leo/scripts/render_audio.py",
-      "sha256": "5b07403f2db5f7445dcf98e0aa2fda857197ffb0eb566eaf60c8b13fa090e5a0"
+      "sha256": "4bccf37eb15d74adada79c747c1a9458dc1ba43dfeaecb5fc23c7d10c32de8e8"
     },
     {
       "path": "games/leo/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "91f23a551a67668b4d0b946eb095668122b94e3b3049ef4e441d1e283ec10e4e"
     },
     {
       "path": "games/leo/src/browser.rs",
@@ -1612,7 +1548,7 @@
     },
     {
       "path": "games/orchard-watch/Cargo.lock",
-      "sha256": "2b66620654f5fb272ef6ce1f893f370f2820f67d97d1320da31d357ab0e84cbf"
+      "sha256": "2d541464927c950ca0d73825c74b7671ae03e69ec44b7fc68e80ab9e2fe5be89"
     },
     {
       "path": "games/orchard-watch/Cargo.toml",
@@ -1712,7 +1648,7 @@
     },
     {
       "path": "games/pocket-breaker/Cargo.lock",
-      "sha256": "2e9bc92dce3fcc46e4418429b01ffc11bef57a299721dc913dd34e7d8aa39e95"
+      "sha256": "f43fe2611192b2fa79d3365e65e61ef9d0e007d12e72852d52b001c55ae77093"
     },
     {
       "path": "games/pocket-breaker/Cargo.toml",
@@ -1812,7 +1748,7 @@
     },
     {
       "path": "games/signal-garden/Cargo.lock",
-      "sha256": "f9102453602d84a27bc90619f55662d2d3bd59e5ce0bbfce88e47f383a41e7cb"
+      "sha256": "b0aa24bfe3e6056a36635be55286d3129c3b56ddd69dfd6739c992c972878229"
     },
     {
       "path": "games/signal-garden/Cargo.toml",
@@ -1952,7 +1888,7 @@
     },
     {
       "path": "prototypes/multiplayer-game/Cargo.lock",
-      "sha256": "f30338918e84b64002d2195a42fadecd9974fdb297a4ed9a6c5232683677ec0d"
+      "sha256": "a57e5c1eb0339755b0b210a99ffefa37452d622edbc354da9dae018579ccea4a"
     },
     {
       "path": "prototypes/multiplayer-game/Cargo.toml",
@@ -2000,7 +1936,7 @@
     },
     {
       "path": "tests/starter-maps/bedroom-validation.json",
-      "sha256": "bbb5b7395d0d2144f6e1075df0a3a4b8c742457c97ac679c581cea312cc02f21"
+      "sha256": "e2ba1db44637d5fdcf7b0aeca81dc4c07d01c4dfb90cbb1e7e4191e830c01fa3"
     },
     {
       "path": "tests/starter-maps/convenience-store.entry-open.json",
@@ -2240,7 +2176,7 @@
     },
     {
       "path": "tests/starter-maps/validation.json",
-      "sha256": "4ebb604d8368b0c0060c7abfe88e4a36d9937d4aa07ab4cfe377dbb6499aa8c6"
+      "sha256": "9eb34bfd5bfdb35d3fc27e0c6c1c5c31c95d886e5b5864e4a44d77fb0211f424"
     },
     {
       "path": "tests/validation/validate_expanded_maps.rs",
@@ -2303,6 +2239,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "90949ab5fcdc3a90a0e378d4c059ff07a6ce49a6",
+  "source_revision": "9189d68aabf098bd82a34265bbcf4395970a9da7",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
