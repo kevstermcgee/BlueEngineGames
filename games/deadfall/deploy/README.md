@@ -32,3 +32,30 @@ same port (`legacy = serve`), so keep that DuckDNS name pointing at the box next
 `blue-engine.duckdns.org:4100`; `--hub HOST:PORT` or a `server.txt` next to the game overrides it.
 
 Protocol 2 requires matching updated clients and server. Verify the candidate against the expanded `client_settings` registry before atomically installing it and reloading only Deadfall. Leave other games running. The old discovery adapter still provides an update notice to old clients; it cannot make old game packets compatible.
+
+
+## Match the published client before updating the host
+
+The Windows release uses `.games-catalog.json`'s `source_revision` for the engine,
+including native games. The game source and engine source used by the hosted
+server must match that published release. A healthy Public room alone does not
+prove compatibility with the download. In particular, the engine's acknowledged
+event protocol contributes to the hub build id even when the game fingerprint
+has not changed. NEV1 and NEV2 Deadfall both have game fingerprint `fed4da58`,
+but their hub builds are `67176372` and `6a1766cb` respectively.
+
+Before deploying, compare the downloaded package's `ship.json` engine revision
+with the server source checkout and run `deadfall-server --info`. Use the normal
+hub updater to install and reload only Deadfall, retaining its rollback receipt.
+Then run the following from the matching game source against the live host:
+
+```sh
+cargo run --locked --no-default-features --example online_smoke -- 127.0.0.1:4100
+```
+
+The smoke check first refuses a mismatching host without creating a room. On a
+matching host it creates a separate private duel, joins two rendering-free
+clients, starts a match, verifies snapshots and leaves both clients. The hub
+removes the empty test room after its normal idle timeout. Pass a numeric public
+hub address from a different network to test outside reachability; a loopback
+check does not establish internet reachability or Windows rendering/input.
