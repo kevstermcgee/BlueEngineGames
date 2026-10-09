@@ -30,7 +30,7 @@ Use **Play Online**: the rooms live on the shared BlueEngine hub (`be2-hub`, one
 `deploy/README.md` and the engine's `docs/adr/0037-shared-multi-game-hub.md`). The game looks for the hub in this order: `--hub HOST:PORT`,
 a `server.txt` next to the game (first line `host` or `host:port`), the hub you last chose with `--hub` and joined a room on, then the
 built-in `blue-engine.duckdns.org:4100`. Older builds can discover the hub and receive an update notice: they ask `deadfall-kevin.duckdns.org:4100`, which
-the same hub answers in the old discovery protocol. This release changes the game protocol: everyone must install the new version. Hosting on your own PC is the advanced route: the host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
+the same hub answers in the old discovery protocol. The sprint update uses game protocol 3: everyone must install the new version. Hosting on your own PC is the advanced route: the host needs UDP port **4100** reachable: forward it on the router to the host's computer (or put everyone on a VPN such as
 Tailscale or ZeroTier and use the VPN address). Friends join with the host's public address. The game's network layer is
 raw UDP with session authentication and an optional join key; hub rooms use the development transport without TLS. Combat events use a bounded acknowledged stream, independently of movement snapshots. Name lookup runs off the render thread, and failed joins offer a retry. A dedicated server also exists:
 `deadfall-server --listen 0.0.0.0:4100 [--kills 40 | --minutes 10] [--bots] [--skill 0|1|2] [--map 0|1|2] [--mode 0|1|2|3] [--duel] [--objective 3]` (the engine's shared server flags plus
@@ -48,7 +48,8 @@ refused rather than clamped).
 | Plant / defuse | hold E at a bomb site / bomb | hold right bumper |
 | Weapons | 1 primary, 2 secondary, 3 knife, 4 grenade, mouse wheel | D-pad up / right / down, left bumper, Y |
 | Quick knife / drop weapon | Q / G | right stick click / D-pad left |
-| Walk quietly | Shift | left stick click |
+| Sprint | hold Shift | hold left stick click |
+| Walk quietly | hold Alt | — |
 | Scoreboard / menu | Tab / Esc | Back / Start |
 
 You carry two firearms (a primary and a secondary), one melee weapon and up to two grenades. Everyone starts with the K-9 pistol and
@@ -62,7 +63,7 @@ Every weapon has its own ammunition. After you die a four-second killcam shows y
 * **Search and Destroy**: attackers carry a bomb to either marked site. Hold E/right bumper for three seconds to plant, or five seconds to defuse as a defender. No respawns within a round. Attack/defence alternates each round; a planted bomb has a 35-second fuse and survives attacker elimination. Default: first to three rounds. After the killcam, eliminated players spectate until the next round.
 * **Free for All**: everyone is an opponent, with individual kills and a winner shown by name. Enable 1v1 for a private two-player match.
 
-1v1 disables bots and limits the room to two humans. Leaving a live duel awards a forfeit. Normal matches can fill vacant slots with bots. Movement is faster, jump clearance is higher, and deathmatch respawns are shorter.
+1v1 disables bots and limits the room to two humans. Leaving a live duel awards a forfeit. Normal matches can fill vacant slots with bots. Movement is faster, jump clearance is higher, and deathmatch respawns are shorter. Hold Shift to sprint at 9 m/s (25% faster than normal movement, before weapon weight). Aiming, crouching, or quiet walking prevents sprinting; release Shift to return smoothly to normal speed.
 
 ## Weapons
 

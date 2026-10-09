@@ -1,3 +1,7 @@
+# Sprint movement follow-up (2026-10-08)
+
+Shift and the left-stick button now request shared-controller sprinting. A new diagonal movement regression exposed weapon-weight and quiet-walk scaling applied before vector normalization; `Input::movement` now normalizes first. The wire round-trip and shared server/prediction movement tests cover sprint, aiming, crouching, quiet walking, weapon weight and smooth return to normal speed. This repair is game-owned and requires no engine API changes.
+
 # Current upgrade findings (2026-10-07)
 
 The final bot planner also exposed synchronous A* spikes above the 12 ms UDP gate. `nav::PathSearch` now resumes at most 1024 heap pops per bot per tick, counts obsolete entries against the budget, rate-limits failed retries and resets on respawn. Map validation retains full searches. This is useful evidence for an engine-owned, multi-floor navigation API with bounded per-tick work (learning record L-089).

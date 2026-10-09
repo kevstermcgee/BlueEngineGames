@@ -8,11 +8,12 @@
 //! | reload / use | R / E | X / right bumper |
 //! | weapons | 1 primary, 2 secondary, 3 knife, 4 grenade, wheel | D-pad up / right / down, left bumper (grenade), Y (other gun) |
 //! | quick knife / drop | Q / G | right stick click / D-pad left |
-//! | walk (quiet) | Shift (hold) | left stick click |
+//! | sprint | Shift (hold) | left stick click (hold) |
+//! | walk (quiet) | Alt (hold) | — |
 //! | scoreboard / menu | Tab / Esc | Back / Start |
 //!
 //! Gameplay keys use the engine native key state so packaged Windows clients share the same input path.
-use crate::input::{Input, ADS, CROUCH, FIRE, JUMP, PITCH_LIMIT, USE_HELD, WALK};
+use crate::input::{Input, ADS, CROUCH, FIRE, JUMP, PITCH_LIMIT, SPRINT, USE_HELD, WALK};
 use crate::prefs::Prefs;
 use macroquad::prelude::*;
 use vesper3d::viewer::game_client::GameShell;
@@ -20,7 +21,7 @@ use vesper3d::viewer::game_input::ClientInput;
 use vesper3d::viewer::gamepad::Button;
 
 /// A scripted player for runs nobody can play: `--script "fwd:60-300,turn:0.01@60-300,ads:100-200,fire:120-150,reload@220"`.
-/// `name:a-b` holds from frame a to b, `name@n` presses at frame n. Names: fwd back left right ads fire crouch walk
+/// `name:a-b` holds from frame a to b, `name@n` presses at frame n. Names: fwd back left right ads fire crouch walk sprint
 /// jump reload use melee drop slot1..slot4, `turn:RATE@a-b` (radians per frame, yaw) and `pitch:RATE@a-b`.
 #[derive(Clone, Debug, Default)]
 pub struct Script {
@@ -83,6 +84,7 @@ pub struct Controls {
     ads: bool,
     crouch: bool,
     walk: bool,
+    sprint: bool,
     axes: (f32, f32),
 }
 
@@ -106,6 +108,7 @@ impl Controls {
             ads: false,
             crouch: false,
             walk: false,
+            sprint: false,
             axes: (0., 0.),
         }
     }
@@ -155,6 +158,7 @@ impl Controls {
             self.ads = sc.held("ads");
             self.crouch = sc.held("crouch");
             self.walk = sc.held("walk");
+            self.sprint = sc.held("sprint");
             self.use_held = sc.held("use");
             self.scoreboard = sc.held("scores");
             if sc.pressed("jump") {
@@ -185,6 +189,7 @@ impl Controls {
             self.use_held = false;
             self.crouch = false;
             self.walk = false;
+            self.sprint = false;
             self.jump_latch = false;
             self.axes = (0., 0.);
             return;
@@ -216,7 +221,8 @@ impl Controls {
         self.fire = is_mouse_button_down(MouseButton::Left) || pad.triggers[1] > 0.4 || pad.down(Button::RightTrigger2);
         self.ads = is_mouse_button_down(MouseButton::Right) || pad.triggers[0] > 0.4 || pad.down(Button::LeftTrigger2);
         self.crouch = key(KeyCode::LeftControl) || key(KeyCode::C) || pad.down(Button::East);
-        self.walk = key(KeyCode::LeftShift) || pad.down(Button::LeftThumb);
+        self.walk = key(KeyCode::LeftAlt) || key(KeyCode::RightAlt);
+        self.sprint = key(KeyCode::LeftShift) || key(KeyCode::RightShift) || pad.down(Button::LeftThumb);
         self.scoreboard = key(KeyCode::Tab) || pad.down(Button::Select);
         // Presses.
         if pressed(KeyCode::Space) || pad.pressed(Button::South) {
@@ -299,6 +305,9 @@ impl Controls {
         }
         if self.walk {
             i.buttons |= WALK;
+        }
+        if self.sprint {
+            i.buttons |= SPRINT;
         }
         if self.use_held {
             i.buttons |= USE_HELD;

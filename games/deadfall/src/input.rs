@@ -15,6 +15,8 @@ pub const WALK: u8 = 8;
 pub const JUMP: u8 = 16;
 /// Held interaction for planting and defusing; use_seq still protects pickup presses.
 pub const USE_HELD: u8 = 32;
+/// Held sprint; the legacy quiet-walk bit keeps its meaning.
+pub const SPRINT: u8 = 64;
 
 /// The most an aim may point up or down (radians).
 pub const PITCH_LIMIT: f32 = 1.5;
@@ -62,8 +64,15 @@ impl Input {
     /// run speed by the length of the axes, so the scale multiplies them.
     pub fn movement(&self, speed_scale: f32) -> Movement {
         let (r, f) = self.axes();
-        let s = if self.held(WALK) { 0.5 } else { 1. } * speed_scale;
-        Movement { forward: f * s, right: r * s, sprint: false, jump: self.held(JUMP), crouch: self.held(CROUCH) }
+        // Normalize before speed scaling so diagonal input cannot bypass weapon weight or quiet walking.
+        let s = if self.held(WALK) { 0.5 } else { 1. } * speed_scale / r.hypot(f).max(1.);
+        Movement {
+            forward: f * s,
+            right: r * s,
+            sprint: self.held(SPRINT) && !self.held(WALK | CROUCH | ADS),
+            jump: self.held(JUMP),
+            crouch: self.held(CROUCH),
+        }
     }
 
     pub fn write(&self, w: &mut Writer) {
@@ -91,7 +100,7 @@ impl Input {
             forward: forward.max(-127),
             yaw,
             pitch: pitch.clamp(-PITCH_LIMIT, PITCH_LIMIT),
-            buttons: r.u8()? & (FIRE | ADS | CROUCH | WALK | JUMP | USE_HELD),
+            buttons: r.u8()? & (FIRE | ADS | CROUCH | WALK | JUMP | USE_HELD | SPRINT),
             reload_seq: r.u8()?,
             use_seq: r.u8()?,
             melee_seq: r.u8()?,
@@ -131,7 +140,7 @@ mod tests {
             forward: 64,
             yaw: 5.5,
             pitch: -1.2,
-            buttons: FIRE | JUMP,
+            buttons: FIRE | JUMP | SPRINT,
             reload_seq: 9,
             use_seq: 255,
             melee_seq: 1,
@@ -146,7 +155,7 @@ mod tests {
         let back = Input::read(&mut Reader::new(&bytes)).unwrap();
         assert_eq!(
             (back.right, back.forward, back.buttons, back.use_seq, back.seen_tick),
-            (-127, 64, FIRE | JUMP, 255, 65000)
+            (-127, 64, FIRE | JUMP | SPRINT, 255, 65000)
         );
         assert!((back.yaw - 5.5).abs() < 0.001 && (back.pitch + 1.2).abs() < 0.001);
     }
@@ -171,5 +180,57 @@ mod tests {
         assert!((i.movement(1.).forward - run * 0.5).abs() < 1e-4);
         let (y, p) = quantise_angles(1.234, 0.5);
         assert_eq!(quantise_angles(y, p), (y, p));
+    }
+
+    #[test]
+    fn sprint_survives_the_wire_and_uses_the_same_movement_for_prediction() {
+        use crate::sim;
+        use vesper3d::math::V;
+        let intent = Input { forward: 127, buttons: SPRINT, ..Default::default() };
+        let mut writer = Writer::new();
+        intent.write(&mut writer);
+        let packet = writer.finish();
+        let received = Input::read(&mut Reader::new(&packet)).unwrap();
+        let mut predicted = sim::new_body(V::ZERO, 0.);
+        predicted.set_floor(Some(0.));
+        let mut authoritative = predicted.clone();
+        for _ in 0..120 {
+            sim::step_body(&mut predicted, &intent, 0.75, &[]);
+            sim::step_body(&mut authoritative, &received, 0.75, &[]);
+        }
+        assert!((predicted.velocity().length() - 6.75).abs() < 0.001);
+        assert_eq!(predicted.network_state(), authoritative.network_state());
+        let position = predicted.position;
+        let normal = Input { buttons: 0, ..intent };
+        sim::step_body(&mut predicted, &normal, 0.75, &[]);
+        assert!(predicted.velocity().length() < 6.75 && predicted.velocity().length() > 5.4);
+        assert!((predicted.position - position).length() < 6.75 * crate::hands::DT);
+        for _ in 0..60 {
+            sim::step_body(&mut predicted, &normal, 0.75, &[]);
+        }
+        assert!((predicted.velocity().length() - 5.4).abs() < 0.001);
+    }
+
+    #[test]
+    fn sprint_respects_crouch_aim_quiet_walk_and_diagonal_speed_limits() {
+        use crate::sim;
+        use vesper3d::math::V;
+        for (buttons, scale, expected) in [
+            (0, 1., 7.2),
+            (SPRINT, 1., 9.),
+            (SPRINT | CROUCH, 1., 2.8),
+            (SPRINT | ADS, 1., 7.2),
+            (SPRINT | WALK, 1., 3.6),
+            (SPRINT, 0.75, 6.75),
+            (0, 0.75, 5.4),
+        ] {
+            let mut body = sim::new_body(V::ZERO, 0.);
+            body.set_floor(Some(0.));
+            let intent = Input { forward: 127, right: 127, buttons, ..Default::default() };
+            for _ in 0..120 {
+                sim::step_body(&mut body, &intent, scale, &[]);
+            }
+            assert!((body.velocity().length() - expected).abs() < 0.001, "buttons={buttons}");
+        }
     }
 }

@@ -964,7 +964,7 @@ impl App {
                         self.renderer.set_shadows(q);
                     }
                 }
-                hud::text_centered("Keyboard: WASD move, mouse look, LMB fire, RMB aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores", cx, screen_height() - 18. * ui, 15. * ui, DIM);
+                hud::text_centered("Keyboard: WASD move, Shift sprint, mouse look, LMB fire, RMB aim, R reload, E use, Ctrl crouch, 1-4 weapons, Tab scores", cx, screen_height() - 18. * ui, 15. * ui, DIM);
 
                 if let Some(Item::Choice(_, _, v)) = items.get(7) {
                     self.prefs.avatar = *v as u8;

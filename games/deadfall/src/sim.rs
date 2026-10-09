@@ -130,7 +130,7 @@ pub fn profile() -> ControllerProfile {
         radius: 0.23,
         eye_height: 1.68,
         walk_speed: 7.2,
-        sprint_speed: 7.2,
+        sprint_speed: 9.0,
         crouch_speed: 2.8,
         jump_height: 0.85,
     }

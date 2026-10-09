@@ -17,7 +17,7 @@ fn info_prints_the_game_the_raw_fingerprint_the_seats_and_the_eight_settings() {
     let lines: Vec<&str> = text.lines().collect();
     assert_eq!(lines[0], "game=deadfall");
     assert_eq!(lines[1], format!("fingerprint={:08x}", DeadfallGame::fingerprint()));
-    assert_eq!(lines[1], "fingerprint=fed4da58", "the shipped clients compare this raw value");
+    assert_eq!(lines[1], "fingerprint=6d4f8d2b", "the shipped clients compare this raw value");
     assert_eq!(lines[2], format!("build={:08x}", build_id::<DeadfallGame>()));
     assert_eq!(lines[3], "max_seats=12");
     assert_eq!(lines[4], "tick_hz=60");

@@ -30,7 +30,7 @@ use vesper3d::viewer::netplay::{ClientConfig, ClientState, NetClient, NetGame};
 const SERVER_BIN: &str = env!("CARGO_BIN_EXE_deadfall-server");
 /// `netgame::fingerprint()` of the shipped clients and the deployed server (pinned in `netgame.rs` too).
 const OLD_SHIPPED_FINGERPRINT: u32 = 0x2BAF_E9C8;
-const CURRENT_FINGERPRINT: u32 = 0xFED4DA58;
+const CURRENT_FINGERPRINT: u32 = 0x6D4F8D2B;
 
 // ---- finding and running the hub ------------------------------------------------------------------------------------
 

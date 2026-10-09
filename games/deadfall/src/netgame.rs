@@ -12,7 +12,7 @@ use vesper3d::viewer::net::codec::{Reader, WireError, WireResult, Writer};
 use vesper3d::viewer::netplay::{ClientView, NetGame, PredictionStats, Seat, SettingKind, SettingSpec};
 
 /// Bump when any layout or rule both sides must agree on changes (the fingerprint folds it in).
-pub const PROTOCOL: u32 = 2;
+pub const PROTOCOL: u32 = 3;
 /// Remote players are drawn this far in the past so there is always a snapshot to interpolate to (seconds).
 pub const INTERP_DELAY: f32 = 0.1;
 /// How much history a client keeps, for the killcam (seconds).
@@ -773,7 +773,14 @@ pub fn fingerprint() -> u32 {
             }
         }
         let profile = sim::profile();
-        for f in [profile.walk_speed, profile.jump_height, profile.crouch_speed, sim::KILLCAM_SECONDS, sim::GRAVITY] {
+        for f in [
+            profile.walk_speed,
+            profile.sprint_speed,
+            profile.jump_height,
+            profile.crouch_speed,
+            sim::KILLCAM_SECONDS,
+            sim::GRAVITY,
+        ] {
             mix(fingerprint_number(f));
         }
         h
@@ -1440,7 +1447,7 @@ mod tests {
     /// accept that the next release is a breaking one and update the pin on purpose.
     #[test]
     fn the_join_fingerprint_is_pinned() {
-        assert_eq!(fingerprint(), 0xFED4DA58, "netgame::fingerprint() changed");
+        assert_eq!(fingerprint(), 0x6D4F8D2B, "netgame::fingerprint() changed");
         assert_eq!(<DeadfallGame as NetGame>::fingerprint(), fingerprint());
     }
 
