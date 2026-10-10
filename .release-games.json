@@ -285,6 +285,13 @@
       "directory": "games/corkscrew-key",
       "kind": "cargo-package",
       "binary": "corkscrew-key"
+    },
+    {
+      "slug": "rift-delver",
+      "name": "Rift Delver",
+      "directory": "games/rift-delver",
+      "kind": "cargo-package",
+      "binary": "rift-delver"
     }
   ],
   "non_playable_directories": [

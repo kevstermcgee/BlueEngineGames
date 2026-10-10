@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 390,
+    "games": 420,
     "prototypes": 10,
     "tests": 64
   },
@@ -1735,6 +1735,126 @@
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
+      "path": "games/rift-delver/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/rift-delver/AGENTS.md",
+      "sha256": "fa7e0e371288bfbf1c0f5effa6ced7deff437d32d85fe76838792e2e128510d4"
+    },
+    {
+      "path": "games/rift-delver/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/rift-delver/Cargo.lock",
+      "sha256": "f7e66ba12696781fa0d906fc61abf83726d8c86ce27cfcba095bb41bae46aa43"
+    },
+    {
+      "path": "games/rift-delver/Cargo.toml",
+      "sha256": "02e3570f90379730723365dddb7911e6a340f5adb736c88d7671ed5f0c40f7f5"
+    },
+    {
+      "path": "games/rift-delver/README.md",
+      "sha256": "50a11d70b1ae4fff251feb5a8ffb0a896baa1ff8afa92eef5d44a019247424b4"
+    },
+    {
+      "path": "games/rift-delver/STATUS.md",
+      "sha256": "093684b2d53ad44b27293d1271df61af1e5d83885ccee9e8ea68de703169a168"
+    },
+    {
+      "path": "games/rift-delver/assets/icon.ico",
+      "sha256": "5fc6fc2b786de76c5d47be6288b699094ef2bb602cb279b3b2b2a29d586a21e3"
+    },
+    {
+      "path": "games/rift-delver/assets/icon.png",
+      "sha256": "73d66a175724c13c6532b92d648ebc1fc0902e42ab59141735196397b9c3f66b"
+    },
+    {
+      "path": "games/rift-delver/assets/icon_16.rgba",
+      "sha256": "71e3c1554ef0c25f25c7da27acd5782f37e03f77cbb7744e64fc1a3d38bfae12"
+    },
+    {
+      "path": "games/rift-delver/assets/icon_32.rgba",
+      "sha256": "a2f2d1fa65eab209be3f241417dd2ff06d6aff054041fc79483c44084dca0c88"
+    },
+    {
+      "path": "games/rift-delver/assets/icon_64.rgba",
+      "sha256": "0424a8d2c15339c66102d158c412b69fbb56473288b579841e9e8f2979e8e6b8"
+    },
+    {
+      "path": "games/rift-delver/assets/identity.json",
+      "sha256": "b91d2dc4f61d01ce9f166af39465961e93f3cae637ae92e1ea1d3c2f0ce4187d"
+    },
+    {
+      "path": "games/rift-delver/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/rift-delver/examples/preview_states.rs",
+      "sha256": "a98995753b8bd82ac791448a6c2199f772ea9cbc8604ddc82dd02ae739ed862a"
+    },
+    {
+      "path": "games/rift-delver/game.project.json",
+      "sha256": "269c8a5c0668196373e1720fd871be3af89b9e78f78d3c70fdc5474bb3a37eff"
+    },
+    {
+      "path": "games/rift-delver/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/rift-delver/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/rift-delver/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/rift-delver/scripts/check.py",
+      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+    },
+    {
+      "path": "games/rift-delver/scripts/control_smoke.py",
+      "sha256": "2674ac943814c488fabaf09c79ab3d14b33c703a6fa07dacdb1296f8f7ce466f"
+    },
+    {
+      "path": "games/rift-delver/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/rift-delver/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/rift-delver/scripts/ship.py",
+      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+    },
+    {
+      "path": "games/rift-delver/src/lib.rs",
+      "sha256": "03c92e31590152b17676a0f4f416f60612d1c85b4d2d2d3325410bd62fb6d568"
+    },
+    {
+      "path": "games/rift-delver/src/main.rs",
+      "sha256": "accb8aac62a3bf209e672243fcd3f75fd767e168e4a23d9084c0db5a0d83c4a4"
+    },
+    {
+      "path": "games/rift-delver/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/rift-delver/tests/determinism.rs",
+      "sha256": "8323cefed0527c929ae4f0cbbaddf227fbe90667a437d528bfb4bfed2e2815ee"
+    },
+    {
+      "path": "games/rift-delver/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
+      "path": "games/rift-delver/tests/rules.rs",
+      "sha256": "4dc418cba6b7cddee87b2f908745d865cf03d5ccfa6876b74cced2a77fb8f5b1"
+    },
+    {
       "path": "games/signal-garden/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -2239,6 +2359,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "9189d68aabf098bd82a34265bbcf4395970a9da7",
+  "source_revision": "91322d9",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
