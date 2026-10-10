@@ -292,6 +292,13 @@
       "directory": "games/rift-delver",
       "kind": "cargo-package",
       "binary": "rift-delver"
+    },
+    {
+      "slug": "odd-matter",
+      "name": "Odd Matter",
+      "directory": "games/odd-matter",
+      "kind": "cargo-package",
+      "binary": "odd-matter"
     }
   ],
   "non_playable_directories": [

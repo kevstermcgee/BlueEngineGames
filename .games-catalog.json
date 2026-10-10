@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 420,
+    "games": 450,
     "prototypes": 10,
     "tests": 64
   },
@@ -1535,6 +1535,126 @@
       "sha256": "8efe70e3f60026dce81ee64aae78cf01171e6960dbda6cb63ad65f38039e5cef"
     },
     {
+      "path": "games/odd-matter/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/odd-matter/AGENTS.md",
+      "sha256": "53e8376cac55959694c103bf16e0ba38cec16f576a48cff1bfc3bac9f81872a4"
+    },
+    {
+      "path": "games/odd-matter/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/odd-matter/Cargo.lock",
+      "sha256": "defc1f878fde6b7a6fe09296c1b8343fec8f4dbeead3bcf8600ff7f18a9c379a"
+    },
+    {
+      "path": "games/odd-matter/Cargo.toml",
+      "sha256": "b921c26e9da49ef91782256563a2853b04d001162aa6ed51ff4a93b2882e6172"
+    },
+    {
+      "path": "games/odd-matter/README.md",
+      "sha256": "e6d302da58fe53dc40df383543a6831295ca7e2a48ecdf582ab0dee239f9838c"
+    },
+    {
+      "path": "games/odd-matter/STATUS.md",
+      "sha256": "be88ed44bb9d18cef0607288b53e1b1304ded243f6410c25934dfd9f26e61752"
+    },
+    {
+      "path": "games/odd-matter/assets/font-license.txt",
+      "sha256": "f32df582a2aab128c07b2f7e36e7b928dc5f6bd82657b905c04f91459f9e5cf9"
+    },
+    {
+      "path": "games/odd-matter/assets/icon.ico",
+      "sha256": "e7050ba06de8e13c7e793f47650de916537a3b237e2e62d428d37707dfa02e85"
+    },
+    {
+      "path": "games/odd-matter/assets/icon.png",
+      "sha256": "adb73f94adcc69d306c50652e04a6bd6c21ab027073f1346a7b91b70680115a6"
+    },
+    {
+      "path": "games/odd-matter/assets/icon_16.rgba",
+      "sha256": "8f37bed9575088a84a15663d51dbf638b235c598e896e90ce5b3b9000501a908"
+    },
+    {
+      "path": "games/odd-matter/assets/icon_32.rgba",
+      "sha256": "ed61822557829b00fb39da0b8ebc63bb4c4b170f69db82920296c69ce3bb85ae"
+    },
+    {
+      "path": "games/odd-matter/assets/icon_64.rgba",
+      "sha256": "e5cd45b037898183f65577f8174a4bc3d9873f40e0dae760327b6d1ad3eef40f"
+    },
+    {
+      "path": "games/odd-matter/assets/identity.json",
+      "sha256": "ff8a7ad0011ed09c9ca1cba2b98ca3c30a5ed98a4fb74d0be77c6ef2af64e08e"
+    },
+    {
+      "path": "games/odd-matter/assets/ui.ttf",
+      "sha256": "bade59d822652f76e6941aa87b40a87c13d1cc70db98ededb5011127efafd1d3"
+    },
+    {
+      "path": "games/odd-matter/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/odd-matter/game.project.json",
+      "sha256": "611c41683c10eee11403f49aa0ca3dd48c6ba20ca03ba76d8fc96c650e296536"
+    },
+    {
+      "path": "games/odd-matter/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/odd-matter/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/odd-matter/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/odd-matter/scripts/check.py",
+      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+    },
+    {
+      "path": "games/odd-matter/scripts/dev.py",
+      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+    },
+    {
+      "path": "games/odd-matter/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/odd-matter/scripts/ship.py",
+      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+    },
+    {
+      "path": "games/odd-matter/scripts/test_native_controls.py",
+      "sha256": "df0c8d333898d9defa4f06be6fc9ff12ae213acb1d57c07791fc2f74ad86eaaf"
+    },
+    {
+      "path": "games/odd-matter/src/lib.rs",
+      "sha256": "143e2b2c2dd714dc8b76bd96802030f45db26c7ca4f7505c0f1112c92e3cbe31"
+    },
+    {
+      "path": "games/odd-matter/src/main.rs",
+      "sha256": "c84a12c0ee23e360223dbd944453fe36852f3c5c1139e474f790b343c510f7c1"
+    },
+    {
+      "path": "games/odd-matter/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/odd-matter/tests/determinism.rs",
+      "sha256": "edc7df29e3b0761a606d9669944bbf094b4246b39f2fddbe5d60828b626c1e43"
+    },
+    {
+      "path": "games/odd-matter/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
       "path": "games/orchard-watch/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -2359,6 +2479,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "2354e507975594a76046058470c70934cad9e6e8",
+  "source_revision": "f75ed9d70cff1d860f286ff49b91716d077fb7d2",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
