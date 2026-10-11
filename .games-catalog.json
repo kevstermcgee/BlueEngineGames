@@ -2068,7 +2068,7 @@
     },
     {
       "path": "games/sway/src/dropfiles.rs",
-      "sha256": "c761989e876c562b9a57090a46c20327a23efbd8889ed83f5722050ed875f383"
+      "sha256": "38ca7b33598553f474dd76c880572d0b3bd6bbbc4ac38dfaa3e5c200cdb05836"
     },
     {
       "path": "games/sway/src/lib.rs",
@@ -2664,6 +2664,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "f9e4f662c85993881827613851dd8a4d0c435e24",
+  "source_revision": "304168bc8d0e66c47e050fde08a26aa9d6afb2a0",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
