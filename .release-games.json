@@ -299,6 +299,13 @@
       "directory": "games/odd-matter",
       "kind": "cargo-package",
       "binary": "odd-matter"
+    },
+    {
+      "slug": "wormhole",
+      "name": "Wormhole",
+      "directory": "games/wormhole",
+      "kind": "cargo-package",
+      "binary": "wormhole"
     }
   ],
   "non_playable_directories": [
