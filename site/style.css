@@ -129,6 +129,7 @@ footer {
 .game-summary p:first-child { margin-top: 0; }
 .game-help, .version-size { color: var(--muted); font-size: 0.85rem; }
 .version-history { margin-top: 32px; }
+.recorded-preview video { display: block; width: 100%; max-width: 960px; border-radius: 8px; }
 .version-history table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .version-history th, .version-history td { padding: 12px 8px; border-bottom: 1px solid var(--card); text-align: left; vertical-align: top; }
 .version-history code { overflow-wrap: anywhere; }
