@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 464,
+    "games": 496,
     "prototypes": 10,
     "tests": 64
   },
@@ -1967,6 +1967,134 @@
       "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
     },
     {
+      "path": "games/sway/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/sway/AGENTS.md",
+      "sha256": "fc176521aa089e9799be3dc776d54a2825e1f67196b9efa4b3935b72edc73279"
+    },
+    {
+      "path": "games/sway/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/sway/Cargo.lock",
+      "sha256": "28404c79c11c1c95631b64e555a2eaf5bb3c421248cf7edbadba6d6ad779f122"
+    },
+    {
+      "path": "games/sway/Cargo.toml",
+      "sha256": "f3437798703e0ee7945bb87881a909373b6f59f5d59f6d5fee4994ac95e12e21"
+    },
+    {
+      "path": "games/sway/README.md",
+      "sha256": "b20438d42f6042bb68909b0771b09bcee5ceec8b26a23146f9b893c846d2b000"
+    },
+    {
+      "path": "games/sway/STATUS.md",
+      "sha256": "ced1859fc85aa37352b3e81e22b5a76ee2cfd4bdd2a98de2e5ce2cfb15ade896"
+    },
+    {
+      "path": "games/sway/assets/check-tone.wav",
+      "sha256": "b31493facbb5fa036eac71eb3aab1b458fcdb79cf671c9613d218638cb3fcaa5"
+    },
+    {
+      "path": "games/sway/assets/icon.ico",
+      "sha256": "193744632717d32c890713ffc398a6064996388f5663ae2c56193e4af9003223"
+    },
+    {
+      "path": "games/sway/assets/icon.png",
+      "sha256": "a8ef68306361a50504bb5456cfc6b06bf723a7ac664cbb7aa6016fb2feafefc7"
+    },
+    {
+      "path": "games/sway/assets/icon_16.rgba",
+      "sha256": "0b4ba90ede5a60e44a16e4be0690d10fc38741bcb324e4f3769f0718c8542536"
+    },
+    {
+      "path": "games/sway/assets/icon_32.rgba",
+      "sha256": "0e7d6f91db51ea359dfb38c98f1dc395a6300f8ccf8dfcb3105f61a64016bc97"
+    },
+    {
+      "path": "games/sway/assets/icon_64.rgba",
+      "sha256": "6975c33dccd309a9a78fb5e249304359ef8dbf902f99c08fd359fe9c5ad8c235"
+    },
+    {
+      "path": "games/sway/assets/identity.json",
+      "sha256": "81069ee088fac1cd6500f87395739f4ed14c3031ec70d89521c8969df7f29e43"
+    },
+    {
+      "path": "games/sway/assets/logo.svg",
+      "sha256": "47415c612da87f31b5128dc7cb905573ec41998b5f53637da270f6802e90b47b"
+    },
+    {
+      "path": "games/sway/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/sway/game.project.json",
+      "sha256": "1dcdcb0994f5983a93d3ec0ae71d5217b1765723834e06cd0982bf144a373e9e"
+    },
+    {
+      "path": "games/sway/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/sway/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/sway/scripts/check.py",
+      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+    },
+    {
+      "path": "games/sway/scripts/dev.py",
+      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+    },
+    {
+      "path": "games/sway/scripts/native_controls.py",
+      "sha256": "5f37dbbcaae4df15eea71fe879a9c93c0421592d2e77ccf25c2a0581106e595a"
+    },
+    {
+      "path": "games/sway/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/sway/scripts/ship.py",
+      "sha256": "c6a9f8a17242385421e7a11de5b0249dd46c19bcad90cbac5edcf847fc9aca34"
+    },
+    {
+      "path": "games/sway/src/audio.rs",
+      "sha256": "edd055d71329a4be0a6dd169be1fb011477186c5dcad997201ace59d15ff9cef"
+    },
+    {
+      "path": "games/sway/src/dropfiles.rs",
+      "sha256": "df7d83d7e18cb50aeeb35393deaa487ec9c817e31e7403e243913ab0285ba6f1"
+    },
+    {
+      "path": "games/sway/src/lib.rs",
+      "sha256": "579d8a636dd1e427c12c03ee02ee73f92da7eea0e0049514af8df98cbb9e8b30"
+    },
+    {
+      "path": "games/sway/src/main.rs",
+      "sha256": "996445e0fd968607e187019af436c489fed88dbeb8ed91b659d5a75483c813ea"
+    },
+    {
+      "path": "games/sway/src/ui.rs",
+      "sha256": "dcc9990e98f5cc385ae606c95902304d5a9963116a43cd4cdf790b94afebf676"
+    },
+    {
+      "path": "games/sway/src/visuals.rs",
+      "sha256": "19454e6fe8fceb99343333d4c84069cb8fe6fda1c5c2222c6e47b16151e6a389"
+    },
+    {
+      "path": "games/sway/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/sway/tools/make_icon.py",
+      "sha256": "c68383f76b6a3007bca1c8f2996e77f5f786949bff8d98d68baa3160f10a6c43"
+    },
+    {
       "path": "games/three-switches/game.json",
       "sha256": "cdc69ba3f13f5d106adc4b1f8d3a39205008f00362e5dfd449b3ee3df2598799"
     },
@@ -2536,6 +2664,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "bf1504ff550634131ad84b3d4d2e607e16c19226",
+  "source_revision": "5280e36a92574b890c5097c669407efb05c85b6c",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
