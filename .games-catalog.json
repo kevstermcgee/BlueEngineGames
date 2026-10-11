@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 496,
+    "games": 540,
     "prototypes": 10,
     "tests": 64
   },
@@ -1735,6 +1735,182 @@
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
+      "path": "games/reverie/.gitignore",
+      "sha256": "e61b7ac10a4273cacce8050ce82870db37e1e56168731f76061aa9dd533b74f7"
+    },
+    {
+      "path": "games/reverie/AGENTS.md",
+      "sha256": "238ba03b1bbc19ea5650513cf097c02dfdebb007116ee3cc1d29a819d5ec63d3"
+    },
+    {
+      "path": "games/reverie/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/reverie/Cargo.lock",
+      "sha256": "016af19cf4a6d11a81ae154baca68d6fb3ff7319b48c4bcd2819aa597cca51b2"
+    },
+    {
+      "path": "games/reverie/Cargo.toml",
+      "sha256": "35466931bef8dda44bec834e984272eadea92a3ffbdf463f785321dd118eeaeb"
+    },
+    {
+      "path": "games/reverie/README.md",
+      "sha256": "93e1cbfb3d95eaa8807678bdc830e0812de22578d9bcfb5617c63077180678b9"
+    },
+    {
+      "path": "games/reverie/STATUS.md",
+      "sha256": "1ba8c29a9984a4c29db76359b8ddf53f9a23697cf6a725a41424316d90ccd989"
+    },
+    {
+      "path": "games/reverie/assets/FONT-LICENSE.txt",
+      "sha256": "e81d9dced49fea2a7d576cbea283873de58563c5d488f954deb282843c3ea79c"
+    },
+    {
+      "path": "games/reverie/assets/gallery-sans.ttf",
+      "sha256": "57f73e11f51999432bf7ab22ce55b6f945d5eca1bf824404cfa9ec2e3718c84e"
+    },
+    {
+      "path": "games/reverie/assets/gallery-serif.ttf",
+      "sha256": "8cb29f7db250ebb2551a6ce2c1e0bfd5a0eb520e9e233370db0493e82e1f36f7"
+    },
+    {
+      "path": "games/reverie/assets/icon.ico",
+      "sha256": "b40ca9d1d7e9e1b0f883b20d5fd23d98bfd5a94080ebbfc18627d302d4697fa6"
+    },
+    {
+      "path": "games/reverie/assets/icon.png",
+      "sha256": "de0763063ef9c111729103dd04b06b74206789d34e38ff028f47befe535efbe2"
+    },
+    {
+      "path": "games/reverie/assets/icon_16.rgba",
+      "sha256": "1954a12040497e9ca88aaac7c86a36d5498e98ae5e330f057b91b3bca0e5ef09"
+    },
+    {
+      "path": "games/reverie/assets/icon_32.rgba",
+      "sha256": "18db559b0c072075ad0151ea979ab6aa01d0d0f572fbfb57967893f9013085cb"
+    },
+    {
+      "path": "games/reverie/assets/icon_64.rgba",
+      "sha256": "b52b94288b4a8bef5c5c5f47722b0cb508d11d725019da4f62a42ce339d76f0f"
+    },
+    {
+      "path": "games/reverie/assets/identity.json",
+      "sha256": "e1b01dcc87798151b5520ff20acb7f243981744de8c2184450cd033ce6d90068"
+    },
+    {
+      "path": "games/reverie/assets/score/acceptance.json",
+      "sha256": "5aaef80111fca6650c3c23420e2c9bda60316c3bb41b29eff0f9810b62de6d2b"
+    },
+    {
+      "path": "games/reverie/assets/score/anger.json",
+      "sha256": "e8e5bfa79247beccc1ddf4140b691fccb64dff9c466076a1b3d1914566d81ce0"
+    },
+    {
+      "path": "games/reverie/assets/score/grief.json",
+      "sha256": "35297a08c7acec4688dfbba287168e2c28c2423b9e381c6e5ff60c6e92445b17"
+    },
+    {
+      "path": "games/reverie/assets/score/joy.json",
+      "sha256": "da7b80161bcd02c1b566e7aa732dc977f4415e7ef6732f9d0daaf4b3ef1ccf8a"
+    },
+    {
+      "path": "games/reverie/assets/score/longing.json",
+      "sha256": "782503c3a813cd551c2223fa23b18b91dd577b4671796dc3cb87081d4ef1f0de"
+    },
+    {
+      "path": "games/reverie/assets/score/tenderness.json",
+      "sha256": "81a9237725b3dcab9014d16a212f722b1bde8474f6f8cc3954cd8d9f53b5e19a"
+    },
+    {
+      "path": "games/reverie/assets/score/unease.json",
+      "sha256": "cb01e37af91b91dce39f5bbd5fe20c81f0b864fabdd29dee99adf64d800642b1"
+    },
+    {
+      "path": "games/reverie/assets/score/wonder.json",
+      "sha256": "0d36fceb04d8e83e9840484a13a51731c63aef674078d3c14850d92f517b0964"
+    },
+    {
+      "path": "games/reverie/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/reverie/game.project.json",
+      "sha256": "e7d52cea7ce03bfc0eca2d1d40223d027ddfc5e4265959de8963782fa306f750"
+    },
+    {
+      "path": "games/reverie/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/reverie/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/reverie/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/reverie/scripts/check.py",
+      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+    },
+    {
+      "path": "games/reverie/scripts/compose.py",
+      "sha256": "b3bbc17aa0cd31977563147143f539ec1f768b6ac511cd0caf94138546ac0e3b"
+    },
+    {
+      "path": "games/reverie/scripts/dev.py",
+      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+    },
+    {
+      "path": "games/reverie/scripts/installer.iss",
+      "sha256": "f583265e934c8fff97aef6e0e1f0b98ea867ba061f97c5291af8af008d0b5330"
+    },
+    {
+      "path": "games/reverie/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/reverie/scripts/ship.py",
+      "sha256": "c2181d6c2adc256b614a35bc53ac51c0ccece4f0cd5f1551800823800f4a0e93"
+    },
+    {
+      "path": "games/reverie/scripts/test-installer.ps1",
+      "sha256": "32c5f256cfed4879dd9b0ffe99e6c8396d53710454b6f58f45a19588028d9c0f"
+    },
+    {
+      "path": "games/reverie/src/collection.rs",
+      "sha256": "5c2a0bb11bc5078f0c9c78275f97556c0c0d5d5f56116f5ebc52e32ed5d038fe"
+    },
+    {
+      "path": "games/reverie/src/gallery_ui.rs",
+      "sha256": "5dc82d3cc8dd8b0e27a2a9d5f7810740566db7d8a891053b0242b7bec9502316"
+    },
+    {
+      "path": "games/reverie/src/lib.rs",
+      "sha256": "7b32c329ecc38841c588ecb93b4fcd6921eeeadb0ecd8a4884861ad3a86cc0d4"
+    },
+    {
+      "path": "games/reverie/src/main.rs",
+      "sha256": "555d6c546bcd94d5a88bc244422c048770d023f82fc14550f6a58a5f994bee9b"
+    },
+    {
+      "path": "games/reverie/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/reverie/src/visual.rs",
+      "sha256": "58926ee820cbc8992bab2dd45b3c8bf78dee2a245a20f4b649f9ba41fde3fc90"
+    },
+    {
+      "path": "games/reverie/tests/determinism.rs",
+      "sha256": "90749abc6a916c450753abea829b69451a5184b5bdfd0570b2ca0c6c7279fcdc"
+    },
+    {
+      "path": "games/reverie/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
       "path": "games/rift-delver/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -2664,6 +2840,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "9d6265b0d4be4edcd631f6df1ef94811f2ff275c",
+  "source_revision": "579b90868e7e20005f874d2689e35a5f8a23e559",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
