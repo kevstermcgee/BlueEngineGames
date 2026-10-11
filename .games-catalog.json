@@ -1984,7 +1984,7 @@
     },
     {
       "path": "games/sway/Cargo.toml",
-      "sha256": "9820d6531e54ce7f2beb161cc7970a3180f3664708c5b43c69d8e0cc18ac959e"
+      "sha256": "6528c1f8c8d63246b94adf74a5c79aac8ff35a64a5d5de5d5a95f5d456177b51"
     },
     {
       "path": "games/sway/README.md",
@@ -2052,7 +2052,7 @@
     },
     {
       "path": "games/sway/scripts/native_controls.py",
-      "sha256": "5f37dbbcaae4df15eea71fe879a9c93c0421592d2e77ccf25c2a0581106e595a"
+      "sha256": "32df1efce1d1145f1861fe97dc02660a94c8af8ec4eabfc7dba80bbc8e616104"
     },
     {
       "path": "games/sway/scripts/project.py",
@@ -2068,7 +2068,7 @@
     },
     {
       "path": "games/sway/src/dropfiles.rs",
-      "sha256": "4157c246ff71cd6abf366ffda8e1f9d74aa3a65eb54985def02946b0e2c02d25"
+      "sha256": "c761989e876c562b9a57090a46c20327a23efbd8889ed83f5722050ed875f383"
     },
     {
       "path": "games/sway/src/lib.rs",
@@ -2076,7 +2076,7 @@
     },
     {
       "path": "games/sway/src/main.rs",
-      "sha256": "996445e0fd968607e187019af436c489fed88dbeb8ed91b659d5a75483c813ea"
+      "sha256": "148bf478d9f2d26dc5f375f061940c78b7133923d948993832afe7a3b47bff33"
     },
     {
       "path": "games/sway/src/ui.rs",
@@ -2664,6 +2664,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "2abb64c75d83c6cce7e017268ab83bbac070929f",
+  "source_revision": "f9e4f662c85993881827613851dd8a4d0c435e24",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
