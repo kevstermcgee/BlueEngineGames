@@ -306,6 +306,13 @@
       "directory": "games/wormhole",
       "kind": "cargo-package",
       "binary": "wormhole"
+    },
+    {
+      "slug": "sway",
+      "name": "Sway",
+      "directory": "games/sway",
+      "kind": "cargo-package",
+      "binary": "sway"
     }
   ],
   "non_playable_directories": [
