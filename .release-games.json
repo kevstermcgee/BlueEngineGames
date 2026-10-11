@@ -313,6 +313,13 @@
       "directory": "games/sway",
       "kind": "cargo-package",
       "binary": "sway"
+    },
+    {
+      "slug": "reverie",
+      "name": "Reverie",
+      "directory": "games/reverie",
+      "kind": "cargo-package",
+      "binary": "reverie"
     }
   ],
   "non_playable_directories": [
