@@ -187,6 +187,7 @@ GAME_PAGE = """<!DOCTYPE html>
       <p class="game-help">Install once, then use the game's <strong>Check for updates</strong> Start Menu shortcut. Updates keep your saves and settings.</p>
     </div>
   </section>
+  {preview}
   <section class="version-history" aria-labelledby="versions-heading">
     <h2 id="versions-heading">Versions</h2>
     <p>The latest release is the default. Choose an older release below to revisit a previous build.</p>
@@ -259,11 +260,23 @@ def build_staged(args) -> None:
         versions = [release] + [r for r in releases if r.get("tag_name") != release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
+        preview = ""
+        preview_src = Path(__file__).resolve().parent / "previews" / f"{slug}.mp4"
+        if preview_src.is_file():
+            shutil.copy2(preview_src, game_out / "preview.mp4")
+            preview = f'''<section class="recorded-preview" aria-labelledby="preview-heading">
+    <h2 id="preview-heading">Watch a recording</h2>
+    <video controls playsinline preload="metadata" poster="../../thumbs/{html.escape(slug)}.png" aria-label="{name} running with sound">
+      <source src="preview.mp4" type="video/mp4">
+      <a href="preview.mp4">Download the MP4 recording</a>
+    </video>
+    <p><a href="preview.mp4">Download the MP4 recording</a></p>
+  </section>'''
         (game_out / "index.html").write_text(GAME_PAGE.format(
             name=name, desc=html.escape(row.get("description", "")),
             thumb=thumb.replace('src="thumbs/', 'src="../../thumbs/'),
             version=version_label(row.get("game_version", "")), created=html.escape(created),
-            asset=html.escape(asset), download_label=download_label,
+            asset=html.escape(asset), download_label=download_label, preview=preview,
             versions=version_rows(versions, slug, release.get("tag_name", "")), repo=REPO,
         ), encoding="utf-8", newline="\n")
 
