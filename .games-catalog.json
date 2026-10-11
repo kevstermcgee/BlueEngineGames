@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 450,
+    "games": 464,
     "prototypes": 10,
     "tests": 64
   },
@@ -1535,126 +1535,6 @@
       "sha256": "8efe70e3f60026dce81ee64aae78cf01171e6960dbda6cb63ad65f38039e5cef"
     },
     {
-      "path": "games/odd-matter/.gitignore",
-      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
-    },
-    {
-      "path": "games/odd-matter/AGENTS.md",
-      "sha256": "53e8376cac55959694c103bf16e0ba38cec16f576a48cff1bfc3bac9f81872a4"
-    },
-    {
-      "path": "games/odd-matter/CLAUDE.md",
-      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
-    },
-    {
-      "path": "games/odd-matter/Cargo.lock",
-      "sha256": "defc1f878fde6b7a6fe09296c1b8343fec8f4dbeead3bcf8600ff7f18a9c379a"
-    },
-    {
-      "path": "games/odd-matter/Cargo.toml",
-      "sha256": "b921c26e9da49ef91782256563a2853b04d001162aa6ed51ff4a93b2882e6172"
-    },
-    {
-      "path": "games/odd-matter/README.md",
-      "sha256": "e6d302da58fe53dc40df383543a6831295ca7e2a48ecdf582ab0dee239f9838c"
-    },
-    {
-      "path": "games/odd-matter/STATUS.md",
-      "sha256": "be88ed44bb9d18cef0607288b53e1b1304ded243f6410c25934dfd9f26e61752"
-    },
-    {
-      "path": "games/odd-matter/assets/font-license.txt",
-      "sha256": "f32df582a2aab128c07b2f7e36e7b928dc5f6bd82657b905c04f91459f9e5cf9"
-    },
-    {
-      "path": "games/odd-matter/assets/icon.ico",
-      "sha256": "e7050ba06de8e13c7e793f47650de916537a3b237e2e62d428d37707dfa02e85"
-    },
-    {
-      "path": "games/odd-matter/assets/icon.png",
-      "sha256": "adb73f94adcc69d306c50652e04a6bd6c21ab027073f1346a7b91b70680115a6"
-    },
-    {
-      "path": "games/odd-matter/assets/icon_16.rgba",
-      "sha256": "8f37bed9575088a84a15663d51dbf638b235c598e896e90ce5b3b9000501a908"
-    },
-    {
-      "path": "games/odd-matter/assets/icon_32.rgba",
-      "sha256": "ed61822557829b00fb39da0b8ebc63bb4c4b170f69db82920296c69ce3bb85ae"
-    },
-    {
-      "path": "games/odd-matter/assets/icon_64.rgba",
-      "sha256": "e5cd45b037898183f65577f8174a4bc3d9873f40e0dae760327b6d1ad3eef40f"
-    },
-    {
-      "path": "games/odd-matter/assets/identity.json",
-      "sha256": "ff8a7ad0011ed09c9ca1cba2b98ca3c30a5ed98a4fb74d0be77c6ef2af64e08e"
-    },
-    {
-      "path": "games/odd-matter/assets/ui.ttf",
-      "sha256": "bade59d822652f76e6941aa87b40a87c13d1cc70db98ededb5011127efafd1d3"
-    },
-    {
-      "path": "games/odd-matter/build.rs",
-      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
-    },
-    {
-      "path": "games/odd-matter/game.project.json",
-      "sha256": "611c41683c10eee11403f49aa0ca3dd48c6ba20ca03ba76d8fc96c650e296536"
-    },
-    {
-      "path": "games/odd-matter/rustfmt.toml",
-      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
-    },
-    {
-      "path": "games/odd-matter/scripts/blue",
-      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
-    },
-    {
-      "path": "games/odd-matter/scripts/blue.ps1",
-      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
-    },
-    {
-      "path": "games/odd-matter/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
-    },
-    {
-      "path": "games/odd-matter/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
-    },
-    {
-      "path": "games/odd-matter/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
-    },
-    {
-      "path": "games/odd-matter/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
-    },
-    {
-      "path": "games/odd-matter/scripts/test_native_controls.py",
-      "sha256": "df0c8d333898d9defa4f06be6fc9ff12ae213acb1d57c07791fc2f74ad86eaaf"
-    },
-    {
-      "path": "games/odd-matter/src/lib.rs",
-      "sha256": "143e2b2c2dd714dc8b76bd96802030f45db26c7ca4f7505c0f1112c92e3cbe31"
-    },
-    {
-      "path": "games/odd-matter/src/main.rs",
-      "sha256": "c84a12c0ee23e360223dbd944453fe36852f3c5c1139e474f790b343c510f7c1"
-    },
-    {
-      "path": "games/odd-matter/src/platform.rs",
-      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
-    },
-    {
-      "path": "games/odd-matter/tests/determinism.rs",
-      "sha256": "edc7df29e3b0761a606d9669944bbf094b4246b39f2fddbe5d60828b626c1e43"
-    },
-    {
-      "path": "games/odd-matter/tests/identity.rs",
-      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
-    },
-    {
       "path": "games/orchard-watch/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -2127,6 +2007,182 @@
       "sha256": "e994d9b174c0a2e6785ff7b7482e2084386057912e52337c27cfcc5ca0967dd2"
     },
     {
+      "path": "games/wormhole/.gitignore",
+      "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
+    },
+    {
+      "path": "games/wormhole/AGENTS.md",
+      "sha256": "7dae25fa29620d281a6462c127cfe170a4d7d427eecb008de26a1b68ef09915a"
+    },
+    {
+      "path": "games/wormhole/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/wormhole/Cargo.lock",
+      "sha256": "0e9cf239059ef31f60a37505a66a643bd074828140852916d0cc990ba91f0308"
+    },
+    {
+      "path": "games/wormhole/Cargo.toml",
+      "sha256": "d1e39f51741209f6db4740b35234c4830985900690527d3274169ba2f0ef9bc9"
+    },
+    {
+      "path": "games/wormhole/README.md",
+      "sha256": "1188ab25fcf70c1746aa82c02e0608b123e8f7dc16dc60869363069d7ef0080f"
+    },
+    {
+      "path": "games/wormhole/STATUS.md",
+      "sha256": "0d9968935a72895596eb94df385a9cfe4abac7e8ddab9e274f2a0b929047f5ad"
+    },
+    {
+      "path": "games/wormhole/assets/audio/beyond/bank.json",
+      "sha256": "6d90961380525d3004417da191b4e469ffeb00a2601c10bcf007e8de46f91176"
+    },
+    {
+      "path": "games/wormhole/assets/audio/beyond/music-ground.wav",
+      "sha256": "f4025d443239849781178b1c46dcac228b33dc58b3cde851068e4779f8f2d913"
+    },
+    {
+      "path": "games/wormhole/assets/audio/beyond/music-stars.wav",
+      "sha256": "c00b1573bbaa9c95335c3a3ff3c058e3cefa053f6f263ebf196b4f09911524c0"
+    },
+    {
+      "path": "games/wormhole/assets/audio/home/bank.json",
+      "sha256": "d6a7b3cb9cbc451b0d289f573cd29d2667e616845c9407a2ac2999421ff46a72"
+    },
+    {
+      "path": "games/wormhole/assets/audio/home/music-ground.wav",
+      "sha256": "aa09fd8d994ae7d6b815b472d2819453aefdf8cb4101a7a931cac142506afe38"
+    },
+    {
+      "path": "games/wormhole/assets/audio/home/music-stars.wav",
+      "sha256": "2e5f5b9d36a3a33b73d1bede6006560e60fe152b255361952a5dc8eef9ab96b7"
+    },
+    {
+      "path": "games/wormhole/assets/audio/light/bank.json",
+      "sha256": "a3c316bc70d178d03db2194adc55c657c63feeaf28bee0394681857e3b73789f"
+    },
+    {
+      "path": "games/wormhole/assets/audio/light/music-ground.wav",
+      "sha256": "031c036440eee74e9c1ee14f8853977fb29e635d95ec7db079a15de4d1588ce3"
+    },
+    {
+      "path": "games/wormhole/assets/audio/light/music-stars.wav",
+      "sha256": "fc6abc04c50ff9a439219a1ff3119dabfb7a69965bb552963ad2988931c6130c"
+    },
+    {
+      "path": "games/wormhole/assets/audio/memory/bank.json",
+      "sha256": "8369b3ef919ddcb71c9a2cc4464f13fdcce69587ab20932b639c144ad3c8c8d4"
+    },
+    {
+      "path": "games/wormhole/assets/audio/memory/music-ground.wav",
+      "sha256": "23e00dd9b94e3636b23d9f9b3a58a0354517cf5bcb4d7b3b522b41df012e196a"
+    },
+    {
+      "path": "games/wormhole/assets/audio/memory/music-stars.wav",
+      "sha256": "8db820aeee2afb52318b7202a5a82d75e02f4b031571269c1aeba654e43370f9"
+    },
+    {
+      "path": "games/wormhole/assets/icon.ico",
+      "sha256": "02b91c29ed8bdbd79fc978013b09ca5ba1a3e1efd584078b6a2aeb994a5b6e8e"
+    },
+    {
+      "path": "games/wormhole/assets/icon.png",
+      "sha256": "0ac340ac684ec09f142dedb08d0c105267a44f411ea7dd29be7210e7cd8a7f28"
+    },
+    {
+      "path": "games/wormhole/assets/icon_16.rgba",
+      "sha256": "b178d94b61385dd91ff9feea86bc373d6be095228491d722fb2670561a77b03d"
+    },
+    {
+      "path": "games/wormhole/assets/icon_32.rgba",
+      "sha256": "0809cfb2b275c42cdc43911d43fd969ac0b912c1db01b85a03011a7a79b77806"
+    },
+    {
+      "path": "games/wormhole/assets/icon_64.rgba",
+      "sha256": "6e7486650acfc4ecadf20ca86ed4cf849153823db7a9356abda7299509257e1e"
+    },
+    {
+      "path": "games/wormhole/assets/identity.json",
+      "sha256": "ebc8ab49659bf08dd3c5e1d5947b7f18141664dd3e56d7f5ea7595a360071eea"
+    },
+    {
+      "path": "games/wormhole/assets/score/beyond.json",
+      "sha256": "a639d5af2760743d311818e80de77eddf358dbfdf6412bf4a39e4de07708a1b8"
+    },
+    {
+      "path": "games/wormhole/assets/score/home.json",
+      "sha256": "99b2b54af732bb3c0a43ed845a553321492876bef3b6ce787cbeb33697d63b64"
+    },
+    {
+      "path": "games/wormhole/assets/score/light.json",
+      "sha256": "020a95a76b306e2bddebb456043a217c53fc48fc21a72593cb919c44e5fcca71"
+    },
+    {
+      "path": "games/wormhole/assets/score/memory.json",
+      "sha256": "18f21d7a432750200148463d82d9f31c9bfa23d4a2c959fdfc73ea564667f436"
+    },
+    {
+      "path": "games/wormhole/assets/wormhole.gif",
+      "sha256": "33e649d0bce997563f0eda71b53d1e080f218a59f4a1763edc95a97c92b7fd29"
+    },
+    {
+      "path": "games/wormhole/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/wormhole/game.project.json",
+      "sha256": "aa64334f1c17704030fbdc8a6a6be50352d1cd1f9427db589d28ae742b08f24a"
+    },
+    {
+      "path": "games/wormhole/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/wormhole/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/wormhole/scripts/check.py",
+      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+    },
+    {
+      "path": "games/wormhole/scripts/dev.py",
+      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+    },
+    {
+      "path": "games/wormhole/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/wormhole/scripts/ship.py",
+      "sha256": "c6a9f8a17242385421e7a11de5b0249dd46c19bcad90cbac5edcf847fc9aca34"
+    },
+    {
+      "path": "games/wormhole/src/lib.rs",
+      "sha256": "e2999ef124b73838ecf4a1c5901e25ccd8704e71537eeeba12f285a2cf00eb91"
+    },
+    {
+      "path": "games/wormhole/src/main.rs",
+      "sha256": "3c8b6d89ebd7cee19889cc3e67ba121ac5a99589a8259dfbd18bc18836083d62"
+    },
+    {
+      "path": "games/wormhole/src/presentation.rs",
+      "sha256": "3984793feacb4280810e8125e1ae33c71d96150b0badf13446c2cf478d75d89f"
+    },
+    {
+      "path": "games/wormhole/src/wormhole.frag",
+      "sha256": "50f4de00ae68dfcf984926b11de832e7a915c0144b0a7d90e224925d580d9bae"
+    },
+    {
+      "path": "games/wormhole/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/wormhole/tools/compose.py",
+      "sha256": "cd77508c592c65f85ac6f9fc275f0a4f5719adf7cb20660c24d564c4c6d270f2"
+    },
+    {
       "path": "prototypes/multiplayer-game/Cargo.lock",
       "sha256": "a57e5c1eb0339755b0b210a99ffefa37452d622edbc354da9dae018579ccea4a"
     },
@@ -2475,10 +2531,11 @@
     "games/dead-air",
     "games/prop-hunt",
     "games/slapstick",
-    "games/feta"
+    "games/feta",
+    "games/odd-matter"
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "f75ed9d70cff1d860f286ff49b91716d077fb7d2",
+  "source_revision": "bf1504ff550634131ad84b3d4d2e607e16c19226",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
