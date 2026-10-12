@@ -66,6 +66,8 @@ Add a visually reviewed landscape capture at `site/thumbs/<slug>.png`.
 `python site/released_games.py` verifies the downloaded Windows installer before
 every Pages deployment. These entries use the normal cards, filters, and game
 pages without rebuilding the installer or changing the bundled release catalog.
+Keep older pinned release records in `previous_releases` when publishing an
+update so the game's Versions table retains its earlier installers.
 
 To package older builds without recompiling them, dispatch **Build Windows releases**
 with `backfill_limit` set to the number of recent releases to convert. ZIP bytes

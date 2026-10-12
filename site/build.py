@@ -268,7 +268,8 @@ def build_staged(args) -> None:
             "name": row["name"],
         })
 
-        versions = [game_release] + [r for r in releases if r.get("tag_name") != game_release.get("tag_name")]
+        history = row.get('previous_releases', releases)
+        versions = [game_release] + [r for r in history if r.get("tag_name") != game_release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
         preview = ""

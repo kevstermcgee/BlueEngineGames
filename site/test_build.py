@@ -60,6 +60,10 @@ class Downloads(unittest.TestCase):
             for slug in ('bundled', 'standalone'):
                 (root / f'thumbs/{slug}.png').write_bytes(screenshot())
             game = independent_game()
+            previous = copy.deepcopy(game['published_release'])
+            previous['tag_name'] = 'v0.0.9'
+            previous['assets'][0]['browser_download_url'] = previous['assets'][0]['browser_download_url'].replace('/v0.1.0/', '/v0.0.9/')
+            game['previous_releases'] = [previous]
             (root / 'site/released-games.json').write_text(json.dumps({'version': 1, 'games': [game]}))
             with (root / 'catalog.tsv').open('w', newline='') as out:
                 writer = csv.DictWriter(out, fieldnames=['slug', 'name', 'release'], delimiter='\t')
@@ -80,6 +84,9 @@ class Downloads(unittest.TestCase):
             self.assertIn(game['install_help'], page)
             self.assertIn('a' * 64, page)
             self.assertIn('<code>v0.1.0</code>', page)
+            self.assertIn('<code>v0.0.9</code>', page)
+            self.assertIn(previous['assets'][0]['browser_download_url'], page)
+            self.assertEqual(page.count('Latest</span>'), 1)
             self.assertIn('Latest</span>', page)
             self.assertNotIn('Check for updates', page)
             self.assertEqual((root / 'out/thumbs/standalone.png').read_bytes(), screenshot())

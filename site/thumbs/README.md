@@ -32,5 +32,5 @@ its gameplay verification capture; Slapstick uses a captured goal during a solo
 match. The existing captures for the other games were visually reviewed.
 
 Embertrail uses the visually reviewed native Windows package capture from its
-verified 0.1.0 release. Independently released games in `site/released-games.json`
+verified 0.1.1 compact HUD release. Independently released games in `site/released-games.json`
 also require a real landscape screenshot here.
