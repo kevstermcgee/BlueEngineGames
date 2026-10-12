@@ -20,9 +20,9 @@ a failed screenshot check leaves the previous website intact.
 Windows x64 installer that installs for your user, adds Start Menu shortcuts, and
 offers a desktop shortcut. No Rust toolchain or command line is required.
 
-Installed games have a **Check for updates** Start Menu shortcut. Updates replace
-the existing game and keep saves and settings. You can also run a newer installer
-to upgrade the same installation. Open a game's page on the website and use its **Versions** table
+Run a newer installer to upgrade the same installation while keeping saves and
+settings. Games built by this repository also have a **Check for updates** Start
+Menu shortcut. Open a game's page on the website and use its **Versions** table
 to download a specific previous release. Latest is the default.
 
 New games install under `%LOCALAPPDATA%\BlueEngine\Games\<game>`.

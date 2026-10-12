@@ -30,3 +30,7 @@ a virtual display. Pocket Breaker uses frame 3 to show the board during play.
 Feta uses its `previews/feta/solo-feta.png` gameplay capture. Signal Garden uses
 its gameplay verification capture; Slapstick uses a captured goal during a solo
 match. The existing captures for the other games were visually reviewed.
+
+Embertrail uses the visually reviewed native Windows package capture from its
+verified 0.1.0 release. Independently released games in `site/released-games.json`
+also require a real landscape screenshot here.

@@ -58,6 +58,15 @@ without installers are marked as pending until the archive packaging job runs. C
 Drafts, prereleases, and releases without that game are excluded. Historical tags
 are shown even when two releases use the same semantic game version.
 
+Games with an already published native installer in a separate repository can
+also appear on the website through `site/released-games.json`. Each entry pins
+the public release tag, installer URL, byte size, SHA256, and source commit, and
+includes its title, description, presentation, networking, and update instructions.
+Add a visually reviewed landscape capture at `site/thumbs/<slug>.png`.
+`python site/released_games.py` verifies the downloaded Windows installer before
+every Pages deployment. These entries use the normal cards, filters, and game
+pages without rebuilding the installer or changing the bundled release catalog.
+
 To package older builds without recompiling them, dispatch **Build Windows releases**
 with `backfill_limit` set to the number of recent releases to convert. ZIP bytes
 stay unchanged. The job uploads installers as reviewable artifacts; setting

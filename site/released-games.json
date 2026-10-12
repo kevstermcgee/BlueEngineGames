@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "games": [
+    {
+      "slug": "embertrail",
+      "name": "Embertrail",
+      "description": "Guide Mote, a lantern spirit, through 32 authored courses in eight worlds. Find secret grottos, collect moon shards, master power-ups, and defeat the Hollow Keepers in an original 2D platforming adventure.",
+      "created": "2026-10-12",
+      "game_version": "0.1.0",
+      "kind": "native game",
+      "presentation": "2d",
+      "networking": "offline",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/056a1586d52c19c233455ce5ed75e28b4cfed3c1/games/embertrail",
+      "install_help": "Run the Windows installer to play. To update, run a newer Embertrail installer; your saves and settings are preserved.",
+      "published_release": {
+        "tag_name": "v0.1.0",
+        "name": "Embertrail 0.1.0 for Windows",
+        "published_at": "2026-10-12T04:56:09Z",
+        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.1.0",
+        "assets": [
+          {
+            "name": "embertrail-setup-windows-x64.exe",
+            "size": 3296822,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.1.0/embertrail-setup-windows-x64.exe",
+            "digest": "sha256:8fc424e16db355bedf75510669ca400c3082cf078fc4325fa43f43f1b42ad255"
+          }
+        ]
+      }
+    }
+  ]
+}

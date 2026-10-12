@@ -21,8 +21,8 @@ def enrich_games(games, rows, out, games_dir):
         slug = row['slug']
         project_path = Path(games_dir) / slug / 'game.project.json'
         project = json.loads(project_path.read_text(encoding='utf-8')) if project_path.is_file() else {}
-        presentation = project.get('presentation', '3d')
-        network = project.get('networking', 'native-multiplayer' if row.get('online_args_b64') else 'unknown')
+        presentation = project.get('presentation', row.get('presentation', '3d'))
+        network = project.get('networking', row.get('networking', 'native-multiplayer' if row.get('online_args_b64') else 'unknown'))
         attributes = f' data-id="{esc(slug)}" data-presentation="{esc(presentation)}" data-networking="{esc(network)}"'
         body = game['card'].replace('<article ', '<article' + attributes + ' ', 1)
         body = re.sub(r'<h2>(.*?)</h2>', lambda m: f'<div class="card-heading"><h2>{m.group(1)}</h2>{star(slug, row["name"])}</div>', body, count=1, flags=re.S)

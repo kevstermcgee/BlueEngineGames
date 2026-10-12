@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Generate the static download site for BlueEngineGames.
 
-Joins the release catalog TSV (source of truth for which games exist) with the
-GitHub release JSON (per-asset sizes) and the repo checkout (game screenshots,
-git dates), and emits a self-contained _site/ directory for GitHub Pages.
+Joins the bundled release catalog TSV and pinned independent releases with
+GitHub asset metadata and the repo checkout (game screenshots, git dates),
+and emits a self-contained _site/ directory for GitHub Pages.
 
 Usage:
   python3 site/build.py --catalog catalog.tsv --release-json release.json \
@@ -14,6 +14,7 @@ import argparse
 import csv
 import html
 import json
+import re
 import shutil
 import struct
 import subprocess
@@ -42,8 +43,8 @@ PAGE = """<!DOCTYPE html>
 <section class="notes">
   <ul>
     <li>Windows x64 only.</li>
-    <li>Verify downloads against <a href="{sums_url}">SHA256SUMS.txt</a>.</li>
-    <li>Installed games have a <strong>Check for updates</strong> shortcut in the Start Menu.</li>
+    <li>Find checksums on game pages or in <a href="{sums_url}">SHA256SUMS.txt</a>.</li>
+    <li>Run a newer installer to update. Some games also have a <strong>Check for updates</strong> Start Menu shortcut.</li>
   </ul>
 </section>
 
@@ -159,6 +160,11 @@ def version_rows(releases: list[dict], slug: str, current_tag: str) -> str:
         latest = ' <span class="badge">Latest</span>' if tag == current_tag else ''
         sums = release_download(release, "INSTALLER-SHA256SUMS.txt") or release_download(release, "SHA256SUMS.txt")
         checksum = f'<a href="{esc(sums)}">Checksums</a>' if sums and url else ""
+        if url and not checksum:
+            digest = next((a.get('digest', '') for a in release['assets']
+                           if a['browser_download_url'] == url), '')
+            if re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+                checksum = f'<code class="sha256" aria-label="SHA256">{digest[7:]}</code>'
         download = f'<a href="{esc(url)}">{label}</a><br><span class="version-size">{human_size(size)}</span>' if url else '<span class="version-size">Installer not yet available</span>'
         items.append(f'<tr><td>{esc(date)}{latest}</td><td>{identity}</td><td>{download}</td><td>{checksum}</td></tr>')
     return "\n".join(items)
@@ -184,7 +190,7 @@ GAME_PAGE = """<!DOCTYPE html>
       <p>{desc}</p>
       <p class="meta">{version}added {created} &middot; Windows x64</p>
       <a class="dl" href="{asset}">{download_label}</a>
-      <p class="game-help">Install once, then use the game's <strong>Check for updates</strong> Start Menu shortcut. Updates keep your saves and settings.</p>
+      <p class="game-help">{install_help}</p>
     </div>
   </section>
   {preview}
@@ -197,7 +203,7 @@ GAME_PAGE = """<!DOCTYPE html>
     </table>
   </section>
 </main>
-<footer><a href="https://github.com/{repo}">Source on GitHub</a></footer>
+<footer><a href="{source_url}">Source on GitHub</a></footer>
 </body>
 </html>
 """
@@ -221,12 +227,17 @@ def build_staged(args) -> None:
 
     with open(args.catalog, newline="", encoding="utf-8") as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
+    bundled_slugs = {row['slug'] for row in rows}
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from released_games import load
+    rows.extend(game for game in load(repo_root) if game['slug'] not in bundled_slugs)
 
     games = []
     for row in rows:
         slug = row["slug"]
         created = game_added_date(repo_root, slug) or row.get("created", "")
-        asset, download_label, size = download_for(release, slug)
+        game_release = row.get('published_release', release)
+        asset, download_label, size = download_for(game_release, slug)
         if not asset:
             raise ValueError(f"Catalog game has no installer in the published release: {slug}")
 
@@ -257,7 +268,7 @@ def build_staged(args) -> None:
             "name": row["name"],
         })
 
-        versions = [release] + [r for r in releases if r.get("tag_name") != release.get("tag_name")]
+        versions = [game_release] + [r for r in releases if r.get("tag_name") != game_release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
         preview = ""
@@ -277,7 +288,10 @@ def build_staged(args) -> None:
             thumb=thumb.replace('src="thumbs/', 'src="../../thumbs/'),
             version=version_label(row.get("game_version", "")), created=html.escape(created),
             asset=html.escape(asset), download_label=download_label, preview=preview,
-            versions=version_rows(versions, slug, release.get("tag_name", "")), repo=REPO,
+            versions=version_rows(versions, slug, game_release.get("tag_name", "")),
+            source_url=html.escape(row.get('source_url', f'https://github.com/{REPO}')),
+            install_help=(html.escape(row['install_help']) if 'install_help' in row else
+                          "Install once, then use the game's <strong>Check for updates</strong> Start Menu shortcut. Updates keep your saves and settings."),
         ), encoding="utf-8", newline="\n")
 
     # Windows-only download catalog; optional engine web publishing cannot alter this site.

@@ -1,4 +1,5 @@
 import csv
+import copy
 import importlib.util
 import json
 import struct
@@ -27,6 +28,18 @@ def screenshot(width=320, height=180):
             + chunk(b'IDAT', zlib.compress((b'\0' + b'\x20\x60\x80' * width) * height)) + chunk(b'IEND', b''))
 
 
+def independent_game():
+    return {'slug': 'standalone', 'name': 'Standalone', 'description': 'Original platformer',
+            'created': '2026-10-12', 'game_version': '0.1.0', 'kind': 'native game',
+            'presentation': '2d', 'networking': 'offline',
+            'source_url': 'https://github.com/owner/engine/tree/' + 'b' * 40 + '/games/standalone',
+            'install_help': 'Run a newer installer to update; saves are preserved.',
+            'published_release': {'tag_name': 'v0.1.0', 'published_at': '2026-10-12T00:00:00Z',
+                                  'assets': [{'name': 'standalone-setup-windows-x64.exe', 'size': 1234,
+                                              'digest': 'sha256:' + 'a' * 64,
+                                              'browser_download_url': 'https://github.com/owner/standalone/releases/download/v0.1.0/standalone-setup-windows-x64.exe'}]}}
+
+
 class Downloads(unittest.TestCase):
     def test_every_release_game_has_a_landscape_screenshot(self):
         root = Path(__file__).resolve().parent.parent
@@ -34,6 +47,61 @@ class Downloads(unittest.TestCase):
         for game in definitions['data_playables'] + definitions['native_playables']:
             with self.subTest(game=game['slug']):
                 site.game_screenshot(root / 'site/thumbs', root / 'games', game['slug'])
+        from released_games import load
+        for game in load(root):
+            with self.subTest(game=game['slug']):
+                site.game_screenshot(root / 'site/thumbs', root / 'games', game['slug'])
+
+    def test_independent_release_joins_catalog_with_its_own_installer_and_source(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for directory in ('site', 'games', 'thumbs'):
+                (root / directory).mkdir()
+            for slug in ('bundled', 'standalone'):
+                (root / f'thumbs/{slug}.png').write_bytes(screenshot())
+            game = independent_game()
+            (root / 'site/released-games.json').write_text(json.dumps({'version': 1, 'games': [game]}))
+            with (root / 'catalog.tsv').open('w', newline='') as out:
+                writer = csv.DictWriter(out, fieldnames=['slug', 'name', 'release'], delimiter='\t')
+                writer.writeheader()
+                writer.writerow({'slug': 'bundled', 'name': 'Bundled', 'release': 'bundle-tag'})
+            current = release('bundle-tag', ['bundled-setup-windows-x64.exe'])
+            (root / 'release.json').write_text(json.dumps(current))
+            site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
+                                      games_dir=root / 'games', thumbs=root / 'thumbs', out=root / 'out'))
+            index = (root / 'out/index.html').read_text()
+            self.assertIn('<strong>2 free games</strong>', index)
+            self.assertIn('data-id="standalone" data-presentation="2d" data-networking="offline"', index)
+            self.assertIn('href="games/standalone/"', index)
+            self.assertIn('https://example.com/bundle-tag/bundled-setup-windows-x64.exe', index)
+            page = (root / 'out/games/standalone/index.html').read_text()
+            self.assertIn(game['published_release']['assets'][0]['browser_download_url'], page)
+            self.assertIn(game['source_url'], page)
+            self.assertIn(game['install_help'], page)
+            self.assertIn('a' * 64, page)
+            self.assertIn('<code>v0.1.0</code>', page)
+            self.assertIn('Latest</span>', page)
+            self.assertNotIn('Check for updates', page)
+            self.assertEqual((root / 'out/thumbs/standalone.png').read_bytes(), screenshot())
+
+    def test_independent_release_rejects_unpublished_or_unpinned_downloads(self):
+        from released_games import load
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'site').mkdir()
+            for field, value in [('draft', True), ('tag_name', 'wrong-tag'), ('url', 'https://github.com/owner/standalone/releases/latest/download/standalone-setup-windows-x64.exe'),
+                                 ('digest', ''), ('source_url', 'https://github.com/owner/engine/tree/main/games/standalone')]:
+                with self.subTest(field=field):
+                    game = copy.deepcopy(independent_game())
+                    if field == 'source_url':
+                        game[field] = value
+                    elif field in ('url', 'digest'):
+                        game['published_release']['assets'][0]['browser_download_url' if field == 'url' else field] = value
+                    else:
+                        game['published_release'][field] = value
+                    (root / 'site/released-games.json').write_text(json.dumps({'version': 1, 'games': [game]}))
+                    with self.assertRaises(ValueError):
+                        load(root)
 
     def test_missing_invalid_and_icon_screenshots_are_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
