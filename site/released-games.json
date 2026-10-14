@@ -42,6 +42,33 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "harvest-hollow",
+      "name": "Harvest Hollow",
+      "description": "Tend a cozy farm: till soil, plant and water crops, harvest, chop trees, clear debris, and improve your homestead through changing days with an original pastoral soundtrack.",
+      "created": "2026-10-13",
+      "game_version": "0.1.0",
+      "kind": "native game",
+      "presentation": "2d",
+      "networking": "offline",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/d4675097ce36237a79c274359cd0cf4c16fff5b9/games/harvest-hollow",
+      "install_help": "Run the Windows installer to play. To update, run a newer Harvest Hollow installer; your saves and settings are preserved.",
+      "published_release": {
+        "tag_name": "v0.1.0",
+        "name": "Harvest Hollow 0.1.0 for Windows",
+        "published_at": "2026-10-14T03:41:07Z",
+        "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.0",
+        "assets": [
+          {
+            "name": "harvest-hollow-setup-windows-x64.exe",
+            "size": 13944898,
+            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.0/harvest-hollow-setup-windows-x64.exe",
+            "digest": "sha256:dffeebbb5edb394cadbcfaecb709d1ecccdb59b261d1fad2c7b4234319a21b9a"
+          }
+        ]
+      },
+      "previous_releases": []
     }
   ]
 }
