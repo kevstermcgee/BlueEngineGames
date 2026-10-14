@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 80,
-    "games": 540,
+    "games": 570,
     "prototypes": 10,
     "tests": 64
   },
@@ -732,7 +732,7 @@
     },
     {
       "path": "games/corkscrew-key/Cargo.lock",
-      "sha256": "44f38695b9072fa3c8de3521eeccf4cbc3dbe8c2bd03ba36f9a664fede2fab01"
+      "sha256": "b65100cec92a5885f5284f21c4b30952b905cde8de40940f7db51c82661a09c8"
     },
     {
       "path": "games/corkscrew-key/Cargo.toml",
@@ -788,19 +788,27 @@
     },
     {
       "path": "games/corkscrew-key/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/corkscrew-key/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/corkscrew-key/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/corkscrew-key/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/corkscrew-key/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/corkscrew-key/src/lib.rs",
@@ -844,7 +852,7 @@
     },
     {
       "path": "games/gap-flip/Cargo.lock",
-      "sha256": "05177cdd06f6351f30068f1b4a0c9aaa98d3fcbe3e0870a012165b035a9a0f4d"
+      "sha256": "7e881203e763638a3d828f81c805188d01bd4a46dab44337f31b70f847e91cde"
     },
     {
       "path": "games/gap-flip/Cargo.toml",
@@ -900,11 +908,11 @@
     },
     {
       "path": "games/gap-flip/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/gap-flip/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/gap-flip/scripts/native_controls.py",
@@ -912,11 +920,19 @@
     },
     {
       "path": "games/gap-flip/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/gap-flip/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/gap-flip/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/gap-flip/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/gap-flip/src/lib.rs",
@@ -956,7 +972,7 @@
     },
     {
       "path": "games/idea-forge/Cargo.lock",
-      "sha256": "21c687237ca0e69b70d2c693c67c31d70c21f6aa07af977c246b1bae38116e80"
+      "sha256": "db8885c5d5d1f243708d17e3bd0a27f6bda59dd6bfab5613822a1ff06655137f"
     },
     {
       "path": "games/idea-forge/Cargo.toml",
@@ -1016,19 +1032,27 @@
     },
     {
       "path": "games/idea-forge/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/idea-forge/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/idea-forge/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/idea-forge/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/idea-forge/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/idea-forge/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/idea-forge/src/bin/idea-forge-cli.rs",
@@ -1056,7 +1080,7 @@
     },
     {
       "path": "games/lantern-grove/AGENTS.md",
-      "sha256": "2c6485d3d3dac7e08e582090627e8e6f91a343df64c37b3b655a4ddfba6fe54c"
+      "sha256": "ceacce83a31fa71a1d483ee87da8e1f1203251cdddf68f35c1c66655a8fe6849"
     },
     {
       "path": "games/lantern-grove/CLAUDE.md",
@@ -1064,7 +1088,7 @@
     },
     {
       "path": "games/lantern-grove/Cargo.lock",
-      "sha256": "ce1e32725a40a918f7ea9f1bdba9801207ff916e04054742cb0678008818693f"
+      "sha256": "792be97cff4b8e0effe47fb0e5f93f25d6fd026fd195ec8d7b863adcdc0fd9d1"
     },
     {
       "path": "games/lantern-grove/Cargo.toml",
@@ -1120,19 +1144,27 @@
     },
     {
       "path": "games/lantern-grove/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/lantern-grove/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/lantern-grove/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/lantern-grove/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/lantern-grove/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/lantern-grove/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/lantern-grove/scripts/web.py",
@@ -1156,7 +1188,7 @@
     },
     {
       "path": "games/lantern-run/AGENTS.md",
-      "sha256": "0becee212aef9dcb26d58cd324f8f22456044473cca43c3b10c5eb5aa9d46218"
+      "sha256": "5f899d6b07e4c2d2b459f4ad265d90ab19956dafd43ae2e15c272ce23d008b8a"
     },
     {
       "path": "games/lantern-run/CLAUDE.md",
@@ -1164,7 +1196,7 @@
     },
     {
       "path": "games/lantern-run/Cargo.lock",
-      "sha256": "e6233191b5266eac35129fb0520253a3ab14fe33edeef1e3828c106b87ad8d0b"
+      "sha256": "ccaadb4b8da543625a5ace9b240bdcb91fa5b6c6eaffe896223c11473f0bab40"
     },
     {
       "path": "games/lantern-run/Cargo.toml",
@@ -1220,19 +1252,27 @@
     },
     {
       "path": "games/lantern-run/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/lantern-run/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/lantern-run/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/lantern-run/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/lantern-run/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/lantern-run/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/lantern-run/scripts/web.py",
@@ -1352,11 +1392,11 @@
     },
     {
       "path": "games/leo/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/leo/scripts/dev.py",
-      "sha256": "1ec74470bafba23a42ad134347fd905010704cc8d1e0e4ae6ed783474edad211"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/leo/scripts/prepare_ambience.py",
@@ -1364,15 +1404,27 @@
     },
     {
       "path": "games/leo/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/leo/scripts/render_audio.py",
-      "sha256": "4bccf37eb15d74adada79c747c1a9458dc1ba43dfeaecb5fc23c7d10c32de8e8"
+      "sha256": "729b7e217018010103f450f010f9b5f1ceaefc4eec0add3da4b50089208309e7"
     },
     {
       "path": "games/leo/scripts/ship.py",
-      "sha256": "91f23a551a67668b4d0b946eb095668122b94e3b3049ef4e441d1e283ec10e4e"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/leo/scripts/tooling.json",
+      "sha256": "521e045e6a15966eae0421a3dc1a65e2934414f99c2653006b680ddbdb8510d4"
+    },
+    {
+      "path": "games/leo/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/leo/scripts/tooling_hooks.py",
+      "sha256": "2173e31c492af185d878d73d67a5ad129dbd9fe3fd05c37dc23036aa23bc6930"
     },
     {
       "path": "games/leo/src/browser.rs",
@@ -1540,7 +1592,7 @@
     },
     {
       "path": "games/orchard-watch/AGENTS.md",
-      "sha256": "01809cb4ae766ec1ae7a8bdf3486628893597c2c347186b485a4532c0a4f2c79"
+      "sha256": "9f636a8abaf1c31ceb27509c85a01236de8b3e4823d054b2e61a510ed85c3878"
     },
     {
       "path": "games/orchard-watch/CLAUDE.md",
@@ -1548,7 +1600,7 @@
     },
     {
       "path": "games/orchard-watch/Cargo.lock",
-      "sha256": "2d541464927c950ca0d73825c74b7671ae03e69ec44b7fc68e80ab9e2fe5be89"
+      "sha256": "d34d5de1b09a5593ef6f99521b5eaa79a1ed07f7931d7e7512aa4694ecf5fa8a"
     },
     {
       "path": "games/orchard-watch/Cargo.toml",
@@ -1604,19 +1656,27 @@
     },
     {
       "path": "games/orchard-watch/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/orchard-watch/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/orchard-watch/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/orchard-watch/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/orchard-watch/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/orchard-watch/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/orchard-watch/scripts/web.py",
@@ -1640,7 +1700,7 @@
     },
     {
       "path": "games/pocket-breaker/AGENTS.md",
-      "sha256": "3dce94651b8d9a71799372ed0f33c87a39216ca8175a10ce90ebeb079f4b8451"
+      "sha256": "cac2d5129ab55c3774039c98a930b6963d3c7e76a64104a27c1e4bbb43a24f28"
     },
     {
       "path": "games/pocket-breaker/CLAUDE.md",
@@ -1648,7 +1708,7 @@
     },
     {
       "path": "games/pocket-breaker/Cargo.lock",
-      "sha256": "f43fe2611192b2fa79d3365e65e61ef9d0e007d12e72852d52b001c55ae77093"
+      "sha256": "7b7470a558c064f0c19815a5651565710d074151ffd04f32c19ab5f460877b26"
     },
     {
       "path": "games/pocket-breaker/Cargo.toml",
@@ -1687,6 +1747,10 @@
       "sha256": "25cca472de9ba3954cbd1eaa70cb65232c75b8118fc16309fdb683b66b525f7b"
     },
     {
+      "path": "games/pocket-breaker/assets/native-review.json",
+      "sha256": "75da40489d7a0623ff7e5d8970f1d30b736249629ead68464cd4a0ee70c32b5e"
+    },
+    {
       "path": "games/pocket-breaker/build.rs",
       "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
     },
@@ -1704,19 +1768,27 @@
     },
     {
       "path": "games/pocket-breaker/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/pocket-breaker/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/pocket-breaker/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/pocket-breaker/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/pocket-breaker/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/pocket-breaker/scripts/web.py",
@@ -1852,7 +1924,7 @@
     },
     {
       "path": "games/reverie/scripts/check.py",
-      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/reverie/scripts/compose.py",
@@ -1860,7 +1932,7 @@
     },
     {
       "path": "games/reverie/scripts/dev.py",
-      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/reverie/scripts/installer.iss",
@@ -1868,15 +1940,27 @@
     },
     {
       "path": "games/reverie/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/reverie/scripts/ship.py",
-      "sha256": "c2181d6c2adc256b614a35bc53ac51c0ccece4f0cd5f1551800823800f4a0e93"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
     },
     {
       "path": "games/reverie/scripts/test-installer.ps1",
       "sha256": "32c5f256cfed4879dd9b0ffe99e6c8396d53710454b6f58f45a19588028d9c0f"
+    },
+    {
+      "path": "games/reverie/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/reverie/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/reverie/scripts/tooling_hooks.py",
+      "sha256": "afef55354be69f29b623b156b67ac9843f23bdb591c7f126d7e39a5f6c49cbaa"
     },
     {
       "path": "games/reverie/src/collection.rs",
@@ -1988,7 +2072,7 @@
     },
     {
       "path": "games/rift-delver/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/rift-delver/scripts/control_smoke.py",
@@ -1996,15 +2080,23 @@
     },
     {
       "path": "games/rift-delver/scripts/dev.py",
-      "sha256": "7dedab3e3222803933ebc86f6c97aaa84e3197cf173737e9f93dabdf1ddb6c39"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/rift-delver/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/rift-delver/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/rift-delver/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/rift-delver/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/rift-delver/src/lib.rs",
@@ -2036,7 +2128,7 @@
     },
     {
       "path": "games/signal-garden/AGENTS.md",
-      "sha256": "50481aa759ca5fdf4caabba166625125b9e3e94b0ed0b71eb57082aa2d01477c"
+      "sha256": "325514456126549a5c6ef41ade64f48ccca083dd3e504af872f0a92182b467fe"
     },
     {
       "path": "games/signal-garden/CLAUDE.md",
@@ -2044,11 +2136,11 @@
     },
     {
       "path": "games/signal-garden/Cargo.lock",
-      "sha256": "b0aa24bfe3e6056a36635be55286d3129c3b56ddd69dfd6739c992c972878229"
+      "sha256": "29f868da28bcf64ce34ad0a9393633364eae375c43313df0e8ad8d19441f1505"
     },
     {
       "path": "games/signal-garden/Cargo.toml",
-      "sha256": "518062ff41a67d7489b22531d3c03989aca81ca912410c3898644736fad0bb74"
+      "sha256": "5375b6bdc820f8c78458a9ea1c07833ac4d5aa369884da38db7da8c657772e2a"
     },
     {
       "path": "games/signal-garden/README.md",
@@ -2100,15 +2192,27 @@
     },
     {
       "path": "games/signal-garden/scripts/check.py",
-      "sha256": "86a1b62476b7a8a08af97a999e697445423a58d153a26d14dc5cb57a9d258d34"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/signal-garden/scripts/dev.py",
-      "sha256": "1ec74470bafba23a42ad134347fd905010704cc8d1e0e4ae6ed783474edad211"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/signal-garden/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/signal-garden/scripts/ship.py",
-      "sha256": "a435897abf12ea4c4bd17f1930256848ce44919785adb1125a6a0b12ba1b483a"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/signal-garden/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/signal-garden/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/signal-garden/src/audio.rs",
@@ -2156,7 +2260,7 @@
     },
     {
       "path": "games/sway/Cargo.lock",
-      "sha256": "28404c79c11c1c95631b64e555a2eaf5bb3c421248cf7edbadba6d6ad779f122"
+      "sha256": "cb72c08e3e7155381a1057b58960c2d38cc5c9090ce9f019ba184b87868b1878"
     },
     {
       "path": "games/sway/Cargo.toml",
@@ -2220,11 +2324,11 @@
     },
     {
       "path": "games/sway/scripts/check.py",
-      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/sway/scripts/dev.py",
-      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/sway/scripts/native_controls.py",
@@ -2232,11 +2336,19 @@
     },
     {
       "path": "games/sway/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/sway/scripts/ship.py",
-      "sha256": "c6a9f8a17242385421e7a11de5b0249dd46c19bcad90cbac5edcf847fc9aca34"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/sway/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/sway/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/sway/src/audio.rs",
@@ -2324,7 +2436,7 @@
     },
     {
       "path": "games/wormhole/Cargo.lock",
-      "sha256": "0e9cf239059ef31f60a37505a66a643bd074828140852916d0cc990ba91f0308"
+      "sha256": "860a4788519c798e1dca96c06e716390f55920bfd2e1b2d766e3009eb6efa804"
     },
     {
       "path": "games/wormhole/Cargo.toml",
@@ -2448,19 +2560,27 @@
     },
     {
       "path": "games/wormhole/scripts/check.py",
-      "sha256": "85546301a036293eac24a0aca571ce800481514a4d2e79d79dda3b8e845b2560"
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
     },
     {
       "path": "games/wormhole/scripts/dev.py",
-      "sha256": "a96503799fa1714679a22313ede3b57133fb17810a3dbf8f22a751e3e45cc75a"
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
     },
     {
       "path": "games/wormhole/scripts/project.py",
-      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
     },
     {
       "path": "games/wormhole/scripts/ship.py",
-      "sha256": "c6a9f8a17242385421e7a11de5b0249dd46c19bcad90cbac5edcf847fc9aca34"
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/wormhole/scripts/tooling.json",
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
+    },
+    {
+      "path": "games/wormhole/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
     },
     {
       "path": "games/wormhole/src/lib.rs",
@@ -2840,6 +2960,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "579b90868e7e20005f874d2689e35a5f8a23e559",
+  "source_revision": "a1fbb20c8e600fe7c7a862b82290bbbb50366e90",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
