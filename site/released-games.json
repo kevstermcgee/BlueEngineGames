@@ -4,29 +4,43 @@
     {
       "slug": "embertrail",
       "name": "Embertrail",
-      "description": "Guide Mote, a lantern spirit, through 32 authored courses in eight worlds. Find secret grottos, collect moon shards, master power-ups, and defeat the Hollow Keepers in an original 2D platforming adventure.",
+      "description": "Vesper stole the Dawnheart. Guide Mote through 32 courses across eight worlds, face eight bosses, and bring morning home. Made for PC controllers, with a new look, clear menus and 16 original tracks to download from the pause menu.",
       "created": "2026-10-12",
-      "game_version": "0.1.1",
+      "game_version": "0.2.0",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
-      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/5112f540ecc283eff951c5ecfd6b9a625a3ca7a0/games/embertrail",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/051aee8117835d0075278d63f3deef92c7fc056c/games/embertrail",
       "install_help": "Run the Windows installer to play. To update, run a newer Embertrail installer; your saves and settings are preserved.",
       "published_release": {
-        "tag_name": "v0.1.1",
-        "name": "Embertrail 0.1.1 \u2014 Compact HUD",
-        "published_at": "2026-10-12T13:36:32Z",
-        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.1.1",
+        "tag_name": "v0.2.0",
+        "name": "Embertrail 0.2.0",
+        "published_at": "2026-10-16T02:33:49Z",
+        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.0",
         "assets": [
           {
             "name": "embertrail-setup-windows-x64.exe",
-            "size": 3291654,
-            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.1.1/embertrail-setup-windows-x64.exe",
-            "digest": "sha256:5f3288447c2efd3528e87831cba327222c15ad9a0172b7b05580b5b4ee8453d4"
+            "size": 166879292,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.0/embertrail-setup-windows-x64.exe",
+            "digest": "sha256:6181a8eade5669174f805aba5098dc33845bb762a97da6fee0064df951bedf68"
           }
         ]
       },
       "previous_releases": [
+        {
+          "tag_name": "v0.1.1",
+          "name": "Embertrail 0.1.1 \u2014 Compact HUD",
+          "published_at": "2026-10-12T13:36:32Z",
+          "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.1.1",
+          "assets": [
+            {
+              "name": "embertrail-setup-windows-x64.exe",
+              "size": 3291654,
+              "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.1.1/embertrail-setup-windows-x64.exe",
+              "digest": "sha256:5f3288447c2efd3528e87831cba327222c15ad9a0172b7b05580b5b4ee8453d4"
+            }
+          ]
+        },
         {
           "tag_name": "v0.1.0",
           "name": "Embertrail 0.1.0 for Windows",
