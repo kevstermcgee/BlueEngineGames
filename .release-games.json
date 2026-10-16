@@ -320,6 +320,13 @@
       "directory": "games/reverie",
       "kind": "cargo-package",
       "binary": "reverie"
+    },
+    {
+      "slug": "corner-clutch",
+      "name": "Corner Clutch",
+      "directory": "games/corner-clutch",
+      "kind": "cargo-package",
+      "binary": "corner-clutch"
     }
   ],
   "non_playable_directories": [

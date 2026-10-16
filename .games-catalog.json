@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 570,
+    "games": 606,
     "prototypes": 10,
     "tests": 64
   },
@@ -849,6 +849,150 @@
     {
       "path": "games/corkscrew-key/tests/identity.rs",
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/corner-clutch/.gitignore",
+      "sha256": "0d6e3d5f7598ea19a0064ba65921c6bd8a99f0f91e93cee562cff138b5350f1e"
+    },
+    {
+      "path": "games/corner-clutch/AGENTS.md",
+      "sha256": "406d2a51e6f95d488e9cd97f8ce419cb40277772e9d0cf2c42799a1d776ebf59"
+    },
+    {
+      "path": "games/corner-clutch/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/corner-clutch/Cargo.lock",
+      "sha256": "2d10fec57215c8c019e135cd29511c0611b86b1a1ab8db5a77be916f8fbd0bc6"
+    },
+    {
+      "path": "games/corner-clutch/Cargo.toml",
+      "sha256": "e8af6ce02b4958712e1fc648952e91c909a7579795cb607a66457ff69e952044"
+    },
+    {
+      "path": "games/corner-clutch/README.md",
+      "sha256": "ff3cb24ea481855a404fa78432007dfecc13fafe685fddea297416f25d44424c"
+    },
+    {
+      "path": "games/corner-clutch/STATUS.md",
+      "sha256": "2d5b34f4c27b2c3ceea63de6e21ae49fe27f93e3a6cdb22460e4ba5f8477d360"
+    },
+    {
+      "path": "games/corner-clutch/VERIFICATION.md",
+      "sha256": "0e3ab6ac998a308fdfa7c43c51b74453888aa26e1ca7f8ed12e3f9d23d85eba4"
+    },
+    {
+      "path": "games/corner-clutch/assets/icon.ico",
+      "sha256": "0fc4cae058eea352f1fd3af01067e819de3f58e8e57cbd7439a2a42399d8bf7c"
+    },
+    {
+      "path": "games/corner-clutch/assets/icon.png",
+      "sha256": "328b30e2a42f43d7c846ee8f59d2f3b0a32b65163b07630b5edc69dfb8fe4f49"
+    },
+    {
+      "path": "games/corner-clutch/assets/icon_16.rgba",
+      "sha256": "8c59cc8242f26816a806f6ce1ab48d7c17fa1cbbc1daa8bcfde6eed67a2c620f"
+    },
+    {
+      "path": "games/corner-clutch/assets/icon_32.rgba",
+      "sha256": "656f5834938bd9e708cade2f2cf56747bd84e2287d48abe38577735a3eb2624e"
+    },
+    {
+      "path": "games/corner-clutch/assets/icon_64.rgba",
+      "sha256": "32a92f5a2853cfe73fb7f3a633eea50bf64822305a5d3bad99d53b04cfcffb9c"
+    },
+    {
+      "path": "games/corner-clutch/assets/identity.json",
+      "sha256": "0cd3e79238a3877b74f7cbb2d4977f44b0d5bfbff2d0332385ab18667d326a53"
+    },
+    {
+      "path": "games/corner-clutch/assets/native-review.json",
+      "sha256": "597a88a6a2fd318ead52b8dc5480b8cb957f82612b3ad47ff36af11827784a7f"
+    },
+    {
+      "path": "games/corner-clutch/assets/rooms.json",
+      "sha256": "b777508dc294fa1fb19979fb9c7b7a9d8ee638d0722798a4a3be219892e7e369"
+    },
+    {
+      "path": "games/corner-clutch/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/corner-clutch/game.project.json",
+      "sha256": "c25b0f9b3639747833bc93a6b3ccbd466279edcbbfc1711efdf0a54d5e8041b2"
+    },
+    {
+      "path": "games/corner-clutch/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/corner-clutch/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/corner-clutch/scripts/check.py",
+      "sha256": "ff6aeb249a973046f60ae2557fc9b5e06e7c6a835e77ddccbbced2591e746187"
+    },
+    {
+      "path": "games/corner-clutch/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/corner-clutch/scripts/game_installer.py",
+      "sha256": "e67c86742d1f34275b8dbd1938e2c7bc166257440b786105d2f5da70e9c44137"
+    },
+    {
+      "path": "games/corner-clutch/scripts/game_review.py",
+      "sha256": "6be0fb8a316f5c3ba59b0a4bd73cf4ecd1154750043f01bba1fed0e335a3aec7"
+    },
+    {
+      "path": "games/corner-clutch/scripts/installer.json",
+      "sha256": "eb6208c9dbb2bc1e4af5821f92820f9b62fe67b0afdbc15cda1a758186865ab5"
+    },
+    {
+      "path": "games/corner-clutch/scripts/project.py",
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
+    },
+    {
+      "path": "games/corner-clutch/scripts/ship.py",
+      "sha256": "a569e89471d8c93db679bd0526cb74b99ed9339c3f745c41b27a3dc91aef34af"
+    },
+    {
+      "path": "games/corner-clutch/scripts/tooling.json",
+      "sha256": "c907d4e1e39e8b80f2bd25b6a71a3ba3f3b55f0d4cb23a482532927d7557b9bb"
+    },
+    {
+      "path": "games/corner-clutch/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/corner-clutch/src/input.rs",
+      "sha256": "d7be63268992df1ca2725706c4cdec5479d83ea0e9693810cd8fce6b6387326f"
+    },
+    {
+      "path": "games/corner-clutch/src/lib.rs",
+      "sha256": "e03a973bb34d137ff9307339d97f88ccc37b7fac097074afd1543736ee4dce7c"
+    },
+    {
+      "path": "games/corner-clutch/src/main.rs",
+      "sha256": "98e6c32e0cc3f18eb36b9007e38c8b6e7b4db54f378d1aa204a9033130f672fc"
+    },
+    {
+      "path": "games/corner-clutch/src/presentation.rs",
+      "sha256": "afb282023966b909404047eee08d5c2f0a0a70fb43e411807aef7714f55a65e5"
+    },
+    {
+      "path": "games/corner-clutch/src/tests.rs",
+      "sha256": "6119826d184cc2ad9738ad4d724f49b2207cdb1d3758d94bfe55a97429294aa9"
+    },
+    {
+      "path": "games/corner-clutch/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/corner-clutch/tools/solve_rooms.py",
+      "sha256": "48d40fb7a649752ae495a16f7da427f60c4c9aa00d06f034ef4caa67cd5908fa"
     },
     {
       "path": "games/gap-flip/.gitignore",
@@ -2972,6 +3116,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "1d8d501ccc9c9fc8cfb6cabf7ddcac87aeba6106",
+  "source_revision": "08d22d4cb0d5cea0292a02aebda7dc2af6d57e9a",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
