@@ -348,6 +348,13 @@
       "directory": "games/peelturn",
       "kind": "cargo-package",
       "binary": "peelturn"
+    },
+    {
+      "slug": "pinstride",
+      "name": "Pinstride",
+      "directory": "games/pinstride",
+      "kind": "cargo-package",
+      "binary": "pinstride"
     }
   ],
   "non_playable_directories": [

@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 706,
+    "games": 740,
     "prototypes": 10,
     "tests": 64
   },
@@ -2251,6 +2251,142 @@
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
+      "path": "games/pinstride/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/pinstride/AGENTS.md",
+      "sha256": "fd260e763dabfef96f798670e8123d543044599ec7d41121d163c9d78bd480fb"
+    },
+    {
+      "path": "games/pinstride/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/pinstride/Cargo.lock",
+      "sha256": "6a5d77338c7fd5f602ba1bbcd7972cf92511aa3fc22f8e74e0ba7469e99e104f"
+    },
+    {
+      "path": "games/pinstride/Cargo.toml",
+      "sha256": "11ce1b8091cfbe5f20a69a30b655295f90c2e4c9efb069eae1fb2a165e1b12f1"
+    },
+    {
+      "path": "games/pinstride/README.md",
+      "sha256": "5ccded214b7a5557339614b82f0efee3573786be6a992d0db921c9ce8c670e8d"
+    },
+    {
+      "path": "games/pinstride/STATUS.md",
+      "sha256": "49b7073d8ac31e7033c026a7615da0aec01a86d2ecbc7d668fe47fea0cebc077"
+    },
+    {
+      "path": "games/pinstride/assets/fonts/Bold.ttf",
+      "sha256": "1b5f2da6f4cadce4c05b9ecebe3a6fcd374eb95ae443605e799f4c3287978939"
+    },
+    {
+      "path": "games/pinstride/assets/fonts/LICENSE.txt",
+      "sha256": "f32df582a2aab128c07b2f7e36e7b928dc5f6bd82657b905c04f91459f9e5cf9"
+    },
+    {
+      "path": "games/pinstride/assets/fonts/Regular.ttf",
+      "sha256": "bade59d822652f76e6941aa87b40a87c13d1cc70db98ededb5011127efafd1d3"
+    },
+    {
+      "path": "games/pinstride/assets/icon.ico",
+      "sha256": "82e6eb2cc0cb55833e5953cb6c22cf92896a9d4caac75770fa36e329910481ac"
+    },
+    {
+      "path": "games/pinstride/assets/icon.png",
+      "sha256": "c45aa536a1e38ed41a471a9e420e04b78a781cd0b6cb86bc4df3c5bdad5d7fbe"
+    },
+    {
+      "path": "games/pinstride/assets/icon_16.rgba",
+      "sha256": "58af69c0e7008d3a671c313ab07a41d7ad866faa1a8ba3b3087a20b4db6b3fda"
+    },
+    {
+      "path": "games/pinstride/assets/icon_32.rgba",
+      "sha256": "1ecfd4134708b0c59f0257c8537cb8e5db34e9e36e2a524707b997ca73a33c86"
+    },
+    {
+      "path": "games/pinstride/assets/icon_64.rgba",
+      "sha256": "e21f1a7c7af162a0227cadcbb8f4b247a939f9aaf193ef4de17e843f69a6f3b0"
+    },
+    {
+      "path": "games/pinstride/assets/identity.json",
+      "sha256": "203f1d6ed1be9cb529d5ac37a7f6e22e44945e037c4b5fd56fa3514d2ac4e4f2"
+    },
+    {
+      "path": "games/pinstride/assets/native-review.json",
+      "sha256": "4db2c148da86bbe328d790c2193a2a3c9c8031ef11eb2164f53bd7cc18ad3fee"
+    },
+    {
+      "path": "games/pinstride/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/pinstride/game.project.json",
+      "sha256": "75c2639a39e3d75cc7650b9730ae1555ddd350dd836cd2bd8366f160cd1f8f36"
+    },
+    {
+      "path": "games/pinstride/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/pinstride/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/pinstride/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/pinstride/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/pinstride/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/pinstride/scripts/installer.json",
+      "sha256": "b2323e3c469e64003d8736aadee06fb830aa1a235a7d8887ed60e540bd51cea4"
+    },
+    {
+      "path": "games/pinstride/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/pinstride/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/pinstride/scripts/tooling.json",
+      "sha256": "e3fb95c135e1f05e07784c096ce39f138fde3da4eeac88812153c933059d8c8b"
+    },
+    {
+      "path": "games/pinstride/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/pinstride/src/lib.rs",
+      "sha256": "41f79c67052731bd827dee337842a6263c731934617d1aeaa230d1548bae628a"
+    },
+    {
+      "path": "games/pinstride/src/main.rs",
+      "sha256": "51c22ae302b1f806af6017c8a8e8ea3affe9ef4f98acc5f1e772e3d9dd6c4bb8"
+    },
+    {
+      "path": "games/pinstride/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/pinstride/tests/determinism.rs",
+      "sha256": "ab97f7b7226b1c885da01a053c5d6ca4b97e9fb6a5f49022baa746600e9df0da"
+    },
+    {
+      "path": "games/pinstride/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
       "path": "games/pocket-breaker/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -3516,6 +3652,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "f495520db2c91cf972e596d0a77e1c17fadff32e",
+  "source_revision": "27165739130a6249b404a29f9229bfc1c7c6069a",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
