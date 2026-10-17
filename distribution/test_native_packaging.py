@@ -39,7 +39,7 @@ class NativePackaging(unittest.TestCase):
                         'import os\nfrom pathlib import Path\n'
                         'engine = Path(os.environ["BE2_TOOLING_ROOT"])\n'
                         'assert engine.is_absolute()\n'
-                        'assert engine == Path(os.environ["EXPECTED_ENGINE"])\n'
+                        'assert engine == Path(os.environ["EXPECTED_ENGINE"]), (str(engine), os.environ["EXPECTED_ENGINE"])\n'
                         'Path("tooling-observed.txt").write_text(str(engine))\n'
                         'if os.environ["FAIL_PACKAGE"] == "true":\n'
                         '    raise SystemExit(7)\n'
