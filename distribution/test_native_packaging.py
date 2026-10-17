@@ -15,7 +15,7 @@ class NativePackaging(unittest.TestCase):
         for failure in (False, True):
             for previous in (None, 'previous-tooling-root'):
                 with self.subTest(failure=failure, previous=previous), tempfile.TemporaryDirectory() as temporary:
-                    base = Path(temporary)
+                    base = Path(temporary).resolve()
                     root, engine = base / 'games-repository', base / 'BlueEngine'
                     scripts = root / '.github/scripts'
                     game = root / 'games/sample'
