@@ -22,6 +22,11 @@ a { color: var(--accent); }
 header { padding: 28px 0 4px; }
 h1 { margin: 0; font-size: 1.8rem; }
 .tagline { margin: 4px 0 0; color: var(--muted); }
+.design-note { margin: 8px 0 0; max-width: 75ch; color: var(--muted); font-size: 0.85rem; }
+.design-credit { margin: 0 0 10px; color: var(--muted); font-size: 0.85rem; }
+.design-badge { display: inline-block; padding: 2px 8px; border: 1px solid currentColor; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.design-human { color: #a9e6be; }
+.design-ai { color: #d8c2ff; }
 
 .notes {
   background: var(--surface);

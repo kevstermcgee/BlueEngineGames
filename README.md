@@ -10,6 +10,14 @@ the download site lists every game with a screenshot, description, and direct
 download link. It rebuilds automatically from each release
 (see `site/` and `.github/workflows/pages.yml`).
 
+Cards and game pages show **AI-designed** or **Human-designed** badges, with a
+designer filter alongside the existing library filters. IdeaForge publication
+commits identify AI-designed games automatically, including future releases.
+Other games are treated as human-designed; this describes the concept and rules,
+not whether AI helped write the code. A catalog row may explicitly set
+`design_origin` to `ai` or `human` to override that classification. Keep the full
+Git history when building the site so IdeaForge credits remain available.
+
 Every game card and detail page uses a real in-game capture from
 `site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
 screenshot (at least 320 × 180); launcher icons and initial tiles are never used
