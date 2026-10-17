@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "overview": "Wrecking Orbit is a momentum puzzle built around two wrecking balls on damped spring tethers. Move the shared anchor and add opposing tangential impulses to widen and steer their orbit. Sweep the balls through six crystal targets to complete the objective.",
+  "rules": [
+    "The two wrecking balls follow the player’s anchor on spring tethers.",
+    "The whip action adds opposing tangential impulses; movement changes the orbit’s shape and position.",
+    "Strike all six crystal targets with the balls."
+  ],
+  "controls": [
+    "WASD moves the anchor; mouse looks; Space whips the orbit.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/wrecking-orbit/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/1abcbdafec8c71e5.png",
+      "caption": "Wrecking Orbit — in-game view",
+      "alt": "Wrecking Orbit — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

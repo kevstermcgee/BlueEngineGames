@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Orchard Watch is a three-lane garden defense game with a small seed economy. Start with enough seeds for two guards, place them on fixed pads and earn more by defeating advancing enemies. The documented nine-wave presentation is implemented as nine scheduled attackers rotating between the lanes.",
+  "rules": [
+    "A guard costs two seeds and occupies one lane’s fixed pad; buying an occupied pad spends nothing.",
+    "Guards attack automatically when an enemy is in range; defeated enemies award two seeds.",
+    "An attacker reaching the orchard costs one of three hearts. Losing all hearts loses the run.",
+    "Survive until all nine scheduled attackers are gone to win."
+  ],
+  "controls": [
+    "Click/Enter starts; click a guard pad to build.",
+    "K saves; L resumes; R restarts; M toggles sound."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/orchard-watch/README.md",
+    "games/orchard-watch/src/lib.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/23fb41eee204547b.png",
+      "caption": "Orchard Watch — in-game view",
+      "alt": "Orchard Watch — in-game view"
+    },
+    {
+      "image": "assets/wiki/45baf84b2e467606.png",
+      "caption": "Three guards defend the orchard lanes during wave three.",
+      "alt": "Three guards defend the orchard lanes during wave three."
+    },
+    {
+      "image": "assets/wiki/ba63cb135dceb9ae.png",
+      "caption": "The orchard defended during the public-input playthrough.",
+      "alt": "The orchard defended during the public-input playthrough."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

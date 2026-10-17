@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Phantom Maze is a first-person sonar-themed navigation fixture with two beacon stations and an exit portal. The implemented rules track whether each beacon has been used and require both before completion. The current game document does not implement a separate geometry-reveal action, so the sonar theme should not be read as a verified visibility mechanic.",
+  "rules": [
+    "Interact with each of the two sonar beacons once.",
+    "A used beacon disables and cannot count twice.",
+    "Beacon two enables the exit control, but the exit only completes after both beacon counts are registered.",
+    "Interact with the exit portal after both beacons to win."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The documented setting is a sonar-themed labyrinth. No named character cast or narrative campaign is established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/phantom-maze/README.md",
+    "games/phantom-maze/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/f215af5c32f10030.png",
+      "caption": "Phantom Maze — in-game view",
+      "alt": "Phantom Maze — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

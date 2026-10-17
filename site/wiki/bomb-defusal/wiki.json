@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Bomb Defusal is a compact first-person timed station puzzle. Visit three ordnance stations and activate their wire-cutting steps in sequence before a repeating countdown reaches zero. The implemented challenge is route and interaction order rather than freeform wire selection.",
+  "rules": [
+    "Activate station Alpha, then Beta, then Gamma.",
+    "Completing a station disables it and enables the next; disabled stations ignore interaction.",
+    "The countdown starts at ten and decreases every timer pulse. Reaching zero detonates the bomb and loses the match.",
+    "Activating Gamma after the first two stations completes the game."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The scenario casts the player as an unnamed bomb defuser responding to a timed ordnance emergency. No named story characters or extended plot are documented.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/bomb-defusal/README.md",
+    "games/bomb-defusal/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/680e32476c030abf.png",
+      "caption": "Bomb Defusal — in-game view",
+      "alt": "Bomb Defusal — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

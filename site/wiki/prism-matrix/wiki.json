@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Prism Matrix is a first-person optical-themed station puzzle. The current implementation uses three discrete prism-station activations rather than a free-angle beam simulator. Visit all stations, then energize the mainframe terminal.",
+  "rules": [
+    "Activate all three prism stations; order does not matter.",
+    "Each station counts once and disables after use.",
+    "Station three enables the mainframe control early, but the mainframe still requires all three aligned counters.",
+    "Interact with the mainframe after all three activations to complete the game."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The documented setting is an optical redirection matrix. No named characters, personal backstories or narrative campaign are established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/prism-matrix/README.md",
+    "games/prism-matrix/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/80dcbbee1b25ca37.png",
+      "caption": "Prism Matrix — in-game view",
+      "alt": "Prism Matrix — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

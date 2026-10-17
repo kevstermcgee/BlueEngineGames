@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "overview": "Peelturn is a spatial routing puzzle across twelve compact boards. Launch a packet of beads and each collision deposits a permanent bead, then automatically turns the remaining packet clockwise. Because deposits and waiting packets block later travel, launch order changes the board itself.",
+  "rules": [
+    "Fill every target socket and exhaust every packet.",
+    "Only a bead deposited at a stopping cell fills a socket; passing through does not count.",
+    "Every collision deposits one bead, then turns the remaining packet clockwise. Deposits become walls and waiting packets block travel.",
+    "An initially blocked launch costs nothing. A blocked clockwise exit with beads remaining, empty sockets after exhaustion, or trapped remaining packets loses the attempt.",
+    "Undo reverses an entire launch, even mid-route or after loss; retry and undo are unlimited with no timer."
+  ],
+  "controls": [
+    "Tab/click selects a packet; arrows aim and preview the first stop; Space launches.",
+    "Backspace undoes a whole launch; R retries; Space/Enter advances a clear.",
+    "H shows rules; Escape pauses; K/L save/load; M sound; F fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/peelturn/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/541154d96eb02fc0.png",
+      "caption": "Peelturn — in-game view",
+      "alt": "Peelturn — in-game view"
+    },
+    {
+      "image": "assets/wiki/0aea207615c209c8.png",
+      "caption": "Board three: After you, with every socket filled.",
+      "alt": "Board three: After you, with every socket filled."
+    },
+    {
+      "image": "assets/wiki/eb984ded144fd800.png",
+      "caption": "Board eight: Chain reaction, during a packet launch.",
+      "alt": "Board eight: Chain reaction, during a packet launch."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Every impact simultaneously spends one remaining turn and builds a new steering obstacle. A seemingly wasted bead can make a later socket reachable, while filling a socket too early can obstruct another packet. You choose both launch direction and launch order, then watch your plan unfold in a crisp sequence of slides, clicks, and shrinking packets.\n\nThe closest comparison is Ricochet Robots, whose pieces slide until obstacles stop them. [Publisher description](https://www.riograndegames.com/games/ricochet-robots/). Peelturn replaces separately chosen movements with a finite automatic route: every collision consumes a bead, creates a permanent stopper, and forces a clockwise continuation. Unlike the prior Impact Orchard, deposited pieces never release stored attacks or activate each other; they change collision geometry. No supplied prior mechanic uses this rule. This comparison cannot certify worldwide originality or fun.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

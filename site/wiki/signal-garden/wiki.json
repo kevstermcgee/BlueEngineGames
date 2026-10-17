@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "overview": "Signal Garden is a timed garden route-planning game about restoring a chain of lantern relays. Collect gold sparks, carry only three at once and charge six relays in order before the eight-minute signal expires. Pink patrols threaten both health and cargo, while the safe central beacon offers limited healing.",
+  "rules": [
+    "Carry up to three sparks; each of six numbered relays requires three sparks and must be restored in order.",
+    "Hold interact beside the correct relay to charge it, then return to the cyan beacon and hold interact to finish.",
+    "Pink patrols take a heart and a spark. Spending one spark creates a three-second shield.",
+    "Spark pads refill every 15 seconds; the beacon heals once every 30 seconds.",
+    "Complete the chain before the eight-minute signal runs out."
+  ],
+  "controls": [
+    "Enter/Space/controller A starts; WASD/arrows/left stick moves.",
+    "Hold E to charge/heal/finish; Q/controller LB spends a spark on a shield.",
+    "R/Enter/controller A restarts after win/loss; F5/F9 save/resume.",
+    "Escape pause/settings; F fullscreen."
+  ],
+  "story": "Restore the garden’s failing lantern signal during a long night. The available source does not establish a named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/signal-garden/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/e158f9f155d58c64.png",
+      "caption": "Signal Garden — in-game view",
+      "alt": "Signal Garden — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

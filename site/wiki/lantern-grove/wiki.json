@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Lantern Grove is a compact collection-and-navigation game presented as a 3D garden with a shared 2D minimap. Pick up four golden lanterns, route around the garden walls and avoid a moving pink patrol before reaching the teal exit. The player starts with three hearts, so repeated contact can end the run.",
+  "rules": [
+    "Collect all four lanterns before crossing into the exit area.",
+    "Walls block movement; plan a route through their openings.",
+    "A patrol contact removes a heart, followed by a short damage cooldown; losing all three hearts loses the run.",
+    "Reach the exit with every lantern collected to win."
+  ],
+  "controls": [
+    "WASD/arrows/controller move; click/Enter starts.",
+    "K saves; L loads/resumes; R restarts; M toggles sound."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/lantern-grove/README.md",
+    "games/lantern-grove/src/lib.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/027427d1e32c0e3f.png",
+      "caption": "Lantern Grove — in-game view",
+      "alt": "Lantern Grove — in-game view"
+    },
+    {
+      "image": "assets/wiki/29a7f3cd7374e843.png",
+      "caption": "The lantern route completed.",
+      "alt": "The lantern route completed."
+    },
+    {
+      "image": "assets/wiki/1e40d7cbe25c10ee.png",
+      "caption": "Collecting the first lantern in the grove.",
+      "alt": "Collecting the first lantern in the grove."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

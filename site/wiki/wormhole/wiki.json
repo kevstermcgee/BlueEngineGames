@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "overview": "Wormhole is an endless cinematic journey through sculpted, luminous tunnels. Seeded regions continuously blend petals, angular chambers, rivers, curtains and rushing rings, accompanied by an original evolving musical arrangement. The player changes viewpoint and travel intensity while saves preserve the exact journey.",
+  "rules": [
+    "There are no objectives, score, failure state or destination.",
+    "Travel continues through seeded procedural regions rather than a finite recorded playlist.",
+    "Choose Float, Fall or Surge to change the journey’s intensity.",
+    "A new seed starts a new journey; manual and automatic saves preserve progress."
+  ],
+  "controls": [
+    "Drag to look, or use WASD/arrows/right stick.",
+    "Space/controller A cycles Float/Fall/Surge; R creates a new seed.",
+    "K/L save/load; Escape pauses; N music; M sound; F fullscreen."
+  ],
+  "story": "This is a contemplative light journey with no narrative campaign or named character cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/wormhole/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/1bc943e388f34c66.png",
+      "caption": "Wormhole — in-game view",
+      "alt": "Wormhole — in-game view"
+    },
+    {
+      "image": "assets/wiki/d802c5f787cba087.png",
+      "caption": "Traveling through the changing light tunnel.",
+      "alt": "Traveling through the changing light tunnel."
+    },
+    {
+      "image": "assets/wiki/b0befcb32a13589b.png",
+      "caption": "Wormhole in motion — moment 2 seconds.",
+      "alt": "Wormhole in motion — moment 2 seconds."
+    },
+    {
+      "image": "assets/wiki/9b1c7128f9a5542b.png",
+      "caption": "Wormhole in motion — moment 5 seconds.",
+      "alt": "Wormhole in motion — moment 5 seconds."
+    },
+    {
+      "image": "assets/wiki/b07d89c84d6798ee.png",
+      "caption": "Wormhole in motion — moment 8 seconds.",
+      "alt": "Wormhole in motion — moment 8 seconds."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "https://github.com/kevstermcgee/BlueEngine\n\nCreate a hypnotic endless 2001 a space odyssey-esque wormhole with this game engine. \n\nCall it Wormhole\n\nI want this to go on forever with unique patterns and color combinations. Different shapes and movements of waves of color splashing and roaring towards us as if we’re falling through a colorful vibrant wormhole forever. I don’t just want the same thing on loop, ensure there is endless variety.\n\nThere doesn’t have to be any actual gameplay, more of a simulation\n\nAllow interaction in the sense you can look around as to fall/float through this. I want this to feel beautiful and moving. Please include fitting touching unique music throughout the experience.\n\nOnce complete publish to the Games website and attach your feedback to this engine’s project",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

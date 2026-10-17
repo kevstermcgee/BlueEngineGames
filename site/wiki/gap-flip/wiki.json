@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Gap Flip is an offline 2D spatial puzzle spanning ten authored rooms. Select a token and reflect it within the uninterrupted floor corridor on either axis, trading the empty gaps on its two sides. Other tokens help define those corridors, so solving one token may require moving a previously parked helper.",
+  "rules": [
+    "A horizontal or vertical flip lands at first corridor cell + last corridor cell − current cell.",
+    "Walls, edges and other tokens bound the corridor; equal side gaps disable a flip for free.",
+    "Match all letter-and-color tokens to their goals simultaneously. Goals do not lock or block tokens.",
+    "There are no timers, hazards, move budgets or terminal losses; undo and restart are unlimited.",
+    "Finish the tenth room after all matches."
+  ],
+  "controls": [
+    "Left click a token, choose Horizontal Flip/Vertical Flip, then click the outlined destination ghost to commit.",
+    "Undo reverses a committed flip; Restart/R resets only the current room.",
+    "Click Next room after solving, then Finish after room ten.",
+    "K/L save/load; Escape pauses; M toggles sound; F fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/gap-flip/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/923c21e0024a6ede.png",
+      "caption": "Gap Flip — in-game view",
+      "alt": "Gap Flip — in-game view"
+    },
+    {
+      "image": "assets/wiki/7c2a49cc9d85ad5e.png",
+      "caption": "Room three: borrow a boundary by repositioning neighboring tokens.",
+      "alt": "Room three: borrow a boundary by repositioning neighboring tokens."
+    },
+    {
+      "image": "assets/wiki/c3e9a624ae6a7bb6.png",
+      "caption": "Room five: Narrow windows, after matching the tokens.",
+      "alt": "Room five: Narrow windows, after matching the tokens."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "A token doubles as a destination-seeking piece and a movable boundary for its neighbors. You must arrange useful gaps before taking the move you actually want. The satisfying discovery is that temporarily moving a solved token can make an otherwise unreachable landing possible. Exact previews make those dependencies readable.\n\nThe closest comparison is Ricochet Robots, where walls and other robots determine stopping positions ([publisher description](https://www.riograndegames.com/games/ricochet-robots/)). Here a token reflects within its available corridor instead of sliding to an obstacle: interior clearance determines its landing, and repeating a flip restores its position while boundaries remain unchanged. Among the supplied prior mechanics, Inside-Out Key also emphasizes empty space, but swaps container contents with surrounding negative space; Gap Flip has no containers or contents exchange. None of the supplied mechanics uses this corridor-reflection rule, and the slug is absent from the supplied list. Worldwide originality and fun remain unverified.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

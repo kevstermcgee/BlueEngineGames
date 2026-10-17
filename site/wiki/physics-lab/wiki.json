@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "overview": "Physics Lab is a first-person experiment room for comparing materials, heat, water, buoyancy and light. Six presets change sample density, restitution, friction and flammability across a drop lane, fire tray, tank and mirror. It is an interactive approximation with bounded sphere and droplet populations, rather than a calibrated scientific simulator.",
+  "rules": [
+    "Launch samples and compare the six material presets under the same experimental conditions.",
+    "Water droplets cool hot samples; flammable samples consume fuel above ignition temperature.",
+    "Buoyancy depends on approximate immersion and density, with drag.",
+    "Change gravity, wind or lighting to compare outcomes; reset returns the experiment room.",
+    "The room has no score or campaign win condition, with at most 90 spheres and 360 droplets."
+  ],
+  "controls": [
+    "WASD/mouse moves/looks; Space jumps; E launches; M changes material.",
+    "1 water; 2 fire; L cycles lighting; G Earth/moon gravity; B wind; R reset.",
+    "F5/F9 save/load; Escape menu."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/physics-lab/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/a0ecea52a32c6a48.png",
+      "caption": "Physics Lab — in-game view",
+      "alt": "Physics Lab — in-game view"
+    },
+    {
+      "image": "assets/wiki/0cb627e26592266a.png",
+      "caption": "Material drop tests, a planar mirror, the fire station and the buoyancy tank.",
+      "alt": "Material drop tests, a planar mirror, the fire station and the buoyancy tank."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Create a physics test sandbox with BlueEngine. Include things various things like fire, running water, a mirror, etc. Please also include a variety of different materials, lighting patterns, and any other valuable idea you think is worth exploring. Once this game is complete, accumulate your feedback for the engine about what the largest obstacles were during development for the sandbox. Then based on this feedback, improve BlueEngine",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

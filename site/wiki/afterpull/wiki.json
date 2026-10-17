@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Afterpull is a top-down spatial puzzle in six rooms where the tile you leave behind pulls distant crates. Every step can affect several lines of sight at once, making your own position and the other crates part of the routing problem. The rooms introduce shielding, simultaneous movement, deliberate jams and a final layout with open pits.",
+  "rules": [
+    "Step onto empty floor; you cannot push crates.",
+    "The vacated square looks along four cardinal rays and pulls the first visible crate on each ray one cell toward it; walls, crates and your new position block sight.",
+    "All pulls use the same starting board. Crates targeting the same destination jam; pulls do not chain.",
+    "Fill every gold dock at once to clear a room. Docks do not anchor cargo, and a crate falling into a pit immediately fails the attempt.",
+    "There is no clock or move limit. Undo and retry remain available after failure or completion."
+  ],
+  "controls": [
+    "Tap WASD/arrows for one cell; holding does not repeat.",
+    "Hold Space and tap a direction to preview pulls, jams and pit warnings; release Space, then make a fresh tap to commit.",
+    "Z undoes a whole turn; R retries; Enter advances a cleared room.",
+    "K/L save/load; Escape pauses; M toggles sound; F toggles fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/afterpull/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/1758dad8f664838a.png",
+      "caption": "Afterpull — in-game view",
+      "alt": "Afterpull — in-game view"
+    },
+    {
+      "image": "assets/wiki/9708376d69afc81b.png",
+      "caption": "Room six: crates, docks and pits after a pull.",
+      "alt": "Room six: crates, docks and pits after a pull."
+    },
+    {
+      "image": "assets/wiki/66a21aa49d3551e8.png",
+      "caption": "All six rooms cleared with every crate docked.",
+      "alt": "All six rooms cleared with every crate docked."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Each step chooses both a destination and the center of a remote pull. You must preserve finished placements while moving elsewhere, sometimes using another crate as a shield. The satisfying discovery is that a collision can protect two crates through a deliberate jam while a third slides into place.\n\nThe closest comparison is magnetic Sokoban: [NABOKOS](https://pixelgrapher.itch.io/nabokos) explicitly uses a magnet to pull boxes onto buttons. Afterpull's proposed distinction is that attraction originates from the square just vacated, automatically affects several unobstructed directions, and supports intentional destination-conflict jams. None of the supplied prior mechanics uses this departure-triggered spatial rule. This comparison does not certify worldwide originality or fun.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "overview": "Feta is a two-player cat-and-mouse playtest set in a furnished house and garden. Players choose Feta or the Scientist, with solo exploration also available when no opponent is connected. The catalog preserves the game’s 0.2.0-playtest.2 build and approved rat artwork.",
+  "rules": [
+    "Online play needs two players choosing opposite characters.",
+    "Connect using the host’s server address and private join code; the host supplies the code.",
+    "Solo exploration has neither an opponent nor a round timer.",
+    "The Scientist can attack; Feta has a camera-switch command."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl/C crouches.",
+    "Q changes Feta’s camera; the Scientist attacks with left/right mouse buttons.",
+    "Escape opens the menu."
+  ],
+  "story": "The documented premise is a cat-and-mouse encounter in a house and garden. No further story or personal backstory is documented in the catalog source.",
+  "characters": [
+    {
+      "name": "Feta",
+      "description": "The rat character; can switch camera views.",
+      "image": "assets/wiki/d23fd9d3bc859394.png",
+      "image_caption": "Feta exploring the house from floor level."
+    },
+    {
+      "name": "Scientist",
+      "description": "The opposing human character, with mouse-button attacks.",
+      "image": "assets/wiki/31ceb6e3bca7e298.png",
+      "image_caption": "Exploring as the Scientist: a first-person view of the house."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/feta/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/d23fd9d3bc859394.png",
+      "caption": "Feta exploring the house from floor level.",
+      "alt": "Feta exploring the house from floor level."
+    },
+    {
+      "image": "assets/wiki/31ceb6e3bca7e298.png",
+      "caption": "Exploring as the Scientist: a first-person view of the house.",
+      "alt": "Exploring as the Scientist: a first-person view of the house."
+    },
+    {
+      "image": "assets/wiki/640e0a6c4561cf99.png",
+      "caption": "Feta explores the garden and potting shelter.",
+      "alt": "Feta explores the garden and potting shelter."
+    },
+    {
+      "image": "assets/wiki/3261fb7f0045a23c.png",
+      "caption": "Feta fits below the dining table.",
+      "alt": "Feta fits below the dining table."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "The game will simply be called \"Feta\".\n\nNot prop hunt, but a simple \"cat and mouse\" style game where the Scientist/Human has a limited amount of time (let's say 5 min default) to kill the rat. The map should be big enough that there is variety and plenty of places for the rat to hide. The rat has a 1 min (default) head start to find a good place to hide. The countdown timer must be discreet.\n\nIf the Feta survives the whole time, that player wins. If the scientist kills Feta in that amount of time, the scientist wins.\n\nThe main menu must remain simple and allow the players to choose how long they want each round to last and how long the rat should have to hide (defaults are above)\n\nInstead of a variety of maps, stick to making 1 really good map with a variety of assets/props. The map itself has to have a certain theme (suburban home, office space, super market, hospital, school, etc.). Feel free to create new assets/props to make this work. Most of all it needs to feel nice to play on and be fun!\n\nIf the rat is hit or shot by the scientist, the round ends and we get to start again and choose our characters. Ensure a round can only start when at least one Feta and one Scientist is selected.",
+    "prompt_note": "Verbatim game-design excerpts from the original creation request. Deployment instructions and private connection details omitted. The implemented release is described above."
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Riftwake is a networked arena FPS for up to twelve direct-IP players. Conserved momentum, air steering and bunny hopping support fast routes across The Fracture, a three-level industrial arena with health, armor and jump-pad shortcuts. Six weapons emphasize distinct ranges and prediction patterns, without reloads or aim-down-sights slowdown.",
+  "rules": [
+    "The authoritative server handles movement, weapon hits, projectiles, pickups, frag scores and respawns.",
+    "Use momentum and air steering to travel; holding jump chains bunny hops when you land.",
+    "Health and armor pickups reward route knowledge and timing.",
+    "There are no reloads, sprint key or aim-down-sights slowdown.",
+    "This prototype needs human opponents: bots and matchmaking are not included."
+  ],
+  "controls": [
+    "WASD accelerates; hold Space to bunny hop; mouse looks and fires.",
+    "1–6 or wheel selects weapons.",
+    "Tab secondary stats; Escape menu; F/F11 fullscreen."
+  ],
+  "story": "The documented setting is The Fracture, a multi-level industrial duel arena. No narrative campaign or named character backstories are established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/riftwake/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/bf4730b817059fbf.png",
+      "caption": "The Rift Rocket overlooking the arena.",
+      "alt": "The Rift Rocket overlooking the arena."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

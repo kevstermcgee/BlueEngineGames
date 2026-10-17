@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "overview": "BlueDM is an online team-deathmatch FPS prototype for up to eight direct-IP players. Its Cobalt Foundry arena provides industrial rooms and lanes for a ten-weapon armory. Combat includes ammunition, reloads, aim-down-sights, spawn protection, scoring and respawns; this build has no bots or matchmaking.",
+  "rules": [
+    "Join an authoritative host and fight the opposing team; the server owns movement, combat and scoring.",
+    "Manage each firearm’s ammunition and reload timing; changing weapons selects from the ten available firearms.",
+    "Deaths are followed by respawns, with spawn protection part of the rules.",
+    "A second human client is needed to test combat because this prototype has no bots."
+  ],
+  "controls": [
+    "WASD/arrows move; Shift sprints; Space jumps; Ctrl crouches.",
+    "Mouse looks; left mouse fires; right mouse aims down sights; R reloads.",
+    "1–0 or mouse wheel selects a firearm.",
+    "Tab shows secondary stats; Escape opens the menu; F/F11 toggles fullscreen."
+  ],
+  "story": "The documented setting is the industrial Cobalt Foundry arena. No narrative campaign or personal operative backstories are documented.",
+  "characters": [
+    {
+      "name": "Vanguard",
+      "description": "Procedural operative with a gold head accent and gold shoulder blocks over the team-colored body.",
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+    },
+    {
+      "name": "Recon",
+      "description": "Procedural operative with lime head accents and a thin, wide head-top silhouette over the team-colored body.",
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+    },
+    {
+      "name": "Breacher",
+      "description": "Broad-shouldered procedural operative with an orange head accent and orange shoulder blocks.",
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+    },
+    {
+      "name": "Field Tech",
+      "description": "Procedural operative with sky-blue head accents and a matching rectangular backpack.",
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/bluedm/README.md",
+    "games/bluedm/src/main.rs",
+    "games/bluedm/src/server.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/39a3640f8fd4f19e.png",
+      "caption": "Atlas 5.56 in the team-deathmatch warehouse.",
+      "alt": "Atlas 5.56 in the team-deathmatch warehouse."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

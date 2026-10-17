@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Laser Vault is a first-person cyber-heist fixture with two hacking consoles and a locked safe. A trigger-zone tripwire crosses the direct route and increments an alarm every time it is entered. Detouring around the beam preserves the alarm budget while you complete the console sequence.",
+  "rules": [
+    "Hack console A before console B; B cannot progress before A.",
+    "Hacking B unlocks the vault safe. Interact with the safe to complete the heist.",
+    "Every entry into the laser tripwire adds an alarm.",
+    "The third alarm triggers lockdown and loses the match; one or two alarms still leave a winnable attempt."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The documented premise is infiltrating a security vault. The player is unnamed and no extended heist story or character backstories are established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/laser-vault/README.md",
+    "games/laser-vault/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/77e1990d4f2ac08f.png",
+      "caption": "Laser Vault — in-game view",
+      "alt": "Laser Vault — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

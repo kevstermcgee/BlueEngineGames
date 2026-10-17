@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Corner Clutch is a top-down puzzle in eight rooms where choosing a crate determines a temporary moving crew. The driver carries only crates immediately diagonal to it; the group changes after every step. Matching all lettered cargo to sockets can require using a parked helper and then splitting the group again.",
+  "rules": [
+    "The selected driver carries its immediate diagonal neighbors; side neighbors and neighbors of recruited crates remain still.",
+    "Move the entire crew exactly one cell. If any landing hits a wall, stationary crate or edge, the whole move is rejected.",
+    "Put every letter on its matching socket simultaneously; sockets never lock cargo.",
+    "There is no timer, life limit or move budget. Undo is unlimited, including in a solved room.",
+    "Advance manually after solving each of eight rooms."
+  ],
+  "controls": [
+    "Click a crate, press 1–4 or Tab to change drivers; tap WASD/arrows to move.",
+    "Hover direction buttons for ghosts; click a direction button to move.",
+    "Z/Undo reverses a move; R resets the room; Enter/Next room advances; Hint shows the teaching suggestion.",
+    "K/L save/load; Escape pauses; M toggles sound; N music; F fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/corner-clutch/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/57f737b8499462aa.png",
+      "caption": "Corner Clutch — in-game view",
+      "alt": "Corner Clutch — in-game view"
+    },
+    {
+      "image": "assets/wiki/d96f802c463a0786.png",
+      "caption": "All eight rooms solved; undo remains available.",
+      "alt": "All eight rooms solved; undo remains available."
+    },
+    {
+      "image": "assets/wiki/00cf67d14a2358f6.png",
+      "caption": "An early room during the corner-carrying puzzle playthrough.",
+      "alt": "An early room during the corner-carrying puzzle playthrough."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Every crate is both cargo and a tool for moving other cargo. Choosing a different driver can split a formation without adding another ability. Later puzzles require arranging helpers, passing a diagonal connection between crates, and temporarily retrieving an already parked crate. The satisfying moment is seeing one deliberate group movement resolve several positional problems.\n\nThe closest comparison is [Jelly Is Sticky](https://store.steampowered.com/app/1492620/Jelly_Is_Sticky/), which builds puzzles around sticking and deforming blocks. Corner Clutch specifically uses driver-dependent, nonrecursive diagonal pickup. Compared with prior Gap Flip, movement is a local one-cell translation rather than corridor reflection; compared with Odd Matter, occupied cells never cancel. These are concrete differences, not certification of worldwide originality or fun.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

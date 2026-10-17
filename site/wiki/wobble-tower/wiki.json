@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "overview": "Wobble Tower is a physics stacking game using crates released from a swinging crane. Different crate weights and friction affect settlement and overhangs while wind becomes stronger as the tower grows. Careful release timing keeps the tower on a small platform for as long as possible.",
+  "rules": [
+    "Drop the current crate from the crane onto the platform or existing stack.",
+    "A crate counts as stacked only when it settles.",
+    "Crate density, friction, tipping and gusts affect whether a tower remains standing.",
+    "Three dropped/lost crates end the run; wind grows with tower height."
+  ],
+  "controls": [
+    "Space/controller A drops the current crate.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/wobble-tower/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/a18b78b42cb991d0.png",
+      "caption": "Wobble Tower — in-game view",
+      "alt": "Wobble Tower — in-game view"
+    },
+    {
+      "image": "assets/wiki/14de72047e9ac584.png",
+      "caption": "The swinging crane above the stacking platform.",
+      "alt": "The swinging crane above the stacking platform."
+    },
+    {
+      "image": "assets/wiki/b798fe078aebce0b.png",
+      "caption": "A timber crate on the platform while the next hangs from the crane.",
+      "alt": "A timber crate on the platform while the next hangs from the crane."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

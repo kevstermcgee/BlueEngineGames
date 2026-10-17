@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "overview": "Clockwork Pinball is a neon pinball table with a steel ball, moving flippers, a spinning gear and a spring plunger. Bumpers and posts kick the ball while three upper lanes build a scoring multiplier. The challenge is to control real ball momentum and keep each of three balls away from the drain.",
+  "rules": [
+    "Charge and release the spring plunger to serve a ball; use the flippers to keep it in play.",
+    "Bumpers, posts and the spinning gear award points through contact.",
+    "Lighting all three top lanes awards a bonus and raises the multiplier, up to five.",
+    "Draining a ball spends one of three balls and resets the multiplier; the run ends when none remain."
+  ],
+  "controls": [
+    "A/D or arrows operate the flippers; controller triggers/bumpers also work.",
+    "Hold Space/controller A and release to plunge.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/clockwork-pinball/README.md",
+    "games/clockwork-pinball/src/lib.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/cb6e7fa17a482448.png",
+      "caption": "Clockwork Pinball — in-game view",
+      "alt": "Clockwork Pinball — in-game view"
+    },
+    {
+      "image": "assets/wiki/f61c8f8f83e2f49e.png",
+      "caption": "The neon table, flippers and upper bumpers during play.",
+      "alt": "The neon table, flippers and upper bumpers during play."
+    },
+    {
+      "image": "assets/wiki/d71b92840d1afa0d.png",
+      "caption": "A ball beside the upper spinning gear after scoring.",
+      "alt": "A ball beside the upper spinning gear after scoring."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

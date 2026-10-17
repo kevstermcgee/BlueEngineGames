@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "overview": "Deadfall is a multiplayer FPS for two to twelve players with optional bots and dedicated two-player duels. Slagworks, Switchyard and Stormbreak host four modes, from ordinary deathmatch to flag runs and no-respawn bomb rounds. Players manage two firearms, a knife and up to two grenades from a 36-weapon catalog.",
+  "rules": [
+    "Team Deathmatch ends at the kill target or time limit; Free for All awards individual kills.",
+    "Capture the Flag requires bringing the enemy flag home while your own flag is home; dropped flags return after 20 seconds.",
+    "Search and Destroy alternates attack/defence: hold use for 3 seconds to plant or 5 seconds to defuse; the fuse lasts 35 seconds, and there are no within-round respawns.",
+    "Duels disable bots and require two humans; leaving a live duel forfeits.",
+    "Start with the K-9 pistol and knife; pick up map weapons or use E to exchange an occupied slot."
+  ],
+  "controls": [
+    "WASD/mouse move/look; left/right mouse fire/aim; Space jumps; Ctrl crouches; Shift sprints; V walks quietly.",
+    "R reloads; E uses/swaps pickups or holds to plant/defuse.",
+    "1/2/3/4 select primary/secondary/knife/grenade; wheel cycles; Q quick-knifes; G drops weapon.",
+    "Tab scoreboard; Escape menu. Controller: sticks move/look, triggers fire/aim, A jump, B crouch, X reload, RB use, LB grenade."
+  ],
+  "story": "The game documents competitive matches between Ironclad and Nightwatch rather than a single-player narrative campaign.",
+  "characters": [
+    {
+      "name": "Ironclad",
+      "description": "Army-green and tan team whose soldier models carry field webbing, utility pouches and a small pack.",
+      "appearance_note": "Ironclad is a team rather than an individual character; its green-and-tan uniform appears across the selectable soldier appearances."
+    },
+    {
+      "name": "Nightwatch",
+      "description": "Navy and black team whose soldier models use a plate carrier, radio and assault pack.",
+      "appearance_note": "Nightwatch is a team rather than an individual character; its navy-and-black uniform appears across the selectable soldier appearances."
+    },
+    {
+      "name": "Rifleman",
+      "description": "Selectable helmeted soldier appearance; appearance is cosmetic rather than a separate combat class."
+    },
+    {
+      "name": "Scout",
+      "description": "Selectable soldier appearance with a beret and headset; it keeps the same body and hitboxes as other appearances."
+    },
+    {
+      "name": "Recon",
+      "description": "Selectable soldier appearance with a fabric hood and goggles; it keeps the same body and hitboxes as other appearances."
+    },
+    {
+      "name": "Breacher",
+      "description": "Selectable helmeted soldier appearance with extra face armor and a narrow viewing panel; the body and hitboxes remain shared with the other appearances."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/deadfall/README.md",
+    "games/deadfall/src/client/character.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/ca27573c38914cac.png",
+      "caption": "Deadfall — in-game view",
+      "alt": "Deadfall — in-game view"
+    },
+    {
+      "image": "assets/wiki/0fc29736cb30bc9f.png",
+      "caption": "A firefight in the industrial arena with Mako visible behind cover.",
+      "alt": "A firefight in the industrial arena with Mako visible behind cover."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "overview": "Harvest Hollow is a cozy 2D farming game about improving a small homestead across changing days. Work the soil, plant and water radishes, carrots and pumpkins, sell the harvest and clear natural debris for building materials. There is no town, combat or deadline, leaving the player free to expand the farm at a comfortable pace.",
+  "rules": [
+    "Crops grow after watered nights: radishes need two, carrots three and pumpkins four. Dry crops wait safely.",
+    "Rain waters the whole farm every fourth day; the first three radishes begin watered and ripen after one sleep.",
+    "Buy seeds, ship harvests for gold, chop trees for wood, break rocks for stone and clear weeds for bonus seeds.",
+    "A sprinkler costs 20 wood, 8 stone and 90 gold; a pond deck costs 18 wood and 5 stone.",
+    "The pond refills the watering can; sleeping restores energy. Automatic saves and a manual checkpoint preserve the farm."
+  ],
+  "controls": [
+    "Click a patch to walk over and work with Smart tool; 1–7 chooses a specific tool.",
+    "WASD/arrows moves; E/Space works the patch ahead; Tab changes crop; I opens the Farm drawer.",
+    "N toggles music; M sound; K/L manual save/load; Escape pauses; F fullscreen; R starts a fresh farm."
+  ],
+  "story": "The premise is tending your own little farm without a town, combat or deadline. The available documentation does not establish named NPCs or a scripted story campaign.",
+  "characters": [
+    {
+      "name": "Farmer",
+      "description": "The unnamed player character tending the homestead: clearing debris, tilling soil, growing crops, shipping harvests and building farm improvements.",
+      "image": "assets/wiki/1c4e4958371c1d20.png",
+      "image_caption": "The farmer beside radishes on a rainy morning."
+    }
+  ],
+  "characters_note": "The farmer is the player role; no named NPC cast is documented.",
+  "sources": [
+    "site/released-games.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/1c4e4958371c1d20.png",
+      "caption": "The farmer beside radishes on a rainy morning.",
+      "alt": "The farmer beside radishes on a rainy morning."
+    },
+    {
+      "image": "assets/wiki/2ff25241c8b0df77.png",
+      "caption": "Working the field with the hoe selected.",
+      "alt": "Working the field with the hoe selected."
+    },
+    {
+      "image": "assets/wiki/4af046926d99a157.png",
+      "caption": "The farmer near the pond on the second morning.",
+      "alt": "The farmer near the pond on the second morning."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Using the latest blue engine, create a Stardew Valley-esque game. No town for right now, just the simple farming, watering, growing, chopping down trees, and other general maintenance of the farm. Include lots of fitting music and ensure it feels fun to play. Once complete, add your feedback to the project and publish the game to the website",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "overview": "Odd Matter is a 3D voxel puzzle in six vaults where overlapping matter can open space. A small drone and rail-bound bars share a 5×5×5 volume: fixed matter contributes one layer and each bar adds another. Planning must use depth and height as well as horizontal routes, with cross-sections and previews explaining the changing occupancy.",
+  "rules": [
+    "Odd layer counts are solid; zero and even counts are empty.",
+    "Bars slide along their marked rails through matter and each other without changing size or orientation.",
+    "A moving bar leaves the drone still; if its cell becomes solid, it is crushed.",
+    "Guide the drone into the green exit socket. Outer-frame cells always block it.",
+    "Z reverses even a crushing move; retry and undo have no timer or move penalty."
+  ],
+  "controls": [
+    "1 selects the drone; 2/3/4 select amber/rose/lime bars.",
+    "A/D moves along X; Q/E down/up along Y; W/S back/front along Z. Each tap is one cell.",
+    "Shift+direction previews; hold C for cutaway; right drag orbits; wheel zooms.",
+    "Z undoes; R retries; Enter advances; H field notes; F5/F9 save/load; Escape menu."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [
+    {
+      "name": "Drone",
+      "description": "The small movable puzzle craft that must reach the green socket."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/odd-matter/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/4335eb7574d08d68.png",
+      "caption": "Odd Matter — in-game view",
+      "alt": "Odd Matter — in-game view"
+    },
+    {
+      "image": "assets/wiki/980869cf78ed54bb.png",
+      "caption": "The drone inside a cavity where overlapping matter becomes empty space.",
+      "alt": "The drone inside a cavity where overlapping matter becomes empty space."
+    },
+    {
+      "image": "assets/wiki/3ba2d1037e241b20.png",
+      "caption": "The drone facing the layered wall before opening a cavity.",
+      "alt": "The drone facing the layered wall before opening a cavity."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "The satisfying discovery is that inserting more solid material can open a tunnel—and inserting still more can close it. Every adjustment changes several places at once. You choose where to park, when to reuse a bar farther ahead, and whether opening a vertical shaft will seal your escape route.\n\nClosest found: [Geometry Overlap](https://www.y8.com/games/geometry_overlap), where overlapping flat shapes cancel while matching a target picture. Here cancellation creates occupied, traversable 3D cavities that must be relocated safely during navigation. Unlike prior Inside-Out Key, nothing swaps between a container and surrounding space; unlike Color Custody, solidity depends on local overlap counts rather than transferred tokens. Worldwide originality and fun remain unverified.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

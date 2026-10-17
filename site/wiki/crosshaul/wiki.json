@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "overview": "Crosshaul is a 3D logistics puzzle with eight chambers. Choose two hovering cargo cubes and swap only one coordinate between them, preserving each cube’s other coordinates. Height, depth, shelves and screens turn a simple exchange into a routing problem, and later rooms add a fourth cargo.",
+  "rules": [
+    "Select two cargoes and a world axis, then exchange only that coordinate; both cargoes slide together.",
+    "Both complete routes must be clear of baffles and other cargo.",
+    "Match every cargo to its color-and-symbol dock within the exchange allowance.",
+    "Docked cargo can move again. Rejected or equal-coordinate exchanges cost nothing; undo refunds a used exchange.",
+    "There is no timer; finish all eight chambers."
+  ],
+  "controls": [
+    "Left click the cubes/list or use 1–4 to select two; X/Y/Z select width/height/depth; Space exchanges.",
+    "Right drag orbits; wheel zooms; the movement axes stay fixed.",
+    "Backspace undoes, even during travel or after failure; R retries; Enter advances a clear.",
+    "H offers one legal hint; Tab shows rules; F5/F9 save/load; Escape opens the menu; F fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/crosshaul/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/9d578526959f123f.png",
+      "caption": "Crosshaul — in-game view",
+      "alt": "Crosshaul — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Every move solves two transportation problems at once—or solves one while creating another. The satisfying discovery is treating another cube as a carrier for the height or depth you need. A nearly finished cube may be the only useful partner, making temporary disorder part of a clean final solution. Twin movement trails and synchronized docking clicks make the consequences tangible.\n\nA useful comparison is The Swapper, which creates clones and transfers consciousness between bodies. Crosshaul instead moves two existing objects by exchanging one coordinate, coupling their physical routes. [The Swapper's official description](https://store.steampowered.com/app/231160/The_Swapper/). Among the supplied concepts, Color Custody exchanges behavioral ownership; Crosshaul exchanges spatial components. Perspective Pocket changes placement through silhouette constraints; Crosshaul is independent of camera perspective and preserves coordinate inventories. This appears distinct from the supplied mechanics, but worldwide originality and fun cannot be certified.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

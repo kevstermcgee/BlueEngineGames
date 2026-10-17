@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Target Gallery is a first-person three-target interaction challenge. Activate left, center and right mechanical targets, then claim the prize at the victory booth. In this fixture the targets use the stock interaction action rather than firearm hit detection.",
+  "rules": [
+    "Interact with all three targets in any order.",
+    "Each target hides and disables after its first hit, so repeated presses do not increase the count.",
+    "The right target enables the booth control, but the booth only awards completion once all three hits are counted.",
+    "Interact with the victory booth after the three hits to win."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The documented premise is a mechanical target trial. No named characters or story campaign are established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/target-gallery/README.md",
+    "games/target-gallery/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/5a2c8e692ddde9ce.png",
+      "caption": "Target Gallery — in-game view",
+      "alt": "Target Gallery — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

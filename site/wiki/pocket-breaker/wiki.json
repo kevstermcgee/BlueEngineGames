@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Pocket Breaker is a ball-and-paddle arcade game with six broad stained-glass bands. Move the paddle under the returning ball to keep it rebounding through the colored rows. Clear all six before a missed return or the run’s time limit ends the attempt.",
+  "rules": [
+    "Each uncleared band disappears after a ball collision; clear all six to win.",
+    "The side and top boundaries bounce the ball; the paddle returns a descending ball upward.",
+    "A ball falling below the paddle area loses the attempt.",
+    "The rules also end an uncleared run after 5,400 simulation ticks."
+  ],
+  "controls": [
+    "Click/Enter starts; mouse or Left/Right arrows steer the paddle.",
+    "K saves; L resumes; R restarts; M toggles sound."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/pocket-breaker/README.md",
+    "games/pocket-breaker/src/lib.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/a9ed3acbe55606a7.png",
+      "caption": "Pocket Breaker — in-game view",
+      "alt": "Pocket Breaker — in-game view"
+    },
+    {
+      "image": "assets/wiki/52a7a805a845312f.png",
+      "caption": "All six stained-glass bands cleared.",
+      "alt": "All six stained-glass bands cleared."
+    },
+    {
+      "image": "assets/wiki/a2ad763274c87af1.png",
+      "caption": "The paddle and ball during the stained-glass challenge.",
+      "alt": "The paddle and ball during the stained-glass challenge."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "overview": "Tumble Maze is a marble-tilting game across three wooden mazes. Roll a steel sphere toward the route’s end while collecting stars, avoiding open sinkholes and accounting for moving sweep bars. A clock, par times and collected stars determine the score.",
+  "rules": [
+    "Tilt changes the effective downhill direction and rolls the marble rather than directly moving it.",
+    "Collect stars while navigating maze walls and sweeping bars.",
+    "A sinkhole swallows the marble and adds five seconds.",
+    "Par time, elapsed clock and stars determine scoring across three mazes."
+  ],
+  "controls": [
+    "WASD/arrows/left stick tilts the board.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/tumble-maze/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/5178be61fdf3dac1.png",
+      "caption": "Tumble Maze — in-game view",
+      "alt": "Tumble Maze — in-game view"
+    },
+    {
+      "image": "assets/wiki/7e1bf8295fa0844a.png",
+      "caption": "The first wooden maze with its marble, stars and exit.",
+      "alt": "The first wooden maze with its marble, stars and exit."
+    },
+    {
+      "image": "assets/wiki/5aa777a7896f0e3b.png",
+      "caption": "The marble moves away from the starting pad along the upper corridor.",
+      "alt": "The marble moves away from the starting pad along the upper corridor."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

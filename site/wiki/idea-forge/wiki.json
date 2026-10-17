@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "overview": "Idea Forge is the earlier offline curated idea browser, separate from the later automatic IdeaForge CLI pipeline. It explores 36 authored mechanics across puzzle, action and strategy, with a concrete rule, loop, fun rationale, smallest prototype and design risk in each brief. A reproducible seed controls order while local history and favorites preserve ideas worth revisiting.",
+  "rules": [
+    "Generate from 12 puzzle, 12 action and 12 strategy briefs; story is optional and off by default.",
+    "The same library never repeats an idea and reports exhaustion when no eligible ideas remain.",
+    "Previous/Next revisit history; Keep saves favorites and View Kept filters them.",
+    "Changing genres or restarting preserves the library; this utility creates briefs rather than complete games."
+  ],
+  "controls": [
+    "Click buttons, or select with arrows/controller and activate with Space/controller A.",
+    "Up/Down jumps four buttons; Previous/Next, Keep and View Kept manage the library.",
+    "K saves a checkpoint; L loads it; Escape pauses. Progress also autosaves."
+  ],
+  "story": "This is a design utility. Generated briefs may optionally include story, but the browser itself has no narrative campaign.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/idea-forge/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/eff636a667ea0e08.png",
+      "caption": "Idea Forge — in-game view",
+      "alt": "Idea Forge — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Create a utility that can create ideas for video games. Each idea must be centered on a totally unique, engaging, fun, and creative gameplay mechanic. There can be a story or not. It must be built in BlueEngine and published to BlueEngineGames once complete. Keep track of the issues with development to construct a robust feedback file for this game idea. Add this file to the BlueEngine repository so the game engine can improve on future runs",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

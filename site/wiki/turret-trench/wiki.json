@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Turret Trench is a timed first-person station-infiltration fixture. Progress through two bunker controls and then time the turret override to the safe half of a repeating sweep cycle. The implemented failure check is the cycle phase when the override is pressed.",
+  "rules": [
+    "Use bunker station one to enable station two, then use station two to enable the override.",
+    "The repeating sweep timer advances the cycle phase.",
+    "Interact with the override on an odd cycle phase to complete the match.",
+    "Pressing the override on an even phase loses the match; disabled stations cannot skip progression."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The scenario presents an unnamed infiltrator reaching a turret override through bunker stations. No named character cast or extended narrative is established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/turret-trench/README.md",
+    "games/turret-trench/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/9371e20ddb8cde8d.png",
+      "caption": "Turret Trench — in-game view",
+      "alt": "Turret Trench — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

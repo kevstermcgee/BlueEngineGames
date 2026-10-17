@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "overview": "Leo is a quiet first-person wandering game in an endlessly streaming meadow. Oak, silver birch, Scots pine and rowan groves sit among daisies, buttercups, red clover and cornflowers, with sunrise, daylight, sunset and stars across a twelve-minute day. Revisiting a place restores the same seeded landscape, and local saves preserve your position and days.",
+  "rules": [
+    "There is no score, combat, objective deadline or terminal win state.",
+    "Each normal day lasts twelve minutes; pausing stops the game clock.",
+    "Trees block movement, while exploration streams the surrounding landscape.",
+    "Autosaves preserve travel every minute, at day changes and on normal exit."
+  ],
+  "controls": [
+    "WASD/left stick moves; Shift runs; Space hops; mouse/right stick looks.",
+    "Escape opens Controls/Settings; M toggles music.",
+    "F5/F9 quick-save/load."
+  ],
+  "story": "A little boy wanders an endless meadow through another morning and the changing day. No quest plot or dialogue campaign is documented.",
+  "characters": [
+    {
+      "name": "Leo",
+      "description": "A little boy with a soft smile, rounded proportions and swept chestnut hair; he travels without a backpack.",
+      "image": "assets/wiki/b8a4ab9eb4fe68e9.png",
+      "image_caption": "Leo in the meadow at dusk."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/leo/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/b8a4ab9eb4fe68e9.png",
+      "caption": "Leo in the meadow at dusk.",
+      "alt": "Leo in the meadow at dusk."
+    },
+    {
+      "image": "assets/wiki/4718e646724b0c5b.png",
+      "caption": "The meadow beneath a star-filled night sky.",
+      "alt": "The meadow beneath a star-filled night sky."
+    },
+    {
+      "image": "assets/wiki/6c2d3b81ccbdc178.png",
+      "caption": "A daytime view across the meadow. ",
+      "alt": "A daytime view across the meadow. "
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

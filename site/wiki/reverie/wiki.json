@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "overview": "Reverie is a first-person exploration game set in an endless branching museum of eight emotional themes. Each gallery contains three animated paintings, two moving sculptures and a light installation, with titles, fictional artists and origin stories. Paintings are enterable worlds with smaller frames inside; finding a hidden key opens the next choice of gold doors.",
+  "rules": [
+    "Explore the artworks and find a key to open either gold door.",
+    "The first key is two paintings deep; later keys may be one to three layers deep or inside awakened sculptures/installations.",
+    "Return through the entrance to explore the other branch; collected keys stay in the archive.",
+    "There is no final room, score penalty or time limit.",
+    "Saves preserve the explored museum, recursive return positions, keys and painting-world discoveries."
+  ],
+  "controls": [
+    "WASD/arrows/left stick walks; mouse/right stick looks; Shift walks faster.",
+    "E/controller A enters art, awakens a work, collects a key or opens a door.",
+    "Q/controller X reads the work’s title/artist/story; B/controller B exits one painting layer.",
+    "H clue; M map; Escape pause; F5/F9 save/load; F11 fullscreen."
+  ],
+  "story": "The museum moves through Wonder, Longing, Grief, Joy, Unease, Anger, Tenderness and Acceptance. Individual artworks contain fictional artists and stories, rather than a single fixed plot.",
+  "characters": [],
+  "characters_note": "The museum assigns fictional artists and narratives to individual works. The documented overview does not establish a fixed named character cast.",
+  "sources": [
+    "games/reverie/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/64d15c8f01197d51.png",
+      "caption": "Paintings and impossible sculptures in the museum atrium.",
+      "alt": "Paintings and impossible sculptures in the museum atrium."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Using the latest BlueEngine:\n\nCreate an endless 3d art museum game. Utilize sculptures, paintings, etc. any kind of art you can imagine. Have doors between rooms within the art exhibit. \n\nEach art piece should have a name, an origin story, and have an artists name (made up, can be anonymous).\n\nArt pieces should run the gamut of human emotions\n\nOur first person view should be able to walk up to art pieces and interact with them. Faint sounds of steps (can be turned off in settings)\n\nPaintings are virtual allowing the player to step into them. Each room has a key hidden within one of the art pieces within that room that must be discovered to get into the next room. \n\nStepping into the art should feel special and interesting \n\nPaintings, sculptures, and other art are all unique. Include a variety of frames for the art.\n\nFeel free to include other kinds of art in this game as well.\n\nThe art pieces themselves should be unique and evoke a vibe/emotion. These aren’t your normal art pieces. They feel alive\n\nIt could be cool if rooms themselves had themes. Like the art in certain rooms has a general overlap in emotional themes \n\nCall the game something catchy, fitting, short, and memorable.\n\nKeep track of the number of keys collected/rooms discovered. In the pause menu include a map option to view the layout of the art exhibit and the paths you’ve explored. \n\nMy hope is there will also be paintings within paintings in a recursive kind of way. Like maybe the key isn’t one painting deep but maybe there is another painting within that painting and the key is two paintings deep\n\nThis is a game to get lost in\n\nEnsure there is phenomenal touching music across the rooms",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "overview": "BlueEngineSandbox is a local content workbench and creative exploration space. Browse 78 registered specimens, inspect their geometry and collision bounds, then pair any of eight character designs with nine maps. Play/Create supports placement, removal and saved construction while a separate physics session can test eligible movable props.",
+  "rules": [
+    "Choose a map and character in Play/Create; the selected world restores its previously saved construction.",
+    "The 78-item palette provides placement previews. Original scenery is protected from the player-object delete command.",
+    "Successful placement, removal and undo save automatically; undo retains up to 16 edits in the current session.",
+    "Six cosmetic human skins share the normal human controller and have no unique powers. Feta uses the smaller rat hull.",
+    "The walking preview keeps scenery static; use the separate Physics session for dynamic-prop testing."
+  ],
+  "controls": [
+    "Tab switches walking/workbench; WASD/arrows move; mouse looks; Space jumps; Shift sprints; C/Ctrl crouches.",
+    "Q changes perspective; Home returns to spawn; B toggles collision bounds.",
+    "V opens the palette; left click places; right click cancels; R rotates 90 degrees.",
+    "Wheel changes reach; Shift+wheel changes elevation; G toggles the 25 cm grid; E copies an aimed catalog asset.",
+    "Delete removes a nearby player-placed object; Z undoes; Escape pauses; F/F11 toggles fullscreen."
+  ],
+  "story": "This is an authoring and exploration workbench, with no narrative campaign or winning condition.",
+  "characters": [
+    {
+      "name": "Scientist",
+      "description": "The original human character, using a 1.80 m collision hull.",
+      "image": "assets/wiki/b9dcfd22ebc51511.png",
+      "image_caption": "Scientist in the native character browser."
+    },
+    {
+      "name": "Feta",
+      "description": "The original white rat, using a 0.30 m hull.",
+      "image": "assets/wiki/8ea1f980dc07cb64.png",
+      "image_caption": "Feta in the native character browser."
+    },
+    {
+      "name": "Dusty Trails",
+      "description": "Cowboy design with hat, bandana, sheriff badge, vest and boots.",
+      "image": "assets/wiki/571e1a67d481380d.png",
+      "image_caption": "Dusty Trails in the native character browser."
+    },
+    {
+      "name": "Nova Visitor",
+      "description": "Green alien design with large eyes, antennae and a survey backpack.",
+      "image": "assets/wiki/036124269eb99196.png",
+      "image_caption": "Nova Visitor in the native character browser."
+    },
+    {
+      "name": "Bolt-7",
+      "description": "Maintenance robot design with cyan visor and amber panel.",
+      "image": "assets/wiki/075fede927110242.png",
+      "image_caption": "Bolt-7 in the native character browser."
+    },
+    {
+      "name": "Orbit Scout",
+      "description": "Pressure-suit design with round helmet, blue visor and life-support pack.",
+      "image": "assets/wiki/92a2695638971c58.png",
+      "image_caption": "Orbit Scout in the native character browser."
+    },
+    {
+      "name": "Brass Diver",
+      "description": "Copper-helmet diving design with porthole and twin air tanks.",
+      "image": "assets/wiki/043619eca495faed.png",
+      "image_caption": "Brass Diver in the native character browser."
+    },
+    {
+      "name": "Cedar Ranger",
+      "description": "Field-jacket design with canvas pack, broad hat and binoculars.",
+      "image": "assets/wiki/2d9862e6fd9c5027.png",
+      "image_caption": "Cedar Ranger in the native character browser."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/blueengine-sandbox/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/1e597168018e78bf.png",
+      "caption": "Blueengine Sandbox — in-game view",
+      "alt": "Blueengine Sandbox — in-game view"
+    },
+    {
+      "image": "assets/wiki/b9dcfd22ebc51511.png",
+      "caption": "Scientist in the native character browser.",
+      "alt": "Scientist in the native character browser."
+    },
+    {
+      "image": "assets/wiki/8ea1f980dc07cb64.png",
+      "caption": "Feta in the native character browser.",
+      "alt": "Feta in the native character browser."
+    },
+    {
+      "image": "assets/wiki/571e1a67d481380d.png",
+      "caption": "Dusty Trails in the native character browser.",
+      "alt": "Dusty Trails in the native character browser."
+    },
+    {
+      "image": "assets/wiki/036124269eb99196.png",
+      "caption": "Nova Visitor in the native character browser.",
+      "alt": "Nova Visitor in the native character browser."
+    },
+    {
+      "image": "assets/wiki/075fede927110242.png",
+      "caption": "Bolt-7 in the native character browser.",
+      "alt": "Bolt-7 in the native character browser."
+    },
+    {
+      "image": "assets/wiki/92a2695638971c58.png",
+      "caption": "Orbit Scout in the native character browser.",
+      "alt": "Orbit Scout in the native character browser."
+    },
+    {
+      "image": "assets/wiki/043619eca495faed.png",
+      "caption": "Brass Diver in the native character browser.",
+      "alt": "Brass Diver in the native character browser."
+    },
+    {
+      "image": "assets/wiki/2d9862e6fd9c5027.png",
+      "caption": "Cedar Ranger in the native character browser.",
+      "alt": "Cedar Ranger in the native character browser."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

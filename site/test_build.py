@@ -22,11 +22,32 @@ def release(tag, names, **extra):
                         'browser_download_url': f'https://example.com/{tag}/{name}'} for name in names], **extra}
 
 
-def screenshot(width=320, height=180):
+def screenshot(width=320, height=180, color=b'\x20\x60\x80'):
     def chunk(kind, data):
         return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data))
     return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0))
-            + chunk(b'IDAT', zlib.compress((b'\0' + b'\x20\x60\x80' * width) * height)) + chunk(b'IEND', b''))
+            + chunk(b'IDAT', zlib.compress((b'\0' + color * width) * height)) + chunk(b'IEND', b''))
+
+
+def wiki_fixture(root, slug, origin='human'):
+    game = Path(root) / 'games' / slug
+    (game / 'assets/wiki').mkdir(parents=True, exist_ok=True)
+    gallery = []
+    for index in range(3):
+        name = f'assets/wiki/gameplay-{index}.png'
+        (game / name).write_bytes(screenshot(color=bytes([32 + index, 96, 128])))
+        gallery.append({'image': name, 'caption': f'Gameplay challenge {index + 1}.', 'alt': f'The player taking on challenge {index + 1}.'})
+    document = {'version': 1,
+                'overview': 'Explore a sequence of spatial puzzles by moving blocks between marked goals. Each stage introduces a new constraint, and the player can retry any move to find a better solution.',
+                'rules': ['Move blocks onto all of the marked goal squares.', 'A block moves only when the square beyond it is empty.', 'Complete every goal to advance to the following stage.'],
+                'controls': ['Use arrow keys to move and R to retry.'],
+                'story': 'This is an abstract puzzle collection without a narrative campaign or named characters.',
+                'characters': [], 'characters_note': 'The player manipulates blocks; there are no narrative characters.',
+                'gallery': gallery,
+                'design': {'origin': origin, 'original_prompt': 'Create a spatial puzzle game about moving blocks onto goal squares.' if origin == 'human' else None,
+                           'rationale': 'The design explores how a simple pushing rule can create increasingly interesting spatial decisions. Its focused puzzle format supports reversible experimentation and a varied sequence of challenges.' if origin == 'ai' else None}}
+    (game / 'wiki.json').write_text(json.dumps(document))
+    return document
 
 
 def independent_game():
@@ -87,6 +108,7 @@ class Downloads(unittest.TestCase):
                 (root / directory).mkdir()
             for slug in ('bundled', 'standalone'):
                 (root / f'thumbs/{slug}.png').write_bytes(screenshot())
+                wiki_fixture(root, slug, 'ai' if slug == 'standalone' else 'human')
             game = independent_game()
             game['design_origin'] = 'ai'
             previous = copy.deepcopy(game['published_release'])
@@ -204,6 +226,7 @@ class Downloads(unittest.TestCase):
             (root / 'games').mkdir()
             (root / 'thumbs').mkdir()
             (root / 'thumbs/game.png').write_bytes(screenshot())
+            wiki_fixture(root, 'game')
             rows = [{'slug': 'game', 'name': 'Game café ✨', 'description': '<unsafe>', 'created': '2026-01-01',
                      'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'}]
             with (root / 'catalog.tsv').open('w', encoding='utf-8', newline='') as out:

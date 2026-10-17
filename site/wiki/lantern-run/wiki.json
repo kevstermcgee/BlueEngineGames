@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Lantern Run is a compact collection-and-navigation game presented as a 2D garden. Pick up four golden lanterns, route around the garden walls and avoid a moving pink patrol before reaching the teal exit. The player starts with three hearts, so repeated contact can end the run.",
+  "rules": [
+    "Collect all four lanterns before crossing into the exit area.",
+    "Walls block movement; plan a route through their openings.",
+    "A patrol contact removes a heart, followed by a short damage cooldown; losing all three hearts loses the run.",
+    "Reach the exit with every lantern collected to win."
+  ],
+  "controls": [
+    "WASD/arrows/controller move; click/Enter starts.",
+    "K saves; L loads/resumes; R restarts; M toggles sound."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/lantern-run/README.md",
+    "games/lantern-run/src/lib.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/b63c9183f18ce149.png",
+      "caption": "Lantern Run — in-game view",
+      "alt": "Lantern Run — in-game view"
+    },
+    {
+      "image": "assets/wiki/e3dc39e9614383d3.png",
+      "caption": "The exit reached after collecting all four lanterns.",
+      "alt": "The exit reached after collecting all four lanterns."
+    },
+    {
+      "image": "assets/wiki/37527f6d357ab7f0.png",
+      "caption": "A lantern collected along the grid route.",
+      "alt": "A lantern collected along the grid route."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

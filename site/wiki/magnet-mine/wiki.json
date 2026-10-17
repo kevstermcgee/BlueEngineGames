@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "overview": "Magnet Mine is a 3D polarity puzzle using inertial metal drones. Move around the arena and alternate attraction and repulsion to guide three drones into glowing sockets. Success depends on where you stand when changing polarity and on the drones’ continued motion.",
+  "rules": [
+    "Guide all three metal drones into their sockets.",
+    "One polarity attracts drones toward the player; the other repels them.",
+    "Drones retain inertia, so allow for continued motion rather than treating polarity as a direct placement command."
+  ],
+  "controls": [
+    "WASD moves; mouse looks; Space flips polarity.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [
+    {
+      "name": "Metal drones",
+      "description": "Three unnamed inertial puzzle objects guided by attraction and repulsion."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/magnet-mine/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/83a2ea61d1690146.png",
+      "caption": "Magnet Mine — in-game view",
+      "alt": "Magnet Mine — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

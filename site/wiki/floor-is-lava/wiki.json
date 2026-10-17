@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Floor is Lava is a compact staged-ascent fixture presented as an evacuation under rising lava. Activate two tier beacons before using the evacuation transponder. The implemented hazard is a rising lava counter with an explicit timeout loss.",
+  "rules": [
+    "Activate the first-tier beacon to enable the second-tier beacon.",
+    "Activate the second-tier beacon to enable evacuation; disabled stages ignore interaction.",
+    "The lava counter rises every timer pulse and loses the match at level six.",
+    "Use the evacuation transponder after both checkpoints to win."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The scenario is an unnamed survivor’s evacuation from rising lava. No named story cast or longer narrative is documented.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/floor-is-lava/README.md",
+    "games/floor-is-lava/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/f267cddccf0d3a34.png",
+      "caption": "Floor Is Lava — in-game view",
+      "alt": "Floor Is Lava — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

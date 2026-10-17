@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "overview": "Embertrail is a controller-first 2D platforming campaign with 32 courses, eight island worlds and eight boss encounters. Mote carries the first spark to free bound guardians, ring the dawn bells and recover the stolen Dawnheart before home freezes. Each course also contains an optional underground route and three moon shards, with regional hazards, lantern upgrades and an original soundtrack.",
+  "rules": [
+    "Travel through 32 courses, free each world’s bound guardian and ring all eight dawn bells.",
+    "Collect sparks for extra lights and seek three optional moon shards per course.",
+    "Bloom Lantern protects an extra hit and breaks clay; Ember Lantern enables seed casting; Dawn Stars briefly protect against ordinary enemies.",
+    "Stomp seed beetles into shells and kick the shells. Bosses expose mint collars during recovery after attacks.",
+    "Hold Down at an open root stairway to enter the course’s underground route; release before entering another. Progress saves automatically."
+  ],
+  "controls": [
+    "A/D or Left/Right/left stick/D-pad moves; Space/controller A jumps; X/controller X casts with Ember Lantern.",
+    "Shift/RT/right bumper runs; S/Down ducks, brakes and enters/leaves root passages.",
+    "Tab/controller Y/View opens trail atlas; Escape/Start pauses; arrows/Enter/Escape navigate menus; F fullscreen."
+  ],
+  "story": "Vesper, the Bell Regent, stole Mote’s village Dawnheart. Mote must carry the first spark across eight islands, break the night collars binding their protectors, ring the dawn bells and bring warmth home. NPC greetings unfold automatically, without dialogue choices.",
+  "characters": [
+    {
+      "name": "Mote",
+      "description": "The little-light protagonist carrying the first spark across eight islands to recover the stolen Dawnheart and warm the village.",
+      "image": "assets/wiki/de5b81da6e2c46d5.png",
+      "image_caption": "Mote on the trail while Grandma Wick offers encouragement (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Vesper, the Bell Regent",
+      "description": "The ruler who stole the village Dawnheart and bound the island guardians with night collars. At the Hollow Citadel, his attack combines a leap, sweep and seed volleys before a vulnerable recovery.",
+      "image": "assets/wiki/8ceeaf13bc5b1941.png",
+      "image_caption": "Mote faces Vesper, the Bell Regent."
+    },
+    {
+      "name": "Dewmane",
+      "description": "Dewlight Gardens’ bound protector. Lowered horns warn of a root charge; its collar becomes vulnerable when the charge ends.",
+      "image": "assets/wiki/d9e76d2a1e9a95eb.png",
+      "image_caption": "Mote faces Dewmane in the guardian arena."
+    },
+    {
+      "name": "Chimeback",
+      "description": "The stone sentinel of Echo Root Caverns’ echo bell. Its leap ends in a landing that sends echoes outward; jump them, then strike during recovery.",
+      "image": "assets/wiki/15cc4e756f58f1ac.png",
+      "image_caption": "Mote faces Chimeback in the guardian arena."
+    },
+    {
+      "name": "Brack",
+      "description": "Copper Marsh’s pump keeper, bound when Vesper silenced the Copper Bell. Swelling copper pods warn of seed volleys, followed by an opening at the collar.",
+      "image": "assets/wiki/ed5de4bf4baef82f.png",
+      "image_caption": "Mote faces Brack in the guardian arena."
+    },
+    {
+      "name": "Rimehart",
+      "description": "The frozen stag guarding Frostbloom Orchard. Gathering frost warns of an ice slide; jump the slide and strike the exposed collar during recovery.",
+      "image": "assets/wiki/1d06b3853913f2d0.png",
+      "image_caption": "Mote faces Rimehart in the guardian arena."
+    },
+    {
+      "name": "Solarch",
+      "description": "The glass lion guarding the sundial in Sunglass Ruins. A blazing crown warns of two sun leaps and seed attacks; wait for the crown to cool before striking.",
+      "image": "assets/wiki/a90ca5db8b35f33e.png",
+      "image_caption": "Mote faces Solarch in the guardian arena."
+    },
+    {
+      "name": "Tempest",
+      "description": "The storm heron of Cloudseed Skyways, bound in thunder by Vesper. Spreading wings warn of a low sweep before it lands and exposes its collar.",
+      "image": "assets/wiki/20748659d93b6f7c.png",
+      "image_caption": "Mote faces Tempest in the guardian arena."
+    },
+    {
+      "name": "Briar Matron",
+      "description": "The thornbound mother protecting the Duskweave Woods nursery. Blooming thorns signal seed bursts; leap the seeds and use the recovery to free her.",
+      "image": "assets/wiki/16710e929bdc0042.png",
+      "image_caption": "Mote faces Briar Matron in the guardian arena."
+    },
+    {
+      "name": "Grandma Wick",
+      "description": "The village resident who warns Mote that Vesper stole the Dawnheart. She offers encouragement in Dewlight Gardens and follows the seven bells to the Hollow Citadel, promising to carry the Dawnheart home together.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/de5b81da6e2c46d5.png",
+      "image_caption": "Mote on the trail while Grandma Wick offers encouragement (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Pip the Miner",
+      "description": "The guide in Echo Root Caverns who celebrates the first bell, points Mote toward the echo bell and explains how to evade Chimeback’s landing echoes.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/b8615fb77eddbea5.png",
+      "image_caption": "Pip the Miner speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Reed the Miller",
+      "description": "The Copper Marsh resident whose pumps stopped when Vesper silenced the Copper Bell. Reed describes Brack’s seed volley and the collar opening that follows it.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/cf123f56587ac0bc.png",
+      "image_caption": "Reed the Miller speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Nell the Grower",
+      "description": "The Frostbloom Orchard resident who sees a green shoot return after three bells. Nell warns about slippery branches and Rimehart’s freezing slide.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/c4a692301a6c82ae.png",
+      "image_caption": "Nell the Grower speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Tavi the Mender",
+      "description": "The Sunglass Ruins guide who remembers the warmth of the Dawnheart, encourages Mote across broken bridges and explains when Solarch’s glass crown is safe to strike.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/aa8a2e2e3f2835d0.png",
+      "image_caption": "Tavi the Mender speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Kite the Courier",
+      "description": "The Cloudseed Skyways resident who hears five bells across the sky. Kite describes the seed-and-rain windmills and warns Mote about Tempest’s low wing sweep.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/edaea70ab29a94c1.png",
+      "image_caption": "Kite the Courier speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "name": "Fern the Guide",
+      "description": "The Duskweave Woods guide who explains that the thorns once sheltered seedlings. Fern points Mote toward the citadel and warns about the Matron’s thorn-seed attacks.",
+      "appearance_note": "The game uses a shared villager sprite for these NPC roles; the displayed name and automatic greeting identify this character.",
+      "image": "assets/wiki/6bdbc04ef8487e29.png",
+      "image_caption": "Fern the Guide speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "site/released-games.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/de5b81da6e2c46d5.png",
+      "caption": "Mote on the trail while Grandma Wick offers encouragement (dialogue scene; shared villager appearance).",
+      "alt": "Mote on the trail while Grandma Wick offers encouragement (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/8ceeaf13bc5b1941.png",
+      "caption": "Mote faces Vesper, the Bell Regent.",
+      "alt": "Mote faces Vesper, the Bell Regent."
+    },
+    {
+      "image": "assets/wiki/d9e76d2a1e9a95eb.png",
+      "caption": "Mote faces Dewmane in the guardian arena.",
+      "alt": "Mote faces Dewmane in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/15cc4e756f58f1ac.png",
+      "caption": "Mote faces Chimeback in the guardian arena.",
+      "alt": "Mote faces Chimeback in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/ed5de4bf4baef82f.png",
+      "caption": "Mote faces Brack in the guardian arena.",
+      "alt": "Mote faces Brack in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/1d06b3853913f2d0.png",
+      "caption": "Mote faces Rimehart in the guardian arena.",
+      "alt": "Mote faces Rimehart in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/a90ca5db8b35f33e.png",
+      "caption": "Mote faces Solarch in the guardian arena.",
+      "alt": "Mote faces Solarch in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/20748659d93b6f7c.png",
+      "caption": "Mote faces Tempest in the guardian arena.",
+      "alt": "Mote faces Tempest in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/16710e929bdc0042.png",
+      "caption": "Mote faces Briar Matron in the guardian arena.",
+      "alt": "Mote faces Briar Matron in the guardian arena."
+    },
+    {
+      "image": "assets/wiki/b8615fb77eddbea5.png",
+      "caption": "Pip the Miner speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Pip the Miner speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/cf123f56587ac0bc.png",
+      "caption": "Reed the Miller speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Reed the Miller speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/c4a692301a6c82ae.png",
+      "caption": "Nell the Grower speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Nell the Grower speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/aa8a2e2e3f2835d0.png",
+      "caption": "Tavi the Mender speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Tavi the Mender speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/edaea70ab29a94c1.png",
+      "caption": "Kite the Courier speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Kite the Courier speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    },
+    {
+      "image": "assets/wiki/6bdbc04ef8487e29.png",
+      "caption": "Fern the Guide speaks during Mote’s journey (dialogue scene; shared villager appearance).",
+      "alt": "Fern the Guide speaks during Mote’s journey (dialogue scene; shared villager appearance)."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Generate a 2d game using BlueEngine. I want this to be very similar to super Mario bros, however I want original IP and characters. Give it the same depth and level style, controls, just a different unique IP",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

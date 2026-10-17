@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Sway is a local music visualizer that turns decoded audio into evolving color and motion. Import a playlist and choose Automatic or six visual families, six palettes and Calm/Flow/Surge movement. Every listen receives a new seeded visual identity while songs stream from disk and remain local.",
+  "rules": [
+    "Imported files play in order and the playlist repeats. Adding more files appends without interrupting the current track.",
+    "Space pauses sound and motion together.",
+    "Unsupported or damaged tracks are skipped; if no track can play, the import screen reports an error.",
+    "There is no score, win condition or narrative campaign; waveform, spectrum, energy and onsets drive the visuals."
+  ],
+  "controls": [
+    "O opens file selection; drag/drop imports one or more songs.",
+    "Space pauses/resumes; Left/Right selects previous/next track; R creates a new look without restarting music.",
+    "Escape/Tab/right click opens options; F fullscreen."
+  ],
+  "story": "This is an audio visualization utility with no story or character cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/sway/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/fc786bfcdf3dc912.png",
+      "caption": "Sway — in-game view",
+      "alt": "Sway — in-game view"
+    },
+    {
+      "image": "assets/wiki/2a584372dfea4742.png",
+      "caption": "Sway in motion — moment 5 seconds.",
+      "alt": "Sway in motion — moment 5 seconds."
+    },
+    {
+      "image": "assets/wiki/4c4635bfa126381f.png",
+      "caption": "Sway in motion — moment 8 seconds.",
+      "alt": "Sway in motion — moment 8 seconds."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Next create a music visualizer with this engine. Have a super simple file picker allowing a person to import 1 or multiple audio files. Have a variety of visualization options. Different shapes, colors, movements, etc. the idea is that not only should songs have their own unique visualizations, but listening to the same song should have different kinds of visualizations (different colors, shapes, etc).\n\nHide the hud, but show what song is playing for 10 seconds in a discrete spot whenever a song is played \n\nGive it a short catchy name that makes sense. \n\nOnce done, publish the project to the games repository and give your feedback notes to the engine so it can improve in the future",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

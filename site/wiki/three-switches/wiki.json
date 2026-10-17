@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "overview": "Three Switches is a small first-person test-lab puzzle built from three buttons and an exit. Explore the lab, activate each switch once and return to the unlocked exit. The game’s rules are directly documented in its declarative game file rather than a separate README.",
+  "rules": [
+    "Activate buttons A, B and C in any order.",
+    "A pressed button hides and disables, preventing double counting.",
+    "The exit enables when the switch counter reaches three.",
+    "Interact with the enabled exit to complete the game."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "This is a test-lab interaction puzzle with no documented narrative campaign or named story characters.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/three-switches/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/f138d084c8bf8b30.png",
+      "caption": "Three Switches — in-game view",
+      "alt": "Three Switches — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "overview": "Pulse Nova is a kinetic arena shooter in a floating neon colosseum. Fire plasma bolts into cybernetic drone waves, create multi-kill explosions and use jump pads for aerial movement. A kinetic dash provides both burst movement and brief invulnerability as the arena pressure builds.",
+  "rules": [
+    "Survive the incoming drone waves while shooting with the Pulse Blaster.",
+    "Use explosions to chain multiple kills.",
+    "Dash gives burst movement and temporary invulnerability.",
+    "Jump pads launch the player into the air, changing routes and firing positions."
+  ],
+  "controls": [
+    "WASD moves; mouse aims; left click/E fires.",
+    "Right click/Shift dashes; Space jumps.",
+    "F5/F9 quick-save/load; R restarts; Escape menu."
+  ],
+  "story": "The documented setting is a floating neon colosseum attacked by cybernetic drones. No narrative campaign or named protagonist is established.",
+  "characters": [
+    {
+      "name": "Cybernetic drones",
+      "description": "The enemy swarms attacking the floating neon colosseum; the player blasts them with kinetic plasma bolts and chains multi-kill explosions."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/pulse-nova/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/6577b59f31e3abdc.png",
+      "caption": "Pulse Nova — in-game view",
+      "alt": "Pulse Nova — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

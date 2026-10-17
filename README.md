@@ -18,6 +18,14 @@ not whether AI helped write the code. A catalog row may explicitly set
 `design_origin` to `ai` or `human` to override that classification. Keep the full
 Git history when building the site so IdeaForge credits remain available.
 
+Each game page also has a built-in game guide: overview, rules, controls, story,
+characters, screenshots and creation notes. AI designs include their recorded
+design rationale; human designs include the original creation request when it
+can be recovered. Missing historical originals are clearly labeled.
+**New games require a complete guide, three distinct gameplay captures and
+character screenshots before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
+for the content format and validation commands.
+
 Every game card and detail page uses a real in-game capture from
 `site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
 screenshot (at least 320 × 180); launcher icons and initial tiles are never used

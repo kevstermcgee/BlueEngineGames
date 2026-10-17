@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Backstop is a 2D logistics puzzle across eight cargo bays. A shove gets its distance from the clear runway behind the pusher, so placing a crate or positioning against a wall can be as useful as clearing the destination. Later bays require delivery order, reusable helpers and temporarily removing cargo from a target.",
+  "rules": [
+    "Deliver every crate to a cyan target simultaneously.",
+    "A shove travels exactly one cell plus the consecutive clear cells behind you. Walls, crates and edges stop that rear measurement.",
+    "Every forward cell must be clear; a blocked shove is rejected in full, never shortened. There is no pulling or chain pushing.",
+    "Targets remain normal floor; docked crates can move again and act as backstops.",
+    "A NO ROUTE TO GOAL state is recoverable with undo or retry; there is no timer, move cap or rejection penalty."
+  ],
+  "controls": [
+    "Arrows/WASD walk one cell and face that way; hold to repeat.",
+    "Space shoves the adjacent crate; the runway and landing are shown before the move.",
+    "Z/Undo reverses a walk, turn or shove; R/Retry resets this bay; Enter/Next Bay advances a clear.",
+    "K/L save/load; Escape pauses; M toggles sound; F toggles fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/backstop/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/63d62b2b0143f8ed.png",
+      "caption": "Backstop — in-game view",
+      "alt": "Backstop — in-game view"
+    },
+    {
+      "image": "assets/wiki/9533c79f99432f27.png",
+      "caption": "Bay seven: Three-way exchange, with a two-cell shove preview.",
+      "alt": "Bay seven: Three-way exchange, with a two-cell shove preview."
+    },
+    {
+      "image": "assets/wiki/80662b4fb9e1ef5c.png",
+      "caption": "All eight cargo bays delivered.",
+      "alt": "All eight cargo bays delivered."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "A crate is both cargo and a measuring tool. Delivering it too early may remove the backstop needed for another delivery. The satisfying discovery is that moving something behind you can fix a landing far ahead. Challenges escalate from fixed wall measurements to installing movable backstops, reusing one crate for several launches and temporarily dismantling a nearly finished solution.\n\nThe closest comparison is Sokoban's push-only, crate-to-goal structure ([rules](https://webdocs.cs.ualberta.ca/~games/Sokoban/thegame.html)). Backstop replaces ordinary shoves with exact distances calculated from rear clearance, making cargo placement also configure future movement ranges. Unlike the prior Afterpull mechanic, walking never attracts remote crates or activates vacated cells. Unlike Borrowed Falls, distance is neither captured nor transferred. This is a concrete mechanical distinction, not certification of worldwide originality or fun.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

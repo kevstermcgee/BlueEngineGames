@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Relic Relay is a timed first-person courier fixture. Picking up a fragile relic starts a decay clock, making the stabilization pylon the immediate priority. Once stabilized, the relic can be delivered to an extraction vault without further decay.",
+  "rules": [
+    "Pick up the relic at its pedestal to enable the recharge pylon and start decay.",
+    "An unstabilized carried relic loses one charge per timer pulse, starting with three.",
+    "Reaching zero charge shatters the relic and loses the match; a later pylon visit cannot recover that attempt.",
+    "Stabilize at the pylon to stop decay and unlock the extraction vault; use the vault to win."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The premise is an unnamed courier carrying a fragile relic to extraction. No named character cast or extended narrative is documented.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/relic-relay/README.md",
+    "games/relic-relay/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/3031b488a99499ea.png",
+      "caption": "Relic Relay — in-game view",
+      "alt": "Relic Relay — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Corkscrew Key is a 3D spatial puzzle in six chambers built around a rigid five-cube key. A quarter-turn always moves the key one grid unit along the same fixed world axis, so rotation and translation must be planned together. Different arm colors, swept-path previews and optional hints help explain routes through beams, vertical passages and a final vault.",
+  "rules": [
+    "Match the gold socket’s complete position and orientation, not just its center.",
+    "Each quarter-turn translates one cell along its selected fixed world axis; reversing direction reverses both rotation and travel.",
+    "All five cubes must clear obstacles throughout the turn; an empty landing alone is insufficient.",
+    "Blocked moves change nothing. There is no timer, move budget or hazard damage.",
+    "Undo or restart freely, and complete six chambers."
+  ],
+  "controls": [
+    "1/2/3 select world X/Y/Z; Right/Left preview positive/negative screw steps; Space executes or advances after docking.",
+    "Z undoes a successful move, including docking; R retries.",
+    "Right mouse drag orbits; wheel zooms; H toggles an optional next-step hint.",
+    "K/L save/load; Escape pauses."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/corkscrew-key/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/051ae5677094ec1f.png",
+      "caption": "Corkscrew Key — in-game view",
+      "alt": "Corkscrew Key — in-game view"
+    },
+    {
+      "image": "assets/wiki/4171237a8654a40f.png",
+      "caption": "The final Corkscrew Vault, with the quarter-turn path blocked.",
+      "alt": "The final Corkscrew Vault, with the quarter-turn path blocked."
+    },
+    {
+      "image": "assets/wiki/c95c6298ef5e2dda.png",
+      "caption": "The final Corkscrew Vault completed.",
+      "alt": "The final Corkscrew Vault completed."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Every command solves two problems at once: where the key goes and which way its arms point. A move toward the socket can turn an arm into a ceiling beam; moving away can create the orientation needed to return. The central discovery is that rotation order matters: traveling a small loop can change your orientation even though your position stays unchanged. Crisp quarter-turn animations and exact previews make this feel like learning a strange mechanical toy.\n\nThe closest comparison is Interlocked's manipulation of blocks in three dimensions, with separate viewing and pulling controls. [Interlocked description](https://www.gpstudios.com/games/view/interlocked). Corkscrew Key instead binds an object's rotation and translation into one signed action; returning to the same position can change its orientation. Among the supplied mechanics, Rotation Relay also uses rotation, but spends stolen angular velocity to turn an arena and redirect gravity. This concept changes only the key's pose, with no borrowed resource, gravity change, gap exchange or perspective scaling. Worldwide originality and fun remain unverified.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}

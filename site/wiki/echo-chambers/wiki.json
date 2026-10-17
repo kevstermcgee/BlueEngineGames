@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Echo Chambers is a first-person sequence-memory fixture with four resonance monoliths and an altar. Learn the cardinal ordering and strike the monoliths without breaking the sequence. A wrong input resets progress while allowing another attempt.",
+  "rules": [
+    "Activate the monoliths in North, South, East, West order.",
+    "A wrong monolith resets sequence progress and re-arms earlier monoliths.",
+    "The altar does nothing before the correct four-step sequence unseals it.",
+    "Interact with the unsealed altar to complete the game."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The harmonic sanctum is the documented setting; no narrative campaign or named character cast is established.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/echo-chambers/README.md",
+    "games/echo-chambers/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/93bfdef305f2525d.png",
+      "caption": "Echo Chambers — in-game view",
+      "alt": "Echo Chambers — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

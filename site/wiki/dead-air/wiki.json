@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "overview": "Dead Air is a first-person flashlight-and-pistol survival horror game set in the Hollow Pine relay station. During a midnight-to-dawn shift, you maintain the generator and send five scheduled all-clear broadcasts while a sound-hunting presence stalks the building. Five station-log pages reveal the previous operator’s experience through the journal.",
+  "rules": [
+    "Keep the generator fuelled and send all five scheduled broadcasts during the 00:00–06:00 shift.",
+    "The Caller is blind and tracks sound. Sneaking is quiet; running and gunfire attract danger.",
+    "Flashlight and pistol hits stagger the Caller briefly instead of permanently defeating it.",
+    "Battery and ammunition are scarce; station logs can be reread in the Journal."
+  ],
+  "controls": [
+    "WASD moves; mouse looks; Shift sneaks.",
+    "T toggles the flashlight; left mouse fires; E interacts.",
+    "J opens the journal; F5/F9 save/load; F fullscreen; Escape menu."
+  ],
+  "story": "You are keeping Hollow Pine’s relay broadcasting until dawn. Scattered station logs tell the prior operator’s story as something outside answers the transmissions.",
+  "characters": [
+    {
+      "name": "Relay operator",
+      "description": "The player’s role: maintain power and scheduled all-clear broadcasts through the overnight shift.",
+      "appearance_note": "This is the first-person player role. The game does not render a separate operator body or portrait.",
+      "image": "assets/wiki/d42f3497c72a2983.png",
+      "image_caption": "The relay operator’s first-person view inside the station; no separate player body is rendered."
+    },
+    {
+      "name": "The Caller",
+      "description": "A blind threat that hunts by sound and can only be staggered briefly with light or gunfire."
+    },
+    {
+      "name": "Previous operator",
+      "description": "A figure described by the five collectible station-log pages.",
+      "appearance_note": "This person is described in the collectible station-log pages; the game does not render a character body or portrait.",
+      "image_status": "not-rendered"
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/dead-air/README.md",
+    "games/dead-air/src/main.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/d42f3497c72a2983.png",
+      "caption": "Dead Air — in-game view",
+      "alt": "Dead Air — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

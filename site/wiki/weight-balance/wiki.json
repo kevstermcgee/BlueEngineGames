@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "overview": "Weight & Balance is a first-person ballast-themed interaction fixture. Despite the equilibrium theme, the current rules implement a fixed left-pan, right-pan, gate sequence rather than adjustable masses or simulated weighing. The objective is to complete those three station interactions in order.",
+  "rules": [
+    "Place the left ballast first; it then disables.",
+    "The right ballast only registers after the left, and cannot be counted twice.",
+    "Loading the right pan after the left enables the counterweight gate.",
+    "Interact with the gate after both loads to complete the game."
+  ],
+  "controls": [
+    "WASD/arrows move; mouse looks; Shift sprints; Space jumps; Ctrl crouches.",
+    "Approach and aim at an enabled control, then press E to interact.",
+    "Escape opens the native menu; F5/F9 quick-save/load in the stock client."
+  ],
+  "story": "The documented setting is a mechanical ballast puzzle, with no narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/weight-balance/README.md",
+    "games/weight-balance/game.json"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/b10b217e4dc3f3ef.png",
+      "caption": "Weight Balance — in-game view",
+      "alt": "Weight Balance — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

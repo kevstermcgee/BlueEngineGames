@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "overview": "Prop Hunt is a hide-and-seek playtest in Hollow Pine for one seeker and seven furniture-disguised hiders. A local solo preview lets players inspect the roles, while a separate server hosts the eight-seat match. Empty hider seats remain stationary disguises rather than behaving as roaming bots.",
+  "rules": [
+    "Hiders choose a furniture disguise and confirm it; the seeker searches the environment.",
+    "The seeker has three minutes to find all seven hiders, as described by the catalog listing.",
+    "Holding the inspect action checks potential hiding objects.",
+    "Unoccupied hider seats remain stationary; online rounds require the game’s separate server."
+  ],
+  "controls": [
+    "WASD moves; mouse looks; 1–0 or wheel chooses a disguise; E confirms.",
+    "The seeker holds Space to inspect.",
+    "Escape menu; F5/F9 save/load in solo preview."
+  ],
+  "story": "Furniture disguises conceal hiders in Hollow Pine. No named personal backstories or narrative campaign are documented.",
+  "characters": [
+    {
+      "name": "Seeker",
+      "description": "The searching player, who inspects furniture for concealed opponents."
+    },
+    {
+      "name": "Hiders",
+      "description": "Seven roles that disguise themselves as furniture; empty seats are stationary."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/prop-hunt/README.md",
+    "games/prop-hunt/src/sim.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/28f44a8921815ef8.png",
+      "caption": "Prop Hunt — in-game view",
+      "alt": "Prop Hunt — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

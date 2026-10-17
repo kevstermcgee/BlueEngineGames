@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "overview": "Slapstick is two-player air hockey with a race to seven goals. Move a paddle to defend your end and strike the puck toward the opponent’s goal. A local preview provides an AI opponent, while online matches use the separate game server.",
+  "rules": [
+    "Put the puck into the opponent’s goal while protecting your own.",
+    "The first player to score seven goals wins.",
+    "Local preview uses an AI opponent; two-player online play uses the separate server."
+  ],
+  "controls": [
+    "Mouse or left gamepad stick moves the paddle.",
+    "Escape opens the menu and Settings adjusts music/effects.",
+    "F5/F9 save/load in solo preview."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/slapstick/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/7449e3eadf882d9f.png",
+      "caption": "Slapstick — in-game view",
+      "alt": "Slapstick — in-game view"
+    },
+    {
+      "image": "assets/wiki/88f79a979cb9e97c.png",
+      "caption": "The red and green paddles at the air hockey table.",
+      "alt": "The red and green paddles at the air hockey table."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

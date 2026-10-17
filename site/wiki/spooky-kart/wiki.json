@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "overview": "Spooky Kart is a Halloween racer on Haunted Hollow for up to eight drivers. Eight character-and-kart combinations provide distinct handling and signature perks, from faster drift charging to temporary phasing. Play offline against bots or race friends online with bots filling empty grid places.",
+  "rules": [
+    "Race Haunted Hollow with a selected driver; each driver has distinct kart handling and one perk.",
+    "Hold drift through a corner, then release to boost.",
+    "Use your driver’s perk to create advantages or disrupt rivals.",
+    "Offline races use bots, and online servers fill empty slots with bots."
+  ],
+  "controls": [
+    "W/S gas/brake; A/D steers; Shift drifts; Space uses perk.",
+    "Controller: RT/A gas, LT brake, left stick steer, either bumper drift, X perk.",
+    "A/D and Enter navigate menus; P/controller Y opens Play Online; Escape/Start pauses."
+  ],
+  "story": "Eight Halloween drivers compete in Haunted Hollow. No narrative campaign beyond the racing setting is documented.",
+  "characters": [
+    {
+      "name": "Vampire",
+      "description": "Fast acceleration; Bat Boost charges drifts faster and boosts harder.",
+      "image": "assets/wiki/d94f6c61b4a9a5d6.png",
+      "image_caption": "A Halloween race with the Mummy, Scarecrow, Ghost and Vampire drivers."
+    },
+    {
+      "name": "Frankenstein’s Monster",
+      "description": "Heavy, high top speed; Ram launches lighter karts during fast collisions.",
+      "image": "assets/wiki/480fb7cfbd9aa79b.png",
+      "image_caption": "Monster and their kart on the driver-selection podium."
+    },
+    {
+      "name": "Mummy",
+      "description": "Sharp handling; Bandage Trail slows following karts.",
+      "image": "assets/wiki/878162d31b1c0f74.png",
+      "image_caption": "Mummy and the Sarcophagus Sprinter in the driver selection lobby."
+    },
+    {
+      "name": "Ghost",
+      "description": "Light, floaty kart; Phase bypasses karts, hazards and grass.",
+      "image": "assets/wiki/d94f6c61b4a9a5d6.png",
+      "image_caption": "A Halloween race with the Mummy, Scarecrow, Ghost and Vampire drivers."
+    },
+    {
+      "name": "Scarecrow",
+      "description": "Balanced kart; Crow Swarm slows the nearest kart ahead.",
+      "image": "assets/wiki/d94f6c61b4a9a5d6.png",
+      "image_caption": "A Halloween race with the Mummy, Scarecrow, Ghost and Vampire drivers."
+    },
+    {
+      "name": "Zombie",
+      "description": "Sturdy, slow kart; Undead reduces grass and stun penalties.",
+      "image": "assets/wiki/24bcd425b7ff8781.png",
+      "image_caption": "Zombie and their kart on the driver-selection podium."
+    },
+    {
+      "name": "Clown",
+      "description": "Tight-turning kart; Honk pushes nearby karts away.",
+      "image": "assets/wiki/f5c6106d0362bafd.png",
+      "image_caption": "Clown and their kart on the driver-selection podium."
+    },
+    {
+      "name": "Skeleton",
+      "description": "Light, quick acceleration; Rattle drops spin-inducing bones.",
+      "image": "assets/wiki/0992ef1a587562fa.png",
+      "image_caption": "Skeleton and their kart on the driver-selection podium."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/spooky-kart/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/878162d31b1c0f74.png",
+      "caption": "Mummy and the Sarcophagus Sprinter in the driver selection lobby.",
+      "alt": "Mummy and the Sarcophagus Sprinter in the driver selection lobby."
+    },
+    {
+      "image": "assets/wiki/d94f6c61b4a9a5d6.png",
+      "caption": "A Halloween race with the Mummy, Scarecrow, Ghost and Vampire drivers.",
+      "alt": "A Halloween race with the Mummy, Scarecrow, Ghost and Vampire drivers."
+    },
+    {
+      "image": "assets/wiki/d3c3c8d127c55601.png",
+      "caption": "Vampire and their kart on the driver-selection podium.",
+      "alt": "Vampire and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/480fb7cfbd9aa79b.png",
+      "caption": "Monster and their kart on the driver-selection podium.",
+      "alt": "Monster and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/3921fb06d7a0994a.png",
+      "caption": "Mummy and their kart on the driver-selection podium.",
+      "alt": "Mummy and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/745742a3289c2019.png",
+      "caption": "Ghost and their kart on the driver-selection podium.",
+      "alt": "Ghost and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/150b49190a467dae.png",
+      "caption": "Scarecrow and their kart on the driver-selection podium.",
+      "alt": "Scarecrow and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/24bcd425b7ff8781.png",
+      "caption": "Zombie and their kart on the driver-selection podium.",
+      "alt": "Zombie and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/f5c6106d0362bafd.png",
+      "caption": "Clown and their kart on the driver-selection podium.",
+      "alt": "Clown and their kart on the driver-selection podium."
+    },
+    {
+      "image": "assets/wiki/0992ef1a587562fa.png",
+      "caption": "Skeleton and their kart on the driver-selection podium.",
+      "alt": "Skeleton and their kart on the driver-selection podium."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

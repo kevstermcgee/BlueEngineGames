@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "overview": "Rift Delver is a 3D expedition shooter through a lost machine city, built around drafting circuits and choosing when to bank salvage. Three encounters make a depth, with a Warden encounter every third depth, rotating environments and increasing difficulty. Extraction funds a permanent four-track workshop and deeper clears unlock additional weapons.",
+  "rules": [
+    "After each encounter choose one of three seeded circuits and recover some hull; circuits stack and change weapon or survival behavior.",
+    "Three encounters clear a depth and open the choice to extract or descend. Every third depth ends with a Warden and escort.",
+    "Extract to bank salvage. Defeat retains 25% of unbanked salvage plus Insurance upgrades.",
+    "Firing creates heat; manage bursts and cooling. Dash briefly protects, while shockwave damages/slows nearby enemies and clears projectiles.",
+    "Depth three unlocks Shard Caster; depth six unlocks Arc Lance; workshop tracks have ten ranks each."
+  ],
+  "controls": [
+    "WASD/left stick moves; mouse/right stick aims; left mouse/right trigger fires.",
+    "Right mouse/RB shockwave; Shift/LB dash; Space/A jump; Q/X cycles weapons.",
+    "E/Enter starts/descends/returns; 1–3 drafts circuits; at extraction 1 banks and 2 descends; 1–4 buys workshop ranks.",
+    "F5/F9 quick-save/load; Escape pause/settings; F fullscreen."
+  ],
+  "story": "The player descends through a lost machine city to salvage its technology. The documented progression is expeditions and workshop upgrades; no dialogue campaign is described.",
+  "characters": [
+    {
+      "name": "Delver",
+      "description": "The player’s expedition role, assembling circuits and deciding when to extract.",
+      "appearance_note": "This is the first-person player role, shown through its viewpoint and weapon rather than a separate full-body character model.",
+      "image": "assets/wiki/e53f2e0dd1048c68.png",
+      "image_caption": "Depth one in the Sunken Archive, with the Pulse Carbine equipped. First-person Delver viewpoint; no player body portrait."
+    },
+    {
+      "name": "Flying drones",
+      "description": "Airborne machines that hover above the floor, fire aimed projectiles and back away when the player approaches."
+    },
+    {
+      "name": "Melee machines",
+      "description": "Charging close-range machines that commit to a direction before rushing; their pauses create room to sidestep."
+    },
+    {
+      "name": "Brutes",
+      "description": "Heavy, slow-moving machines with more hull than ordinary attackers and stronger contact damage."
+    },
+    {
+      "name": "Sentinels",
+      "description": "Ranged machines that fire aimed projectiles when they have a clear shot and retreat from a nearby player."
+    },
+    {
+      "name": "Wardens",
+      "description": "Boss machines encountered every third depth. They launch radial projectile rings and an aimed shot, supported by escorts.",
+      "image": "assets/wiki/711c6d29ba88dbbe.png",
+      "image_caption": "A Warden in the depth-three Glacial Vault encounter."
+    }
+  ],
+  "characters_note": "",
+  "sources": [
+    "games/rift-delver/README.md",
+    "games/rift-delver/src/lib.rs",
+    "games/rift-delver/src/main.rs"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/449d9a31a8753488.png",
+      "caption": "Rift Delver — in-game view",
+      "alt": "Rift Delver — in-game view"
+    },
+    {
+      "image": "assets/wiki/e53f2e0dd1048c68.png",
+      "caption": "Depth one in the Sunken Archive, with the Pulse Carbine equipped. First-person Delver viewpoint; no player body portrait.",
+      "alt": "Depth one in the Sunken Archive, with the Pulse Carbine equipped. First-person Delver viewpoint; no player body portrait."
+    },
+    {
+      "image": "assets/wiki/711c6d29ba88dbbe.png",
+      "caption": "A Warden in the depth-three Glacial Vault encounter.",
+      "alt": "A Warden in the depth-three Glacial Vault encounter."
+    },
+    {
+      "image": "assets/wiki/aaa2561b089e38d9.png",
+      "caption": "Installing a circuit after a cleared encounter.",
+      "alt": "Installing a circuit after a cleared encounter."
+    },
+    {
+      "image": "assets/wiki/c7cc00c3da4dd8ab.png",
+      "caption": "Choosing extraction or descent after securing depth one.",
+      "alt": "Choosing extraction or descent after securing depth one."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Using the latest BlueEngine, make a high quality 3d game that can be played for hours. I love time sink games so try to make it something that a player can really get invested in. Ensure the gameplay itself and the game mechanics are the core of the gaming experience. Ensure the game feels incredible to play. Once it is done, please publish to BlueEngineGames and create high quality feedback for the BlueEngine project to improve",
+    "prompt_note": "Original creation request, recovered verbatim from the author’s request history. This records the requested design; the implemented release is described above."
+  }
+}

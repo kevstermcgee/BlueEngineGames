@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "overview": "Skyhook Sprint is a first-person launch-pad course crossing gaps between raised platforms. Three fixed launch pads add forward and upward impulses to send the player through airborne gates in order. Missing the landing can drop the player into the void and end the run.",
+  "rules": [
+    "Cross the three airborne gates in their authored order; only the next gate counts.",
+    "Moving onto a launch pad applies its upward and forward impulse.",
+    "Use the platforms to set up the next launch and control the airborne route.",
+    "Falling into the void loses the run; crossing the third gate wins."
+  ],
+  "controls": [
+    "WASD moves; mouse looks; Space jumps.",
+    "R restarts; F5/F9 save/load."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/skyhook-sprint/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/e3f3756cf03c5c2e.png",
+      "caption": "Skyhook Sprint — in-game view",
+      "alt": "Skyhook Sprint — in-game view"
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": null,
+    "prompt_status": "unavailable"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "overview": "Pinstride is a 3D movement puzzle with a rigid baton and eight chambers. Swing the free tip a quarter-turn around the pinned tip, then use that arriving tip as the next anchor. Every move therefore changes both the baton’s position and the pivot for the following swing.",
+  "rules": [
+    "Seat the blue-circle tip and orange-diamond tip in their matching floating sockets.",
+    "Each move is a 90-degree swing around the current pin; arrival hands the pin to the other tip.",
+    "The whole baton must clear the boxes and chamber limits throughout its arc.",
+    "Blocked requests change nothing. A blind pocket can leave no legal swing, recoverable with undo or restart.",
+    "There is no gravity, timer, move budget or limited life; clear all eight chambers."
+  ],
+  "controls": [
+    "Click a numbered ghost or press 1–4 to preview; Space commits or advances after docking.",
+    "Right drag/arrows orbit; wheel zooms.",
+    "Z undoes/cancels a swing; R retries; H optional hint.",
+    "F5/F9 save/load; Escape menu; F fullscreen."
+  ],
+  "story": "This is a mechanics-led puzzle or activity; the available game source does not establish a narrative campaign or named story cast.",
+  "characters": [],
+  "characters_note": "No named story characters are documented. The objects, markers and hazards shown here serve the game rules.",
+  "sources": [
+    "games/pinstride/README.md"
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/35527fba688b3d0d.png",
+      "caption": "Pinstride — in-game view",
+      "alt": "Pinstride — in-game view"
+    },
+    {
+      "image": "assets/wiki/ea6c3abb1a5f4f7c.png",
+      "caption": "Handoff: a pinned baton with clear and blocked swing previews.",
+      "alt": "Handoff: a pinned baton with clear and blocked swing previews."
+    },
+    {
+      "image": "assets/wiki/c3d24ae142dac771.png",
+      "caption": "Chamber four: Overpass, swinging above a bulkhead.",
+      "alt": "Chamber four: Overpass, swinging above a bulkhead."
+    }
+  ],
+  "design": {
+    "origin": "ai",
+    "original_prompt": null,
+    "rationale": "Each satisfying snap gives you a new foothold while taking away the old one. A swing toward the exit can leave the wrong tip anchored; a swing away can create the clearance needed to advance. The central discovery is learning to plan pairs of swings, using empty volume around obstacles as carefully as the destination itself.\n\nThe closest comparison is Bloxorz's rigid-object route planning toward a goal. [Bloxorz instructions](https://www.coolmathgames.com/0-bloxorz). Pinstride replaces floor-supported rolling with alternating endpoint pivots through a fully spatial volume, making the swept arc and next anchor central. Among the supplied mechanics, Rotation Relay also uses rotation, but transfers angular velocity to rotate an arena; Pinstride moves only the baton and automatically hands its anchor between tips. This comparison cannot certify worldwide originality or fun.",
+    "rationale_source": "Recorded public design pitch from the original IdeaForge concept. This describes the intended appeal and mechanical distinction."
+  }
+}
