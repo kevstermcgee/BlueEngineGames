@@ -11,7 +11,7 @@ DESIGN_LABELS = {'ai': 'AI-designed', 'human': 'Human-designed'}
 
 
 def design_origin(repo_root, row):
-    """Credit the design, using IdeaForge's publication history, not code authorship.
+    """Credit the design from its authored guide or IdeaForge publication history.
 
     Non-IdeaForge games default to human design at the site owner's request.
     An explicit catalog credit takes precedence.
@@ -21,6 +21,22 @@ def design_origin(repo_root, row):
         if origin not in DESIGN_LABELS:
             raise ValueError(f"Invalid design origin for {row['slug']}: {origin}")
         return origin
+    slug = row['slug']
+    if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug):
+        raise ValueError('Unsafe game slug in design credit')
+    # A newly exported game has no publication commit yet: its wiki must already
+    # identify the designer when the pre-publication site tests run.
+    for path in (Path(repo_root) / 'site/wiki' / slug / 'wiki.json',
+                 Path(repo_root) / 'games' / slug / 'wiki.json'):
+        if path.is_file():
+            if not path.resolve().is_relative_to(Path(repo_root).resolve()):
+                raise ValueError(f'Wiki design credit escapes the repository: {slug}')
+            document = json.loads(path.read_text(encoding='utf-8'))
+            design = document.get('design') if isinstance(document, dict) else None
+            origin = design.get('origin') if isinstance(design, dict) else None
+            if origin not in DESIGN_LABELS:
+                raise ValueError(f'Invalid authored design origin for {slug}')
+            return origin
     if not (Path(repo_root) / '.git').exists():
         return 'human'
     history = subprocess.run(

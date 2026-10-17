@@ -63,6 +63,13 @@ def independent_game():
 
 
 class Downloads(unittest.TestCase):
+    def test_uncommitted_ai_game_has_its_design_credit_before_the_publication_commit(self):
+        from native_catalog import design_origin
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            wiki_fixture(root, 'new-ai-game', 'ai')
+            self.assertEqual(design_origin(root, {'slug': 'new-ai-game', 'name': 'New AI Game'}), 'ai')
+
     def test_design_credit_uses_game_specific_ideaforge_publication_not_ai_code_authorship(self):
         from native_catalog import design_origin
         with tempfile.TemporaryDirectory() as temp:

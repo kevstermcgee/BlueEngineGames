@@ -11,8 +11,9 @@ download link. It rebuilds automatically from each release
 (see `site/` and `.github/workflows/pages.yml`).
 
 Cards and game pages show **AI-designed** or **Human-designed** badges, with a
-designer filter alongside the existing library filters. IdeaForge publication
-commits identify AI-designed games automatically, including future releases.
+designer filter alongside the existing library filters. Authored wiki credits
+identify the designer before the first publication; IdeaForge publication
+commits also identify historical AI-designed games automatically.
 Other games are treated as human-designed; this describes the concept and rules,
 not whether AI helped write the code. A catalog row may explicitly set
 `design_origin` to `ai` or `human` to override that classification. Keep the full
