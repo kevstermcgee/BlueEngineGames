@@ -543,3 +543,33 @@ mod independent_installer_tests {
         }
     }
 }
+
+pub fn recover_interrupted(target: &Path, slug: &str) -> Result<bool, String> {
+    let backup = target
+        .parent()
+        .ok_or("Missing installation parent")?
+        .join(format!(".{slug}-backup"));
+    if !target.exists() && backup.is_dir() {
+        fs::rename(backup, target).map_err(|e| e.to_string())?;
+        return Ok(true);
+    }
+    Ok(false)
+}
+#[cfg(test)]
+mod recovery_tests {
+    use super::*;
+    #[test]
+    fn interrupted_commit_restores_previous_game() {
+        let temp = tempfile::tempdir().unwrap();
+        let backup = temp.path().join(".test-backup");
+        fs::create_dir(&backup).unwrap();
+        fs::write(backup.join("test.exe"), "previous version").unwrap();
+        let target = temp.path().join("test");
+        assert!(recover_interrupted(&target, "test").unwrap());
+        assert_eq!(
+            fs::read_to_string(target.join("test.exe")).unwrap(),
+            "previous version"
+        );
+        assert!(!recover_interrupted(&target, "test").unwrap());
+    }
+}

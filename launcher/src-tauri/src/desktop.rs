@@ -325,9 +325,25 @@ pub fn run() {
                 .filter(|c| catalog::validate(c).is_ok());
             let bundled: Catalog = serde_json::from_str(include_str!("../../public/catalog.json"))?;
             catalog::validate(&bundled).map_err(std::io::Error::other)?;
+            let catalog = cached.unwrap_or(bundled);
+            let old_root = root
+                .parent()
+                .and_then(|p| p.parent())
+                .unwrap_or(&root)
+                .join("BlueEngineLauncher/games");
+            for game in &catalog.games {
+                for parent in [&root, &old_root] {
+                    if parent.join(format!(".{}-backup", game.slug)).is_dir() {
+                        if let Ok(_guard) = lock(parent, &game.slug) {
+                            let _ =
+                                install::recover_interrupted(&parent.join(&game.slug), &game.slug);
+                        }
+                    }
+                }
+            }
             app.manage(Library {
                 root,
-                catalog: Mutex::new(cached.unwrap_or(bundled)),
+                catalog: Mutex::new(catalog),
                 children: Mutex::new(HashMap::new()),
                 busy: AtomicBool::new(false),
                 active: Mutex::new(None),
