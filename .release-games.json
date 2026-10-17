@@ -334,6 +334,13 @@
       "directory": "games/afterpull",
       "kind": "cargo-package",
       "binary": "afterpull"
+    },
+    {
+      "slug": "crosshaul",
+      "name": "Crosshaul",
+      "directory": "games/crosshaul",
+      "kind": "cargo-package",
+      "binary": "crosshaul"
     }
   ],
   "non_playable_directories": [

@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 640,
+    "games": 674,
     "prototypes": 10,
     "tests": 64
   },
@@ -1129,6 +1129,142 @@
     {
       "path": "games/corner-clutch/tools/solve_rooms.py",
       "sha256": "48d40fb7a649752ae495a16f7da427f60c4c9aa00d06f034ef4caa67cd5908fa"
+    },
+    {
+      "path": "games/crosshaul/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/crosshaul/AGENTS.md",
+      "sha256": "57afced473afc323482452e50cb0da1240d32e05cf81f340fc906bf629d6b51d"
+    },
+    {
+      "path": "games/crosshaul/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/crosshaul/Cargo.lock",
+      "sha256": "2cefef3d0fb2f16235a07016f87d1f03c426d19647a4bcf4d99680d2cce3b690"
+    },
+    {
+      "path": "games/crosshaul/Cargo.toml",
+      "sha256": "1c13227e8e4a7e3a6c07489d1fbcb4bfc78dcde0214b0f137b578645aca1d2b0"
+    },
+    {
+      "path": "games/crosshaul/README.md",
+      "sha256": "5acb631556a3d02fcc5cfebfbbd96f85cbedf8506d220d480970cc11a034ba6d"
+    },
+    {
+      "path": "games/crosshaul/STATUS.md",
+      "sha256": "d87a89cc57c78c21ce719ee1be5fedc8d9e9661cbc3401734e634529492d4b38"
+    },
+    {
+      "path": "games/crosshaul/assets/chambers.json",
+      "sha256": "397dd70d0d1ddd264946e99d593737e9677715727c98f32b3538086123e497ac"
+    },
+    {
+      "path": "games/crosshaul/assets/icon.ico",
+      "sha256": "861885e0f3c723d87c1ebb9b591c600f82c70b2631f1b05292d3b57a0ba72749"
+    },
+    {
+      "path": "games/crosshaul/assets/icon.png",
+      "sha256": "32b98003c3a4b8292459ecdfa8f881a519a2250721ac91839664ef61d4693740"
+    },
+    {
+      "path": "games/crosshaul/assets/icon_16.rgba",
+      "sha256": "d158335da162a07b412c4ca5c28033baefd6111341fd9ed4cf3196aecb232ecd"
+    },
+    {
+      "path": "games/crosshaul/assets/icon_32.rgba",
+      "sha256": "ae9890a43865c67a5a5dadda0a3a4490f26098cb9cab67a4d6e9dc7a83495f42"
+    },
+    {
+      "path": "games/crosshaul/assets/icon_64.rgba",
+      "sha256": "d9fc142f8e6c6141a87dd2fda0da02c4f6497d990fd660adfef4216b568bc64f"
+    },
+    {
+      "path": "games/crosshaul/assets/identity.json",
+      "sha256": "b583350fdd4cc87800ddec94fb1e8e793acf2a4e584ec04ef7d51446331a635e"
+    },
+    {
+      "path": "games/crosshaul/assets/native-review.json",
+      "sha256": "8109d7bdbca69d209adcae8f603a1d87f9040bd4e55add169f3dd09020f2969c"
+    },
+    {
+      "path": "games/crosshaul/assets/verification_input.json",
+      "sha256": "1220ad6bcc705cc319be414042e50356c91e04166e14750f7a9f65012d2c5a05"
+    },
+    {
+      "path": "games/crosshaul/assets/verification_script.txt",
+      "sha256": "8f925c1b4f72ce0bfa3442e5372032ebef23543366eed5c98e1723fc2a18477a"
+    },
+    {
+      "path": "games/crosshaul/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/crosshaul/game.project.json",
+      "sha256": "3d26fb205e98dab106892e0328443a15956232c5581f0df628894c08c3a1571d"
+    },
+    {
+      "path": "games/crosshaul/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/crosshaul/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/crosshaul/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/crosshaul/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/crosshaul/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/crosshaul/scripts/installer.json",
+      "sha256": "58f57f5738d2ef570b2d54f54ea98b6e02d8e6ed82f886d5c38f1e33f0d2f7ad"
+    },
+    {
+      "path": "games/crosshaul/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/crosshaul/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/crosshaul/scripts/tooling.json",
+      "sha256": "04b13d503aa56b5eea5578b01dcaa4295a6a1b9ee60b1b7d4818f0f95c8cd157"
+    },
+    {
+      "path": "games/crosshaul/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/crosshaul/src/lib.rs",
+      "sha256": "990f71468001b869a4a83937ddf2fc41eed615726d4d1c1f14795d50742ab1f4"
+    },
+    {
+      "path": "games/crosshaul/src/main.rs",
+      "sha256": "bb9cb538fcc34bd3bc0a41c688e21f62a08f6dfb9e1a181cb8aa1af23e806ba5"
+    },
+    {
+      "path": "games/crosshaul/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/crosshaul/tests/determinism.rs",
+      "sha256": "ba05e3b61a69a5e7a7d9915e11967700b0ed0bad5458957300c134da6d8973dd"
+    },
+    {
+      "path": "games/crosshaul/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
     },
     {
       "path": "games/gap-flip/.gitignore",
@@ -3252,6 +3388,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "cb3782af9b1b61e1b6e39ab4a1eea987fbea0488",
+  "source_revision": "1cdf914e293e35a182270cc6652cc8a667b756de",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
