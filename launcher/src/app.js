@@ -151,6 +151,7 @@ function renderGuide(g) {
 }
 let lastConnection = null;
 function apply(s) {
+  const notice = s.message;
   if (s.message || lastConnection === null || s.fresh)
     lastConnection = { offline: s.offline, message: s.message };
   s = { ...s, ...lastConnection };
@@ -162,7 +163,7 @@ function apply(s) {
   $("#status-dot").classList.toggle("offline", s.offline);
   $("#install-folder").textContent = s.root;
   render();
-  if (s.message) toast(s.message);
+  if (notice) toast(notice);
 }
 async function sync(refresh = false) {
   try {

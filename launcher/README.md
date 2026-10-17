@@ -53,7 +53,7 @@ builder and copy its catalog. `build.mjs` bundles real game screenshots from the
 repository for the offline guide snapshot.
 
 The **Build Windows launcher** workflow verifies tests, downloads and installs a
-real published game in a temporary folder, builds the per-user NSIS installer,
+real published ZIP game and both independent installers in temporary folders, builds the per-user NSIS installer,
 and checks the app opens a window. Dispatch it with `publish=true` after checks
 pass. Each `launcher-v<version>` release is immutable and is **not** GitHub's
 latest game release. Publication writes the website download and signed app

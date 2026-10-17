@@ -175,8 +175,9 @@ fn launch(slug: String, state: State<'_, Library>) -> Result<(), String> {
     }
     let dir = state.dir(&slug);
     let exe = install::playable(&dir, &slug).ok_or("Install this game first")?;
-    let child = Command::new(exe)
-        .current_dir(dir)
+    let working = exe.parent().unwrap_or(&dir);
+    let child = Command::new(&exe)
+        .current_dir(working)
         .spawn()
         .map_err(|e| e.to_string())?;
     state.children.lock().unwrap().insert(slug, child);
@@ -280,7 +281,7 @@ fn cancel_download(state: State<'_, Library>) {
 }
 #[tauri::command]
 fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
-    let game = state.game(&slug)?;
+    state.game(&slug)?;
     if state.busy.swap(true, Ordering::SeqCst) {
         return Err("Wait for the current installation".into());
     }
@@ -291,7 +292,7 @@ fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String>
         let dir = state.dir(&slug);
         let _guard = lock(dir.parent().ok_or("Invalid folder")?, &slug)?;
         let uninstaller = dir.join("unins000.exe");
-        if game.package.kind == "installer" && uninstaller.is_file() {
+        if uninstaller.is_file() {
             install::uninstall_external(&dir)
         } else {
             install::uninstall(&dir)
