@@ -355,6 +355,13 @@
       "directory": "games/pinstride",
       "kind": "cargo-package",
       "binary": "pinstride"
+    },
+    {
+      "slug": "backstop",
+      "name": "Backstop",
+      "directory": "games/backstop",
+      "kind": "cargo-package",
+      "binary": "backstop"
     }
   ],
   "non_playable_directories": [

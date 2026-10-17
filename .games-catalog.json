@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 740,
+    "games": 771,
     "prototypes": 10,
     "tests": 64
   },
@@ -473,6 +473,130 @@
     {
       "path": "games/afterpull/tests/identity.rs",
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/backstop/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/backstop/AGENTS.md",
+      "sha256": "e5e163ea14a19e3f34c8714a105fdab99f0e05d3c1b02eeea7cb1cea450668e4"
+    },
+    {
+      "path": "games/backstop/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/backstop/Cargo.lock",
+      "sha256": "f75cc47c0792ea94a0a7108d16543094d66431664973cbf637d07c94979eb4d3"
+    },
+    {
+      "path": "games/backstop/Cargo.toml",
+      "sha256": "500caedcb9fc379a7321e7fccefb246b8fa01120a5e0f48039edba51eceb9a24"
+    },
+    {
+      "path": "games/backstop/README.md",
+      "sha256": "3fb31ebb6a3f713beb35a557af06bd2cb1691e4aa32111329c2e27fb3dd43ee4"
+    },
+    {
+      "path": "games/backstop/STATUS.md",
+      "sha256": "fc33f630efe779ee577ebd6a281763cb2c6bcadc2a9f64c4d041122645056ee6"
+    },
+    {
+      "path": "games/backstop/assets/icon.ico",
+      "sha256": "ab85f1933e08274e4a987002e7f0223e423f32246db38561c15524fe0375e3a4"
+    },
+    {
+      "path": "games/backstop/assets/icon.png",
+      "sha256": "7192f58323c3a4283dddae8325c22b0956b8f148b4b6f8b132052cba72f82168"
+    },
+    {
+      "path": "games/backstop/assets/icon_16.rgba",
+      "sha256": "36d3c54a2c83304a8b27f5714abb8dc31a67fd9dc596db1b1e7094bd72558de8"
+    },
+    {
+      "path": "games/backstop/assets/icon_32.rgba",
+      "sha256": "ec7be36a6ecb728efced9097b6b3296986f40eb74680ada282f9da4a0e7d8f19"
+    },
+    {
+      "path": "games/backstop/assets/icon_64.rgba",
+      "sha256": "34613496347668fc996173e6c91e58fb52fc5a1f74bab23de619ee03c25ef7cc"
+    },
+    {
+      "path": "games/backstop/assets/identity.json",
+      "sha256": "fb2df2d8a2a5f15525dc19e98af36af0220ba2942cd862a413da314fee07983a"
+    },
+    {
+      "path": "games/backstop/assets/native-review.json",
+      "sha256": "e4802b331a0e60d5066efbbbf0da8e7594a29adde94d99d020bccaec1093c8b3"
+    },
+    {
+      "path": "games/backstop/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/backstop/game.project.json",
+      "sha256": "d1e289db59169a0de2c41585488677ecc928634b08d7044e09fe6b5883bad15a"
+    },
+    {
+      "path": "games/backstop/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/backstop/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/backstop/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/backstop/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/backstop/scripts/installer.json",
+      "sha256": "e04411aea9736848638df34f857ecb63e6f647e765d433733e44fc535215a26c"
+    },
+    {
+      "path": "games/backstop/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/backstop/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/backstop/scripts/tooling.json",
+      "sha256": "2f146ca3e60a5bbe725858ae217b510c950f245a1b8ca623daa9fcaf618fb6ec"
+    },
+    {
+      "path": "games/backstop/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/backstop/src/lib.rs",
+      "sha256": "a54bfe0e9a77ac668b0d88e1ff2418b19474d73fa3d39e8ff0de15ebbce5e29c"
+    },
+    {
+      "path": "games/backstop/src/main.rs",
+      "sha256": "5a979b677cde960259a0b3bc3e77afab82e978c1ed65fd422370bd62d2750ced"
+    },
+    {
+      "path": "games/backstop/src/presentation.rs",
+      "sha256": "2c2d1f5e09f1f5f4a910560b9e30adbb1e02c9dba817a9b17279e6d2a83fde3b"
+    },
+    {
+      "path": "games/backstop/src/rooms.rs",
+      "sha256": "2cde1017479a6341e9c7549b0327251673ce958f3de8ed4072e5b5e863fa119c"
+    },
+    {
+      "path": "games/backstop/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
+      "path": "games/backstop/tools/native_playtest.py",
+      "sha256": "bae2ff8630794bfdb76aec14e80aa1ef4851caa5cdf16124d164972442c27fe7"
     },
     {
       "path": "games/blueengine-sandbox/README.md",
@@ -3652,6 +3776,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "9bec3797d2a22898991649d5aeb6bfd97dbc9a8c",
+  "source_revision": "8d378f609bb144e39693d281c7b1d10170cb3387",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
