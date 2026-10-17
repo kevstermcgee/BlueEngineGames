@@ -25,19 +25,27 @@
     },
     {
       "name": "Flying drones",
-      "description": "Airborne machines that hover above the floor, fire aimed projectiles and back away when the player approaches."
+      "description": "Airborne machines that hover above the floor, fire aimed projectiles and back away when the player approaches.",
+      "image": "assets/wiki/a017fc9907d0bf1f.png",
+      "image_caption": "A purple flying drone hovering in Ember Foundry."
     },
     {
       "name": "Melee machines",
-      "description": "Charging close-range machines that commit to a direction before rushing; their pauses create room to sidestep."
+      "description": "Charging close-range machines that commit to a direction before rushing; their pauses create room to sidestep.",
+      "image": "assets/wiki/7482b8bc625d95fe.png",
+      "image_caption": "A horned charging melee machine in the Sunken Archive."
     },
     {
       "name": "Brutes",
-      "description": "Heavy, slow-moving machines with more hull than ordinary attackers and stronger contact damage."
+      "description": "Heavy, slow-moving machines with more hull than ordinary attackers and stronger contact damage.",
+      "image": "assets/wiki/cd801d7b1ad72474.png",
+      "image_caption": "A large brown brute advancing beside charging machines."
     },
     {
       "name": "Sentinels",
-      "description": "Ranged machines that fire aimed projectiles when they have a clear shot and retreat from a nearby player."
+      "description": "Ranged machines that fire aimed projectiles when they have a clear shot and retreat from a nearby player.",
+      "image": "assets/wiki/f1402d9af0d6c166.png",
+      "image_caption": "A yellow Sentinel fires from behind cover (partly occluded)."
     },
     {
       "name": "Wardens",
@@ -77,6 +85,26 @@
       "image": "assets/wiki/c7cc00c3da4dd8ab.png",
       "caption": "Choosing extraction or descent after securing depth one.",
       "alt": "Choosing extraction or descent after securing depth one."
+    },
+    {
+      "image": "assets/wiki/a017fc9907d0bf1f.png",
+      "caption": "A purple flying drone hovering in Ember Foundry.",
+      "alt": "A purple flying drone hovering in Ember Foundry."
+    },
+    {
+      "image": "assets/wiki/7482b8bc625d95fe.png",
+      "caption": "A horned charging melee machine in the Sunken Archive.",
+      "alt": "A horned charging melee machine in the Sunken Archive."
+    },
+    {
+      "image": "assets/wiki/cd801d7b1ad72474.png",
+      "caption": "A large brown brute advancing beside charging machines.",
+      "alt": "A large brown brute advancing beside charging machines."
+    },
+    {
+      "image": "assets/wiki/f1402d9af0d6c166.png",
+      "caption": "A yellow Sentinel fires from behind cover (partly occluded).",
+      "alt": "A yellow Sentinel fires from behind cover (partly occluded)."
     }
   ],
   "design": {
