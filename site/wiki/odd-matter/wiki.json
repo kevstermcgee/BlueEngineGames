@@ -18,7 +18,9 @@
   "characters": [
     {
       "name": "Drone",
-      "description": "The small movable puzzle craft that must reach the green socket."
+      "description": "The small movable puzzle craft that must reach the green socket.",
+      "image": "assets/wiki/980869cf78ed54bb.png",
+      "image_caption": "The cyan drone inside a cavity in the layered matter wall."
     }
   ],
   "characters_note": "",
@@ -33,8 +35,8 @@
     },
     {
       "image": "assets/wiki/980869cf78ed54bb.png",
-      "caption": "The drone inside a cavity where overlapping matter becomes empty space.",
-      "alt": "The drone inside a cavity where overlapping matter becomes empty space."
+      "caption": "The cyan drone inside a cavity in the layered matter wall.",
+      "alt": "The cyan drone inside a cavity in the layered matter wall."
     },
     {
       "image": "assets/wiki/3ba2d1037e241b20.png",

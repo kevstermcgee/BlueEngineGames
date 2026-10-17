@@ -16,11 +16,15 @@
   "characters": [
     {
       "name": "Seeker",
-      "description": "The searching player, who inspects furniture for concealed opponents."
+      "description": "The searching player, who inspects furniture for concealed opponents.",
+      "image": "assets/wiki/28f44a8921815ef8.png",
+      "image_caption": "The red seeker and gray-purple hiders in the house garden."
     },
     {
       "name": "Hiders",
-      "description": "Seven roles that disguise themselves as furniture; empty seats are stationary."
+      "description": "Seven roles that disguise themselves as furniture; empty seats are stationary.",
+      "image": "assets/wiki/28f44a8921815ef8.png",
+      "image_caption": "The red seeker and gray-purple hiders in the house garden."
     }
   ],
   "characters_note": "",
@@ -31,8 +35,8 @@
   "gallery": [
     {
       "image": "assets/wiki/28f44a8921815ef8.png",
-      "caption": "Prop Hunt — in-game view",
-      "alt": "Prop Hunt — in-game view"
+      "caption": "The red seeker and gray-purple hiders in the house garden.",
+      "alt": "The red seeker and gray-purple hiders in the house garden."
     }
   ],
   "design": {

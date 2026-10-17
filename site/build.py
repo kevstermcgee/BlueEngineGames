@@ -254,6 +254,10 @@ def build_staged(args) -> None:
         asset, download_label, size = download_for(game_release, slug)
         if not asset:
             raise ValueError(f"Catalog game has no installer in the published release: {slug}")
+        wiki_document, image_root, legacy = load_wiki(repo_root, Path(args.games_dir), row, origin)
+        searchable = ' '.join([row['name'], row.get('description', ''), wiki_document['overview'],
+                               wiki_document['story'], *wiki_document['rules'],
+                               *(character['name'] for character in wiki_document['characters'])])
 
         thumb_src = game_screenshot(Path(args.thumbs), Path(args.games_dir), slug)
         shutil.copy2(thumb_src, thumbs_out / f"{slug}.png")
@@ -266,7 +270,7 @@ def build_staged(args) -> None:
                 slug=html.escape(slug),
                 name=name,
                 name_attr=name.lower(),
-                text_attr=html.escape((row["name"] + " " + row.get("description", "")).lower()),
+                text_attr=html.escape(searchable.lower()),
                 desc=html.escape(row.get("description", "")),
                 created=html.escape(created),
                 kind_attr=kind,
@@ -288,7 +292,6 @@ def build_staged(args) -> None:
         versions = [game_release] + [r for r in history if r.get("tag_name") != game_release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
-        wiki_document, image_root, legacy = load_wiki(repo_root, Path(args.games_dir), row, origin)
         wiki_html = render_wiki(wiki_document, image_root, game_out, legacy)
         preview = ""
         preview_src = Path(__file__).resolve().parent / "previews" / f"{slug}.mp4"

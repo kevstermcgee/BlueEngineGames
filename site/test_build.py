@@ -133,6 +133,7 @@ class Downloads(unittest.TestCase):
             self.assertIn('data-design-origin="human"', index)
             self.assertIn('AI-designed</span>', index)
             self.assertIn('Human-designed</span>', index)
+            self.assertIn('a block moves only when the square beyond it is empty.', index)
             self.assertIn('https://example.com/bundle-tag/bundled-setup-windows-x64.exe', index)
             page = (root / 'out/games/standalone/index.html').read_text()
             self.assertIn(game['published_release']['assets'][0]['browser_download_url'], page)

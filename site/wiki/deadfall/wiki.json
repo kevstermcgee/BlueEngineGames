@@ -19,12 +19,16 @@
     {
       "name": "Ironclad",
       "description": "Army-green and tan team whose soldier models carry field webbing, utility pouches and a small pack.",
-      "appearance_note": "Ironclad is a team rather than an individual character; its green-and-tan uniform appears across the selectable soldier appearances."
+      "appearance_note": "Ironclad is a team rather than an individual character; its green-and-tan uniform appears across the selectable soldier appearances.",
+      "image": "assets/wiki/ec71f14ef2a7f13d.png",
+      "image_caption": "First-person Ironclad team view, with green uniform sleeves."
     },
     {
       "name": "Nightwatch",
       "description": "Navy and black team whose soldier models use a plate carrier, radio and assault pack.",
-      "appearance_note": "Nightwatch is a team rather than an individual character; its navy-and-black uniform appears across the selectable soldier appearances."
+      "appearance_note": "Nightwatch is a team rather than an individual character; its navy-and-black uniform appears across the selectable soldier appearances.",
+      "image": "assets/wiki/bbfcd69b4aa9a6f9.png",
+      "image_caption": "A navy-and-black Nightwatch opponent beside the warehouse doorway."
     },
     {
       "name": "Rifleman",
@@ -58,6 +62,16 @@
       "image": "assets/wiki/0fc29736cb30bc9f.png",
       "caption": "A firefight in the industrial arena with Mako visible behind cover.",
       "alt": "A firefight in the industrial arena with Mako visible behind cover."
+    },
+    {
+      "image": "assets/wiki/ec71f14ef2a7f13d.png",
+      "caption": "First-person Ironclad team view, with green uniform sleeves.",
+      "alt": "First-person Ironclad team view, with green uniform sleeves."
+    },
+    {
+      "image": "assets/wiki/bbfcd69b4aa9a6f9.png",
+      "caption": "A navy-and-black Nightwatch opponent beside the warehouse doorway.",
+      "alt": "A navy-and-black Nightwatch opponent beside the warehouse doorway."
     }
   ],
   "design": {

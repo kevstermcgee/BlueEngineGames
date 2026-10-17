@@ -14,7 +14,9 @@
   "characters": [
     {
       "name": "Metal drones",
-      "description": "Three unnamed inertial puzzle objects guided by attraction and repulsion."
+      "description": "Three unnamed inertial puzzle objects guided by attraction and repulsion.",
+      "image": "assets/wiki/83a2ea61d1690146.png",
+      "image_caption": "Three yellow metal drones across the magnetic chamber."
     }
   ],
   "characters_note": "",
@@ -24,8 +26,8 @@
   "gallery": [
     {
       "image": "assets/wiki/83a2ea61d1690146.png",
-      "caption": "Magnet Mine — in-game view",
-      "alt": "Magnet Mine — in-game view"
+      "caption": "Three yellow metal drones across the magnetic chamber.",
+      "alt": "Three yellow metal drones across the magnetic chamber."
     }
   ],
   "design": {
