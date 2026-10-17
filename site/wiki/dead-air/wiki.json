@@ -19,11 +19,13 @@
       "description": "The player’s role: maintain power and scheduled all-clear broadcasts through the overnight shift.",
       "appearance_note": "This is the first-person player role. The game does not render a separate operator body or portrait.",
       "image": "assets/wiki/d42f3497c72a2983.png",
-      "image_caption": "The relay operator’s first-person view inside the station; no separate player body is rendered."
+      "image_caption": "The relay operator’s first-person view of Hollow Pine station."
     },
     {
       "name": "The Caller",
-      "description": "A blind threat that hunts by sound and can only be staggered briefly with light or gunfire."
+      "description": "A blind threat that hunts by sound and can only be staggered briefly with light or gunfire.",
+      "image": "assets/wiki/baf9518b79543cdd.png",
+      "image_caption": "The Caller at the yard doorway, caught in the relay operator’s flashlight."
     },
     {
       "name": "Previous operator",
@@ -40,8 +42,13 @@
   "gallery": [
     {
       "image": "assets/wiki/d42f3497c72a2983.png",
-      "caption": "Dead Air — in-game view",
-      "alt": "Dead Air — in-game view"
+      "caption": "The relay operator’s first-person view of Hollow Pine station.",
+      "alt": "The relay operator’s first-person view of Hollow Pine station."
+    },
+    {
+      "image": "assets/wiki/baf9518b79543cdd.png",
+      "caption": "The Caller at the yard doorway, caught in the relay operator’s flashlight.",
+      "alt": "The Caller at the yard doorway, caught in the relay operator’s flashlight."
     }
   ],
   "design": {

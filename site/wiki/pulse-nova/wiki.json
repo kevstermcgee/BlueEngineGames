@@ -16,7 +16,9 @@
   "characters": [
     {
       "name": "Cybernetic drones",
-      "description": "The enemy swarms attacking the floating neon colosseum; the player blasts them with kinetic plasma bolts and chains multi-kill explosions."
+      "description": "The enemy swarms attacking the floating neon colosseum; the player blasts them with kinetic plasma bolts and chains multi-kill explosions.",
+      "image": "assets/wiki/4ed9f8cd1fec71ad.png",
+      "image_caption": "Cyan cybernetic scout drones closing in during the first wave."
     }
   ],
   "characters_note": "",
@@ -28,6 +30,16 @@
       "image": "assets/wiki/6577b59f31e3abdc.png",
       "caption": "Pulse Nova — in-game view",
       "alt": "Pulse Nova — in-game view"
+    },
+    {
+      "image": "assets/wiki/4ed9f8cd1fec71ad.png",
+      "caption": "Cyan cybernetic scout drones closing in during the first wave.",
+      "alt": "Cyan cybernetic scout drones closing in during the first wave."
+    },
+    {
+      "image": "assets/wiki/290f86d345ca3d1f.png",
+      "caption": "The first-wave drones approach the player in the neon arena.",
+      "alt": "The first-wave drones approach the player in the neon arena."
     }
   ],
   "design": {
