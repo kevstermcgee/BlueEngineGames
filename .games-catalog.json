@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 606,
+    "games": 640,
     "prototypes": 10,
     "tests": 64
   },
@@ -337,6 +337,142 @@
     {
       "path": "demos/previews/toolkit/render-report.txt",
       "sha256": "9a906abf2a58cd8738e3448151c793060d898c66b7473563e20a344153ccea50"
+    },
+    {
+      "path": "games/afterpull/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/afterpull/AGENTS.md",
+      "sha256": "667702b7c8859c906248cee3effe70e66a6e437ab37899ef8d52c25aa1fc47df"
+    },
+    {
+      "path": "games/afterpull/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/afterpull/Cargo.lock",
+      "sha256": "e0042a94a3a5b6f8c4b5b5c45bb3fafca4df7b19a732e0bfe401b1aa1054696c"
+    },
+    {
+      "path": "games/afterpull/Cargo.toml",
+      "sha256": "f74f0ed0071934a974de1e927323bf73ade94c8a67b75ce817888a6ef44de56d"
+    },
+    {
+      "path": "games/afterpull/README.md",
+      "sha256": "1b341ef089b5954d2669babf4497bd51a93c47c7f77d1788c74a96cbd4bfcdd0"
+    },
+    {
+      "path": "games/afterpull/STATUS.md",
+      "sha256": "42ccc7d6084b05d0ccc3d0b285b273ed9aa8feee2155f9a71b43c8282d3aba9c"
+    },
+    {
+      "path": "games/afterpull/assets/icon.ico",
+      "sha256": "0d00951234138025bafc1d705f9fc10dfddad38f9b29b67e7757bc9a38526112"
+    },
+    {
+      "path": "games/afterpull/assets/icon.png",
+      "sha256": "51db3f3718ebd135d60f608c9b8213b0a12a43c35d1ceaf687f1dcdf93f2322e"
+    },
+    {
+      "path": "games/afterpull/assets/icon_16.rgba",
+      "sha256": "cb65ff06075bbad125def8a56540e5adeeb35b927c705623f320895fba45e4af"
+    },
+    {
+      "path": "games/afterpull/assets/icon_32.rgba",
+      "sha256": "9e2270610e7535ce840e2bec76b81b6268b33ef148aabb94dae0727615354d61"
+    },
+    {
+      "path": "games/afterpull/assets/icon_64.rgba",
+      "sha256": "de30557f7c934fc135b7c2189452e2b645992bd8fd7cc0bb2d5b06d5c4d41f46"
+    },
+    {
+      "path": "games/afterpull/assets/identity.json",
+      "sha256": "0e3e3f377b41c41c551ca1c10a8f20674b902ccc225768f78b351d60c40d8301"
+    },
+    {
+      "path": "games/afterpull/assets/native-review.json",
+      "sha256": "7bb1c3b59f22f2e4db958dcc6359a298b82c1514bc0982b4b72d912457eecb5a"
+    },
+    {
+      "path": "games/afterpull/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/afterpull/game.project.json",
+      "sha256": "60b0950ae29aa621cf1900f036566dc4feecd79dbe0f23fa78cf421785f06044"
+    },
+    {
+      "path": "games/afterpull/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/afterpull/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/afterpull/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/afterpull/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/afterpull/scripts/installer.json",
+      "sha256": "be1dfc1dc85258a890688992131554856aabb122328dc53a9d56d170f713d894"
+    },
+    {
+      "path": "games/afterpull/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/afterpull/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/afterpull/scripts/tooling.json",
+      "sha256": "4f138d01ca634f1686d3c7963f06aaf001aa0ca8eeb9d4f040a75674a865635f"
+    },
+    {
+      "path": "games/afterpull/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/afterpull/src/focus_gate.rs",
+      "sha256": "b0e6ecdcb7d0d550bf97e6b1780aff0c663f7fb2683369cf3c54509d4a793fab"
+    },
+    {
+      "path": "games/afterpull/src/lib.rs",
+      "sha256": "a40c6d8b3846d7c88b507a7ce19210a3ed65e60f5be60cccaaf43812b8b06490"
+    },
+    {
+      "path": "games/afterpull/src/main.rs",
+      "sha256": "eea6500cdfcb7e8f9e25423e472d85b086d2b8b671ac35e49c64f540928c58e2"
+    },
+    {
+      "path": "games/afterpull/src/native.rs",
+      "sha256": "46b47c9d548bb2cae43eb0e2da6258ef7f1c6bb1bd54de3d571a3b34778494b5"
+    },
+    {
+      "path": "games/afterpull/src/native/window_focus.rs",
+      "sha256": "9dab961ac2f85627207d471b6f4bcdded44891d43ec8ae92d83492dee979acfe"
+    },
+    {
+      "path": "games/afterpull/src/presentation.rs",
+      "sha256": "0fb504ce580d9c7793cde98a5515c82c4abf416dc3d483a13575b204c3cd1bd6"
+    },
+    {
+      "path": "games/afterpull/src/rooms.rs",
+      "sha256": "24c07b07b90a1cecd5b5ad99e8507d43f936efce38d970834dad07d405e19fbc"
+    },
+    {
+      "path": "games/afterpull/src/tests.rs",
+      "sha256": "9f1a38da16aa34d9e771496848e442aea9bf57b30638908ec56b3c2ca37c74cc"
+    },
+    {
+      "path": "games/afterpull/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
       "path": "games/blueengine-sandbox/README.md",
@@ -3116,6 +3252,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "a2a89845d6a712fcde2f2c7a0a07b461d0dd8361",
+  "source_revision": "7781f196fa91529b037ac9fd95baefcfd154d9ac",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

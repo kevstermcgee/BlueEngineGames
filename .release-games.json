@@ -327,6 +327,13 @@
       "directory": "games/corner-clutch",
       "kind": "cargo-package",
       "binary": "corner-clutch"
+    },
+    {
+      "slug": "afterpull",
+      "name": "Afterpull",
+      "directory": "games/afterpull",
+      "kind": "cargo-package",
+      "binary": "afterpull"
     }
   ],
   "non_playable_directories": [
