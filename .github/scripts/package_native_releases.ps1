@@ -126,10 +126,19 @@ try {
             }
         } elseif ($kind -eq 'cargo-package') {
             Push-Location $directory
+            $originalToolingRoot = $env:BE2_TOOLING_ROOT
             try {
+                # Exported launchers retain authoring-relative pins. Select the same
+                # catalog engine as Cargo without changing their verified tooling hash.
+                $env:BE2_TOOLING_ROOT = $engineRootPath
                 & python scripts\ship.py package
                 if ($LASTEXITCODE -ne 0) { throw "$name packaging failed with exit code $LASTEXITCODE" }
             } finally {
+                if ($null -eq $originalToolingRoot) {
+                    Remove-Item Env:BE2_TOOLING_ROOT -ErrorAction SilentlyContinue
+                } else {
+                    $env:BE2_TOOLING_ROOT = $originalToolingRoot
+                }
                 Pop-Location
             }
             New-Item -ItemType Directory -Path $stage | Out-Null
