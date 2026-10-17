@@ -4,4 +4,9 @@
 __pycache__/
 /.be2-work/
 **/.blue-check/
+**/node_modules/
+/launcher/dist/
+/launcher/src-tauri/target/
+*.key
+*.key.pub
 /games/deadfall/dist/

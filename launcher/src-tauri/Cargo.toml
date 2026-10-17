@@ -1,0 +1,41 @@
+[package]
+name = "blueengine-games-launcher"
+version = "0.1.0"
+edition = "2021"
+description = "One library for native BlueEngine games, guides and updates"
+license = "MIT"
+
+[lib]
+name = "blueengine_launcher"
+path = "src/lib.rs"
+
+[features]
+default = ["desktop"]
+desktop = ["dep:tauri", "dep:tauri-plugin-updater", "dep:tauri-plugin-process", "dep:tauri-plugin-single-instance"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+url = "2"
+fs2 = "0.4"
+
+[target.'cfg(windows)'.dependencies]
+tauri = { version = "2", optional = true }
+tauri-plugin-updater = { version = "2", optional = true }
+tauri-plugin-process = { version = "2", optional = true }
+tauri-plugin-single-instance = { version = "2", optional = true }
+sysinfo = "0.33"
+
+[target.'cfg(windows)'.build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+strip = true

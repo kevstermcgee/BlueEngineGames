@@ -124,10 +124,10 @@ class Downloads(unittest.TestCase):
             game['previous_releases'] = [previous]
             (root / 'site/released-games.json').write_text(json.dumps({'version': 1, 'games': [game]}))
             with (root / 'catalog.tsv').open('w', newline='') as out:
-                writer = csv.DictWriter(out, fieldnames=['slug', 'name', 'release'], delimiter='\t')
+                writer = csv.DictWriter(out, fieldnames=['slug', 'name', 'release', 'sha256'], delimiter='\t')
                 writer.writeheader()
-                writer.writerow({'slug': 'bundled', 'name': 'Bundled', 'release': 'bundle-tag'})
-            current = release('bundle-tag', ['bundled-setup-windows-x64.exe'])
+                writer.writerow({'slug': 'bundled', 'name': 'Bundled', 'release': 'bundle-tag', 'sha256': 'b' * 64})
+            current = release('bundle-tag', ['bundled-setup-windows-x64.exe', 'bundled-windows-x64.zip'])
             (root / 'release.json').write_text(json.dumps(current))
             site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
                                       games_dir=root / 'games', thumbs=root / 'thumbs', out=root / 'out'))
@@ -236,11 +236,11 @@ class Downloads(unittest.TestCase):
             (root / 'thumbs/game.png').write_bytes(screenshot())
             wiki_fixture(root, 'game')
             rows = [{'slug': 'game', 'name': 'Game café ✨', 'description': '<unsafe>', 'created': '2026-01-01',
-                     'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip'}]
+                     'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip', 'sha256': 'c' * 64}]
             with (root / 'catalog.tsv').open('w', encoding='utf-8', newline='') as out:
                 writer = csv.DictWriter(out, fieldnames=rows[0].keys(), delimiter='\t')
                 writer.writeheader(); writer.writerows(rows)
-            current = release('current', ['game-setup-windows-x64.exe', 'SHA256SUMS.txt', 'INSTALLER-SHA256SUMS.txt'])
+            current = release('current', ['game-setup-windows-x64.exe', 'game-windows-x64.zip', 'SHA256SUMS.txt', 'INSTALLER-SHA256SUMS.txt'])
             old = release('old', ['game-windows-x64.zip', 'game-setup-windows-x64.exe'])
             (root / 'release.json').write_text(json.dumps(current))
             (root / 'releases.json').write_text(json.dumps([current, old]))
@@ -263,6 +263,10 @@ class Downloads(unittest.TestCase):
             self.assertNotIn('Play / Install', page)
             self.assertNotIn('data-browser', page)
             self.assertNotIn('id="distribution"', page)
+            feed = json.loads((root / 'out/catalog.json').read_text())
+            self.assertEqual(feed['games'][0]['package']['url'], 'https://example.com/current/game-windows-x64.zip')
+            self.assertEqual(feed['games'][0]['package']['sha256'], 'c' * 64)
+            self.assertTrue(feed['games'][0]['wiki']['gallery'][0]['image'].startswith('https://kevstermcgee.github.io/BlueEngineGames/games/game/images/'))
             self.assertIn('data-star="game"', page)
             self.assertIn('Windows x64 only.', page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)

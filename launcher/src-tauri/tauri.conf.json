@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BlueEngine Games",
+  "version": "0.1.0",
+  "identifier": "com.blueengine.games",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "BlueEngine Games",
+        "width": 1380,
+        "height": 900,
+        "minWidth": 800,
+        "minHeight": 600,
+        "backgroundColor": "#0c111c"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https://kevstermcgee.github.io data:; connect-src 'self' ipc: http://ipc.localhost https://kevstermcgee.github.io https://github.com https://release-assets.githubusercontent.com; object-src 'none'; frame-src 'none'; base-uri 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "shortDescription": "Your BlueEngine game library",
+    "longDescription": "Install, play, update and explore BlueEngine games in one Windows library.",
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "languages": [
+          "English"
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ3NTM0M0NBOThCODE1Q0IKUldUTEZiaVl5a05UUjIrSHdvSjkyWTdhdlNkbE9XUTViSklxb0pHM2dhNUFXZXBKRTRaVEcva0QK",
+      "endpoints": [
+        "https://kevstermcgee.github.io/BlueEngineGames/launcher-update.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

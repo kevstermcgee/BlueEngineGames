@@ -1,0 +1,20 @@
+{
+  "name": "blueengine-games-launcher",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "tauri": "tauri",
+    "test": "node --test src/*.test.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-updater": "^2",
+    "@tauri-apps/plugin-process": "^2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "esbuild": "^0.25.0"
+  }
+}

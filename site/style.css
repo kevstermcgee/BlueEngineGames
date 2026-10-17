@@ -142,3 +142,5 @@ footer {
   .game-summary { grid-template-columns: 1fr; }
   .version-history th, .version-history td { padding: 10px 4px; font-size: 0.75rem; }
 }
+
+.launcher-banner{display:flex;align-items:center;gap:2rem;justify-content:space-between;padding:1.7rem 2rem;margin:1.5rem 0;border:1px solid #42638b;border-radius:12px;background:linear-gradient(120deg,#1b324e,#101c2d)}.launcher-banner h2{margin:.3rem 0 .65rem;font-size:1.65rem}.launcher-banner>div:first-child{max-width:650px}.launcher-banner p{line-height:1.6}.launcher-kicker{font-size:.7rem;letter-spacing:.17em;color:#9bc7ff;margin:0}.launcher-meta{font-size:.75rem;color:#a8b9ce}.launcher-banner .dl{white-space:nowrap}@media(max-width:750px){.launcher-banner{flex-direction:column;align-items:start;padding:1.3rem}.launcher-banner .dl{white-space:normal}}

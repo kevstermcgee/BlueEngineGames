@@ -8,7 +8,10 @@ Download a game's `*-setup-windows-x64.exe` from the website or GitHub Releases.
 The installer uses `%LOCALAPPDATA%\BlueEngine\Games\<slug>` by default, needs no
 administrator rights, and creates Start Menu play and **Check for updates**
 shortcuts. A desktop shortcut is optional. Windows Apps settings can uninstall it.
-The BlueEngine Launcher application has been retired.
+The Windows **BlueEngine Games** launcher is the central library for installing,
+playing and updating these games. It shares the same default folders and release
+receipts. See [launcher/README.md](launcher/README.md) for application behavior,
+security and build instructions. Individual installers remain available.
 
 Run **Check for updates** with the game closed. The game's updater checks the
 latest `Games-catalog.tsv`, compares the installed release receipt, downloads the

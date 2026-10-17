@@ -1,0 +1,96 @@
+name: Build Windows launcher
+on:
+  push:
+    branches: [main]
+    paths: [launcher/**, site/launcher_feed.py, .github/workflows/launcher.yml]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the verified Windows installer and update the website
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: windows-launcher
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: launcher/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: launcher/src-tauri
+      - name: Install frontend tools
+        working-directory: launcher
+        run: npm ci
+      - name: Verify library filters and native installation transactions
+        working-directory: launcher
+        run: |
+          npm test
+          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked
+          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked published_package_round_trip -- --ignored
+      - name: Build per-user installer and signed app update
+        working-directory: launcher
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        run: npm run tauri -- build --bundles nsis
+      - name: Verify Windows app starts and renders its library
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path 'launcher/src-tauri/target/release/blueengine-games-launcher.exe'
+          $app = Start-Process $exe -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 30; $i++) {
+              Start-Sleep -Seconds 1
+              $app.Refresh()
+              if ($app.HasExited) { throw "Launcher exited before opening its window" }
+              if ($app.MainWindowHandle -ne 0 -and $app.MainWindowTitle -eq 'BlueEngine Games') { $ready = $true; break }
+            }
+            if (-not $ready) { throw 'Launcher window did not become ready' }
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BlueEngine-Games-Windows-x64
+          path: |
+            launcher/src-tauri/target/release/bundle/nsis/*.exe
+            launcher/src-tauri/target/release/bundle/nsis/*.sig
+      - name: Publish installer and signed update metadata
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version = (Get-Content launcher/package.json | ConvertFrom-Json).version
+          $tag = "launcher-v$version"
+          $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          $signature = Get-Content "$($installer.FullName).sig" -Raw
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
+          $date = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+          $update = @{version=$version; notes='BlueEngine Games library, verified game installs, saved-game-preserving updates and built-in game guides.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
+          $update | ConvertTo-Json -Depth 6 | Set-Content launcher-update.json -Encoding utf8NoBOM
+          "$hash  $($installer.Name)" | Set-Content LAUNCHER-SHA256SUMS.txt -Encoding ascii
+          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "One Windows library to install, play and update BlueEngine games. Includes game guides, design credits, screenshots, favorites, a download queue and offline installed play. Windows may show a reputation warning for this unsigned installer. Game downloads are verified against pinned SHA256 values; launcher updates require a valid signing key." --latest=false
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed; existing versions are never overwritten' }
+          $metadata = @{version=$version; url=$url; sha256=$hash; size=$installer.Length; update=$update}
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git checkout -B launcher-release-site origin/main
+          $metadata | ConvertTo-Json -Depth 8 | Set-Content site/launcher-release.json -Encoding utf8NoBOM
+          git add site/launcher-release.json
+          git commit -m "Publish Windows launcher $version download and signed update feed"
+          git push origin HEAD:main
+          if ($LASTEXITCODE -ne 0) { throw 'Installer is published; retry the site metadata commit after resolving concurrent main updates' }

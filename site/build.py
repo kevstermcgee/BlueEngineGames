@@ -245,6 +245,8 @@ def build_staged(args) -> None:
     rows.extend(game for game in load(repo_root) if game['slug'] not in bundled_slugs)
 
     games = []
+    launcher_entries = []
+    from launcher_feed import entry as launcher_entry, write as write_launcher_feed
     for row in rows:
         slug = row["slug"]
         origin = design_origin(repo_root, row)
@@ -255,6 +257,11 @@ def build_staged(args) -> None:
         if not asset:
             raise ValueError(f"Catalog game has no installer in the published release: {slug}")
         wiki_document, image_root, legacy = load_wiki(repo_root, Path(args.games_dir), row, origin)
+        project_path = Path(args.games_dir) / slug / 'game.project.json'
+        project = json.loads(project_path.read_text(encoding='utf-8')) if project_path.is_file() else {}
+        launcher_row = row | {'presentation': project.get('presentation', row.get('presentation', '3d')),
+                              'networking': project.get('networking', row.get('networking', 'unknown'))}
+        launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created))
         searchable = ' '.join([row['name'], row.get('description', ''), wiki_document['overview'],
                                wiki_document['story'], *wiki_document['rules'],
                                *(character['name'] for character in wiki_document['characters'])])
@@ -319,6 +326,8 @@ def build_staged(args) -> None:
                           "Install once, then use the game's <strong>Check for updates</strong> Start Menu shortcut. Updates keep your saves and settings."),
         ), encoding="utf-8", newline="\n")
 
+    write_launcher_feed(out, launcher_entries)
+
     # Windows-only download catalog; optional engine web publishing cannot alter this site.
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from native_catalog import enrich_games, enhance_page
@@ -337,7 +346,8 @@ def build_staged(args) -> None:
         repo=REPO,
     )
 
-    page = enhance_page(page)
+    from launcher_feed import publish_launcher
+    page = publish_launcher(repo_root, out, enhance_page(page))
     (out / "index.html").write_text(page, encoding="utf-8", newline="\n")
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")

@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main",
+  "description": "Only the bundled launcher window can receive progress events and install signed launcher updates. Game and filesystem operations use restricted native commands.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "updater:default",
+    "process:allow-restart"
+  ]
+}
