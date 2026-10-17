@@ -63,5 +63,4 @@ Cargo.lock and tauri.conf.json together for subsequent releases.
 Set the repository secret `TAURI_SIGNING_PRIVATE_KEY` to the protected Tauri
 updater key. Its public counterpart is in tauri.conf.json. Back up the private
 key outside the repository; losing it prevents updating existing installations.
-The app checks signed launcher updates with **Check launcher updates** and
-restarts after installation. Keys are never shipped in the app or repository.
+The app checks signed launcher updates with **Check launcher updates** and offers an install button before restarting after installation. Keys are never shipped in the app or repository.

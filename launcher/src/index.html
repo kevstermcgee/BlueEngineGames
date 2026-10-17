@@ -1,1 +1,109 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BlueEngine Games</title><link rel="stylesheet" href="app.css"></head><body><aside><a class="brand" href="#"><b>B</b><span>BLUEENGINE<small>GAMES</small></span></a><p class="nav-label">YOUR PLAYGROUND</p><nav><button data-view="discover" class="selected">◈ &nbsp; Discover <span id="total-count"></span></button><button data-view="library">▦ &nbsp; My library <span id="library-count"></span></button><button data-view="updates">↓ &nbsp; Updates <span id="update-count"></span></button><button data-view="favorites">♡ &nbsp; Favorites</button></nav><div class="sidebar-bottom"><div><i id="status-dot"></i><span id="connection">Connecting…</span><button id="refresh" aria-label="Refresh catalog">↻</button></div><button id="app-update">Check launcher updates</button><small>BlueEngine Games · 0.1.0</small></div></aside><main><header><div><p class="eyebrow">A LITTLE CURIOUS. ALWAYS PLAYABLE.</p><h1 id="heading">Find your next adventure.</h1><p id="subtitle">Independent worlds. One place to play.</p></div><label class="search-wrap">⌕ <input type="search" id="search" placeholder="Search games, characters, rules…" aria-label="Search games"></label></header><section id="feature" class="feature" aria-label="Featured game"></section><div class="collection-head"><h2 id="collection-title">Explore the collection</h2><p id="results"></p></div><div class="filters"><div class="segments" role="group" aria-label="Presentation"><button data-format="" class="selected">All games</button><button data-format="2d">2D</button><button data-format="3d">3D</button></div><select id="origin" aria-label="Design origin"><option value="">All designers</option><option value="human">Human-designed</option><option value="ai">AI-designed</option></select><select id="sort" aria-label="Sort games"><option value="newest">Recently added</option><option value="name">Name A–Z</option><option value="size">Smallest download</option></select></div><div id="grid" class="grid"></div><div id="empty" hidden><h2>Your next game is out there.</h2><p>Try another search or explore the full collection.</p></div><footer>Free games. New discoveries. Built with BlueEngine.<span id="install-folder"></span></footer></main><section id="download-bar" hidden aria-live="polite"><div><strong id="download-title"></strong><span id="download-detail"></span></div><progress id="download-progress" max="100" value="0"></progress><button id="cancel">Cancel</button></section><dialog id="guide"><button class="close" id="close-guide" aria-label="Close game guide">×</button><div id="guide-content"></div></dialog><dialog id="confirmation"><h2>Uninstall this game?</h2><p id="confirm-copy"></p><div class="dialog-actions"><button id="keep">Keep game</button><button id="confirm-uninstall" class="danger">Uninstall</button></div></dialog><div id="toast" role="status" hidden></div><script type="module" src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BlueEngine Games</title>
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <aside>
+      <a class="brand" href="#"
+        ><b>B</b><span>BLUEENGINE<small>GAMES</small></span></a
+      >
+      <p class="nav-label">YOUR PLAYGROUND</p>
+      <nav>
+        <button data-view="discover" class="selected">
+          ◈ &nbsp; Discover <span id="total-count"></span></button
+        ><button data-view="library">
+          ▦ &nbsp; My library <span id="library-count"></span></button
+        ><button data-view="updates">
+          ↓ &nbsp; Updates <span id="update-count"></span></button
+        ><button data-view="favorites">♡ &nbsp; Favorites</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div>
+          <i id="status-dot"></i><span id="connection">Connecting…</span
+          ><button id="refresh" aria-label="Refresh catalog">↻</button>
+        </div>
+        <button id="app-update">Check launcher updates</button
+        ><small>BlueEngine Games · 0.1.0</small>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">A LITTLE CURIOUS. ALWAYS PLAYABLE.</p>
+          <h1 id="heading">Find your next adventure.</h1>
+          <p id="subtitle">Independent worlds. One place to play.</p>
+        </div>
+        <label class="search-wrap"
+          >⌕
+          <input
+            type="search"
+            id="search"
+            placeholder="Search games, characters, rules…"
+            aria-label="Search games"
+        /></label>
+      </header>
+      <section
+        id="feature"
+        class="feature"
+        aria-label="Featured game"
+      ></section>
+      <div class="collection-head">
+        <h2 id="collection-title">Explore the collection</h2>
+        <p id="results"></p>
+      </div>
+      <div class="filters">
+        <div class="segments" role="group" aria-label="Presentation">
+          <button data-format="" class="selected">All games</button
+          ><button data-format="2d">2D</button
+          ><button data-format="3d">3D</button>
+        </div>
+        <select id="origin" aria-label="Design origin">
+          <option value="">All designers</option>
+          <option value="human">Human-designed</option>
+          <option value="ai">AI-designed</option></select
+        ><select id="sort" aria-label="Sort games">
+          <option value="newest">Recently added</option>
+          <option value="name">Name A–Z</option>
+          <option value="size">Smallest download</option>
+        </select>
+      </div>
+      <div id="grid" class="grid"></div>
+      <div id="empty" hidden>
+        <h2>Your next game is out there.</h2>
+        <p>Try another search or explore the full collection.</p>
+      </div>
+      <footer>
+        Free games. New discoveries. Built with BlueEngine.<span
+          id="install-folder"
+        ></span>
+      </footer>
+    </main>
+    <section id="download-bar" hidden aria-live="polite">
+      <div>
+        <strong id="download-title"></strong><span id="download-detail"></span>
+      </div>
+      <progress id="download-progress" max="100" value="0"></progress
+      ><button id="cancel">Cancel</button>
+    </section>
+    <dialog id="guide">
+      <button class="close" id="close-guide" aria-label="Close game guide">
+        ×
+      </button>
+      <div id="guide-content"></div>
+    </dialog>
+    <dialog id="confirmation">
+      <h2>Uninstall this game?</h2>
+      <p id="confirm-copy"></p>
+      <div class="dialog-actions">
+        <button id="keep">Keep game</button
+        ><button id="confirm-uninstall" class="danger">Uninstall</button>
+      </div>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

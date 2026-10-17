@@ -36,7 +36,7 @@ jobs:
         run: |
           npm test
           cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked
-          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked published_package_round_trip -- --ignored
+          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked round_trip -- --ignored
       - name: Build per-user installer and signed app update
         working-directory: launcher
         env:

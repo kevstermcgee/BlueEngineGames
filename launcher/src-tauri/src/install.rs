@@ -82,7 +82,13 @@ pub fn extract(zip: &Path, dest: &Path) -> Result<BTreeMap<String, String>, Stri
         }
         fs::create_dir_all(target.parent().unwrap()).map_err(|e| e.to_string())?;
         let mut out = File::create(&target).map_err(|e| e.to_string())?;
-        std::io::copy(&mut entry, &mut out).map_err(|e| e.to_string())?;
+        let expected = entry.size();
+        let written = std::io::copy(&mut entry.by_ref().take(expected + 1), &mut out)
+            .map_err(|e| e.to_string())?;
+        if written != expected {
+            return Err("Expanded package entry has an invalid size".into());
+        }
+        out.sync_all().map_err(|e| e.to_string())?;
         files.insert(name, digest(&target)?);
     }
     Ok(files)
@@ -469,5 +475,71 @@ mod transaction_tests {
         install_zip(g, &zip, &dir).unwrap();
         uninstall(&dir).unwrap();
         assert!(dir.join("player-save.txt").exists());
+    }
+}
+
+#[cfg(windows)]
+pub fn install_external(game: &Game, setup: &Path, target: &Path) -> Result<(), String> {
+    let status = std::process::Command::new(setup)
+        .args([
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART",
+            "/SP-",
+            "/NOICONS",
+        ])
+        .arg(format!("/DIR={}", target.display()))
+        .status()
+        .map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err(format!("The game's installer returned {status}. Your previous installation may still be available."));
+    }
+    if playable(target, &game.slug).is_none() {
+        return Err("Installer finished but no playable executable was found".into());
+    }
+    fs::write(target.join(".installed-release"), &game.package.release).map_err(|e| e.to_string())
+}
+
+#[cfg(windows)]
+pub fn uninstall_external(dir: &Path) -> Result<(), String> {
+    let status = std::process::Command::new(dir.join("unins000.exe"))
+        .args(["/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART"])
+        .status()
+        .map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err("The game's uninstaller did not finish".into());
+    }
+    let _ = fs::remove_file(dir.join(".installed-release"));
+    Ok(())
+}
+
+#[cfg(all(test, windows))]
+mod independent_installer_tests {
+    use super::*;
+    #[test]
+    #[ignore = "Downloads and silently installs both independent games in temporary Windows folders"]
+    fn independent_installers_round_trip() {
+        let catalog: crate::catalog::Catalog =
+            serde_json::from_str(include_str!("../../public/catalog.json")).unwrap();
+        for game in catalog
+            .games
+            .iter()
+            .filter(|g| g.package.kind == "installer")
+        {
+            let temp = tempfile::tempdir().unwrap();
+            let setup = temp.path().join("setup.exe");
+            download(game, &setup, &AtomicBool::new(false), |_, _| {}).unwrap();
+            let target = temp.path().join(&game.slug);
+            install_external(game, &setup, &target).unwrap();
+            fs::write(target.join("player-save.txt"), "keep me").unwrap();
+            install_external(game, &setup, &target).unwrap();
+            assert_eq!(
+                fs::read_to_string(target.join("player-save.txt")).unwrap(),
+                "keep me"
+            );
+            uninstall_external(&target).unwrap();
+            assert!(target.join("player-save.txt").exists());
+            assert!(playable(&target, &game.slug).is_none());
+        }
     }
 }

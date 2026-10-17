@@ -20,6 +20,7 @@ struct Library {
     catalog: Mutex<Catalog>,
     children: Mutex<HashMap<String, Child>>,
     busy: AtomicBool,
+    active: Mutex<Option<String>>,
     cancel: AtomicBool,
 }
 #[derive(Serialize)]
@@ -136,10 +137,18 @@ async fn refresh(state: State<'_, Library>) -> Result<Snapshot, String> {
             let tmp = root.join("catalog.tmp");
             fs::write(&tmp, bytes).map_err(|e| e.to_string())?;
             let dest = root.join("catalog.json");
-            if dest.exists() {
-                fs::remove_file(&dest).map_err(|e| e.to_string())?;
+            let previous = root.join("catalog.previous.json");
+            if previous.exists() {
+                fs::remove_file(&previous).map_err(|e| e.to_string())?;
             }
-            fs::rename(tmp, dest).map_err(|e| e.to_string())?;
+            if dest.exists() {
+                fs::rename(&dest, &previous).map_err(|e| e.to_string())?;
+            }
+            if let Err(error) = fs::rename(tmp, &dest) {
+                let _ = fs::rename(previous, &dest);
+                return Err(error.to_string());
+            }
+            let _ = fs::remove_file(previous);
             *state.catalog.lock().unwrap() = c;
             Ok(state.snapshot(false, String::new()))
         }
@@ -158,8 +167,8 @@ fn snapshot(state: State<'_, Library>) -> Snapshot {
 #[tauri::command]
 fn launch(slug: String, state: State<'_, Library>) -> Result<(), String> {
     state.game(&slug)?;
-    if state.busy.load(Ordering::SeqCst) {
-        return Err("Wait for the current installation to finish".into());
+    if state.active.lock().unwrap().as_deref() == Some(slug.as_str()) {
+        return Err("Wait for this game to finish installing".into());
     }
     if state.running(&slug) {
         return Err("This game is already running".into());
@@ -198,6 +207,7 @@ fn install_game(
     if state.busy.swap(true, Ordering::SeqCst) {
         return Err("An installation is already in progress".into());
     }
+    *state.active.lock().unwrap() = Some(slug.clone());
     state.cancel.store(false, Ordering::SeqCst);
     std::thread::spawn(move || {
         let state = app.state::<Library>();
@@ -243,34 +253,14 @@ fn install_game(
                 if game.package.kind == "zip" {
                     install::install_zip(&game, &download, &dir)?;
                 } else {
-                    // Independent games retain their own save-preserving Inno Setup upgrade behavior.
-                    let status = Command::new(&download)
-                        .args([
-                            "/VERYSILENT",
-                            "/SUPPRESSMSGBOXES",
-                            "/NORESTART",
-                            "/SP-",
-                            "/NOICONS",
-                        ])
-                        .arg(format!("/DIR={}", dir.display()))
-                        .status()
-                        .map_err(|e| e.to_string())?;
-                    if !status.success() {
-                        return Err(format!("The game's installer returned {status}. Your previous installation may still be available."));
-                    }
-                    if install::playable(&dir, &slug).is_none() {
-                        return Err(
-                            "Installer finished but no playable executable was found".into()
-                        );
-                    }
-                    fs::write(dir.join(".installed-release"), &game.package.release)
-                        .map_err(|e| e.to_string())?;
+                    install::install_external(&game, &download, &dir)?;
                 }
                 Ok::<_, String>(())
             })();
             let _ = fs::remove_file(download);
             result
         })();
+        *state.active.lock().unwrap() = None;
         state.busy.store(false, Ordering::SeqCst);
         match result {
             Ok(()) => emit(
@@ -302,15 +292,7 @@ fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String>
         let _guard = lock(dir.parent().ok_or("Invalid folder")?, &slug)?;
         let uninstaller = dir.join("unins000.exe");
         if game.package.kind == "installer" && uninstaller.is_file() {
-            let status = Command::new(uninstaller)
-                .args(["/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART"])
-                .status()
-                .map_err(|e| e.to_string())?;
-            if !status.success() {
-                return Err("The game's uninstaller did not finish".into());
-            }
-            let _ = fs::remove_file(dir.join(".installed-release"));
-            Ok(())
+            install::uninstall_external(&dir)
         } else {
             install::uninstall(&dir)
         }
@@ -336,6 +318,7 @@ pub fn run() {
             .join("BlueEngine/Games");
             fs::create_dir_all(&root)?;
             let cached = fs::read(root.join("catalog.json"))
+                .or_else(|_| fs::read(root.join("catalog.previous.json")))
                 .ok()
                 .and_then(|b| serde_json::from_slice::<Catalog>(&b).ok())
                 .filter(|c| catalog::validate(c).is_ok());
@@ -346,6 +329,7 @@ pub fn run() {
                 catalog: Mutex::new(cached.unwrap_or(bundled)),
                 children: Mutex::new(HashMap::new()),
                 busy: AtomicBool::new(false),
+                active: Mutex::new(None),
                 cancel: AtomicBool::new(false),
             });
             Ok(())
