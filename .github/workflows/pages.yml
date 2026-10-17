@@ -2,7 +2,7 @@ name: Deploy download site
 
 on:
   workflow_run:
-    workflows: ["Build Windows releases"]
+    workflows: ["Build Windows releases", "Build Windows launcher"]
     types: [completed]
     branches: [main]
   push:

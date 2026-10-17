@@ -280,7 +280,7 @@ fn cancel_download(state: State<'_, Library>) {
     state.cancel.store(true, Ordering::SeqCst);
 }
 #[tauri::command]
-fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
+async fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
     state.game(&slug)?;
     if state.busy.swap(true, Ordering::SeqCst) {
         return Err("Wait for the current installation".into());
