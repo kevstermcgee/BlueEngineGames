@@ -341,6 +341,13 @@
       "directory": "games/crosshaul",
       "kind": "cargo-package",
       "binary": "crosshaul"
+    },
+    {
+      "slug": "peelturn",
+      "name": "Peelturn",
+      "directory": "games/peelturn",
+      "kind": "cargo-package",
+      "binary": "peelturn"
     }
   ],
   "non_playable_directories": [

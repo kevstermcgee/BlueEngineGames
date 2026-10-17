@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 674,
+    "games": 706,
     "prototypes": 10,
     "tests": 64
   },
@@ -2123,6 +2123,134 @@
       "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
     },
     {
+      "path": "games/peelturn/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/peelturn/AGENTS.md",
+      "sha256": "1c8056e179e789582ecdef89022a7560c10901c837bcebf74aa84a42f181051e"
+    },
+    {
+      "path": "games/peelturn/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/peelturn/Cargo.lock",
+      "sha256": "2509972479c7321e212111ab61dece2ffccb5d143e7b700c065a65d637ed775d"
+    },
+    {
+      "path": "games/peelturn/Cargo.toml",
+      "sha256": "81fafd2b2ae0178e1bff05fb55c5ee030cf40a7d239c67253c69d15f3a0c1389"
+    },
+    {
+      "path": "games/peelturn/README.md",
+      "sha256": "80dfc15deed28674b977900bb296b992b0b4e20918b36ea321cd2bffdf040818"
+    },
+    {
+      "path": "games/peelturn/STATUS.md",
+      "sha256": "844c136a938446842de37415e55c78989815e0798262677b5e48c8beecd23174"
+    },
+    {
+      "path": "games/peelturn/VERIFICATION.md",
+      "sha256": "f6e3ef79b3e6cfa1f9dc062febc3f70aaf5f4a3e561a2b474e24ec78b9b61159"
+    },
+    {
+      "path": "games/peelturn/assets/boards.json",
+      "sha256": "2b402ab1476ac59f65f39ef4319587b9f9c4cf54cb47e9608d35941679c6e489"
+    },
+    {
+      "path": "games/peelturn/assets/icon.ico",
+      "sha256": "155908c826cc02aebbd6c11f682c3e006822db371d528d6ee8630a04495da05f"
+    },
+    {
+      "path": "games/peelturn/assets/icon.png",
+      "sha256": "53280111c6832b6e623555718d51627432880035fb290430179f646eca6f477e"
+    },
+    {
+      "path": "games/peelturn/assets/icon_16.rgba",
+      "sha256": "8eb564519ac00aaea7d50368a949c5ef7064406baed8b2b98d6635c9b557dc43"
+    },
+    {
+      "path": "games/peelturn/assets/icon_32.rgba",
+      "sha256": "12929b5134b37390e139449a3135ee134fab7533164a393e607af553814dc4b0"
+    },
+    {
+      "path": "games/peelturn/assets/icon_64.rgba",
+      "sha256": "634f34c3e602979feffe6f94383bd866847ef7b618528533f5fe999b05f82974"
+    },
+    {
+      "path": "games/peelturn/assets/identity.json",
+      "sha256": "cb400fe93b4b0bb10a70bec11e825f12862b191f15ea4973a4a925e7c7e82343"
+    },
+    {
+      "path": "games/peelturn/assets/native-review.json",
+      "sha256": "f4fb7c39a3010acd5a6045aa645bb8a6583e9105a474369eb6da2ea6d4a5e3f1"
+    },
+    {
+      "path": "games/peelturn/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/peelturn/game.project.json",
+      "sha256": "388efc24325172ccdf1f708db834f844fe5e6cfe94afd90caf9ddd0ca99c627f"
+    },
+    {
+      "path": "games/peelturn/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/peelturn/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/peelturn/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/peelturn/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/peelturn/scripts/installer.json",
+      "sha256": "2025f4dd2e9a905e91bd840a6d89775bd284fcfa8faed536b5e06637607097d7"
+    },
+    {
+      "path": "games/peelturn/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/peelturn/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/peelturn/scripts/tooling.json",
+      "sha256": "a884c84ad3ee2e6abec430a0562b93d05fa75d97c8f85e6c9553b83e06b731d5"
+    },
+    {
+      "path": "games/peelturn/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/peelturn/src/lib.rs",
+      "sha256": "110945cfc61ab909de35c246ee44db8b8efc99a2aa71a3b17b838e47ddec4496"
+    },
+    {
+      "path": "games/peelturn/src/main.rs",
+      "sha256": "494621dcff772ea5ac2d126ea7cbca72a28363740c9deb13000aa843cc0e3ad1"
+    },
+    {
+      "path": "games/peelturn/src/presentation.rs",
+      "sha256": "907d3f014b0e666bb66d35a7876d31eee78edb08d1cea59fb656f82f5f476592"
+    },
+    {
+      "path": "games/peelturn/src/tests.rs",
+      "sha256": "a6f4710690884a7a8ed7dd31d0af6a985f40027865cc9eece61e23585a66e58e"
+    },
+    {
+      "path": "games/peelturn/tests/identity.rs",
+      "sha256": "9ad1cfcca26fef62d416a30cc3413d54af6df0351f0d0ebdd4462a18d98183fa"
+    },
+    {
       "path": "games/pocket-breaker/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -3388,6 +3516,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "3e1b3cd035b36653ebd081af2109b3e98ab6ef42",
+  "source_revision": "52ac50cb497bf8cf806531b01d130d0d2ed70679",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
