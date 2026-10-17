@@ -80,7 +80,11 @@ jobs:
         run: |
           $version = (Get-Content launcher/package.json | ConvertFrom-Json).version
           $tag = "launcher-v$version"
-          $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          $built = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          $published = Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-Setup-x64.exe'
+          Copy-Item $built.FullName $published
+          Copy-Item "$($built.FullName).sig" "$published.sig"
+          $installer = Get-Item $published
           $signature = Get-Content "$($installer.FullName).sig" -Raw
           $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
