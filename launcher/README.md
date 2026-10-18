@@ -56,7 +56,9 @@ The **Build Windows launcher** workflow verifies tests, downloads and installs a
 real published ZIP game and both independent installers in temporary folders, builds the per-user NSIS installer,
 and checks the real Windows WebView renders the library, searches guides, installs
 a game through native IPC and uninstalls it while keeping a player-created save.
-The CI-only WebView debugging argument is never enabled in app settings. Dispatch it with `publish=true` after checks
+The Windows UI checks use a separate executable built with tauri.ci.conf.json
+because Wry overrides the WebView environment arguments. The production installer
+is bundled first with tauri.conf.json and never enables a debugging port. Dispatch it with `publish=true` after checks
 pass. Each `launcher-v<version>` release is immutable and is **not** GitHub's
 latest game release. Publication writes the website download and signed app
 update metadata. Bump versions in package.json, package-lock.json, Cargo.toml,

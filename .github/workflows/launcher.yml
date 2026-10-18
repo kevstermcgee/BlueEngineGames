@@ -28,6 +28,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: launcher/src-tauri
+          cache-on-failure: true
       - name: Install frontend tools
         working-directory: launcher
         run: npm ci
@@ -43,11 +44,15 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
         run: npm run tauri -- build --bundles nsis
+      - name: Build isolated WebView instrumentation for Windows UI checks
+        working-directory: launcher
+        # Wry overrides WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. Only this separate
+        # executable gets a CDP port; the signed production NSIS bundle above does not.
+        run: npm run tauri -- build --no-bundle --config src-tauri/tauri.ci.conf.json
       - name: Verify Windows app starts and renders its library
         shell: pwsh
         run: |
           $exe = Resolve-Path 'launcher/src-tauri/target/release/blueengine-games-launcher.exe'
-          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9223 --remote-debugging-address=127.0.0.1'
           $app = Start-Process $exe -PassThru
           try {
             $ready = $false
@@ -62,7 +67,6 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw 'Real Windows library and native installation smoke test failed' }
           } finally {
             if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
-            Remove-Item Env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
           }
       - uses: actions/upload-artifact@v4
         if: always()
