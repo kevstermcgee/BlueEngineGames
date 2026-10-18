@@ -32,19 +32,27 @@
     },
     {
       "name": "Rifleman",
-      "description": "Selectable helmeted soldier appearance; appearance is cosmetic rather than a separate combat class."
+      "description": "Selectable helmeted soldier appearance; appearance is cosmetic rather than a separate combat class.",
+      "image": "assets/wiki/bb36a259b3310d3f.png",
+      "image_caption": "Rifleman wearing helmet in Switchyard."
     },
     {
       "name": "Scout",
-      "description": "Selectable soldier appearance with a beret and headset; it keeps the same body and hitboxes as other appearances."
+      "description": "Selectable soldier appearance with a beret and headset; it keeps the same body and hitboxes as other appearances.",
+      "image": "assets/wiki/b4f49c1c1cc4b7c5.png",
+      "image_caption": "Scout wearing blue beret in Switchyard."
     },
     {
       "name": "Recon",
-      "description": "Selectable soldier appearance with a fabric hood and goggles; it keeps the same body and hitboxes as other appearances."
+      "description": "Selectable soldier appearance with a fabric hood and goggles; it keeps the same body and hitboxes as other appearances.",
+      "image": "assets/wiki/bc9d46e2457e3a32.png",
+      "image_caption": "Recon wearing hood and goggles in Switchyard."
     },
     {
       "name": "Breacher",
-      "description": "Selectable helmeted soldier appearance with extra face armor and a narrow viewing panel; the body and hitboxes remain shared with the other appearances."
+      "description": "Selectable helmeted soldier appearance with extra face armor and a narrow viewing panel; the body and hitboxes remain shared with the other appearances.",
+      "image": "assets/wiki/caf87000bfab65c4.png",
+      "image_caption": "Breacher wearing dark face protection in Switchyard."
     }
   ],
   "characters_note": "",
@@ -72,6 +80,26 @@
       "image": "assets/wiki/bbfcd69b4aa9a6f9.png",
       "caption": "A navy-and-black Nightwatch opponent beside the warehouse doorway.",
       "alt": "A navy-and-black Nightwatch opponent beside the warehouse doorway."
+    },
+    {
+      "image": "assets/wiki/bb36a259b3310d3f.png",
+      "caption": "Rifleman wearing helmet in Switchyard.",
+      "alt": "Rifleman wearing helmet in Switchyard."
+    },
+    {
+      "image": "assets/wiki/b4f49c1c1cc4b7c5.png",
+      "caption": "Scout wearing blue beret in Switchyard.",
+      "alt": "Scout wearing blue beret in Switchyard."
+    },
+    {
+      "image": "assets/wiki/bc9d46e2457e3a32.png",
+      "caption": "Recon wearing hood and goggles in Switchyard.",
+      "alt": "Recon wearing hood and goggles in Switchyard."
+    },
+    {
+      "image": "assets/wiki/caf87000bfab65c4.png",
+      "caption": "Breacher wearing dark face protection in Switchyard.",
+      "alt": "Breacher wearing dark face protection in Switchyard."
     }
   ],
   "design": {
