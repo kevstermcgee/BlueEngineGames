@@ -1,17 +1,17 @@
 {
-  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.6/BlueEngine-Games-Setup-x64.exe",
-  "version": "0.1.6",
-  "sha256": "dcc587460076f8bc5a965c8abd9ab14b1bd79fc009df099a260ae0e0a9ba46a1",
-  "size": 26461355,
+  "size": 26673843,
+  "version": "0.1.7",
+  "sha256": "eba2128f16fdfd36cb2f5c865251c383dc20bee42beb84934fec2dff73fe766c",
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.7/BlueEngine-Games-Setup-x64.exe",
   "update": {
-    "version": "0.1.6",
+    "pub_date": "2026-10-18T13:07:52Z",
+    "version": "0.1.7",
     "platforms": {
       "windows-x86_64": {
-        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjkvTDROWllIVklZWU15cEpjaHVZeEV4U25jTy94Zk1oV1F3amtjN3g5dXp1aStOSmZnVEFBQkR2NzJnclFyWVNSSEN2SFFVZ0YxQ2lSWmZXSGNPdncwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMzI2NzcwCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuNl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjYKUTBGNUJnSFdCS1h1NWVEeFV5NXNxUUV4Q2EwbU90K1BVdytWV1l0QncrUzM4b3dxbmt4SWNoaVdoRkxCSkl4eGljbnNsZjJMM2J1NTlaTitmV1FBQVE9PQo=",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.6/BlueEngine-Games-Setup-x64.exe"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.7/BlueEngine-Games-Setup-x64.exe",
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjJyWFBxRnVUQ2hEWTkrZHdRQTBaWFFnN3ZsS3pXVnd0b0xnU0NZVXBHajJyUUNuRkJoNWIvWGpMSnBlcXphK2VCNVdKbGZlbzRYdXExbGZMY3Bxb0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMzI4NzMwCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuN194NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjcKeXIyUWt5Ryt4THlsVTRXRDBycVpVdFc1N3RBanUreDdnUkpMTTQwQ2Q5b0J1ckNITnVjWXJtWmxpejlqNjBXZkJzeGd1M2g2dDdxYmVkMnlHb0JwQnc9PQo="
       }
     },
-    "pub_date": "2026-10-18T12:34:14Z",
-    "notes": "The launcher now opens maximized by default. Use the standard Windows restore button for a smaller window. Includes public game reviews, whole-library updates and signed launcher updates."
+    "notes": "Game pages now open at the top and include star favorites, release history, release and installation dates, and a compact update button beside Play. Includes maximized startup, whole-library updates and signed launcher updates."
   }
 }
