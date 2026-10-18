@@ -47,12 +47,20 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri -- build --bundles nsis
-      - name: Preserve exact production executable for signed upgrade verification
+      - name: Extract exact signed installer payload for upgrade verification
         shell: pwsh
         run: |
           $config = Get-Content launcher/src-tauri/tauri.conf.json | ConvertFrom-Json
           if ($config.plugins.updater.dangerousInsecureTransportProtocol -or $config.app.windows[0].additionalBrowserArgs) { throw 'Production configuration must not enable CI transport or debugging' }
-          Copy-Item launcher/src-tauri/target/release/blueengine-games-launcher.exe (Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production.exe')
+          # Tauri patches a bundle-type marker into the packaged EXE, then restores
+          # the raw target/release EXE. Compare against the signed installer payload.
+          $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          $payload = Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production-payload'
+          & 'C:\Program Files\7-Zip\7z.exe' x $installer.FullName "-o$payload" -y | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Could not extract the signed installer payload for verification' }
+          $main = @(Get-ChildItem $payload -Recurse -Filter 'blueengine-games-launcher.exe')
+          if ($main.Count -ne 1) { throw 'Expected exactly one launcher executable in the signed installer' }
+          Copy-Item $main[0].FullName (Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production.exe')
       - name: Build isolated WebView instrumentation for Windows UI checks
         working-directory: launcher
         # Wry overrides WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. Only this separate
