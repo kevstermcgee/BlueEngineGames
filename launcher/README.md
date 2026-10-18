@@ -6,6 +6,8 @@ AI-designed games, favorite games, queue downloads, and use **Updates → Update
 all**. Installed games launch offline. The catalog refreshes when the app opens
 and with the refresh button; game updates are explicitly started by the player.
 The release includes the current game guides and screenshots for offline browsing.
+The small chevron above the sidebar switches to an icon rail and remembers your
+choice. Navigation, refresh and launcher updates remain available when collapsed.
 
 Installs use `%LOCALAPPDATA%\BlueEngine\Games\<slug>`, sharing receipts with
 existing per-game installers. Old `%LOCALAPPDATA%\BlueEngineLauncher\games`
@@ -57,8 +59,11 @@ real published ZIP game and both independent installers in temporary folders, bu
 and checks the real Windows WebView renders the library, searches guides, installs
 a game through native IPC and uninstalls it while keeping a player-created save.
 The Windows UI checks use a separate executable built with tauri.ci.conf.json
-because Wry overrides the WebView environment arguments. The production installer
-is bundled first with tauri.conf.json and never enables a debugging port. Dispatch it with `publish=true` after checks
+because Wry overrides the WebView environment arguments. That executable uses an
+older test version and a loopback feed to reject a corrupted signed update, retry
+the genuine installer, and verify restart into the exact production binary with
+a player file preserved. The production installer is bundled first with
+tauri.conf.json, uses HTTPS and never enables a debugging port. Dispatch it with `publish=true` after checks
 pass. Each `launcher-v<version>` release is immutable and is **not** GitHub's
 latest game release. Publication writes the website download and signed app
 update metadata. Bump versions in package.json, package-lock.json, Cargo.toml,
@@ -67,4 +72,13 @@ Cargo.lock and tauri.conf.json together for subsequent releases.
 Set the repository secret `TAURI_SIGNING_PRIVATE_KEY` to the protected Tauri
 updater key. Its public counterpart is in tauri.conf.json. Back up the private
 key outside the repository; losing it prevents updating existing installations.
-The app checks signed launcher updates with **Check launcher updates** and offers an install button before restarting after installation. Keys are never shipped in the app or repository.
+The app checks for launcher updates at startup, hourly, on reconnect and when
+returning to the window (with a ten-minute limit for focus checks). Available
+updates appear in a banner and the sidebar. **Update & restart** downloads and
+verifies the signed package, shows progress, then installs and restarts. **Remind
+me next time** hides the banner for the session; the sidebar action stays available.
+Game downloads, uninstalls and running games must finish before the launcher can
+update. New game operations pause while it updates. Offline checks stay quiet;
+failed downloads or verification leave the current launcher usable with a retry.
+**Check launcher updates** remains available for manual checks. Keys are never
+shipped in the app or repository.

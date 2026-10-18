@@ -1,4 +1,5 @@
 {
+  "version": "0.1.0",
   "app": {
     "windows": [
       {
@@ -13,5 +14,11 @@
         "dataDirectory": "BlueEngineGames-CI"
       }
     ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["http://127.0.0.1:9224/launcher-update.json"],
+      "dangerousInsecureTransportProtocol": true
+    }
   }
 }

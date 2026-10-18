@@ -3,10 +3,12 @@ import { listen } from "@tauri-apps/api/event";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { filterGames, status, size } from "./model.mjs";
+import { initSidebar } from "./sidebar.mjs";
+import { initLauncherUpdates } from "./updater-ui.mjs";
+import { version as launcherVersion } from "../package.json";
 const $ = (s) => document.querySelector(s),
   native = !!window.__TAURI_INTERNALS__;
-let imageMap = {},
-  pendingUpdate = null;
+let imageMap = {};
 let games = [],
   installs = {},
   options = {
@@ -21,7 +23,9 @@ let games = [],
   queue = [],
   guideSlug = null,
   uninstallSlug = null,
-  updaterBusy = false;
+  uninstalling = false,
+  launching = false,
+  libraryReady = false;
 function readFavorites() {
   try {
     const value = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -57,6 +61,25 @@ function toast(message) {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => ($("#toast").hidden = true), 8000);
 }
+initSidebar();
+$("#app-version").textContent = launcherVersion;
+const launcherUpdater = initLauncherUpdates({
+  native,
+  check,
+  relaunch,
+  notify: toast,
+  blockReason: () => {
+    if (!libraryReady)
+      return "Wait for your library to finish loading before updating the launcher.";
+    if (active || queue.length)
+      return "Finish or cancel your game downloads before updating the launcher.";
+    if (uninstalling)
+      return "Wait for the game to finish uninstalling before updating the launcher.";
+    if (launching || Object.values(installs).some((i) => i.running))
+      return "Close your running games before updating and restarting the launcher.";
+    return null;
+  },
+});
 const actionLabel = (g) =>
   active === g.slug
     ? "Installing…"
@@ -157,6 +180,7 @@ function apply(s) {
   s = { ...s, ...lastConnection };
   games = s.catalog.games;
   installs = Object.fromEntries(s.installed.map((i) => [i.slug, i]));
+  libraryReady = true;
   $("#connection").textContent = s.offline
     ? "Offline · saved library"
     : "Catalog up to date";
@@ -190,6 +214,10 @@ async function enqueue(slug) {
     toast("Install and play are available in the Windows app.");
     return;
   }
+  if (launcherUpdater.busy())
+    return toast(
+      "The launcher is updating. Game downloads will be available after restart.",
+    );
   if (active === slug || queue.includes(slug)) return;
   queue.push(slug);
   render();
@@ -216,11 +244,19 @@ async function action(slug) {
   await play(slug);
 }
 async function play(slug) {
+  if (launching) return;
+  if (launcherUpdater.busy())
+    return toast(
+      "The launcher is updating. Games will be ready after restart.",
+    );
+  launching = true;
   try {
     await invoke("launch", { slug });
     await sync();
   } catch (e) {
     toast(String(e));
+  } finally {
+    launching = false;
   }
 }
 document.addEventListener("click", (e) => {
@@ -279,6 +315,10 @@ $("#close-guide").onclick = () => {
 $("#guide").addEventListener("close", () => (guideSlug = null));
 $("#keep").onclick = () => $("#confirmation").close();
 $("#confirm-uninstall").onclick = async () => {
+  if (uninstalling) return;
+  if (launcherUpdater.busy())
+    return toast("Wait for the launcher update before uninstalling a game.");
+  uninstalling = true;
   $("#confirmation").close();
   try {
     await invoke("uninstall_game", { slug: uninstallSlug });
@@ -286,42 +326,13 @@ $("#confirm-uninstall").onclick = async () => {
     toast("Game removed. Your saves were kept.");
   } catch (e) {
     toast(String(e));
+  } finally {
+    uninstalling = false;
   }
 };
 $("#cancel").onclick = () => {
   queue = [];
   if (native) invoke("cancel_download");
-};
-$("#app-update").onclick = async () => {
-  if (!native)
-    return toast("Launcher updates are available in the Windows app.");
-  if (updaterBusy) return;
-  if (active)
-    return toast("Finish your game download before updating the launcher.");
-  updaterBusy = true;
-  $("#app-update").disabled = true;
-  try {
-    if (pendingUpdate) {
-      toast(`Installing launcher ${pendingUpdate.version}…`);
-      await pendingUpdate.downloadAndInstall();
-      await relaunch();
-    } else {
-      pendingUpdate = await check();
-      if (!pendingUpdate) toast("Your launcher is up to date.");
-      else {
-        $("#app-update").textContent =
-          `Install launcher ${pendingUpdate.version}`;
-        toast(
-          "A launcher update is ready. Install it when you are ready to restart.",
-        );
-      }
-    }
-  } catch (e) {
-    toast(`Could not update launcher: ${e}`);
-  } finally {
-    updaterBusy = false;
-    $("#app-update").disabled = false;
-  }
 };
 async function start() {
   try {

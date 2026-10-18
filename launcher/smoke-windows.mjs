@@ -69,6 +69,65 @@ try {
   );
   assert.equal(
     await evaluate(
+      `document.querySelector('#sidebar-toggle').getAttribute('aria-expanded')`,
+    ),
+    "true",
+  );
+  await evaluate(`document.querySelector('#sidebar-toggle').click();`);
+  assert.equal(
+    await evaluate(`document.documentElement.dataset.sidebarCollapsed`),
+    "true",
+  );
+  assert.equal(
+    await evaluate(
+      `getComputedStyle(document.querySelector('main')).marginLeft`,
+    ),
+    "65px",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('[data-view="library"]').getAttribute('aria-label')`,
+    ),
+    "My library",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('#app-update').getBoundingClientRect().width>0`,
+    ),
+    true,
+  );
+  await call("Page.reload");
+  await until(
+    () => evaluate(`document.querySelectorAll('.card').length>=50`),
+    "library after compact sidebar reload",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('#sidebar-toggle').getAttribute('aria-expanded')`,
+    ),
+    "false",
+  );
+  assert.equal(
+    await evaluate(
+      `getComputedStyle(document.querySelector('main')).marginLeft`,
+    ),
+    "65px",
+  );
+  await mkdir("launcher-smoke", { recursive: true });
+  const compact = await call("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile(
+    "launcher-smoke/windows-compact.png",
+    Buffer.from(compact.data, "base64"),
+  );
+  await evaluate(`document.querySelector('#sidebar-toggle').click();`);
+  console.log(
+    "Compact sidebar navigation, layout and saved preference passed in Windows WebView2.",
+  );
+  assert.equal(
+    await evaluate(
       `document.querySelector('#search').value='Vanguard';document.querySelector('#search').dispatchEvent(new Event('input'));document.querySelector('.title-button').textContent`,
     ),
     "BlueDM",
@@ -140,6 +199,7 @@ try {
   );
   await access(save);
   await unlink(save);
+  await evaluate(`document.querySelector('#close-guide').click();`);
   console.log(
     `Windows IPC install, receipt, guide, uninstall confirmation and save preservation passed for ${game.name}.`,
   );

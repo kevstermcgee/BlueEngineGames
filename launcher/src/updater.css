@@ -1,0 +1,65 @@
+#launcher-update {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 26px;
+  padding: 15px 18px;
+  background: #142c43;
+  border: 1px solid #345a7d;
+  border-radius: 9px;
+}
+#launcher-update > div {
+  flex: 1;
+  min-width: 0;
+}
+#launcher-update strong {
+  font-size: 13px;
+  color: #c5e2ff;
+}
+#launcher-update p {
+  margin: 5px 0 0;
+  color: #a4bdd6;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+#launcher-update progress {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+#install-launcher {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #10203d;
+  background: #a4cdff;
+  border-color: #b8daff;
+  font-weight: 650;
+}
+#dismiss-launcher-update {
+  background: transparent;
+  border: 0;
+  padding: 4px 7px;
+  font-size: 20px;
+  color: #9bb4ce;
+}
+#app-update.update-available {
+  border-color: #6a9dd5;
+  color: #b8daff;
+}
+body.launcher-updating
+  :is([data-action], [data-play], [data-uninstall], #confirm-uninstall) {
+  opacity: 0.55;
+  cursor: wait;
+}
+@media (max-width: 650px) {
+  #launcher-update {
+    flex-wrap: wrap;
+  }
+  #launcher-update > div {
+    flex-basis: calc(100% - 40px);
+  }
+  #dismiss-launcher-update {
+    margin-left: auto;
+  }
+}
