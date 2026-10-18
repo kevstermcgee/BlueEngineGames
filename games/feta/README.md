@@ -7,10 +7,12 @@ with the game. Online play requires two players choosing opposite characters.
 
 WASD/arrows move, mouse looks, Shift sprints, Space jumps, Ctrl/C crouches, and
 Q changes Feta's camera. The Scientist attacks with the left/right mouse buttons.
-Esc opens the menu. Solo exploration has no opponent or round timer.
+Esc opens the menu. F11 switches between fullscreen and a window. Solo exploration
+has no opponent or round timer.
 
-This catalog packages the existing **0.2.0-playtest.2** Windows build, preserving
-the game's own runtime and approved rat artwork. Its archive checksum and source
+This catalog packages the existing **0.2.0-playtest.3** Windows build, preserving
+the game's own runtime and approved rat artwork. It starts fullscreen with a brief,
+skippable **BlueEngine Games** intro. Its archive checksum and source
 revision are pinned in release-source.json. It is a playtest; human Windows input
 and gameplay still need playtesting.
 

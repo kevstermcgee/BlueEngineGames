@@ -6,27 +6,41 @@
       "name": "Embertrail",
       "description": "Bring Mote\u2019s stolen Dawnheart home through 32 courses, eight worlds and eight bosses. Enjoy smoother platform rides, animated root stairways and boss music that starts as guardians appear. Controller-first on PC, with 32 regional underground routes and 16 named tracks you can download from pause.",
       "created": "2026-10-12",
-      "game_version": "0.2.2",
+      "game_version": "0.2.3",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
-      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/5197c465ee734b1d79243b4905f3b49a5c745c8e/games/embertrail",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/8ab26c4b39cd9818e6001ae10b5f116a0f36d28d/games/embertrail",
       "install_help": "Run the Windows installer to play. To update, run a newer Embertrail installer; your saves and settings are preserved.",
       "published_release": {
-        "tag_name": "v0.2.2",
-        "name": "Embertrail 0.2.2",
-        "published_at": "2026-10-16T13:08:07Z",
-        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.2",
+        "tag_name": "v0.2.3",
+        "name": "Embertrail 0.2.3",
+        "published_at": "2026-10-18T05:43:57Z",
+        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.3",
         "assets": [
           {
             "name": "embertrail-setup-windows-x64.exe",
-            "size": 168694987,
-            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.2/embertrail-setup-windows-x64.exe",
-            "digest": "sha256:534f1a4a934ce211f486f1fd499230939a2b98006423f67ed42e3e1f827c134b"
+            "size": 168802632,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.3/embertrail-setup-windows-x64.exe",
+            "digest": "sha256:0444a05531313dfa95b3cfccc4f51eb804a42c3022ba4337601eebcf8c08021e"
           }
         ]
       },
       "previous_releases": [
+        {
+          "tag_name": "v0.2.2",
+          "name": "Embertrail 0.2.2",
+          "published_at": "2026-10-16T13:08:07Z",
+          "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.2",
+          "assets": [
+            {
+              "name": "embertrail-setup-windows-x64.exe",
+              "size": 168694987,
+              "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.2/embertrail-setup-windows-x64.exe",
+              "digest": "sha256:534f1a4a934ce211f486f1fd499230939a2b98006423f67ed42e3e1f827c134b"
+            }
+          ]
+        },
         {
           "tag_name": "v0.2.1",
           "name": "Embertrail 0.2.1",
@@ -90,27 +104,42 @@
       "name": "Harvest Hollow",
       "description": "Tend a cozy farm: till soil, plant and water crops, harvest, chop trees, clear debris, and improve your homestead through changing days with an original pastoral soundtrack.",
       "created": "2026-10-13",
-      "game_version": "0.1.0",
+      "game_version": "0.1.1",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
-      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/d4675097ce36237a79c274359cd0cf4c16fff5b9/games/harvest-hollow",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/63223a900bbce5a6d4b2e3b80a7aa733d862e080/games/harvest-hollow",
       "install_help": "Run the Windows installer to play. To update, run a newer Harvest Hollow installer; your saves and settings are preserved.",
       "published_release": {
-        "tag_name": "v0.1.0",
-        "name": "Harvest Hollow 0.1.0 for Windows",
-        "published_at": "2026-10-14T03:41:07Z",
-        "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.0",
+        "tag_name": "v0.1.1",
+        "name": "Harvest Hollow 0.1.1 for Windows",
+        "published_at": "2026-10-18T05:53:00Z",
+        "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.1",
         "assets": [
           {
             "name": "harvest-hollow-setup-windows-x64.exe",
-            "size": 13944898,
-            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.0/harvest-hollow-setup-windows-x64.exe",
-            "digest": "sha256:dffeebbb5edb394cadbcfaecb709d1ecccdb59b261d1fad2c7b4234319a21b9a"
+            "size": 14051309,
+            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.1/harvest-hollow-setup-windows-x64.exe",
+            "digest": "sha256:d8337080f484b29e3780c903eb0256eb308fb835dca7eb3f02d0dda5070d4a34"
           }
         ]
       },
-      "previous_releases": []
+      "previous_releases": [
+        {
+          "tag_name": "v0.1.0",
+          "name": "Harvest Hollow 0.1.0 for Windows",
+          "published_at": "2026-10-14T03:41:07Z",
+          "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.0",
+          "assets": [
+            {
+              "name": "harvest-hollow-setup-windows-x64.exe",
+              "size": 13944898,
+              "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.0/harvest-hollow-setup-windows-x64.exe",
+              "digest": "sha256:dffeebbb5edb394cadbcfaecb709d1ecccdb59b261d1fad2c7b4234319a21b9a"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

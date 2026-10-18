@@ -203,6 +203,7 @@ fn lighting(s: &Sim) -> Look {
 }
 #[macroquad::main(window)]
 async fn main() {
+    vesper3d::viewer::startup::show().await;
     let args: Vec<_> = std::env::args().collect();
     let mut life = Lifecycle::<Held>::start_or_exit(
         &args,

@@ -1426,6 +1426,7 @@ fn server_settings(args: &[String]) -> Option<(String, String, TransportProfile)
 
 #[macroquad::main(window)]
 async fn main() {
+    vesper3d::viewer::startup::show().await;
     let args: Vec<String> = std::env::args().collect();
     let identity = identity();
     // The run flags, the fixed-step loop, quick save/load and evidence for a caller that cannot watch.

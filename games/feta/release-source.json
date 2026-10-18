@@ -1,9 +1,13 @@
 {
-  "url": "https://github.com/kevstermcgee/Feta/releases/download/feta-v0.2.0-playtest.2/Feta-Windows-x64.zip",
-  "sha256": "bb5290d174b4bb765279e856c8165c842bdb51e5dd3384b495c6c6a95ae400c4",
-  "version": "0.2.0-playtest.2",
-  "engine_revision": "8a667e7",
-  "source_revision": "3971ec9c5b98ed2b7b49a5ada13a2e93fd0398b2",
+  "url": "https://github.com/kevstermcgee/Feta/releases/download/feta-v0.2.0-playtest.3/Feta-Windows-x64.zip",
+  "sha256": "3f84316d568ff6beb7da7e27d28a8e10b2368d432a3d8cfc62b2cadfc3793a1d",
+  "version": "0.2.0-playtest.3",
+  "engine_revision": "620fe001afa9ee7cf8a29b9a188e99f8929a367a",
+  "source_revision": "620fe001afa9ee7cf8a29b9a188e99f8929a367a",
   "executable": "Feta.exe",
-  "files": ["Feta.exe", "Feta.ico", "LICENSE.txt"]
+  "files": [
+    "Feta.exe",
+    "Feta.ico",
+    "LICENSE.txt"
+  ]
 }

@@ -50,6 +50,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Validate Windows startup verifier syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'distribution/check_startup_windows.ps1'), [ref]$tokens, [ref]$parseErrors)
+          if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
+
       - name: Validate every game has a download definition
         run: |
           python distribution/check_catalog.py
@@ -173,6 +181,54 @@ jobs:
       - name: Build game installers
         shell: pwsh
         run: .github/scripts/package_installers.ps1
+
+      - name: Prepare pinned software OpenGL for startup verification
+        if: github.event.inputs.game_slug == ''
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'startup-mesa.7z'
+          $mesa = Join-Path $env:RUNNER_TEMP 'startup-mesa'
+          Invoke-WebRequest 'https://github.com/pal1000/mesa-dist-win/releases/download/26.2.4/mesa3d-26.2.4-release-msvc.7z' -OutFile $archive
+          $expected = '351fc8c8b695878ffb3eaa044b3ead08672a48b1a045e3c3e3975811df0f6695'
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'Mesa archive checksum mismatch' }
+          & 7z x $archive "-o$mesa" 'x64/*' -y
+          if ($LASTEXITCODE -ne 0) { throw 'Mesa extraction failed' }
+          $driver = Join-Path $mesa 'x64'
+          if (!(Test-Path (Join-Path $driver 'opengl32.dll'))) { throw 'Mesa OpenGL driver missing' }
+          "BE2_CI_OPENGL_DIR=$driver" >> $env:GITHUB_ENV
+
+      - name: Verify 2D, custom 3D and stock startup from shipped game archives
+        if: github.event.inputs.game_slug == ''
+        shell: pwsh
+        run: |
+          foreach ($game in @(
+            @{ slug = 'pocket-breaker'; title = 'Pocket Breaker'; executable = 'pocket-breaker.exe' },
+            @{ slug = 'riftwake'; title = 'Riftwake'; executable = 'Play-riftwake.exe' },
+            @{ slug = 'leo'; title = 'Leo'; executable = 'leo.exe'; arguments = @('--mute') },
+            @{ slug = 'laser-vault'; title = 'Blue Engine 2 | BE2'; executable = 'BlueEngine.exe'; stock = $true }
+          )) {
+            $stage = Join-Path $env:RUNNER_TEMP "startup-$($game.slug)"
+            Expand-Archive "dist/$($game.slug)-windows-x64.zip" -DestinationPath $stage
+            $executables = @(Get-ChildItem $stage -Recurse -File -Filter $game.executable)
+            if ($executables.Count -ne 1) { throw "Expected exactly one $($game.executable) in shipped archive" }
+            $arguments = @()
+            if ($game.ContainsKey('arguments')) { $arguments = @($game.arguments) }
+            if ($game.ContainsKey('stock')) {
+              # The small Play launcher exits after spawning BlueEngine. Inspect
+              # that actual game process with the package's declared arguments.
+              $arguments = @('--mute') + @([IO.File]::ReadAllLines((Join-Path $executables[0].DirectoryName 'launch.args')))
+            }
+            ./distribution/check_startup_windows.ps1 -Executable $executables[0].FullName -ExpectedTitle $game.title -OutputDirectory "startup-proof/$($game.slug)" -OpenGLDirectory $env:BE2_CI_OPENGL_DIR -GameArguments $arguments
+          }
+
+      - name: Save real Windows startup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-startup-proof
+          path: startup-proof/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Save reviewable Windows downloads
         uses: actions/upload-artifact@v4

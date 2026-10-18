@@ -168,6 +168,8 @@ impl Client {
 
 #[macroquad::main(window_conf)]
 async fn main() -> vesper3d::Result<()> {
+    vesper3d::viewer::startup::show().await;
+    native_input::poll(false);
     let args: Vec<String> = std::env::args().collect();
     let host = args.iter().any(|arg| arg == "--host");
     let address = value_after(&args, "--connect").unwrap_or_else(|| DEFAULT_SERVER.into());

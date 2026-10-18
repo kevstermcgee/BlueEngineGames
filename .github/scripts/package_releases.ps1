@@ -116,6 +116,8 @@ $notes = @(
     '',
     '> These executables are not code-signed, so Windows may show a SmartScreen warning.',
     '',
+    'Games now open fullscreen by default and show a brief, skippable **BlueEngine Games** studio card before gameplay starts. Use F/F11 to switch to a window; remembered display settings and explicit windowed launches are respected.',
+    '',
     '## Included builds',
     ''
 )

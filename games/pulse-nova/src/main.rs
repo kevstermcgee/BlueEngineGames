@@ -326,6 +326,7 @@ fn scripted(script: &Timeline, frame: u32) -> (Held, bool, bool, bool, [f32; 2])
 
 #[macroquad::main(window)]
 async fn main() {
+    vesper3d::viewer::startup::show().await;
     let args: Vec<String> = std::env::args().collect();
     let identity = identity();
     let plan = CapturePlan::from_args(&args).unwrap_or_else(|e| {

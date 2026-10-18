@@ -51,7 +51,7 @@ impl Default for Prefs {
             stick_sensitivity: 1.,
             invert_y: false,
             volume: 0.8,
-            fullscreen: false,
+            fullscreen: true,
             shadows: ShadowQuality::default(),
             last_hub: None,
             address: String::new(),
@@ -74,6 +74,19 @@ impl Default for Prefs {
 }
 
 impl Prefs {
+    /// A remembered window choice wins during ordinary play; explicit display/evidence flags apply only to this run.
+    #[cfg(feature = "client")]
+    pub fn fullscreen_for(&self, args: &[String]) -> bool {
+        use vesper3d::viewer::startup;
+        if startup::unattended(args)
+            || args.iter().any(|arg| matches!(arg.as_str(), "--windowed" | "--fullscreen" | "--size"))
+        {
+            startup::fullscreen_for(args)
+        } else {
+            self.fullscreen
+        }
+    }
+
     pub fn path() -> PathBuf {
         data_dir().join("prefs.json")
     }
@@ -129,6 +142,30 @@ impl Prefs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fullscreen_defaults_on_but_explicit_saved_windowed_choice_survives() {
+        assert!(Prefs::default().fullscreen);
+        assert!(serde_json::from_str::<Prefs>(r#"{"name":"Player"}"#).unwrap().fullscreen);
+        let windowed: Prefs = serde_json::from_str(r#"{"name":"Player","fullscreen":false}"#).unwrap();
+        assert!(!windowed.fullscreen);
+        assert!(!serde_json::from_str::<Prefs>(&serde_json::to_string(&windowed).unwrap()).unwrap().fullscreen);
+    }
+
+    #[cfg(feature = "client")]
+    #[test]
+    fn explicit_window_and_evidence_modes_override_display_without_changing_preferences() {
+        let args = |items: &[&str]| items.iter().map(|arg| (*arg).to_owned()).collect::<Vec<_>>();
+        let fullscreen = Prefs::default();
+        let windowed = Prefs { fullscreen: false, ..Default::default() };
+        assert!(fullscreen.fullscreen_for(&args(&[])));
+        assert!(!windowed.fullscreen_for(&args(&[])));
+        assert!(windowed.fullscreen_for(&args(&["--fullscreen"])));
+        for flags in [&["--windowed"][..], &["--size", "800x450"], &["--capture", "out"], &["--frames", "30"]] {
+            assert!(!fullscreen.fullscreen_for(&args(flags)));
+        }
+        assert!(!windowed.fullscreen);
+    }
 
     #[test]
     fn nonsense_in_the_file_is_repaired_not_trusted() {
