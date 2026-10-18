@@ -117,7 +117,10 @@ try {
     `window.__TAURI_INTERNALS__.invoke('snapshot')`,
   );
   const receipt = installed.installed.find((i) => i.slug === game.slug);
-  assert.equal(receipt.release, game.package.release);
+  assert.equal(
+    receipt.release,
+    installed.catalog.games.find((g) => g.slug === game.slug).package.release,
+  );
   const save = join(receipt.path, "launcher-smoke-save.txt");
   await writeFile(save, "Retain this player-created save");
   await evaluate(
