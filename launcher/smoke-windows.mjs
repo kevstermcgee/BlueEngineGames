@@ -294,6 +294,15 @@ try {
     ),
     1,
   );
+  // A close event is queued: reopening in the same event turn must not let that
+  // earlier event detach the active guide's feedback submission listener.
+  await evaluate(
+    `document.querySelector('#close-guide').click();document.querySelector('.title-button[data-guide="embertrail"]').click();`,
+  );
+  await evaluate(
+    `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`,
+  );
+  assert.equal(await evaluate(`document.querySelector('#guide').open`), true);
   // Keep this synthetic review inside the isolated test profile. Verify the
   // browser handoff without posting fabricated player feedback to the repo.
   await evaluate(`(() => {

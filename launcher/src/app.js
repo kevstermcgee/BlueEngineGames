@@ -559,6 +559,9 @@ $("#close-guide").onclick = () => {
   guideSlug = null;
 };
 $("#guide").addEventListener("close", () => {
+  // The dialog queues its close event. A quickly reopened guide already owns
+  // the current feedback form, so an earlier close must not tear it down.
+  if ($("#guide").open) return;
   guideSlug = null;
   cleanupGuideFeedback?.();
   cleanupGuideFeedback = null;
