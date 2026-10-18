@@ -109,8 +109,9 @@ $deadline = [DateTime]::UtcNow.AddMinutes(10)
 while ([DateTime]::UtcNow -lt $deadline) { Start-Sleep -Seconds 1 }
 '@
   $wrapperCode = $wrapperCode.Replace('__APP_EXE__', $exe.Replace("'", "''")).Replace('__WORKDIR__', $account.workdir.Replace("'", "''"))
-  $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($wrapperCode))
-  $wrapper = Start-Process -FilePath (Get-Process -Id $PID).Path -Credential $credential -LoadUserProfile -WorkingDirectory $account.workdir -ArgumentList @('-NoProfile','-NonInteractive','-EncodedCommand',$encoded) -PassThru
+  $wrapperPath = Join-Path $account.workdir 'launch-instrumented.ps1'
+  Set-Content -LiteralPath $wrapperPath -Value $wrapperCode -Encoding utf8NoBOM
+  $wrapper = Start-Process -FilePath (Get-Process -Id $PID).Path -Credential $credential -LoadUserProfile -WorkingDirectory $account.workdir -ArgumentList @('-NoProfile','-NonInteractive','-STA','-ExecutionPolicy','Bypass','-File',"`"$wrapperPath`"") -PassThru
   $ready = $false
   for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 1

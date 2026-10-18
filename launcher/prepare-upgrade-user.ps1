@@ -34,9 +34,10 @@ $timer.Start()
 [System.Windows.Forms.Application]::Run($form)
 '@
 $probe = $probe.Replace('__PROFILE_FILE__', $profileFile.Replace("'", "''"))
-$encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($probe))
+$probePath = Join-Path $workdir 'desktop-preflight.ps1'
+Set-Content -LiteralPath $probePath -Value $probe -Encoding utf8NoBOM
 $shell = (Get-Process -Id $PID).Path
-$process = Start-Process -FilePath $shell -Credential $credential -LoadUserProfile -WorkingDirectory $workdir -ArgumentList @('-NoProfile','-NonInteractive','-STA','-EncodedCommand',$encoded) -PassThru
+$process = Start-Process -FilePath $shell -Credential $credential -LoadUserProfile -WorkingDirectory $workdir -ArgumentList @('-NoProfile','-NonInteractive','-STA','-ExecutionPolicy','Bypass','-File',"`"$probePath`"") -PassThru
 try {
   Add-Type @'
 using System;
