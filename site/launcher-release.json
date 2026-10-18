@@ -1,17 +1,17 @@
 {
-  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.5/BlueEngine-Games-Setup-x64.exe",
-  "size": 26462091,
-  "version": "0.1.5",
-  "sha256": "91b7405cb36f92c2066340e99249bfa39b4a7b1ea04a3e04b69181b825aed8c5",
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.6/BlueEngine-Games-Setup-x64.exe",
+  "version": "0.1.6",
+  "sha256": "dcc587460076f8bc5a965c8abd9ab14b1bd79fc009df099a260ae0e0a9ba46a1",
+  "size": 26461355,
   "update": {
+    "version": "0.1.6",
     "platforms": {
       "windows-x86_64": {
-        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjUzeHlRazdFSnRxSlRoT2lhUnpuQWhHbGl5QnNRVHl6RkdRT1A2WWZkNWVZdURQbjJ1Z25tNXVPSExlY09jSFlXdmJyajFjdjBGZVFWWHVYV3NWNEFZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMzAxNjc4CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuNV94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjUKbVhwNW9ISGVnYklDeWtsUTNPN3dQZWlRdzhvbi9hQUpwNnQ5MzZEWHZyaTZyMXZzcFd6MkU0UVlpQzd3QWI0YWQ5bnd4dGVrUW1JUWxDTDZTdC80RFE9PQo=",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.5/BlueEngine-Games-Setup-x64.exe"
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjkvTDROWllIVklZWU15cEpjaHVZeEV4U25jTy94Zk1oV1F3amtjN3g5dXp1aStOSmZnVEFBQkR2NzJnclFyWVNSSEN2SFFVZ0YxQ2lSWmZXSGNPdncwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMzI2NzcwCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuNl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjYKUTBGNUJnSFdCS1h1NWVEeFV5NXNxUUV4Q2EwbU90K1BVdytWV1l0QncrUzM4b3dxbmt4SWNoaVdoRkxCSkl4eGljbnNsZjJMM2J1NTlaTitmV1FBQVE9PQo=",
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.6/BlueEngine-Games-Setup-x64.exe"
       }
     },
-    "version": "0.1.5",
-    "notes": "Public scores and review counts now appear on game cards and guide headers. Read every published review in the game wiki without signing in, with pagination and offline drafts preserved. Includes whole-library game updates and signed launcher updates.",
-    "pub_date": "2026-10-18T05:36:02Z"
+    "pub_date": "2026-10-18T12:34:14Z",
+    "notes": "The launcher now opens maximized by default. Use the standard Windows restore button for a smaller window. Includes public game reviews, whole-library updates and signed launcher updates."
   }
 }
