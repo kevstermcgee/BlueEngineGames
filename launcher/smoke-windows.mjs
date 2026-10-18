@@ -55,6 +55,41 @@ async function evaluate(expression) {
 }
 const nativeSnapshot = () =>
   evaluate(`window.__TAURI_INTERNALS__.invoke('snapshot')`);
+async function openGuideFromTitle(slug) {
+  await evaluate(
+    `document.querySelector('.title-button[data-guide="${slug}"]').click()`,
+  );
+  await until(
+    () =>
+      evaluate(
+        `document.querySelector('#guide').open && document.querySelector('#guide').scrollTop === 0`,
+      ),
+    `${slug} title opens its guide at the top`,
+  );
+  await evaluate(
+    `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`,
+  );
+  assert.equal(await evaluate(`document.querySelector('#guide').scrollTop`), 0);
+}
+async function closeGuide() {
+  await evaluate(`document.querySelector('#close-guide').click()`);
+  await until(
+    () => evaluate(`!document.querySelector('#guide').open`),
+    "closed game guide",
+  );
+}
+async function expectFeedbackInView(label) {
+  await until(
+    () =>
+      evaluate(`(() => {
+        const dialog = document.querySelector('#guide');
+        const bounds = dialog.getBoundingClientRect();
+        const feedback = document.querySelector('#guide-feedback').getBoundingClientRect();
+        return dialog.open && dialog.scrollTop > 0 && feedback.top >= bounds.top - 1 && feedback.top < bounds.bottom - 40;
+      })()`),
+    label,
+  );
+}
 const createdSaves = [];
 let observingDownloads = false;
 try {
@@ -129,6 +164,107 @@ try {
   await evaluate(`document.querySelector('#sidebar-toggle').click();`);
   console.log(
     "Compact sidebar navigation, layout and saved preference passed in Windows WebView2.",
+  );
+  assert.match(
+    await evaluate(
+      `document.querySelector('[data-view="favorites"] .nav-icon').textContent.trim()`,
+    ),
+    /^[★☆]$/u,
+    "Favorites navigation uses a star",
+  );
+  const initiallyFavorite = await evaluate(
+    `document.querySelector('.card [data-favorite="embertrail"]').getAttribute('aria-pressed') === 'true'`,
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('.card [data-favorite="embertrail"]').textContent.trim()`,
+    ),
+    initiallyFavorite ? "★" : "☆",
+  );
+  await evaluate(
+    `document.querySelector('.card [data-favorite="embertrail"]').click()`,
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('.card [data-favorite="embertrail"]').getAttribute('aria-pressed') === 'true'`,
+    ),
+    !initiallyFavorite,
+  );
+  await call("Page.reload");
+  await until(
+    () => evaluate(`document.querySelectorAll('.card').length>=50`),
+    "library after saving a favorite",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('.card [data-favorite="embertrail"]').getAttribute('aria-pressed') === 'true'`,
+    ),
+    !initiallyFavorite,
+    "Card favorite persists across reload",
+  );
+  await openGuideFromTitle("embertrail");
+  assert.equal(
+    await evaluate(
+      `document.querySelector('#guide-favorite').getAttribute('aria-pressed') === 'true'`,
+    ),
+    !initiallyFavorite,
+    "Guide favorite agrees with its card",
+  );
+  await evaluate(
+    `document.querySelector('#guide-favorite').focus();document.querySelector('#guide-favorite').click()`,
+  );
+  assert.deepEqual(
+    await evaluate(`({
+      guide: document.querySelector('#guide-favorite').getAttribute('aria-pressed') === 'true',
+      card: document.querySelector('.card [data-favorite="embertrail"]').getAttribute('aria-pressed') === 'true',
+      stored: JSON.parse(localStorage.getItem('favorites') || '[]').includes('embertrail'),
+      focus: document.activeElement.id
+    })`),
+    {
+      guide: initiallyFavorite,
+      card: initiallyFavorite,
+      stored: initiallyFavorite,
+      focus: "guide-favorite",
+    },
+    "Guide toggle updates the card and saved favorite while preserving focus",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('.card [data-favorite="embertrail"]').textContent.trim()`,
+    ),
+    initiallyFavorite ? "★" : "☆",
+  );
+  await evaluate(
+    `document.querySelector('#guide').scrollTop = document.querySelector('#guide').scrollHeight`,
+  );
+  assert(
+    await evaluate(`document.querySelector('#guide').scrollTop > 1000`),
+    "Guide is deeply scrolled before switching games",
+  );
+  await closeGuide();
+  await openGuideFromTitle("pocket-breaker");
+  await evaluate(
+    `document.querySelector('#guide .guide-nav a[href="#guide-feedback"]').click()`,
+  );
+  await expectFeedbackInView("Feedback navigation deliberately scrolls down");
+  await closeGuide();
+  await openGuideFromTitle("embertrail");
+  const guideOverview = await call("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile(
+    "launcher-smoke/windows-guide-overview.png",
+    Buffer.from(guideOverview.data, "base64"),
+  );
+  await closeGuide();
+  await evaluate(
+    `document.querySelector('.public-score[data-guide="embertrail"][data-open-reviews]').click()`,
+  );
+  await expectFeedbackInView("Public score deliberately opens player reviews");
+  await closeGuide();
+  console.log(
+    "Title-open scroll reset, deliberate Feedback jumps, and synchronized persistent star favorites passed in Windows WebView2.",
   );
   assert.equal(
     await evaluate(
@@ -230,6 +366,16 @@ try {
       } catch { return true; }
     })()`),
     true,
+  );
+  assert.equal(
+    await evaluate(`(async () => {
+      try {
+        await window.__TAURI_INTERNALS__.invoke('open_game_versions', {slug: 'not-a-real-game'});
+        return false;
+      } catch { return true; }
+    })()`),
+    true,
+    "Unknown games cannot open a version-history destination",
   );
   await evaluate(`document.querySelector('#close-guide').click()`);
   await until(
@@ -420,6 +566,100 @@ try {
   }
   await evaluate(
     `document.querySelector('#search').value='';document.querySelector('#search').dispatchEvent(new Event('input'));`,
+  );
+  // Keep the two-game bulk check above intact, then exercise the guide's native
+  // update action independently using only an isolated local receipt fixture.
+  const guideGame = updated.catalog.games.find((g) => g.slug === games[0].slug);
+  const guideInstallation = updated.installed.find(
+    (i) => i.slug === guideGame.slug,
+  );
+  const metadataPath = join(guideInstallation.path, ".installed-metadata.json");
+  const previousMetadata = JSON.parse(await readFile(metadataPath, "utf8"));
+  const previousVersion = guideGame.versions?.find(
+    (v) => v.release !== guideGame.package.release,
+  );
+  const agedMetadata = {
+    ...previousMetadata,
+    release:
+      previousVersion?.release || `launcher-smoke-previous-${guideGame.slug}`,
+    version: previousVersion?.name || "Local previous-release fixture",
+    released_at: previousVersion?.released_at || null,
+  };
+  await writeFile(
+    join(guideInstallation.path, ".installed-release"),
+    agedMetadata.release,
+  );
+  await writeFile(metadataPath, JSON.stringify(agedMetadata));
+  await evaluate(
+    `window.__bulkSmoke.events = [];document.querySelector('#refresh').click()`,
+  );
+  await until(
+    () =>
+      evaluate(`document.querySelector('#update-count').textContent === '1'`),
+    "one older installed release is available for the compact guide update",
+  );
+  await openGuideFromTitle(guideGame.slug);
+  assert.equal(
+    await evaluate(`document.querySelector('#guide-play').textContent.trim()`),
+    "▶ Play",
+  );
+  assert.equal(
+    await evaluate(`document.querySelector('#guide-game-update').disabled`),
+    false,
+  );
+  const installedSummary = await evaluate(
+    `document.querySelector('.game-release-summary').textContent`,
+  );
+  assert(installedSummary.includes(agedMetadata.version));
+  assert.match(installedSummary, /Installed version/);
+  assert.match(installedSummary, /Installed on/);
+  assert.match(
+    await evaluate(
+      `document.querySelector('#guide-game-update').getAttribute('aria-label')`,
+    ),
+    /released|release date unavailable/i,
+  );
+  const compactUpdate = await call("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile(
+    "launcher-smoke/windows-game-update.png",
+    Buffer.from(compactUpdate.data, "base64"),
+  );
+  await evaluate(`document.querySelector('#guide-game-update').click()`);
+  const guideEvents = await until(
+    async () => {
+      const events = await evaluate(`window.__bulkSmoke.events`);
+      return events.some(
+        (e) =>
+          e.slug === guideGame.slug && ["complete", "error"].includes(e.phase),
+      )
+        ? events
+        : false;
+    },
+    "compact guide update to finish through native IPC",
+    240000,
+  );
+  assert(!guideEvents.some((e) => e.phase === "error"));
+  const guideUpdated = (await nativeSnapshot()).installed.find(
+    (i) => i.slug === guideGame.slug,
+  );
+  assert.equal(guideUpdated.release, guideGame.package.release);
+  assert(guideUpdated.installed_at >= previousMetadata.installed_at);
+  assert.equal(guideUpdated.version, guideGame.version);
+  await until(
+    () =>
+      evaluate(
+        `!document.querySelector('#guide-game-update') && document.querySelector('#guide-play')?.textContent.trim() === '▶ Play' && !document.querySelector('#guide-play').disabled`,
+      ),
+    "updated guide keeps Play and removes the compact update action",
+  );
+  const guideSave = saveContents.get(guideGame.slug);
+  assert.equal(await readFile(guideSave.path, "utf8"), guideSave.contents);
+  await closeGuide();
+  console.log(
+    "Compact guide update installed the latest native release, exposed its installation date, retained Play and preserved the player save.",
   );
   for (const game of games) {
     await until(

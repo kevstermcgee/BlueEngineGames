@@ -28,6 +28,9 @@ struct Installed {
     slug: String,
     installed: bool,
     release: String,
+    version: Option<String>,
+    released_at: Option<String>,
+    installed_at: Option<u64>,
     running: bool,
     path: String,
 }
@@ -100,13 +103,23 @@ impl Library {
             .iter()
             .map(|g| {
                 let dir = self.dir(&g.slug);
+                let installed = install::playable(&dir, &g.slug).is_some();
+                let release = fs::read_to_string(dir.join(".installed-release"))
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string();
+                let metadata = installed
+                    .then(|| install::metadata(&dir, &release))
+                    .flatten();
                 Installed {
                     slug: g.slug.clone(),
-                    installed: install::playable(&dir, &g.slug).is_some(),
-                    release: fs::read_to_string(dir.join(".installed-release"))
-                        .unwrap_or_default()
-                        .trim()
-                        .to_string(),
+                    installed,
+                    release,
+                    version: metadata.as_ref().map(|receipt| receipt.version.clone()),
+                    released_at: metadata
+                        .as_ref()
+                        .and_then(|receipt| receipt.released_at.clone()),
+                    installed_at: metadata.map(|receipt| receipt.installed_at),
                     running: children.contains_key(&g.slug)
                         || processes
                             .processes()
@@ -282,8 +295,19 @@ fn cancel_download(state: State<'_, Library>) {
 #[tauri::command]
 fn open_feedback_url(url: String) -> Result<(), String> {
     crate::feedback::validate_url(&url)?;
+    open_browser_url(&url)
+}
+#[tauri::command]
+fn open_game_versions(slug: String, state: State<'_, Library>) -> Result<(), String> {
+    let game = state.game(&slug)?;
+    open_browser_url(&format!(
+        "https://kevstermcgee.github.io/BlueEngineGames/games/{}/#versions-heading",
+        game.slug
+    ))
+}
+fn open_browser_url(url: &str) -> Result<(), String> {
     // ShellExecute opens a URL with the user's browser. No command shell or
-    // interpolated script receives the player's review text.
+    // interpolated script receives a URL.
     #[link(name = "shell32")]
     extern "system" {
         fn ShellExecuteW(
@@ -296,7 +320,7 @@ fn open_feedback_url(url: String) -> Result<(), String> {
         ) -> isize;
     }
     let wide: Vec<u16> = url.encode_utf16().chain(std::iter::once(0)).collect();
-    // SAFETY: the URL is validated, wide is NUL-terminated and remains alive
+    // SAFETY: callers validate or construct the URL; wide is NUL-terminated and remains alive
     // through this call; optional pointer arguments are null as documented.
     let result = unsafe {
         ShellExecuteW(
@@ -309,7 +333,7 @@ fn open_feedback_url(url: String) -> Result<(), String> {
         )
     };
     if result <= 32 {
-        Err("Could not open your browser. Your review draft is still saved.".into())
+        Err("Could not open your browser. Please try again.".into())
     } else {
         Ok(())
     }
@@ -393,7 +417,8 @@ pub fn run() {
             install_game,
             cancel_download,
             uninstall_game,
-            open_feedback_url
+            open_feedback_url,
+            open_game_versions
         ])
         .run(tauri::generate_context!())
         .expect("Could not start BlueEngine Games");

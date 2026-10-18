@@ -266,7 +266,8 @@ def build_staged(args) -> None:
         project = json.loads(project_path.read_text(encoding='utf-8')) if project_path.is_file() else {}
         launcher_row = row | {'presentation': project.get('presentation', row.get('presentation', '3d')),
                               'networking': project.get('networking', row.get('networking', 'unknown'))}
-        launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created))
+        launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created,
+                                               releases=releases))
         searchable = ' '.join([row['name'], row.get('description', ''), wiki_document['overview'],
                                wiki_document['story'], *wiki_document['rules'],
                                *(character['name'] for character in wiki_document['characters'])])

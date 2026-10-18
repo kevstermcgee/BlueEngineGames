@@ -3,6 +3,16 @@
 The launcher opens maximized by default. Use the standard Windows restore button
 to return to a smaller window.
 
+Opening a game starts its guide at the top. Stars on cards and in the guide share
+one saved favorites list. The guide header shows the latest release date, or the
+installed version's release date when the game is installed. A separate **Installed
+on** date records when that release was installed through the launcher; older
+installations with no receipt clearly show the date as unavailable. Release history
+lists available versions and marks the installed release. **Downloads & checksums**
+opens that game's official website for older downloads. A small update button next
+to **Play** installs the latest release through the normal download queue. Close a
+running game before updating it.
+
 The Tauri 2 launcher provides one library for game installation, launching,
 updates and the full game wiki. Discover and filter human-designed or
 AI-designed games, favorite games, queue downloads, and use **My library → Update
@@ -26,8 +36,8 @@ paste fallback. Posted reviews are automatically archived in the engine repo
 and considered by future IdeaForge planning, building and review. Public ratings
 and review counts appear on catalog cards and guide headers when online. The wiki
 shows recent reviews and a paginated browser for every published review; reading
-requires no GitHub account. The launcher opens only links to the
-BlueEngine issue tracker in the player's browser; no repository token is bundled.
+requires no GitHub account. The launcher opens verified BlueEngine issue links and each game's official
+versions page in the player's browser; no repository token is bundled.
 
 Installs use `%LOCALAPPDATA%\BlueEngine\Games\<slug>`, sharing receipts with
 existing per-game installers. Old `%LOCALAPPDATA%\BlueEngineLauncher\games`

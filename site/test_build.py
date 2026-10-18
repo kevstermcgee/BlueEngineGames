@@ -166,6 +166,11 @@ class Downloads(unittest.TestCase):
             self.assertIn('Latest</span>', page)
             self.assertNotIn('Check for updates', page)
             self.assertEqual((root / 'out/thumbs/standalone.png').read_bytes(), screenshot())
+            feed = json.loads((root / 'out/catalog.json').read_text())
+            standalone = next(g for g in feed['games'] if g['slug'] == 'standalone')
+            self.assertEqual(standalone['released_at'], game['published_release']['published_at'])
+            self.assertEqual([v['release'] for v in standalone['versions']], ['v0.1.0', 'v0.0.9'])
+            self.assertEqual(standalone['versions'][1]['released_at'], previous['published_at'])
 
     def test_independent_release_rejects_unpublished_or_unpinned_downloads(self):
         from released_games import load
@@ -287,6 +292,9 @@ class Downloads(unittest.TestCase):
             self.assertEqual(feed['games'][0]['package']['url'], 'https://example.com/current/game-windows-x64.zip')
             self.assertEqual(feed['games'][0]['package']['sha256'], 'c' * 64)
             self.assertTrue(feed['games'][0]['wiki']['gallery'][0]['image'].startswith('https://kevstermcgee.github.io/BlueEngineGames/games/game/images/'))
+            self.assertEqual(feed['games'][0]['released_at'], current['published_at'])
+            self.assertEqual([v['release'] for v in feed['games'][0]['versions']], ['current', 'old'])
+            self.assertEqual(feed['games'][0]['versions'][1]['released_at'], old['published_at'])
             self.assertIn('data-star="game"', page)
             self.assertIn('Windows x64 only.', page)
             self.assertIn('https://example.com/current/game-setup-windows-x64.exe', page)

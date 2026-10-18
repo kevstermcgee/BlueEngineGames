@@ -1,4 +1,5 @@
 use crate::catalog::{client, Game};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, HashSet},
@@ -6,7 +7,97 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, Ordering},
+    time::{SystemTime, UNIX_EPOCH},
 };
+const METADATA_RECEIPT: &str = ".installed-metadata.json";
+const METADATA_PENDING: &str = ".installed-metadata.pending";
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct InstallationMetadata {
+    schema_version: u32,
+    pub release: String,
+    pub version: String,
+    pub released_at: Option<String>,
+    /// Local completion time for this installed release, in Unix milliseconds.
+    pub installed_at: u64,
+}
+
+/// Legacy installs have no historical local timestamp. Reading a library never
+/// invents one from a scan, current time, or filesystem modification time.
+pub fn metadata(dir: &Path, release: &str) -> Option<InstallationMetadata> {
+    let mut data = Vec::new();
+    File::open(dir.join(METADATA_RECEIPT))
+        .ok()?
+        .take(8193)
+        .read_to_end(&mut data)
+        .ok()?;
+    if data.len() > 8192 {
+        return None;
+    }
+    let receipt: InstallationMetadata = serde_json::from_slice(&data).ok()?;
+    if receipt.schema_version != 1
+        || release.is_empty()
+        || receipt.release != release
+        || receipt.version.trim().is_empty()
+        || receipt.version.len() > 1024
+        || receipt.installed_at == 0
+        || receipt.installed_at > 253_402_300_799_999
+        || receipt
+            .released_at
+            .as_ref()
+            .is_some_and(|date| date.len() > 160)
+    {
+        return None;
+    }
+    Some(receipt)
+}
+
+fn write_metadata(game: &Game, target: &Path) -> Result<(), String> {
+    let installed_at = u64::try_from(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_err(|_| "The system clock is before the Unix epoch")?
+            .as_millis(),
+    )
+    .map_err(|_| "The system clock is outside the supported range")?;
+    let receipt = InstallationMetadata {
+        schema_version: 1,
+        release: game.package.release.clone(),
+        version: if game.version.trim().is_empty() {
+            game.package.release.clone()
+        } else {
+            game.version.clone()
+        },
+        released_at: game.released_at.clone(),
+        installed_at,
+    };
+    let data = serde_json::to_vec(&receipt).map_err(|error| error.to_string())?;
+    let temporary = target.join(METADATA_PENDING);
+    let result = (|| {
+        let mut file = File::create(&temporary).map_err(|error| error.to_string())?;
+        file.write_all(&data).map_err(|error| error.to_string())?;
+        file.sync_all().map_err(|error| error.to_string())?;
+        drop(file);
+        // Same-directory rename replaces only after the complete receipt is
+        // durable, preserving an earlier receipt on a failed write.
+        fs::rename(&temporary, target.join(METADATA_RECEIPT)).map_err(|error| error.to_string())
+    })();
+    if result.is_err() {
+        let _ = fs::remove_file(temporary);
+    }
+    result
+}
+
+fn launcher_receipt(name: &str) -> bool {
+    [
+        ".installed-files.tsv",
+        ".installed-release",
+        METADATA_RECEIPT,
+        METADATA_PENDING,
+    ]
+    .iter()
+    .any(|receipt| name.eq_ignore_ascii_case(receipt))
+}
 pub fn digest(path: &Path) -> Result<String, String> {
     let mut f = File::open(path).map_err(|e| e.to_string())?;
     let mut h = Sha256::new();
@@ -42,10 +133,7 @@ fn safe_relative(s: &str) -> Result<PathBuf, String> {
             return Err("Unsafe Windows package path".into());
         }
     }
-    if parts
-        .iter()
-        .any(|s| [".installed-files.tsv", ".installed-release"].contains(s))
-    {
+    if parts.iter().any(|s| launcher_receipt(s)) {
         return Err("Package overwrites launcher receipts".into());
     }
     Ok(parts.iter().collect())
@@ -178,7 +266,7 @@ pub fn preserve(old: &Path, new: &Path, shipped: &BTreeMap<String, String>) -> R
             let key = rel.to_string_lossy().replace('\\', "/");
             if t.is_dir() {
                 walk(base, &p, new, shipped, previous)?;
-            } else if ![".installed-release", ".installed-files.tsv"].contains(&key.as_str())
+            } else if !launcher_receipt(&key)
                 && !shipped.keys().any(|k| k.eq_ignore_ascii_case(&key))
                 && !previous
                     .get(&key)
@@ -268,6 +356,7 @@ pub fn install_zip(g: &Game, zip: &Path, target: &Path) -> Result<(), String> {
         fs::write(stage.join(".installed-files.tsv"), manifest).map_err(|e| e.to_string())?;
         fs::write(stage.join(".installed-release"), &g.package.release)
             .map_err(|e| e.to_string())?;
+        write_metadata(g, &stage)?;
         Ok::<_, String>(())
     })();
     if let Err(e) = prepare {
@@ -301,6 +390,8 @@ pub fn uninstall(dir: &Path) -> Result<(), String> {
     }
     let _ = fs::remove_file(dir.join(".installed-release"));
     let _ = fs::remove_file(dir.join(".installed-files.tsv"));
+    let _ = fs::remove_file(dir.join(METADATA_RECEIPT));
+    let _ = fs::remove_file(dir.join(METADATA_PENDING));
     Ok(())
 }
 #[cfg(test)]
@@ -337,6 +428,7 @@ mod tests {
         fs::write(old.join("save.json"), "save").unwrap();
         fs::write(old.join("old.dll"), "old").unwrap();
         fs::write(old.join("edited.txt"), "custom").unwrap();
+        fs::write(old.join(METADATA_RECEIPT), "old version dates").unwrap();
         fs::write(
             old.join(".installed-files.tsv"),
             format!(
@@ -350,6 +442,7 @@ mod tests {
         assert!(new.join("save.json").exists());
         assert!(new.join("edited.txt").exists());
         assert!(!new.join("old.dll").exists());
+        assert!(!new.join(METADATA_RECEIPT).exists());
     }
 }
 
@@ -372,6 +465,8 @@ mod transaction_tests {
             name: "Test".into(),
             description: "".into(),
             version: "1".into(),
+            released_at: None,
+            versions: Vec::new(),
             created: "".into(),
             origin: "human".into(),
             presentation: "2d".into(),
@@ -409,6 +504,8 @@ mod transaction_tests {
         for entries in [
             vec![("Game.exe", "a"), ("game.EXE", "b")],
             vec![(".installed-release", "fake")],
+            vec![(".INSTALLED-METADATA.JSON", "fake")],
+            vec![("nested/.installed-metadata.pending", "fake")],
         ] {
             let zip = t.path().join("bad.zip");
             package(&zip, &entries);
@@ -437,6 +534,79 @@ mod transaction_tests {
         uninstall(&dir).unwrap();
         assert!(dir.join("save.json").exists());
         assert!(!dir.join("test-game.exe").exists());
+    }
+    #[test]
+    fn dates_and_version_identity_change_only_with_a_successful_install() {
+        let temp = tempfile::tempdir().unwrap();
+        let target = temp.path().join("test-game");
+        let archive = temp.path().join("game.zip");
+        let mut initial = game();
+        initial.version = "1.2.3".into();
+        initial.released_at = Some("2026-10-01T12:30:00Z".into());
+        package(&archive, &[("test-game.exe", "initial")]);
+        let before = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        install_zip(&initial, &archive, &target).unwrap();
+        let after = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        let mut receipt = metadata(&target, "new-build").unwrap();
+        assert_eq!(receipt.version, "1.2.3");
+        assert_eq!(receipt.released_at, initial.released_at);
+        assert!((before..=after).contains(&u128::from(receipt.installed_at)));
+        // An old receipt makes a successful replacement observable without
+        // relying on clock sleeps or filesystem timestamps.
+        receipt.installed_at = 1;
+        fs::write(
+            target.join(METADATA_RECEIPT),
+            serde_json::to_vec(&receipt).unwrap(),
+        )
+        .unwrap();
+        let original = fs::read(target.join(METADATA_RECEIPT)).unwrap();
+        fs::write(target.join("player-save.txt"), "keep progress").unwrap();
+        package(&archive, &[("../bad.exe", "bad")]);
+        assert!(install_zip(&initial, &archive, &target).is_err());
+        assert_eq!(fs::read(target.join(METADATA_RECEIPT)).unwrap(), original);
+        assert_eq!(metadata(&target, "new-build").unwrap().installed_at, 1);
+        let mut updated = initial;
+        updated.package.release = "second-build".into();
+        updated.version = "2.0.0".into();
+        updated.released_at = Some("2026-10-17T19:00:00Z".into());
+        package(&archive, &[("test-game.exe", "updated")]);
+        install_zip(&updated, &archive, &target).unwrap();
+        let receipt = metadata(&target, "second-build").unwrap();
+        assert_eq!(receipt.version, "2.0.0");
+        assert_eq!(receipt.released_at, updated.released_at);
+        assert!(receipt.installed_at > 1);
+        assert!(metadata(&target, "new-build").is_none());
+        assert_eq!(
+            fs::read_to_string(target.join("player-save.txt")).unwrap(),
+            "keep progress"
+        );
+        uninstall(&target).unwrap();
+        assert!(!target.join(METADATA_RECEIPT).exists());
+        assert!(target.join("player-save.txt").exists());
+    }
+
+    #[test]
+    fn legacy_and_invalid_receipts_keep_dates_unknown_without_writing_files() {
+        let temp = tempfile::tempdir().unwrap();
+        fs::write(temp.path().join("test-game.exe"), "legacy").unwrap();
+        fs::write(temp.path().join(".installed-release"), "legacy-release").unwrap();
+        assert!(metadata(temp.path(), "legacy-release").is_none());
+        assert!(!temp.path().join(METADATA_RECEIPT).exists());
+        for invalid in [
+            "not json".to_string(),
+            serde_json::json!({"schema_version":1,"release":"another-release","version":"1","released_at":null,"installed_at":1234}).to_string(),
+            serde_json::json!({"schema_version":1,"release":"legacy-release","version":"1","released_at":null,"installed_at":0}).to_string(),
+        ] {
+            fs::write(temp.path().join(METADATA_RECEIPT), &invalid).unwrap();
+            assert!(metadata(temp.path(), "legacy-release").is_none());
+            assert_eq!(fs::read_to_string(temp.path().join(METADATA_RECEIPT)).unwrap(), invalid);
+        }
     }
     #[test]
     fn bundled_feed_is_trusted_and_external_urls_rejected() {
@@ -497,7 +667,9 @@ pub fn install_external(game: &Game, setup: &Path, target: &Path) -> Result<(), 
     if playable(target, &game.slug).is_none() {
         return Err("Installer finished but no playable executable was found".into());
     }
-    fs::write(target.join(".installed-release"), &game.package.release).map_err(|e| e.to_string())
+    fs::write(target.join(".installed-release"), &game.package.release)
+        .map_err(|e| e.to_string())?;
+    write_metadata(game, target)
 }
 
 #[cfg(windows)]
@@ -510,6 +682,8 @@ pub fn uninstall_external(dir: &Path) -> Result<(), String> {
         return Err("The game's uninstaller did not finish".into());
     }
     let _ = fs::remove_file(dir.join(".installed-release"));
+    let _ = fs::remove_file(dir.join(METADATA_RECEIPT));
+    let _ = fs::remove_file(dir.join(METADATA_PENDING));
     Ok(())
 }
 
@@ -531,8 +705,16 @@ mod independent_installer_tests {
             download(game, &setup, &AtomicBool::new(false), |_, _| {}).unwrap();
             let target = temp.path().join(&game.slug);
             install_external(game, &setup, &target).unwrap();
+            let initial_metadata = metadata(&target, &game.package.release).unwrap();
+            assert_eq!(initial_metadata.released_at, game.released_at);
             fs::write(target.join("player-save.txt"), "keep me").unwrap();
             install_external(game, &setup, &target).unwrap();
+            assert!(
+                metadata(&target, &game.package.release)
+                    .unwrap()
+                    .installed_at
+                    >= initial_metadata.installed_at
+            );
             assert_eq!(
                 fs::read_to_string(target.join("player-save.txt")).unwrap(),
                 "keep me"
@@ -540,6 +722,7 @@ mod independent_installer_tests {
             uninstall_external(&target).unwrap();
             assert!(target.join("player-save.txt").exists());
             assert!(playable(&target, &game.slug).is_none());
+            assert!(!target.join(METADATA_RECEIPT).exists());
         }
     }
 }
@@ -564,6 +747,19 @@ mod recovery_tests {
         let backup = temp.path().join(".test-backup");
         fs::create_dir(&backup).unwrap();
         fs::write(backup.join("test.exe"), "previous version").unwrap();
+        fs::write(backup.join(".installed-release"), "old-release").unwrap();
+        let receipt = InstallationMetadata {
+            schema_version: 1,
+            release: "old-release".into(),
+            version: "0.9".into(),
+            released_at: Some("2026-10-01T00:00:00Z".into()),
+            installed_at: 1_700_000_000_000,
+        };
+        fs::write(
+            backup.join(METADATA_RECEIPT),
+            serde_json::to_vec(&receipt).unwrap(),
+        )
+        .unwrap();
         let target = temp.path().join("test");
         assert!(recover_interrupted(&target, "test").unwrap());
         assert_eq!(
@@ -571,5 +767,6 @@ mod recovery_tests {
             "previous version"
         );
         assert!(!recover_interrupted(&target, "test").unwrap());
+        assert_eq!(metadata(&target, "old-release").unwrap(), receipt);
     }
 }

@@ -448,7 +448,7 @@ header p:not(.eyebrow) {
   letter-spacing: -0.25px;
 }
 .favorite {
-  padding: 0 2px;
+  padding: 2px 5px;
   background: none !important;
   border: 0;
   font-size: 22px;
@@ -555,8 +555,7 @@ dialog::backdrop {
 }
 .guide-hero {
   position: relative;
-  height: 300px;
-  overflow: hidden;
+  min-height: 340px;
   display: flex;
   align-items: end;
   padding: 30px;
@@ -578,19 +577,74 @@ dialog::backdrop {
 .guide-hero > div {
   position: relative;
   z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+.guide-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .guide-hero h1 {
   font-size: 38px;
 }
+.guide-heading .favorite {
+  flex-shrink: 0;
+  font-size: 30px;
+}
+.game-release-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 12px;
+  color: #b7cbe4;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.game-release-summary b {
+  color: #e0edff;
+  margin-right: 5px;
+}
 .guide-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
 }
-.guide-actions span {
+.guide-actions .package-size {
   font-size: 11px;
   color: #9bb2ce;
+}
+.game-update {
+  position: relative;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-color: #68b49a;
+  background: #153d36;
+  color: #adf3d9;
+  font-size: 23px;
+}
+.update-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  top: 3px;
+  right: 3px;
+  background: #adf3d9;
+}
+.game-update-note {
+  color: #adf3d9;
+  font-size: 11px;
+}
+.game-update-note small {
+  display: block;
+  margin-top: 2px;
+  color: #a7bdd8;
+  overflow-wrap: anywhere;
 }
 .guide-nav {
   display: flex;
@@ -613,6 +667,65 @@ dialog::backdrop {
 .guide-body section {
   padding-top: 22px;
   scroll-margin-top: 65px;
+}
+.versions-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.versions-heading .guide-link {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.game-version {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #2d3d55;
+  border-radius: 7px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.game-version > div {
+  min-width: 0;
+}
+.game-version strong,
+.game-version code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.game-version code {
+  margin-top: 5px;
+  color: #90a7c4;
+  font-size: 10px;
+}
+.version-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.version-status time {
+  display: block;
+  width: 100%;
+  text-align: right;
+  color: #a9bad0;
+  font-size: 11px;
+}
+.installed-version {
+  color: #adf3d9;
+  background: #153d36;
+}
+.game-versions summary {
+  padding: 12px 0;
+  cursor: pointer;
+  color: #a3ccff;
+  font-size: 12px;
 }
 .guide-body h2 {
   font-size: 20px;
@@ -904,8 +1017,14 @@ progress {
   .guide-hero h1 {
     font-size: 30px;
   }
-  .guide-actions span {
+  .guide-actions .package-size {
     font-size: 10px;
+  }
+  .game-version {
+    align-items: start;
+  }
+  .version-status {
+    max-width: 40%;
   }
   #download-bar {
     flex-wrap: wrap;
