@@ -1,17 +1,17 @@
 {
-  "size": 26458547,
-  "version": "0.1.3",
-  "sha256": "a2dce517201f5eeb34990628001ce418a7910915db51859328c0aec796380e3c",
-  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.3/BlueEngine-Games-Setup-x64.exe",
+  "sha256": "1dc32a514a8dd85f1210f5ee1d6de07d523b5ac67ed892b9696046df0fff6535",
+  "size": 26459095,
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.4/BlueEngine-Games-Setup-x64.exe",
   "update": {
-    "notes": "Every game guide now includes a feedback center: rate games out of 10, share what you enjoyed or would improve, save a draft, and post your review to the BlueEngine repository through GitHub. Includes public review summaries, whole-library Update all and signed launcher updates.",
+    "notes": "Public scores and review counts now appear on game cards and guide headers. Read every published review in the game wiki without signing in, with pagination and offline drafts preserved. Includes whole-library game updates and signed launcher updates.",
     "platforms": {
       "windows-x86_64": {
-        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjY0REZibU9NNGdYVjJYVWFrNUw4Y2lRcnAvdzM1enJ6RDJHK09sYzhNTlM1bExGN0pwTnpGbmp5a1VuQWlrV0FRN3ZEZjVCNHNLc3dNUE5TUVFoTXdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjk4NDg1CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuM194NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjMKRk1vRDhBcVNTUVV4ZEJLSHE2dGtTMThTbUZqUnJDWFYzUWg0cjBEUjI1bUxDZFo5UEdsS1VQc2JubkpLRk9Qcjl1b0Iyb2NaYmlxYlRGSXZIZkttQkE9PQo=",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.3/BlueEngine-Games-Setup-x64.exe"
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUnptb20vNUxjUEVxd2xJQ1lLL3VXZ3RwUCtuVTVxd1FYU21FZjZHSWpqdnNKdWgxR3JkZkFCZ3BKT1U0YlhLTHUwaGdWOHAvdTc2eXNQbGxXNFQ3a1FFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMzAwNzcyCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuNF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjQKYXJxWGVqUEFFQ2l1SzYzWm1ZNjFRL0Z4ekdHRWFiYWp3TzdaZmtVUTZtc0lLL3NydDJVdHNPZk1kRGIwN25BZTQ4U0xhVVVQVk11TlRIODFSVlhPRGc9PQo=",
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.4/BlueEngine-Games-Setup-x64.exe"
       }
     },
-    "version": "0.1.3",
-    "pub_date": "2026-10-18T04:43:25Z"
-  }
+    "pub_date": "2026-10-18T05:21:05Z",
+    "version": "0.1.4"
+  },
+  "version": "0.1.4"
 }
