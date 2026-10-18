@@ -2,13 +2,15 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { check } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { filterGames, status, size } from "./model.mjs";
+import { filterGames, hasUpdate, status, size } from "./model.mjs";
+import { planLibraryUpdates } from "./library-updates.mjs";
 import { initSidebar } from "./sidebar.mjs";
 import { initLauncherUpdates } from "./updater-ui.mjs";
 import { version as launcherVersion } from "../package.json";
 const $ = (s) => document.querySelector(s),
   native = !!window.__TAURI_INTERNALS__;
-let imageMap = {};
+let imageMap = {},
+  catalogRefreshRequest = null;
 let games = [],
   installs = {},
   options = {
@@ -25,7 +27,9 @@ let games = [],
   uninstallSlug = null,
   uninstalling = false,
   launching = false,
-  libraryReady = false;
+  libraryReady = false,
+  checkingGameUpdates = false,
+  downloadGeneration = 0;
 function readFavorites() {
   try {
     const value = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -71,6 +75,8 @@ const launcherUpdater = initLauncherUpdates({
   blockReason: () => {
     if (!libraryReady)
       return "Wait for your library to finish loading before updating the launcher.";
+    if (checkingGameUpdates)
+      return "Wait for the library update check to finish before updating the launcher.";
     if (active || queue.length)
       return "Finish or cancel your game downloads before updating the launcher.";
     if (uninstalling)
@@ -95,7 +101,7 @@ function primary(g) {
   return `<button class="primary" data-action="${esc(g.slug)}" ${active === g.slug || queue.includes(g.slug) || state(g) === "running" ? "disabled" : ""}>${actionLabel(g)}</button>${state(g) === "update" ? `<button class="play-installed" data-play="${esc(g.slug)}">▶ Play installed</button>` : ""}`;
 }
 function badges(g) {
-  return `<span class="badge">${g.origin === "ai" ? "AI-designed" : "Human-designed"}</span>${g.presentation ? `<span class="badge">${esc(g.presentation.toUpperCase())}</span>` : ""}${state(g) === "update" ? '<span class="badge update-badge">Update available</span>' : ""}`;
+  return `<span class="badge">${g.origin === "ai" ? "AI-designed" : "Human-designed"}</span>${g.presentation ? `<span class="badge">${esc(g.presentation.toUpperCase())}</span>` : ""}${hasUpdate(g, installs[g.slug]) ? '<span class="badge update-badge">Update available</span>' : ""}`;
 }
 function card(g) {
   return `<article class="card"><button class="card-image" data-guide="${esc(g.slug)}" aria-label="Explore ${esc(g.name)}"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay" loading="lazy">${state(g) === "installed" ? '<span class="installed-badge">✓ In your library</span>' : ""}</button><div class="card-body"><div class="card-top"><button class="title-button" data-guide="${esc(g.slug)}">${esc(g.name)}</button><button class="favorite ${options.favorites.includes(g.slug) ? "chosen" : ""}" data-favorite="${esc(g.slug)}" aria-label="Favorite ${esc(g.name)}" aria-pressed="${options.favorites.includes(g.slug)}">${options.favorites.includes(g.slug) ? "♥" : "♡"}</button></div><div class="badges">${badges(g)}</div><p class="description">${esc(g.description)}</p><div class="card-footer">${primary(g)}<span>${size(g.package.size)}</span><button class="guide-link" data-guide="${esc(g.slug)}">Game guide ↗</button></div></div></article>`;
@@ -110,8 +116,8 @@ function render() {
   $("#library-count").textContent = games.filter(
     (g) => state(g) !== "available",
   ).length;
-  $("#update-count").textContent = games.filter(
-    (g) => state(g) === "update",
+  $("#update-count").textContent = games.filter((g) =>
+    hasUpdate(g, installs[g.slug]),
   ).length;
   const views = {
     discover: [
@@ -149,15 +155,46 @@ function render() {
   if (f)
     $("#feature").innerHTML =
       `<img src="${img(f.wiki.gallery[1]?.image || f.image)}" alt="${esc(f.name)} gameplay"><div class="feature-shade"></div><div class="feature-copy"><p class="eyebrow">STEP INTO SOMETHING NEW</p><h2>${esc(f.name)}</h2><p>${esc(f.wiki.overview)}</p><div class="badges">${badges(f)}</div><div class="feature-actions">${primary(f)}<button data-guide="${esc(f.slug)}">Explore the game →</button></div></div><span class="feature-note">REAL GAMEPLAY · FREE TO PLAY</span>`;
-  if (options.view === "updates" && filtered.length) {
-    $("#collection-title").innerHTML =
-      'Available updates <button id="update-all">Update all</button>';
-    $("#update-all").onclick = () =>
-      filtered
-        .filter((g) => state(g) === "update")
-        .forEach((g) => enqueue(g.slug));
-  }
+  renderLibraryUpdates();
   if (guideSlug) renderGuide(getGame(guideSlug));
+}
+function renderLibraryUpdates() {
+  const show = ["library", "updates"].includes(options.view);
+  $("#library-updates").hidden = !show;
+  if (!show) return;
+  const { ready, running, queued } = planLibraryUpdates(games, installs, {
+    active,
+    queue,
+  });
+  const installed = games.some((g) => installs[g.slug]?.installed);
+  const button = $("#update-all");
+  button.textContent = checkingGameUpdates
+    ? "Checking latest versions…"
+    : ready.length
+      ? `Update all (${ready.length})`
+      : "Update all";
+  button.disabled =
+    checkingGameUpdates || !installed || launcherUpdater.busy() || uninstalling;
+  $("#library-update-status").textContent = checkingGameUpdates
+    ? "Checking the latest releases for your entire library…"
+    : !installed
+      ? "Install a game to start your library."
+      : [
+          queued.length
+            ? `${queued.length} ${queued.length === 1 ? "update" : "updates"} downloading or queued.`
+            : "",
+          ready.length
+            ? `${ready.length} ${ready.length === 1 ? "update" : "updates"} ready across your library.`
+            : "",
+          running.length
+            ? `Close ${running.length === 1 ? "the running game" : `${running.length} running games`} to update ${running.length === 1 ? "it" : "them"}.`
+            : "",
+          !ready.length && !running.length && !queued.length
+            ? "Check and update every installed game, including games hidden by filters."
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
 }
 function paragraphs(s) {
   return String(s || "")
@@ -191,22 +228,77 @@ function apply(s) {
 }
 async function sync(refresh = false) {
   try {
-    if (native)
-      apply({
-        ...(await invoke(refresh ? "refresh" : "snapshot")),
+    let snapshot;
+    if (native) {
+      const request = refresh
+        ? (catalogRefreshRequest ||= invoke("refresh").finally(() => {
+            catalogRefreshRequest = null;
+          }))
+        : invoke("snapshot");
+      snapshot = {
+        ...(await request),
         fresh: refresh,
-      });
-    else {
+      };
+    } else {
       const c = await (await fetch("./catalog.json")).json();
-      apply({
+      snapshot = {
         catalog: c,
         installed: [],
         offline: false,
         root: "Windows app preview",
-      });
+      };
     }
+    apply(snapshot);
+    return snapshot;
   } catch (e) {
     toast(String(e));
+    return null;
+  }
+}
+async function updateAll() {
+  if (!native) return toast("Game updates are available in the Windows app.");
+  if (checkingGameUpdates) return;
+  if (launcherUpdater.busy())
+    return toast("Wait for the launcher update before updating games.");
+  if (uninstalling)
+    return toast(
+      "Wait for the game to finish uninstalling before updating your library.",
+    );
+  checkingGameUpdates = true;
+  const generation = downloadGeneration;
+  renderLibraryUpdates();
+  try {
+    const snapshot = await sync(true);
+    if (generation !== downloadGeneration) return;
+    if (!snapshot) return;
+    if (snapshot.offline)
+      return toast(
+        "Reconnect to the internet to check the latest game versions and update your library.",
+      );
+    const { ready, running, queued } = planLibraryUpdates(games, installs, {
+      active,
+      queue,
+    });
+    queue.push(...ready.map((g) => g.slug));
+    render();
+    const messages = [];
+    if (ready.length)
+      messages.push(
+        `${ready.length} ${ready.length === 1 ? "game update queued" : "game updates queued"}.`,
+      );
+    else if (queued.length)
+      messages.push("Your game updates are already downloading or queued.");
+    else if (!running.length)
+      messages.push("All games in your library are up to date.");
+    if (running.length)
+      messages.push(
+        `Close ${running.length === 1 ? "the running game" : `${running.length} running games`} and select Update all again to update ${running.length === 1 ? "it" : "them"}.`,
+      );
+    toast(messages.join(" "));
+    await next();
+  } finally {
+    checkingGameUpdates = false;
+    renderLibraryUpdates();
   }
 }
 async function enqueue(slug) {
@@ -218,13 +310,17 @@ async function enqueue(slug) {
     return toast(
       "The launcher is updating. Game downloads will be available after restart.",
     );
+  if (uninstalling)
+    return toast(
+      "Wait for the game to finish uninstalling before starting a download.",
+    );
   if (active === slug || queue.includes(slug)) return;
   queue.push(slug);
   render();
   await next();
 }
 async function next() {
-  if (active || !queue.length) return;
+  if (active || uninstalling || !queue.length) return;
   active = queue.shift();
   try {
     await invoke("install_game", { slug: active });
@@ -308,6 +404,7 @@ $("#sort").onchange = (e) => {
   render();
 };
 $("#refresh").onclick = () => sync(true);
+$("#update-all").onclick = updateAll;
 $("#close-guide").onclick = () => {
   $("#guide").close();
   guideSlug = null;
@@ -316,6 +413,14 @@ $("#guide").addEventListener("close", () => (guideSlug = null));
 $("#keep").onclick = () => $("#confirmation").close();
 $("#confirm-uninstall").onclick = async () => {
   if (uninstalling) return;
+  if (active || queue.length)
+    return toast(
+      "Finish or cancel your game downloads before uninstalling a game.",
+    );
+  if (checkingGameUpdates)
+    return toast(
+      "Wait for the library update check before uninstalling a game.",
+    );
   if (launcherUpdater.busy())
     return toast("Wait for the launcher update before uninstalling a game.");
   uninstalling = true;
@@ -328,10 +433,13 @@ $("#confirm-uninstall").onclick = async () => {
     toast(String(e));
   } finally {
     uninstalling = false;
+    renderLibraryUpdates();
   }
 };
 $("#cancel").onclick = () => {
+  downloadGeneration += 1;
   queue = [];
+  renderLibraryUpdates();
   if (native) invoke("cancel_download");
 };
 async function start() {

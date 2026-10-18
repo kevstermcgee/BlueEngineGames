@@ -2,8 +2,13 @@
 
 The Tauri 2 launcher provides one library for game installation, launching,
 updates and the full game wiki. Discover and filter human-designed or
-AI-designed games, favorite games, queue downloads, and use **Updates → Update
-all**. Installed games launch offline. The catalog refreshes when the app opens
+AI-designed games, favorite games, queue downloads, and use **My library → Update
+all** (also available in **Updates**). This checks the latest releases and queues
+updates across the entire installed library, including games hidden by filters.
+Downloads run one at a time without duplicate queue entries. Running games are
+left open; close them and select **Update all** again to update them. Cancel
+stops the active download and clears the queue. Installed games launch offline.
+The catalog refreshes when the app opens
 and with the refresh button; game updates are explicitly started by the player.
 The release includes the current game guides and screenshots for offline browsing.
 The small chevron above the sidebar switches to an icon rail and remembers your

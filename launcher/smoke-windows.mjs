@@ -1,6 +1,6 @@
 // CI-only CDP access to the real Windows WebView2. No debugging port ships in app settings.
 import assert from "node:assert/strict";
-import { writeFile, access, unlink, mkdir } from "node:fs/promises";
+import { writeFile, readFile, unlink, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, label, timeout = 60000) {
@@ -53,6 +53,10 @@ async function evaluate(expression) {
     throw new Error(JSON.stringify(result.exceptionDetails));
   return result.result.value;
 }
+const nativeSnapshot = () =>
+  evaluate(`window.__TAURI_INTERNALS__.invoke('snapshot')`);
+const createdSaves = [];
+let observingDownloads = false;
 try {
   await call("Page.enable");
   await call("Runtime.enable");
@@ -158,51 +162,203 @@ try {
     "launcher-smoke/windows-library.png",
     Buffer.from(screenshot.data, "base64"),
   );
-  const game = snapshot.catalog.games
-    .filter((g) => g.package.kind === "zip")
-    .sort((a, b) => a.package.size - b.package.size)[0];
+  const games = snapshot.catalog.games
+    .filter(
+      (g) =>
+        g.package.kind === "zip" &&
+        !snapshot.installed.some((i) => i.slug === g.slug && i.installed),
+    )
+    .sort((a, b) => a.package.size - b.package.size)
+    .slice(0, 2);
+  assert.equal(
+    games.length,
+    2,
+    "Two uninstalled ZIP games are needed for smoke testing",
+  );
+  const saveContents = new Map();
+  const saveName = `launcher-smoke-save-${process.pid}-${Date.now()}.txt`;
+  for (const game of games) {
+    await evaluate(
+      `document.querySelector('[data-action="${game.slug}"]').click();`,
+    );
+    await until(
+      () =>
+        evaluate(
+          `document.querySelector('[data-action="${game.slug}"]').textContent.includes('Play')`,
+        ),
+      `verified native install of ${game.slug}`,
+      120000,
+    );
+    const installed = await nativeSnapshot();
+    const receipt = installed.installed.find((i) => i.slug === game.slug);
+    assert.equal(receipt.installed, true);
+    assert.equal(
+      receipt.release,
+      installed.catalog.games.find((g) => g.slug === game.slug).package.release,
+    );
+    const save = join(receipt.path, saveName);
+    const contents = `Retain this player-created save for ${game.slug}`;
+    await writeFile(save, contents, { flag: "wx" });
+    createdSaves.push(save);
+    saveContents.set(game.slug, { path: save, contents });
+    // Only age the release receipt; keep the verified payload and file manifest intact.
+    await writeFile(
+      join(receipt.path, ".installed-release"),
+      `launcher-smoke-old-release-${game.slug}`,
+    );
+  }
+
+  // Observe actual native phases, including transitions too quick for DOM polling.
+  await evaluate(`(async () => {
+    window.__bulkSmoke = { slugs: ${JSON.stringify(games.map((g) => g.slug))}, events: [] };
+    const handler = window.__TAURI_INTERNALS__.transformCallback(({payload}) => {
+      const state = window.__bulkSmoke;
+      if (!state.slugs.includes(payload.slug)) return;
+      const previous = state.events.at(-1);
+      if (!previous || previous.slug !== payload.slug || previous.phase !== payload.phase)
+        state.events.push({slug: payload.slug, phase: payload.phase, message: payload.message});
+    });
+    window.__bulkSmoke.eventId = await window.__TAURI_INTERNALS__.invoke('plugin:event|listen', {
+      event: 'download', target: {kind: 'Any'}, handler
+    });
+  })()`);
+  observingDownloads = true;
   await evaluate(
-    `document.querySelector('[data-action="${game.slug}"]').click();`,
+    `document.querySelector('#refresh').click();document.querySelector('[data-view="library"]').click();document.querySelector('#search').value='launcher-smoke-no-matching-game';document.querySelector('#search').dispatchEvent(new Event('input'));`,
   );
   await until(
     () =>
-      evaluate(
-        `document.querySelector('[data-action="${game.slug}"]').textContent.includes('Play')`,
-      ),
-    "verified native game install",
-    120000,
-  );
-  const installed = await evaluate(
-    `window.__TAURI_INTERNALS__.invoke('snapshot')`,
-  );
-  const receipt = installed.installed.find((i) => i.slug === game.slug);
-  assert.equal(
-    receipt.release,
-    installed.catalog.games.find((g) => g.slug === game.slug).package.release,
-  );
-  const save = join(receipt.path, "launcher-smoke-save.txt");
-  await writeFile(save, "Retain this player-created save");
-  await evaluate(
-    `document.querySelector('[data-guide="${game.slug}"]').click();document.querySelector('[data-uninstall="${game.slug}"]').click();`,
+      evaluate(`(() => {
+      const button = document.querySelector('#update-all');
+      return button && !button.hidden && !button.disabled && /Update all\\s*\\(2\\)/i.test(button.textContent);
+    })()`),
+    "whole-library Update all (2) despite a zero-result search",
   );
   assert.equal(
-    await evaluate(`document.querySelector('#confirmation').open`),
+    await evaluate(`document.querySelectorAll('.card').length`),
+    0,
+    "The active search must hide both installed games before Update all",
+  );
+  assert.equal(
+    await evaluate(
+      `document.querySelector('#update-all').getBoundingClientRect().width > 0`,
+    ),
     true,
+    "Update all must remain visible when the library search has no results",
   );
-  await evaluate(`document.querySelector('#confirm-uninstall').click();`);
-  await until(
-    () =>
-      evaluate(
-        `document.querySelector('#guide [data-action="${game.slug}"]').textContent.includes('Install')`,
-      ),
-    "native game uninstall",
+  await evaluate(`document.querySelector('#update-all').click();`);
+  const events = await until(
+    async () => {
+      const events = await evaluate(`window.__bulkSmoke.events`);
+      return events.some((e) => e.phase === "error") ||
+        events.filter((e) => e.phase === "complete").length >= 2
+        ? events
+        : false;
+    },
+    "both queued native library updates to finish",
+    240000,
   );
-  await access(save);
-  await unlink(save);
-  await evaluate(`document.querySelector('#close-guide').click();`);
+  let activeDownload = null;
+  const completed = [];
+  for (const event of events) {
+    assert.notEqual(event.phase, "error", `${event.slug}: ${event.message}`);
+    if (event.phase === "complete") {
+      assert.equal(
+        activeDownload,
+        event.slug,
+        "Only the active game can complete",
+      );
+      completed.push(event.slug);
+      activeDownload = null;
+    } else {
+      assert(
+        activeDownload === null || activeDownload === event.slug,
+        "Update all must finish one game before starting the next",
+      );
+      activeDownload = event.slug;
+    }
+  }
+  assert.equal(activeDownload, null);
+  assert.deepEqual(completed.sort(), games.map((g) => g.slug).sort());
+  const updated = await nativeSnapshot();
+  for (const game of games) {
+    const receipt = updated.installed.find((i) => i.slug === game.slug);
+    const release = updated.catalog.games.find((g) => g.slug === game.slug)
+      .package.release;
+    assert.equal(receipt.installed, true);
+    assert.equal(
+      receipt.release,
+      release,
+      `${game.slug} must match the latest native catalog`,
+    );
+    assert.equal(
+      await readFile(join(receipt.path, ".installed-release"), "utf8"),
+      release,
+    );
+    const save = saveContents.get(game.slug);
+    assert.equal(
+      await readFile(save.path, "utf8"),
+      save.contents,
+      `${game.slug} save survived its update`,
+    );
+  }
+  await evaluate(
+    `document.querySelector('#search').value='';document.querySelector('#search').dispatchEvent(new Event('input'));`,
+  );
+  for (const game of games) {
+    await until(
+      () => evaluate(`!!document.querySelector('[data-guide="${game.slug}"]')`),
+      `${game.slug} visible after clearing library search`,
+    );
+    await evaluate(
+      `document.querySelector('[data-guide="${game.slug}"]').click();document.querySelector('[data-uninstall="${game.slug}"]').click();`,
+    );
+    assert.equal(
+      await evaluate(`document.querySelector('#confirmation').open`),
+      true,
+    );
+    await evaluate(`document.querySelector('#confirm-uninstall').click();`);
+    await until(
+      () =>
+        evaluate(
+          `document.querySelector('#guide [data-action="${game.slug}"]').textContent.includes('Install')`,
+        ),
+      `native uninstall of ${game.slug}`,
+    );
+    const save = saveContents.get(game.slug);
+    assert.equal(
+      await readFile(save.path, "utf8"),
+      save.contents,
+      `${game.slug} save survived uninstall`,
+    );
+    await evaluate(`document.querySelector('#close-guide').click();`);
+  }
   console.log(
-    `Windows IPC install, receipt, guide, uninstall confirmation and save preservation passed for ${game.name}.`,
+    `Windows IPC installs, sequential whole-library Update all under a zero-result search, latest receipts, and save-preserving confirmed uninstalls passed for ${games.map((g) => g.name).join(" and ")}.`,
   );
 } finally {
+  if (observingDownloads) {
+    try {
+      await evaluate(`(async () => {
+        const eventId = window.__bulkSmoke.eventId;
+        window.__TAURI_EVENT_PLUGIN_INTERNALS__.unregisterListener('download', eventId);
+        await window.__TAURI_INTERNALS__.invoke('plugin:event|unlisten', {event:'download', eventId});
+        delete window.__bulkSmoke;
+      })()`);
+    } catch (error) {
+      console.error("Could not detach the smoke download observer:", error);
+      process.exitCode = 1;
+    }
+  }
+  for (const save of createdSaves) {
+    try {
+      await unlink(save);
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        console.error(`Could not remove test-created save ${save}:`, error);
+        process.exitCode = 1;
+      }
+    }
+  }
   socket.close();
 }

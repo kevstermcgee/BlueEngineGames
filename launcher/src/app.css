@@ -775,9 +775,36 @@ progress {
 #cancel {
   font-size: 11px;
 }
+#library-updates {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid #29496e;
+  border-radius: 8px;
+  background: #142337;
+}
+#library-update-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a9bfd9;
+}
 #update-all {
-  font-size: 10px;
-  margin-left: 15px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #10203d;
+  background: #a4cdff;
+  border-color: #b8daff;
+  font-weight: 650;
+}
+@media (max-width: 650px) {
+  #library-updates {
+    align-items: start;
+    flex-direction: column;
+  }
 }
 [hidden] {
   display: none !important;

@@ -50,3 +50,15 @@ test("library, updates, designers, favorites and wiki search compose", () => {
     1,
   );
 });
+test("running games with a newer release remain visible in Updates until updated", () => {
+  const games = [game("old-running"), game("current-running"), game("unowned")];
+  const installs = {
+    "old-running": { installed: true, running: true, release: "build-1" },
+    "current-running": { installed: true, running: true, release: "build-2" },
+  };
+  assert.deepEqual(
+    filterGames(games, installs, { view: "updates" }).map((g) => g.slug),
+    ["old-running"],
+  );
+  assert.equal(status(games[0], installs["old-running"]), "running");
+});

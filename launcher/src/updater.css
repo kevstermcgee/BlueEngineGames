@@ -48,7 +48,13 @@
   color: #b8daff;
 }
 body.launcher-updating
-  :is([data-action], [data-play], [data-uninstall], #confirm-uninstall) {
+  :is(
+    [data-action],
+    [data-play],
+    [data-uninstall],
+    #confirm-uninstall,
+    #update-all
+  ) {
   opacity: 0.55;
   cursor: wait;
 }

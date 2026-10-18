@@ -1,3 +1,8 @@
+export function hasUpdate(game, installed) {
+  return (
+    installed?.installed === true && installed.release !== game.package.release
+  );
+}
 export function status(game, installed) {
   if (installed?.running) return "running";
   if (!installed?.installed) return "available";
@@ -21,7 +26,7 @@ export function filterGames(
       const s = status(g, installs[g.slug]);
       return (
         (view !== "library" || s !== "available") &&
-        (view !== "updates" || s === "update") &&
+        (view !== "updates" || hasUpdate(g, installs[g.slug])) &&
         (view !== "favorites" || favorites.includes(g.slug)) &&
         (!origin || g.origin === origin) &&
         (!format || g.presentation === format) &&
