@@ -76,5 +76,5 @@ Write-Catalog
 $checksumLines = Get-ChildItem $dist -File | Where-Object { $_.Extension -in '.zip', '.exe' -or $_.Name -eq 'Games-catalog.tsv' } |
     Sort-Object Name | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)" }
 Set-Content (Join-Path $dist 'SHA256SUMS.txt') $checksumLines -Encoding ascii
-Add-Content (Join-Path $dist 'release-notes.md') -Value "`nInstall using the ``*-setup-windows-x64.exe`` downloads. Games install per-user and offer a desktop shortcut. Use the game’s Start Menu Check for updates shortcut or run a newer installer to update an existing installation. Older releases remain available."
+Add-Content (Join-Path $dist 'release-notes.md') -Value "`nInstall using the ``*-setup-windows-x64.exe`` downloads. Games install per-user without individual desktop shortcuts. Use the BlueEngine Games launcher to install, play and update your library. Use the game’s Start Menu Check for updates shortcut or run a newer installer to update an existing installation. Older releases remain available."
 Add-Content (Join-Path $dist 'release-notes.md') -Value 'These builds are unsigned. Windows may display a SmartScreen warning.'

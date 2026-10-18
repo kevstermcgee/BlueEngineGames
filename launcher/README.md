@@ -45,6 +45,9 @@ installations are detected too. Games installed in custom folders are not
 currently imported. Games do not need separate setup dialogs: bundled games use
 verified portable payloads; independent Embertrail and Harvest Hollow releases
 use their existing per-user installer in silent mode.
+Game installs and updates do not create individual desktop shortcuts. Independent
+installers explicitly deselect the desktop shortcut task, including a choice
+remembered from an earlier standalone installation.
 
 Downloads use immutable GitHub release URLs, a byte length and a SHA256 from the
 published catalog. ZIP paths, symlinks, Windows device names, duplicate paths,

@@ -657,6 +657,9 @@ pub fn install_external(game: &Game, setup: &Path, target: &Path) -> Result<(), 
             "/NORESTART",
             "/SP-",
             "/NOICONS",
+            // Inno's /NOICONS controls Start Menu icons, not desktop tasks.
+            // Override a remembered desktop choice without disabling other tasks.
+            "/MERGETASKS=!desktopicon",
         ])
         .arg(format!("/DIR={}", target.display()))
         .status()
@@ -690,11 +693,79 @@ pub fn uninstall_external(dir: &Path) -> Result<(), String> {
 #[cfg(all(test, windows))]
 mod independent_installer_tests {
     use super::*;
+    use std::process::Command;
+
+    fn powershell(script: &str, shortcut: Option<&Path>) -> Result<String, String> {
+        let mut command = Command::new("powershell.exe");
+        command.args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            &format!(
+                "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); {script}"
+            ),
+        ]);
+        if let Some(path) = shortcut {
+            command.env("BLUEENGINE_TEST_SHORTCUT", path);
+        }
+        let output = command.output().map_err(|error| error.to_string())?;
+        if !output.status.success() {
+            return Err("Could not inspect the Windows Desktop shortcut fixture".into());
+        }
+        String::from_utf8(output.stdout)
+            .map(|value| value.trim().to_string())
+            .map_err(|error| error.to_string())
+    }
+
+    fn shortcut_points_to(shortcut: &Path, executable: &Path) -> bool {
+        if !shortcut.is_file() {
+            return false;
+        }
+        let target = powershell(
+            "(New-Object -ComObject WScript.Shell).CreateShortcut($env:BLUEENGINE_TEST_SHORTCUT).TargetPath",
+            Some(shortcut),
+        );
+        match (target, fs::canonicalize(executable)) {
+            (Ok(path), Ok(expected)) => {
+                fs::canonicalize(path).is_ok_and(|actual| actual == expected)
+            }
+            _ => false,
+        }
+    }
+
+    struct TestDesktopShortcut {
+        path: PathBuf,
+        executable: PathBuf,
+    }
+    impl Drop for TestDesktopShortcut {
+        fn drop(&mut self) {
+            // Only this test's newly created shortcut may be removed, even on
+            // assertion failure. Never clean up a pre-existing player shortcut.
+            if shortcut_points_to(&self.path, &self.executable) {
+                let _ = fs::remove_file(&self.path);
+            }
+        }
+    }
+
     #[test]
-    #[ignore = "Downloads and silently installs both independent games in temporary Windows folders"]
+    #[ignore = "Downloads both independent games; remembered-shortcut proof requires an isolated GitHub-hosted Windows runner"]
     fn independent_installers_round_trip() {
         let catalog: crate::catalog::Catalog =
             serde_json::from_str(include_str!("../../public/catalog.json")).unwrap();
+        let isolated_runner = std::env::var("GITHUB_ACTIONS").is_ok_and(|value| value == "true")
+            && std::env::var("RUNNER_ENVIRONMENT").is_ok_and(|value| value == "github-hosted");
+        let desktop = PathBuf::from(
+            powershell(
+                "[Environment]::GetFolderPath('DesktopDirectory', 'Create')",
+                None,
+            )
+            .unwrap(),
+        );
+        assert!(
+            desktop.is_dir(),
+            "Windows must resolve the current user's Desktop"
+        );
+        let mut proof = Vec::new();
         for game in catalog
             .games
             .iter()
@@ -704,11 +775,63 @@ mod independent_installer_tests {
             let setup = temp.path().join("setup.exe");
             download(game, &setup, &AtomicBool::new(false), |_, _| {}).unwrap();
             let target = temp.path().join(&game.slug);
+            let shortcut = desktop.join(format!("{}.lnk", game.name));
+            let existing_shortcut = match fs::read(&shortcut) {
+                Ok(bytes) => Some(bytes),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+                Err(error) => panic!("Could not safely inspect existing shortcut: {error}"),
+            };
+            if isolated_runner {
+                assert!(
+                    existing_shortcut.is_none(),
+                    "Shortcut proof refuses to modify an existing desktop shortcut"
+                );
+            }
             install_external(game, &setup, &target).unwrap();
+            assert_eq!(
+                fs::read(&shortcut).ok(),
+                existing_shortcut,
+                "Launcher installation must not create or replace desktop shortcuts"
+            );
             let initial_metadata = metadata(&target, &game.package.release).unwrap();
             assert_eq!(initial_metadata.released_at, game.released_at);
             fs::write(target.join("player-save.txt"), "keep me").unwrap();
+            let _test_shortcut = if isolated_runner {
+                // Seed Inno's real remembered task through an explicit opt-in,
+                // using only a disposable hosted runner and temporary game dir.
+                let fixture = TestDesktopShortcut {
+                    path: shortcut.clone(),
+                    executable: playable(&target, &game.slug).unwrap(),
+                };
+                let status = Command::new(&setup)
+                    .args([
+                        "/VERYSILENT",
+                        "/SUPPRESSMSGBOXES",
+                        "/NORESTART",
+                        "/SP-",
+                        "/NOICONS",
+                        "/TASKS=desktopicon",
+                    ])
+                    .arg(format!("/DIR={}", target.display()))
+                    .status()
+                    .unwrap();
+                assert!(status.success());
+                assert!(
+                    shortcut_points_to(&fixture.path, &fixture.executable),
+                    "Explicit desktop opt-in must create this fixture's shortcut"
+                );
+                fs::remove_file(&fixture.path).unwrap();
+                Some(fixture)
+            } else {
+                println!("Remembered desktop task proof is skipped outside an isolated GitHub-hosted Windows runner");
+                None
+            };
             install_external(game, &setup, &target).unwrap();
+            assert_eq!(
+                fs::read(&shortcut).ok(),
+                existing_shortcut,
+                "Launcher update must not recreate a remembered desktop shortcut"
+            );
             assert!(
                 metadata(&target, &game.package.release)
                     .unwrap()
@@ -723,6 +846,22 @@ mod independent_installer_tests {
             assert!(target.join("player-save.txt").exists());
             assert!(playable(&target, &game.slug).is_none());
             assert!(!target.join(METADATA_RECEIPT).exists());
+            proof.push(serde_json::json!({
+                "game":game.slug, "fresh_launcher_install_no_desktop_shortcut":true,
+                "remembered_desktop_task_reinstall_verified":isolated_runner,
+                "preexisting_desktop_shortcut_present":existing_shortcut.is_some(),
+                "save_preserved":true,
+            }));
+        }
+        if isolated_runner {
+            let proof_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../launcher-smoke");
+            fs::create_dir_all(&proof_dir).unwrap();
+            fs::write(
+                proof_dir.join("desktop-shortcut-policy.json"),
+                serde_json::to_vec_pretty(&serde_json::json!({"schema_version":1,"games":proof}))
+                    .unwrap(),
+            )
+            .unwrap();
         }
     }
 }

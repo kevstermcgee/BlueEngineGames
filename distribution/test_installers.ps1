@@ -3,8 +3,12 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $repoRoot = Split-Path $PSScriptRoot
 $temp = Join-Path ([IO.Path]::GetTempPath()) "blueengine-installer-tests-$([Guid]::NewGuid().ToString('N'))"
-$name = 'BlueEngine Distribution Test'
-$shortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) "$name.lnk"
+$name = "BlueEngine Distribution Test $([Guid]::NewGuid().ToString('N').Substring(0, 8))"
+$shortcut = Join-Path ([Environment]::GetFolderPath('DesktopDirectory', 'Create')) "$name.lnk"
+$playLink = Join-Path ([Environment]::GetFolderPath('Programs')) "BlueEngine Games/$name.lnk"
+$updatesLink = Join-Path ([Environment]::GetFolderPath('Programs')) "BlueEngine Games/$name - Check for updates.lnk"
+$desktopPathOwned = $false
+$markerHash = ''
 $install = Join-Path $temp 'installed'
 $dist = Join-Path $temp 'dist'
 function Assert($condition, $message) { if (-not $condition) { throw $message } }
@@ -13,6 +17,8 @@ function Run-Setup($path, $argsList) {
     Assert ($process.ExitCode -eq 0) "Installer exited with $($process.ExitCode)"
 }
 try {
+    Assert (-not (Test-Path $shortcut)) 'The fixture desktop path already exists; refusing to touch it'
+    $desktopPathOwned = $true
     New-Item -ItemType Directory (Join-Path $temp '.github/scripts'),(Join-Path $temp 'distribution'),$dist | Out-Null
     Copy-Item (Join-Path $repoRoot '.github/scripts/package_installers.ps1'),(Join-Path $repoRoot '.github/scripts/game_installer.iss') (Join-Path $temp '.github/scripts')
     Copy-Item (Join-Path $repoRoot 'distribution/GameUpdater.cs') (Join-Path $temp 'distribution')
@@ -41,20 +47,26 @@ try {
         Assert ((Get-Content (Join-Path $install '.installed-release')) -eq $env:RELEASE_TAG) 'Installation receipt missing'
         Assert ((Get-Content (Join-Path $install 'version.txt')) -eq $version) 'Installer did not replace payload'
         Assert (Test-Path (Join-Path $install 'Update-test-game.exe')) 'Update helper not installed'
-        Assert (Test-Path $shortcut) 'Desktop shortcut was not created'
-        $link = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut)
-        Assert ($link.TargetPath -eq (Join-Path $install 'Play-test-game.exe')) 'Desktop shortcut targets the wrong executable'
+        # Even a remembered legacy task request must not create a game desktop shortcut.
+        Assert (Test-Path $playLink) 'Start Menu game shortcut missing'
+        $link = (New-Object -ComObject WScript.Shell).CreateShortcut($playLink)
+        Assert ($link.TargetPath -eq (Join-Path $install 'Play-test-game.exe')) 'Start Menu shortcut targets the wrong executable'
+        Assert (Test-Path $updatesLink) 'Start Menu update shortcut missing'
         if ($version -eq 'one') {
+            Assert (-not (Test-Path $shortcut)) 'Installer created an unwanted desktop shortcut'
+            # A player's item at the former desktop path must remain player-owned.
+            Set-Content -LiteralPath $shortcut -Value 'User-created desktop marker; preserve during upgrade and uninstall.' -Encoding utf8
+            $markerHash = (Get-FileHash $shortcut -Algorithm SHA256).Hash
             New-Item -ItemType Directory (Join-Path $install 'saves') | Out-Null
             Set-Content (Join-Path $install 'saves/quick.be2save') 'progress'
             Set-Content (Join-Path $install 'audio-settings.json') 'settings'
         } else {
+            Assert (Test-Path $shortcut) 'Upgrade removed a user-created desktop item'
+            Assert ((Get-FileHash $shortcut -Algorithm SHA256).Hash -eq $markerHash) 'Upgrade replaced a user-created desktop item'
             Assert ((Get-Content (Join-Path $install 'saves/quick.be2save')) -eq 'progress') 'Upgrade lost saves'
             Assert ((Get-Content (Join-Path $install 'audio-settings.json')) -eq 'settings') 'Upgrade lost settings'
         }
     }
-    $updatesLink = Join-Path ([Environment]::GetFolderPath('Programs')) "BlueEngine Games/$name - Check for updates.lnk"
-    Assert (Test-Path $updatesLink) 'Start Menu update shortcut missing'
     # Simulate a later updater adding package files beyond the original Inno log.
     Set-Content (Join-Path $install 'update-added.txt') 'new package asset'
     $newHash = (Get-FileHash (Join-Path $install 'update-added.txt') -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -63,8 +75,12 @@ try {
     Assert (Test-Path (Join-Path $install 'saves/quick.be2save')) 'Uninstaller removed player progress'
     Assert (-not (Test-Path (Join-Path $install 'Play-test-game.exe'))) 'Uninstaller left game executable'
     Assert (-not (Test-Path (Join-Path $install 'update-added.txt'))) 'Uninstaller left updater-added package files'
-    Assert (-not (Test-Path $shortcut)) 'Uninstaller left desktop shortcut'
-    Write-Output 'Installer tests passed: install, receipt, checksum, shortcuts, upgrade, save preservation, uninstall.'
+    Assert (-not (Test-Path $playLink)) 'Uninstaller left the Start Menu game shortcut'
+    Assert (-not (Test-Path $updatesLink)) 'Uninstaller left the Start Menu update shortcut'
+    Assert (Test-Path $shortcut) 'Uninstaller removed a user-created desktop item'
+    Assert ((Get-FileHash $shortcut -Algorithm SHA256).Hash -eq $markerHash) 'Uninstaller changed a user-created desktop item'
+    Write-Output 'Installer tests passed: no automatic desktop shortcut, player desktop item preservation, Start Menu shortcuts, receipt, checksum, upgrade, saves and uninstall.'
 } finally {
+    if ($desktopPathOwned -and (Test-Path $shortcut)) { Remove-Item -LiteralPath $shortcut -Force }
     if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }
 }

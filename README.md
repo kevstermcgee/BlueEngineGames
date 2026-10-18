@@ -42,8 +42,10 @@ as substitutes. CI checks screenshot coverage for every release definition, and
 a failed screenshot check leaves the previous website intact.
 
 **[Download ready-to-play Windows builds](../../releases/latest).** Each game has a
-Windows x64 installer that installs for your user, adds Start Menu shortcuts, and
-offers a desktop shortcut. No Rust toolchain or command line is required.
+Windows x64 installer that installs for your user and adds Start Menu shortcuts.
+New installers do not create individual game desktop shortcuts. Use the
+[Windows launcher](launcher/README.md) to install, play and update your library
+from one place. No Rust toolchain or command line is required.
 
 Run a newer installer to upgrade the same installation while keeping saves and
 settings. Games built by this repository also have a **Check for updates** Start
@@ -77,9 +79,9 @@ See [DISTRIBUTION.md](DISTRIBUTION.md) for release, versioning, and update detai
 
 Each experiment includes deterministic headless tests and an engine-feedback prompt.
 
-On Windows, double-click `Install-Physics-Game-Shortcuts.cmd` to package the
-games and place their launch shortcuts on the Desktop. Each game also has its own
-installer if you only want one shortcut.
+The legacy `Install-Physics-Game-Shortcuts.cmd` developer tool explicitly
+packages games and creates Desktop shortcuts when manually invoked. Normal
+launcher installations and updates do not use that tool.
 
 Most of this repository is an automatically maintained, browsable copy. BlueEngine is
 the source of truth for cataloged content. Standalone games explicitly named by the

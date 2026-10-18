@@ -112,7 +112,7 @@ if ($LASTEXITCODE -ne 0) {
 $notes = @(
     "Windows x64 playable builds from ``$($catalog.source_repository)`` at ``$($catalog.source_revision)``.",
     '',
-    'Download the game installer (.exe) for a per-user installation with optional desktop shortcut. Portable ZIPs are also available.',
+    'Use the BlueEngine Games launcher to install, play and update your library. Individual game installers (.exe) install per-user without desktop shortcuts. Portable ZIPs are also available.',
     '',
     '> These executables are not code-signed, so Windows may show a SmartScreen warning.',
     '',

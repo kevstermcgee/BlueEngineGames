@@ -38,7 +38,7 @@ PAGE = """<!DOCTYPE html>
 <body>
 <header>
   <h1>BlueEngine Games</h1>
-  <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer, choose a desktop shortcut, and play.</p>
+  <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer and play.</p>
   <p class="design-note">Explore human-designed and AI-designed games. Design credits refer to the game concept and rules; either may use AI-assisted development.</p>
 </header>
 
@@ -359,7 +359,7 @@ def build_staged(args) -> None:
     from launcher_feed import publish_launcher
     page = publish_launcher(repo_root, out, enhance_page(page))
     if (repo_root / 'site/launcher-release.json').is_file():
-        page = page.replace('Download an installer, choose a desktop shortcut, and play.',
+        page = page.replace('Download an installer and play.',
                             'Use the Windows launcher to install, play and update your library, or choose an individual installer.')
         page = page.replace('Run a newer installer to update. Some games also have a <strong>Check for updates</strong> Start Menu shortcut.',
                             'Use <strong>Updates</strong> in the launcher. Individual installers and per-game <strong>Check for updates</strong> shortcuts are also supported.')
