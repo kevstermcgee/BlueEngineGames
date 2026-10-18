@@ -131,7 +131,7 @@ def load_wiki(repo_root, games_dir, row, origin):
     return document, path.parent, legacy
 
 
-def render_wiki(document, image_root, destination, legacy=False):
+def render_wiki(document, image_root, destination, legacy=False, game=None):
     """Render escaped plain text and copy only validated local images."""
     esc = html.escape
     image_out = Path(destination) / 'images'
@@ -189,9 +189,13 @@ def render_wiki(document, image_root, destination, legacy=False):
     documentation = '<details class="wiki-sources"><summary>Source documentation</summary><ul>' + ''.join(sources) + '</ul></details>' if sources else ''
     note = ('<p class="archive-note">More gameplay and character captures are being archived for this earlier release.</p>'
             if legacy and (len(document['gallery']) < 3 or any(not c.get('image') for c in document['characters'])) else '')
+    feedback = ''
+    if game is not None:
+        metadata = html.escape(json.dumps(game, ensure_ascii=False), quote=True)
+        feedback = f'''<div data-feedback-game="{metadata}"><section class="feedback-center" id="guide-feedback" aria-labelledby="feedback-heading"><h2 id="feedback-heading">Feedback center</h2><p>Rate this game out of 10 and share what you enjoyed or would improve. Reviews are public in the BlueEngine repository and help guide future improvements.</p><p><a href="https://github.com/kevstermcgee/BlueEngine/issues/new?template=player-feedback.yml">Write a review on GitHub</a> (GitHub sign-in required).</p><noscript><p>Enable JavaScript to save a draft here and automatically include this game's name and version.</p></noscript></section></div>'''
     return f'''<section class="game-wiki" aria-labelledby="guide-heading">
   <h2 id="guide-heading">Game guide</h2>
-  <nav class="wiki-nav" aria-label="Game guide sections"><a href="#overview">Overview</a><a href="#rules">Rules</a><a href="#controls">Controls</a><a href="#story">Story</a><a href="#characters">Characters</a><a href="#gallery">Screenshots</a><a href="#creation">Creation</a><a href="#versions-heading">Versions</a></nav>
+  <nav class="wiki-nav" aria-label="Game guide sections"><a href="#overview">Overview</a><a href="#rules">Rules</a><a href="#controls">Controls</a><a href="#story">Story</a><a href="#characters">Characters</a><a href="#gallery">Screenshots</a><a href="#creation">Creation</a>{'<a href="#guide-feedback">Feedback</a>' if game is not None else ''}<a href="#versions-heading">Versions</a></nav>
   <section id="overview"><h2>What is this game?</h2>{paragraphs(document['overview'])}</section>
   <section id="rules"><h2>Rules &amp; objectives</h2>{listing(document['rules'], True)}</section>
   <section id="controls"><h2>How to play</h2>{listing(document['controls'])}</section>
@@ -199,6 +203,7 @@ def render_wiki(document, image_root, destination, legacy=False):
   <section id="characters"><h2>Characters &amp; roles</h2><div class="wiki-characters">{characters}</div></section>
   <section id="gallery"><h2>Screenshot gallery</h2><p>Open an image to see the full capture.</p><div class="wiki-gallery">{gallery}</div>{note}</section>
   <section id="creation"><h2>{title}</h2>{provenance}</section>
+  {feedback}
   {documentation}
 </section>'''
 

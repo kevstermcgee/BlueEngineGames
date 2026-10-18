@@ -280,6 +280,41 @@ fn cancel_download(state: State<'_, Library>) {
     state.cancel.store(true, Ordering::SeqCst);
 }
 #[tauri::command]
+fn open_feedback_url(url: String) -> Result<(), String> {
+    crate::feedback::validate_url(&url)?;
+    // ShellExecute opens a URL with the user's browser. No command shell or
+    // interpolated script receives the player's review text.
+    #[link(name = "shell32")]
+    extern "system" {
+        fn ShellExecuteW(
+            window: *mut std::ffi::c_void,
+            operation: *const u16,
+            file: *const u16,
+            parameters: *const u16,
+            directory: *const u16,
+            show: i32,
+        ) -> isize;
+    }
+    let wide: Vec<u16> = url.encode_utf16().chain(std::iter::once(0)).collect();
+    // SAFETY: the URL is validated, wide is NUL-terminated and remains alive
+    // through this call; optional pointer arguments are null as documented.
+    let result = unsafe {
+        ShellExecuteW(
+            std::ptr::null_mut(),
+            std::ptr::null(),
+            wide.as_ptr(),
+            std::ptr::null(),
+            std::ptr::null(),
+            1,
+        )
+    };
+    if result <= 32 {
+        Err("Could not open your browser. Your review draft is still saved.".into())
+    } else {
+        Ok(())
+    }
+}
+#[tauri::command]
 async fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
     state.game(&slug)?;
     if state.busy.swap(true, Ordering::SeqCst) {
@@ -357,7 +392,8 @@ pub fn run() {
             launch,
             install_game,
             cancel_download,
-            uninstall_game
+            uninstall_game,
+            open_feedback_url
         ])
         .run(tauri::generate_context!())
         .expect("Could not start BlueEngine Games");

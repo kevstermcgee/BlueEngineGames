@@ -6,6 +6,7 @@ import { filterGames, hasUpdate, status, size } from "./model.mjs";
 import { planLibraryUpdates } from "./library-updates.mjs";
 import { initSidebar } from "./sidebar.mjs";
 import { initLauncherUpdates } from "./updater-ui.mjs";
+import { renderFeedback, mountFeedback } from "../../site/feedback.mjs";
 import { version as launcherVersion } from "../package.json";
 const $ = (s) => document.querySelector(s),
   native = !!window.__TAURI_INTERNALS__;
@@ -29,7 +30,8 @@ let games = [],
   launching = false,
   libraryReady = false,
   checkingGameUpdates = false,
-  downloadGeneration = 0;
+  downloadGeneration = 0,
+  cleanupGuideFeedback = null;
 function readFavorites() {
   try {
     const value = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -206,8 +208,42 @@ function paragraphs(s) {
 function renderGuide(g) {
   if (!g) return;
   const w = g.wiki;
+  const content = $("#guide-content"),
+    previous =
+      content.dataset.game === g.slug
+        ? content.querySelector("#guide-feedback")
+        : null,
+    focused = previous?.contains(document.activeElement)
+      ? document.activeElement
+      : null,
+    selection =
+      focused && typeof focused.selectionStart === "number"
+        ? [focused.selectionStart, focused.selectionEnd]
+        : null;
+  if (!previous) cleanupGuideFeedback?.();
   $("#guide-content").innerHTML =
-    `<div class="guide-hero"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><h1>${esc(g.name)}</h1><div class="badges">${badges(g)}</div><div class="guide-actions">${primary(g)}<span>${size(g.package.size)} · v${esc(g.version)} · Windows x64</span></div></div></div><nav class="guide-nav">${["Overview", "Rules", "Controls", "Story", "Characters", "Gallery", "Creation"].map((n) => `<a href="#guide-${n.toLowerCase()}">${n}</a>`).join("")}</nav><div class="guide-body"><section id="guide-overview"><h2>Overview</h2>${paragraphs(w.overview)}</section><div class="guide-columns"><section id="guide-rules"><h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></section><section id="guide-controls"><h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></section></div><section id="guide-story"><h2>The story</h2>${paragraphs(w.story)}</section><section id="guide-characters"><h2>Characters</h2>${paragraphs(w.characters_note)}<div class="character-grid">${w.characters.map((c) => `<article>${c.image ? `<img src="${img(c.image)}" alt="${esc(c.name)} in-game screenshot" loading="lazy">` : ""}<div><h3>${esc(c.name)}</h3>${paragraphs(c.description)}${paragraphs(c.appearance_note)}${c.image_caption ? `<small>${esc(c.image_caption)}</small>` : ""}${!c.image && c.image_status !== "not-rendered" ? "<small>Character screenshot not yet captured.</small>" : ""}</div></article>`).join("")}</div></section><section id="guide-gallery"><h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div></section><section id="guide-creation"><h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}</section>${installs[g.slug]?.installed ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>` : ""}</div>`;
+    `<div class="guide-hero"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><h1>${esc(g.name)}</h1><div class="badges">${badges(g)}</div><div class="guide-actions">${primary(g)}<span>${size(g.package.size)} · v${esc(g.version)} · Windows x64</span></div></div></div><nav class="guide-nav">${["Overview", "Rules", "Controls", "Story", "Characters", "Gallery", "Creation", "Feedback"].map((n) => `<a href="#guide-${n.toLowerCase()}">${n}</a>`).join("")}</nav><div class="guide-body"><section id="guide-overview"><h2>Overview</h2>${paragraphs(w.overview)}</section><div class="guide-columns"><section id="guide-rules"><h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></section><section id="guide-controls"><h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></section></div><section id="guide-story"><h2>The story</h2>${paragraphs(w.story)}</section><section id="guide-characters"><h2>Characters</h2>${paragraphs(w.characters_note)}<div class="character-grid">${w.characters.map((c) => `<article>${c.image ? `<img src="${img(c.image)}" alt="${esc(c.name)} in-game screenshot" loading="lazy">` : ""}<div><h3>${esc(c.name)}</h3>${paragraphs(c.description)}${paragraphs(c.appearance_note)}${c.image_caption ? `<small>${esc(c.image_caption)}</small>` : ""}${!c.image && c.image_status !== "not-rendered" ? "<small>Character screenshot not yet captured.</small>" : ""}</div></article>`).join("")}</div></section><section id="guide-gallery"><h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div></section><section id="guide-creation"><h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}</section>${renderFeedback(g)}${installs[g.slug]?.installed ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>` : ""}</div>`;
+  content.dataset.game = g.slug;
+  if (previous) {
+    content.querySelector("#guide-feedback").replaceWith(previous);
+    if (focused) {
+      focused.focus({ preventScroll: true });
+      if (selection) focused.setSelectionRange(...selection);
+    }
+  } else {
+    cleanupGuideFeedback = mountFeedback(
+      content.querySelector("#guide-feedback"),
+      {
+        ...g,
+        installedVersion: installs[g.slug]?.installed
+          ? installs[g.slug].release
+          : undefined,
+      },
+      native
+        ? { openExternal: (url) => invoke("open_feedback_url", { url }) }
+        : {},
+    );
+  }
 }
 let lastConnection = null;
 function apply(s) {
@@ -409,7 +445,12 @@ $("#close-guide").onclick = () => {
   $("#guide").close();
   guideSlug = null;
 };
-$("#guide").addEventListener("close", () => (guideSlug = null));
+$("#guide").addEventListener("close", () => {
+  guideSlug = null;
+  cleanupGuideFeedback?.();
+  cleanupGuideFeedback = null;
+  $("#guide-content").removeAttribute("data-game");
+});
 $("#keep").onclick = () => $("#confirmation").close();
 $("#confirm-uninstall").onclick = async () => {
   if (uninstalling) return;

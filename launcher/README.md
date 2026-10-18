@@ -14,6 +14,16 @@ The release includes the current game guides and screenshots for offline browsin
 The small chevron above the sidebar switches to an icon rail and remembers your
 choice. Navigation, refresh and launcher updates remain available when collapsed.
 
+Each game guide includes a **Feedback center** with a 1–10 rating, the version
+played, and writeups for what you enjoyed and what could be better. Drafts stay
+on the device, including while browsing offline. **Review & submit on GitHub**
+opens a prefilled public review in the BlueEngine repository; the player signs
+into GitHub and publishes the issue there. Long reviews have a complete copy and
+paste fallback. Posted reviews are automatically archived in the engine repo
+and considered by future IdeaForge planning, building and review. Public ratings
+and recent reviews load when online. The launcher opens only links to the
+BlueEngine issue tracker in the player's browser; no repository token is bundled.
+
 Installs use `%LOCALAPPDATA%\BlueEngine\Games\<slug>`, sharing receipts with
 existing per-game installers. Old `%LOCALAPPDATA%\BlueEngineLauncher\games`
 installations are detected too. Games installed in custom folders are not

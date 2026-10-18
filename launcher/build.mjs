@@ -21,6 +21,7 @@ await build({
 await copyFile("src/index.html", "dist/index.html");
 await copyFile("src/app.css", "dist/app.css");
 await copyFile("src/updater.css", "dist/updater.css");
+await copyFile("../site/feedback.css", "dist/feedback.css");
 await cp("public", "dist", { recursive: true });
 const catalog = JSON.parse(await readFile("public/catalog.json", "utf8")),
   images = {};

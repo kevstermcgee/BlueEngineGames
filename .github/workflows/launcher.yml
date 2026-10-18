@@ -2,7 +2,13 @@ name: Build Windows launcher
 on:
   push:
     branches: [main]
-    paths: [launcher/**, site/launcher_feed.py, .github/workflows/launcher.yml]
+    paths:
+      - launcher/**
+      - site/launcher_feed.py
+      - site/feedback.mjs
+      - site/feedback.css
+      - site/feedback.test.mjs
+      - .github/workflows/launcher.yml
   workflow_dispatch:
     inputs:
       publish:
@@ -104,10 +110,10 @@ jobs:
           $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
           $date = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          $update = @{version=$version; notes='Update all games from My library or Updates: checks the latest releases, queues the entire installed library across filters, skips running games and preserves saves. Includes signed launcher updates and the collapsible sidebar.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
+          $update = @{version=$version; notes='Every game guide now includes a feedback center: rate games out of 10, share what you enjoyed or would improve, save a draft, and post your review to the BlueEngine repository through GitHub. Includes public review summaries, whole-library Update all and signed launcher updates.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
           $update | ConvertTo-Json -Depth 6 | Set-Content launcher-update.json -Encoding utf8NoBOM
           "$hash  $($installer.Name)" | Set-Content LAUNCHER-SHA256SUMS.txt -Encoding ascii
-          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "Update all installed games from My library or Updates with one click. Checks the latest releases across the whole library, queues downloads, skips running games and preserves saves. Automatically detects launcher updates and lets you choose when to install and restart, with game activity protected. Includes a collapsible sidebar, game guides, design credits, screenshots, favorites, a download queue and offline installed play. Windows may show a reputation warning for this unsigned installer. Game downloads are verified against pinned SHA256 values; launcher updates require a valid signing key." --latest=false
+          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "Leave a review from every game guide: score the game out of 10 and describe what worked or could be better. Drafts stay on your device; GitHub sign-in is required to publish public reviews to the BlueEngine repository for future IdeaForge improvements. View public ratings and recent reviews in the guide. Update all installed games from My library or Updates with one click. Checks the latest releases across the whole library, queues downloads, skips running games and preserves saves. Automatically detects launcher updates and lets you choose when to install and restart, with game activity protected. Includes a collapsible sidebar, game guides, design credits, screenshots, favorites, a download queue and offline installed play. Windows may show a reputation warning for this unsigned installer. Game downloads are verified against pinned SHA256 values; launcher updates require a valid signing key." --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed; existing versions are never overwritten' }
           $metadata = @{version=$version; url=$url; sha256=$hash; size=$installer.Length; update=$update}
           git config user.name 'github-actions[bot]'

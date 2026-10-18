@@ -185,6 +185,8 @@ GAME_PAGE = """<!DOCTYPE html>
 <title>{name} · BlueEngine Games</title>
 <link rel="stylesheet" href="../../style.css">
 <link rel="stylesheet" href="../../wiki.css">
+<link rel="stylesheet" href="../../feedback.css">
+<script type="module" src="../../wiki-feedback.mjs"></script>
 </head>
 <body>
 <header>
@@ -299,7 +301,11 @@ def build_staged(args) -> None:
         versions = [game_release] + [r for r in history if r.get("tag_name") != game_release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
-        wiki_html = render_wiki(wiki_document, image_root, game_out, legacy)
+        wiki_html = render_wiki(wiki_document, image_root, game_out, legacy, game={
+            'slug': slug, 'name': row['name'],
+            'version': row.get('game_version') or game_release.get('tag_name', 'Unknown version'),
+            'package': {'release': game_release.get('tag_name', '')},
+        })
         preview = ""
         preview_src = Path(__file__).resolve().parent / "previews" / f"{slug}.mp4"
         if preview_src.is_file():
@@ -358,6 +364,8 @@ def build_staged(args) -> None:
     shutil.copy2(site_dir / "style.css", out / "style.css")
     shutil.copy2(site_dir / "app.js", out / "app.js")
     shutil.copy2(site_dir / "wiki.css", out / "wiki.css")
+    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs'):
+        shutil.copy2(site_dir / filename, out / filename)
     (out / ".nojekyll").touch()
     print(f"wrote {out}/index.html with {len(games)} games")
 

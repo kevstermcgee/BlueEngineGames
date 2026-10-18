@@ -152,7 +152,123 @@ try {
       ),
     "offline guide screenshot",
   );
-  await evaluate(`document.querySelector('#close-guide').click();`);
+  assert.equal(
+    await evaluate(
+      `document.querySelectorAll('#guide-feedback [data-feedback-form]').length`,
+    ),
+    1,
+  );
+  // Keep this synthetic review inside the isolated test profile. Verify the
+  // browser handoff without posting fabricated player feedback to the repo.
+  await evaluate(`(() => {
+    const originalFetch = window.fetch;
+    window.__feedbackSmoke = { originalFetch, urls: [] };
+    // Tauri's invoke/ipc properties are immutable. Its custom protocol uses
+    // the browser's fetch; intercept only this test's valid browser handoff.
+    window.fetch = (input, options) => {
+      const endpoint = new URL(typeof input === 'string' ? input : input.url, location.href);
+      if (endpoint.hostname === 'ipc.localhost' && endpoint.pathname === '/open_feedback_url') {
+        const payload = JSON.parse(options.body);
+        if (payload.url.startsWith('https://github.com/kevstermcgee/BlueEngine/issues')) {
+          window.__feedbackSmoke.urls.push(payload.url);
+          return Promise.resolve(new Response('null', {
+            headers: {'Content-Type': 'application/json', 'Tauri-Response': 'ok'}
+          }));
+        }
+      }
+      return originalFetch(input, options);
+    };
+    const form = document.querySelector('[data-feedback-form]');
+    form.elements.rating.value = '8';
+    form.elements.enjoyed.value = 'Smoke fixture: satisfying movement and clear characters.';
+    form.elements.disliked.value = 'Smoke fixture: add clearer explanations for new players.';
+    form.dispatchEvent(new Event('input', {bubbles: true}));
+    form.elements.enjoyed.focus();
+    form.elements.enjoyed.setSelectionRange(7, 14);
+    window.__feedbackSmoke.form = form;
+    document.querySelector('.favorite').click();
+  })()`);
+  assert.deepEqual(
+    await evaluate(`({
+      sameForm: document.querySelector('[data-feedback-form]') === window.__feedbackSmoke.form,
+      focus: document.activeElement.name,
+      selection: [document.activeElement.selectionStart, document.activeElement.selectionEnd]
+    })`),
+    { sameForm: true, focus: "enjoyed", selection: [7, 14] },
+  );
+  await evaluate(
+    `document.querySelector('[data-feedback-form]').requestSubmit()`,
+  );
+  const reviewUrl = new URL(
+    await until(
+      () => evaluate(`window.__feedbackSmoke.urls[0]`),
+      "feedback browser handoff",
+    ),
+  );
+  assert.equal(reviewUrl.origin, "https://github.com");
+  assert.equal(reviewUrl.pathname, "/kevstermcgee/BlueEngine/issues/new");
+  assert.equal(reviewUrl.searchParams.get("game"), "embertrail");
+  assert.equal(reviewUrl.searchParams.get("rating"), "8");
+  assert.equal(
+    reviewUrl.searchParams.get("format"),
+    "blueengine-player-feedback-v1",
+  );
+  assert.equal(
+    reviewUrl.searchParams.get("enjoyed"),
+    "Smoke fixture: satisfying movement and clear characters.",
+  );
+  assert.equal(
+    reviewUrl.searchParams.get("disliked"),
+    "Smoke fixture: add clearer explanations for new players.",
+  );
+  assert(reviewUrl.searchParams.get("version"));
+  assert.equal(
+    await evaluate(`(async () => {
+      try {
+        await window.__TAURI_INTERNALS__.invoke('open_feedback_url', {url: 'file:///C:/Windows/System32/cmd.exe'});
+        return false;
+      } catch { return true; }
+    })()`),
+    true,
+  );
+  await evaluate(`document.querySelector('#close-guide').click()`);
+  await until(
+    () => evaluate(`!document.querySelector('#guide').open`),
+    "closed feedback guide",
+  );
+  await evaluate(`document.querySelector('[data-guide="embertrail"]').click()`);
+  assert.equal(
+    await evaluate(
+      `document.querySelector('[data-feedback-form]').elements.enjoyed.value`,
+    ),
+    "Smoke fixture: satisfying movement and clear characters.",
+  );
+  await evaluate(
+    `document.querySelector('#guide-feedback').scrollIntoView({block: 'start'})`,
+  );
+  const feedbackScreenshot = await call("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile(
+    "launcher-smoke/windows-feedback.png",
+    Buffer.from(feedbackScreenshot.data, "base64"),
+  );
+  await evaluate(`(() => {
+    window.fetch = window.__feedbackSmoke.originalFetch;
+    delete window.__feedbackSmoke;
+    document.querySelector('#close-guide').click();
+  })()`);
+  await until(
+    () => evaluate(`!document.querySelector('#guide').open`),
+    "closed feedback after draft check",
+  );
+  await evaluate(
+    `localStorage.removeItem('blueengine.feedback.v1.embertrail')`,
+  );
+  console.log(
+    "Wiki feedback fields, whole review handoff, native URL restriction and saved drafts passed without posting a test review.",
+  );
   await mkdir("launcher-smoke", { recursive: true });
   const screenshot = await call("Page.captureScreenshot", {
     format: "png",

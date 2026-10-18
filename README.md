@@ -27,6 +27,14 @@ can be recovered. Missing historical originals are clearly labeled.
 character screenshots before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
 for the content format and validation commands.
 
+Every wiki and launcher guide includes a **Feedback center**: rate the game
+from 1–10 and describe what you enjoyed or would improve. Drafts are saved on
+the device. The form opens a prefilled public review in the BlueEngine issue
+tracker; players sign into GitHub and publish it there. Posted reviews are
+automatically saved under `docs/player-feedback/` in the engine repository and
+included in future IdeaForge planning, building and review. Wikis show public
+rating summaries and recent reviews when online.
+
 Every game card and detail page uses a real in-game capture from
 `site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
 screenshot (at least 320 × 180); launcher icons and initial tiles are never used
