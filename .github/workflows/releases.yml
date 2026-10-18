@@ -130,8 +130,9 @@ jobs:
 
       # Dependencies (physics, math, rendering) change only when a Cargo.lock does, so restore them
       # from the last run. The engine's own target dir and the games' shared one are both cached.
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v4
+      - name: Restore Cargo dependencies
+        id: cargo-cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~\.cargo\registry\index
@@ -168,6 +169,18 @@ jobs:
           GAME_SLUG: ${{ github.event.inputs.game_slug }}
         run: .github/scripts/package_native_releases.ps1 -EngineRoot _engine -GameSlug "$env:GAME_SLUG"
 
+      - name: Save Cargo dependencies after successful compilation
+        if: steps.cargo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~\.cargo\registry\index
+            ~\.cargo\registry\cache
+            ~\.cargo\git\db
+            _engine\target
+            ${{ runner.temp }}\cargo-target
+          key: ${{ steps.cargo-cache.outputs.cache-primary-key }}
+
       - name: Build release catalog
         shell: pwsh
         env:
@@ -181,6 +194,13 @@ jobs:
       - name: Build game installers
         shell: pwsh
         run: .github/scripts/package_installers.ps1
+
+      - name: Save reviewable Windows downloads
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-downloads
+          path: dist/
+          retention-days: 7
 
       - name: Prepare pinned software OpenGL for startup verification
         if: github.event.inputs.game_slug == ''
@@ -228,13 +248,6 @@ jobs:
           name: game-startup-proof
           path: startup-proof/
           if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Save reviewable Windows downloads
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-downloads
-          path: dist/
           retention-days: 7
 
       # Branch runs (workflow_dispatch on a branch) build and package everything but never publish.

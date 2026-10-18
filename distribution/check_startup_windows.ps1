@@ -185,6 +185,10 @@ function Press-Toggle([IntPtr]$Window) {
   } finally {
     [BlueEngineStartupWindow]::keybd_event($key, $scan, 2, [UIntPtr]::Zero)
   }
+  # Native readers sample held keys once per rendered frame. A window-style
+  # change can precede that reader observing key-up under software rendering.
+  # Leave released frames between presses so the next F11 is a distinct edge.
+  Start-Sleep -Milliseconds 1000
 }
 
 try {
