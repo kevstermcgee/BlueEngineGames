@@ -1376,7 +1376,7 @@
     },
     {
       "path": "games/crosshaul/src/main.rs",
-      "sha256": "bb9cb538fcc34bd3bc0a41c688e21f62a08f6dfb9e1a181cb8aa1af23e806ba5"
+      "sha256": "e8baa5719d31f423a9b965a0e177365b5b84d54d1db6015bab8906b4bdc3dace"
     },
     {
       "path": "games/crosshaul/src/platform.rs",
@@ -1992,7 +1992,7 @@
     },
     {
       "path": "games/leo/src/main.rs",
-      "sha256": "a2539e5994629491337da1250863c52945f7088563a4931d5851ad6043ec183e"
+      "sha256": "9f3c755d827e2a870b251c6cba7af4ddcd602a1ce6293508e5fccc82b1c5d961"
     },
     {
       "path": "games/leo/src/platform.rs",
@@ -2496,7 +2496,7 @@
     },
     {
       "path": "games/pinstride/src/main.rs",
-      "sha256": "51c22ae302b1f806af6017c8a8e8ea3affe9ef4f98acc5f1e772e3d9dd6c4bb8"
+      "sha256": "0443d561672f1a6abb3efa27408cb73c650958fdee1d53d3a4a4622f330983a6"
     },
     {
       "path": "games/pinstride/src/platform.rs",
@@ -2792,7 +2792,7 @@
     },
     {
       "path": "games/reverie/src/main.rs",
-      "sha256": "555d6c546bcd94d5a88bc244422c048770d023f82fc14550f6a58a5f994bee9b"
+      "sha256": "a692e2fa8371a72241c1893282a76c8f7d6053cc976a0ec09cccbb6bf287eaa0"
     },
     {
       "path": "games/reverie/src/platform.rs",
@@ -2920,7 +2920,7 @@
     },
     {
       "path": "games/rift-delver/src/main.rs",
-      "sha256": "accb8aac62a3bf209e672243fcd3f75fd767e168e4a23d9084c0db5a0d83c4a4"
+      "sha256": "68e99c08651eacfe26f9b2edb19e10ef1cb33bcfcd6de8caf0005b16225b3515"
     },
     {
       "path": "games/rift-delver/src/platform.rs",
@@ -3040,7 +3040,7 @@
     },
     {
       "path": "games/signal-garden/src/main.rs",
-      "sha256": "d5d6b2be1600a0a2a660ac9a2d328c06226ce69356d059393b0632e601798b4d"
+      "sha256": "0202a0f6bcd49ac265073827223e2c53fdcc2f907a56a56589a62dfd741980e1"
     },
     {
       "path": "games/signal-garden/src/platform.rs",
@@ -3180,7 +3180,7 @@
     },
     {
       "path": "games/sway/src/main.rs",
-      "sha256": "148bf478d9f2d26dc5f375f061940c78b7133923d948993832afe7a3b47bff33"
+      "sha256": "1f63ee58a05c12b246f17ec54adf2bdf9a469c106f0e86e2651635547a651c4f"
     },
     {
       "path": "games/sway/src/ui.rs",
@@ -3776,6 +3776,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "015e07a8b28a651b625cddcff11cc301831c80e4",
+  "source_revision": "1441a433a76aa3c8d0f507dfe370a5c9583882b1",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
