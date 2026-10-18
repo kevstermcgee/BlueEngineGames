@@ -1,0 +1,17 @@
+{
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.0/BlueEngine-Games-Setup-x64.exe",
+  "version": "0.1.0",
+  "size": 26227045,
+  "sha256": "5163bb26cdec7568bff501612e3dba2f6a4288caaa7409adbf38f10f7ae14d45",
+  "update": {
+    "platforms": {
+      "windows-x86_64": {
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.0/BlueEngine-Games-Setup-x64.exe",
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjFTYTdRaE9ydVFFaFlyaGR6MHRSTVU2RWlCS2taRWFMbTRWbm5PQ0w4WHFVSG0ya0I1aElIdWpRcld5dXFBVk9MNWJuaC9MOHdFZkZlTTZGWmxaRnc0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjgyNzU0CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuMF94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjAKajVjWEc0ZHpycncveUVoUkZhZWR4Z01NakRMVTdkRGtyeTFsZEFpVU5wNkMxSW5OOXppdS81enZ6dlpxeW5IS2F6Qm43RnIwL0p3OW95S0VNSUJ4RHc9PQo="
+      }
+    },
+    "version": "0.1.0",
+    "notes": "BlueEngine Games library, verified game installs, saved-game-preserving updates and built-in game guides.",
+    "pub_date": "2026-10-18T00:20:58Z"
+  }
+}
