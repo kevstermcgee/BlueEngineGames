@@ -21,7 +21,9 @@ opens a prefilled public review in the BlueEngine repository; the player signs
 into GitHub and publishes the issue there. Long reviews have a complete copy and
 paste fallback. Posted reviews are automatically archived in the engine repo
 and considered by future IdeaForge planning, building and review. Public ratings
-and recent reviews load when online. The launcher opens only links to the
+and review counts appear on catalog cards and guide headers when online. The wiki
+shows recent reviews and a paginated browser for every published review; reading
+requires no GitHub account. The launcher opens only links to the
 BlueEngine issue tracker in the player's browser; no repository token is bundled.
 
 Installs use `%LOCALAPPDATA%\BlueEngine\Games\<slug>`, sharing receipts with

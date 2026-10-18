@@ -9,6 +9,11 @@ import {
   renderReviewSummary,
   saveFeedbackDraft,
   validateReview,
+  loadPublicReviewSummary,
+  readReviewCollection,
+  renderPublicScore,
+  renderReviewPage,
+  reviewDataUrl,
 } from "./feedback.mjs";
 
 const game = {
@@ -237,4 +242,170 @@ test("summary gives honest empty state and rejects corrupt scores", () => {
   assert.throws(() =>
     renderReviewSummary({ schema_version: 2, games: {} }, game),
   );
+});
+
+const publishedReview = (issueNumber, rating = 8) => ({
+  game: game.slug,
+  rating,
+  version: "0.1.0",
+  author: `player-${issueNumber}`,
+  enjoyed: "A clever mechanic",
+  disliked: "More levels",
+  issue_number: issueNumber,
+  source_url: `https://github.com/kevstermcgee/BlueEngine/issues/${issueNumber}`,
+});
+
+test("public badges distinguish no reviews, loading, offline and real player scores", () => {
+  assert.match(renderPublicScore(game), /Loading player scores/);
+  assert.match(
+    renderPublicScore(game, { unavailable: true }),
+    /Reviews unavailable/,
+  );
+  const document = { schema_version: 1, games: {} };
+  assert.match(renderPublicScore(game, { document }), /No reviews yet/);
+  document.games[game.slug] = {
+    count: 7,
+    average: 8.4,
+    reviews: [publishedReview(7)],
+  };
+  assert.match(renderPublicScore(game, { document }), /8.4.*7 reviews/s);
+  document.games[game.slug].average = 12;
+  assert.match(renderPublicScore(game, { document }), /Reviews unavailable/);
+});
+
+test("summary keeps a public in-wiki path to every review beyond the recent three", () => {
+  const document = {
+    schema_version: 1,
+    games: {
+      [game.slug]: {
+        count: 8,
+        average: 8,
+        reviews: [publishedReview(8), publishedReview(7), publishedReview(6)],
+      },
+    },
+  };
+  const html = renderReviewSummary(document, game);
+  assert.match(html, /Browse all 8 reviews/);
+  assert.match(html, /data-feedback-browse/);
+  assert.equal((html.match(/class="feedback-review"/g) || []).length, 3);
+  assert.match(
+    renderFeedback(game),
+    /Read published reviews here without signing in/,
+  );
+});
+
+test("all-review collection paginates complete writeups without auth, duplicates or cross-game records", () => {
+  const document = {
+    schema_version: 1,
+    game: game.slug,
+    count: 8,
+    average: 8,
+    reviews: Array.from({ length: 8 }, (_, i) => publishedReview(8 - i)),
+  };
+  const first = renderReviewPage(document, game);
+  const last = renderReviewPage(document, game, { page: 1 });
+  assert.match(first, /Showing 1–6 of 8/);
+  assert.match(last, /Showing 7–8 of 8/);
+  assert.equal((first.match(/class="feedback-review"/g) || []).length, 6);
+  assert.equal((last.match(/class="feedback-review"/g) || []).length, 2);
+  assert.match(last, /player-1/);
+  assert.doesNotMatch(first, /player-1/);
+  assert.throws(
+    () => renderReviewPage(document, game, { page: 2 }),
+    /Invalid review page/,
+  );
+  assert.throws(
+    () => readReviewCollection({ ...document, count: 9 }, game),
+    /Invalid review collection/,
+  );
+  assert.throws(
+    () => readReviewCollection({ ...document, game: "other" }, game),
+    /Invalid review collection/,
+  );
+  assert.throws(
+    () =>
+      readReviewCollection(
+        { ...document, reviews: Array(8).fill(publishedReview(1)) },
+        game,
+      ),
+    /Invalid review collection/,
+  );
+  assert.throws(
+    () =>
+      readReviewCollection(
+        {
+          ...document,
+          reviews: document.reviews.map((r) => ({
+            ...r,
+            source_url: "javascript:alert(1)",
+          })),
+        },
+        game,
+      ),
+    /Invalid review collection/,
+  );
+});
+
+test("all-review pages escape player content and reject malformed empty feeds", () => {
+  const document = {
+    schema_version: 1,
+    game: game.slug,
+    count: 1,
+    average: 8,
+    reviews: [
+      {
+        ...publishedReview(1),
+        enjoyed: '<img src=x onerror="bad()">',
+        author: "<script>x</script>",
+      },
+    ],
+  };
+  const html = renderReviewPage(document, game);
+  assert.ok(!html.includes("<img"));
+  assert.match(html, /&lt;script&gt;x&lt;\/script&gt;/);
+  assert.match(
+    renderReviewPage(
+      { ...document, count: 0, average: null, reviews: [] },
+      game,
+    ),
+    /No published reviews/,
+  );
+  assert.throws(
+    () => readReviewCollection({ ...document, count: 0 }, game),
+    /Invalid review summary/,
+  );
+  assert.equal(
+    reviewDataUrl(game),
+    "https://raw.githubusercontent.com/kevstermcgee/BlueEngine/main/docs/player-feedback/games/pocket-breaker.json",
+  );
+  assert.throws(
+    () => reviewDataUrl({ slug: "../summary" }),
+    /Invalid game identity/,
+  );
+});
+
+test("public summary coalesces simultaneous card/wiki reads, refreshes explicitly and retries failures", async () => {
+  let calls = 0;
+  const document = { schema_version: 1, games: {} };
+  const fetcher = async (url, options) => {
+    calls++;
+    assert.equal(url.endsWith("/summary.json"), true);
+    assert.equal(options.credentials, "omit");
+    return { ok: true, json: async () => document };
+  };
+  const a = loadPublicReviewSummary({ fetcher });
+  const b = loadPublicReviewSummary({ fetcher });
+  assert.equal(a, b);
+  assert.equal(await a, document);
+  assert.equal(await loadPublicReviewSummary({ fetcher }), document);
+  assert.equal(calls, 1);
+  await loadPublicReviewSummary({ fetcher, force: true });
+  assert.equal(calls, 2);
+  let retry = 0;
+  const flaky = async () => ({ ok: ++retry > 1, json: async () => document });
+  await assert.rejects(
+    loadPublicReviewSummary({ fetcher: flaky }),
+    /Reviews unavailable/,
+  );
+  assert.equal(await loadPublicReviewSummary({ fetcher: flaky }), document);
 });

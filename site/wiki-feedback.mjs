@@ -1,4 +1,8 @@
-import { mountFeedback, renderFeedback } from "./feedback.mjs";
+import {
+  mountFeedback,
+  renderFeedback,
+  mountPublicScores,
+} from "./feedback.mjs";
 
 const root = document.querySelector("[data-feedback-game]");
 if (root) {
@@ -6,3 +10,5 @@ if (root) {
   root.innerHTML = renderFeedback(game);
   mountFeedback(root, game);
 }
+
+void mountPublicScores(document);

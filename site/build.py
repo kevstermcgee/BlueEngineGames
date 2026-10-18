@@ -33,6 +33,7 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BlueEngine Games</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="feedback.css">
 </head>
 <body>
 <header>
@@ -88,6 +89,7 @@ CARD = """<article class="card" id="{slug}" data-slug="{slug}" data-name="{name_
   <div class="body">
     <h2><a class="game-title" href="games/{slug}/">{name}</a>{badge}</h2>
     <p class="design-credit"><span class="design-badge design-{design_origin}">{design_label}</span></p>
+    <a class="public-score" data-public-score="{slug}" href="games/{slug}/#guide-feedback"><span class="public-score-empty">Loading player scores…</span></a>
     <p class="desc">{desc}</p>
     <p class="meta">{version}added {created}{size}</p>
     <a class="dl" href="{asset}">{download_label}</a>
@@ -199,6 +201,7 @@ GAME_PAGE = """<!DOCTYPE html>
     <div>
       <p>{desc}</p>
       <p class="design-credit"><span class="design-badge design-{design_origin}">{design_label}</span>{design_explanation}</p>
+      <p><a class="public-score" data-public-score="{slug}" href="#guide-feedback"><span class="public-score-empty">Loading player scores…</span></a></p>
       <p class="meta">{version}added {created} &middot; Windows x64</p>
       <a class="dl" href="{asset}">{download_label}</a>
       <p class="game-help">{install_help}</p>
@@ -319,7 +322,7 @@ def build_staged(args) -> None:
     <p><a href="preview.mp4">Download the MP4 recording</a></p>
   </section>'''
         (game_out / "index.html").write_text(GAME_PAGE.format(
-            name=name, desc=html.escape(row.get("description", "")),
+            slug=html.escape(slug), name=name, desc=html.escape(row.get("description", "")),
             thumb=thumb.replace('src="thumbs/', 'src="../../thumbs/'),
             version=version_label(row.get("game_version", "")), created=html.escape(created),
             asset=html.escape(asset), download_label=download_label, preview=preview, wiki=wiki_html,

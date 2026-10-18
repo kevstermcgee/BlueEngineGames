@@ -2,8 +2,69 @@ const ENGINE = "https://github.com/kevstermcgee/BlueEngine";
 export const FEEDBACK_FORMAT = "blueengine-player-feedback-v1";
 export const MAX_FEEDBACK_LENGTH = 2000;
 export const MAX_HANDOFF_LENGTH = 7500;
-const SUMMARY_URL =
+export const SUMMARY_URL =
   "https://raw.githubusercontent.com/kevstermcgee/BlueEngine/main/docs/player-feedback/summary.json";
+const summaryRequests = new WeakMap();
+export const REVIEW_PAGE_SIZE = 6;
+
+export function reviewDataUrl(game) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(game.slug))
+    throw new Error("Invalid game identity");
+  return `${SUMMARY_URL.slice(0, -"summary.json".length)}games/${game.slug}.json`;
+}
+
+async function fetchDocument(url, fetcher, signal) {
+  if (typeof fetcher !== "function") throw new Error("Reviews unavailable");
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  const timeout = setTimeout(abort, 10000);
+  try {
+    const response = await fetcher(url, {
+      signal: controller.signal,
+      cache: "no-cache",
+      credentials: "omit",
+    });
+    if (!response.ok) throw new Error("Reviews unavailable");
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener("abort", abort);
+  }
+}
+
+// Cards and an open wiki share one short-lived public request, including in the launcher.
+export function loadPublicReviewSummary({
+  fetcher = globalThis.fetch,
+  force = false,
+} = {}) {
+  if (typeof fetcher !== "function")
+    return Promise.reject(new Error("Reviews unavailable"));
+  const cached = summaryRequests.get(fetcher);
+  if (
+    cached &&
+    (!force || cached.pending) &&
+    (cached.pending || cached.expires > Date.now())
+  )
+    return cached.promise;
+  const entry = { pending: true, expires: Date.now() + 5 * 60 * 1000 };
+  entry.promise = fetchDocument(SUMMARY_URL, fetcher)
+    .then((document) => {
+      validateSummaryDocument(document);
+      return document;
+    })
+    .catch((error) => {
+      if (summaryRequests.get(fetcher) === entry)
+        summaryRequests.delete(fetcher);
+      throw error;
+    })
+    .finally(() => {
+      entry.pending = false;
+    });
+  summaryRequests.set(fetcher, entry);
+  return entry.promise;
+}
 const esc = (value = "") =>
   String(value).replace(
     /[&<>"']/g,
@@ -147,9 +208,9 @@ export function reviewListUrl(game) {
 
 export function renderFeedback(game) {
   return `<section class="feedback-center" id="guide-feedback" aria-labelledby="feedback-heading">
-    <div class="feedback-header"><div><p class="feedback-kicker">HELP SHAPE WHAT COMES NEXT</p><h2 id="feedback-heading">Feedback center</h2></div><a data-feedback-external href="${esc(reviewListUrl(game))}" target="_blank" rel="noopener noreferrer">All player reviews ↗</a></div>
+    <div class="feedback-header"><div><p class="feedback-kicker">HELP SHAPE WHAT COMES NEXT</p><h2 id="feedback-heading">Feedback center</h2></div><a data-feedback-external href="${esc(reviewListUrl(game))}" target="_blank" rel="noopener noreferrer">Reviews on GitHub ↗</a></div>
     <p>How was ${esc(game.name)}? Share what worked, what didn’t, and what you would like to see next. The engine uses these reviews to guide future improvements.</p>
-    <div class="feedback-reviews" data-feedback-reviews aria-live="polite"><p class="feedback-note">Loading player reviews…</p></div>
+    <h3 class="feedback-public-heading">Player scores &amp; reviews</h3><p class="feedback-note">Read published reviews here without signing in. Scores include all published reviews, across game versions.</p><div class="feedback-reviews" data-feedback-reviews aria-live="polite" tabindex="-1"><p class="feedback-note">Loading player reviews…</p></div>
     <form data-feedback-form novalidate>
       <div class="feedback-fields"><div><label for="feedback-rating">Your rating <span>(out of 10)</span></label><select id="feedback-rating" name="rating" required aria-describedby="feedback-rating-error"><option value="">Choose a rating</option>${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1} / 10</option>`).join("")}</select><p class="feedback-error" id="feedback-rating-error" data-feedback-error="rating"></p></div>
       <div><label for="feedback-version">Version played <span>(optional)</span></label><input id="feedback-version" name="version" maxlength="160" value="${esc(initialVersion(game))}" aria-describedby="feedback-version-error"><p class="feedback-error" id="feedback-version-error" data-feedback-error="version"></p></div></div>
@@ -178,35 +239,122 @@ function validReview(record, slug) {
     record.enjoyed.length <= MAX_FEEDBACK_LENGTH &&
     record.disliked.length <= MAX_FEEDBACK_LENGTH &&
     Number.isInteger(record.issue_number) &&
+    record.issue_number > 0 &&
     record.source_url === `${ENGINE}/issues/${record.issue_number}`
   );
 }
 
-export function renderReviewSummary(document, game) {
+function validateSummaryDocument(document) {
   if (
     document?.schema_version !== 1 ||
     !document.games ||
-    typeof document.games !== "object"
+    typeof document.games !== "object" ||
+    Array.isArray(document.games)
   )
     throw new Error("Invalid review summary");
+}
+
+function validateScore(summary) {
+  if (
+    !summary ||
+    !Number.isInteger(summary.count) ||
+    summary.count < 0 ||
+    (summary.count === 0
+      ? summary.average !== null
+      : !Number.isFinite(summary.average) ||
+        summary.average < 1 ||
+        summary.average > 10) ||
+    !Array.isArray(summary.reviews) ||
+    summary.reviews.length > summary.count
+  )
+    throw new Error("Invalid review summary");
+}
+
+export function readReviewSummary(document, game) {
+  validateSummaryDocument(document);
   const summary = Object.hasOwn(document.games, game.slug)
     ? document.games[game.slug]
-    : null;
-  if (!summary || summary.count === 0)
-    return '<p class="feedback-note">No published reviews yet. Be the first to share your experience.</p>';
-  if (
-    !Number.isInteger(summary.count) ||
-    summary.count < 1 ||
-    !Number.isFinite(summary.average) ||
-    summary.average < 1 ||
-    summary.average > 10 ||
-    !Array.isArray(summary.reviews)
-  )
-    throw new Error("Invalid review summary");
-  const reviews = summary.reviews.slice(0, 3);
-  if (reviews.some((review) => !validReview(review, game.slug)))
+    : { count: 0, average: null, reviews: [] };
+  validateScore(summary);
+  if (summary.reviews.some((review) => !validReview(review, game.slug)))
     throw new Error("Invalid review entry");
-  return `<p class="feedback-score"><strong>${esc(summary.average.toFixed(1))}<span> / 10</span></strong><span>${summary.count} ${summary.count === 1 ? "player review" : "player reviews"}</span></p><div class="feedback-review-list">${reviews.map((review) => `<article class="feedback-review"><div><h3>${esc(review.author)}</h3><strong>${review.rating} / 10</strong></div><p class="feedback-note">Version ${esc(review.version)}</p>${review.enjoyed && review.enjoyed !== "_No response_" ? `<h4>Enjoyed</h4><p>${esc(review.enjoyed)}</p>` : ""}${review.disliked && review.disliked !== "_No response_" ? `<h4>Could be better</h4><p>${esc(review.disliked)}</p>` : ""}<a data-feedback-external href="${esc(review.source_url)}" target="_blank" rel="noopener noreferrer">Read on GitHub ↗</a></article>`).join("")}</div><p class="feedback-note">Recently published reviews. New feedback appears after repository processing.</p>`;
+  return summary;
+}
+
+export function renderPublicScore(
+  game,
+  { document, unavailable = false } = {},
+) {
+  if (unavailable)
+    return '<span class="public-score-empty">Reviews unavailable</span>';
+  if (!document)
+    return '<span class="public-score-empty">Loading player scores…</span>';
+  try {
+    const summary = readReviewSummary(document, game);
+    return summary.count
+      ? `<strong>${summary.average.toFixed(1)}<span> / 10</span></strong><span> · ${summary.count} ${summary.count === 1 ? "review" : "reviews"}</span>`
+      : '<span class="public-score-empty">No reviews yet · Be the first</span>';
+  } catch {
+    return '<span class="public-score-empty">Reviews unavailable</span>';
+  }
+}
+
+export async function mountPublicScores(root, options = {}) {
+  let document;
+  let unavailable = false;
+  try {
+    document = await loadPublicReviewSummary(options);
+  } catch {
+    unavailable = true;
+  }
+  for (const node of root.querySelectorAll("[data-public-score]"))
+    node.innerHTML = renderPublicScore(
+      { slug: node.dataset.publicScore },
+      { document, unavailable },
+    );
+  return document;
+}
+
+function renderReviews(reviews) {
+  return `<div class="feedback-review-list">${reviews.map((review) => `<article class="feedback-review"><div><h3>${esc(review.author)}</h3><strong>${review.rating} / 10</strong></div><p class="feedback-note">Version ${esc(review.version || "not specified")}</p>${review.enjoyed && review.enjoyed !== "_No response_" ? `<h4>Enjoyed</h4><p>${esc(review.enjoyed)}</p>` : ""}${review.disliked && review.disliked !== "_No response_" ? `<h4>Could be better</h4><p>${esc(review.disliked)}</p>` : ""}<a data-feedback-external href="${esc(review.source_url)}" target="_blank" rel="noopener noreferrer">Review #${review.issue_number} on GitHub ↗</a></article>`).join("")}</div>`;
+}
+
+function renderScore(summary) {
+  return `<p class="feedback-score"><strong>${summary.average.toFixed(1)}<span> / 10</span></strong><span>${summary.count} ${summary.count === 1 ? "player review" : "player reviews"}</span></p>`;
+}
+
+const noReviews =
+  '<p class="feedback-note">No published reviews yet. Be the first to share your experience.</p>';
+
+export function renderReviewSummary(document, game) {
+  const summary = readReviewSummary(document, game);
+  if (!summary.count) return noReviews;
+  const reviews = summary.reviews.slice(0, 3);
+  return `${renderScore(summary)}${renderReviews(reviews)}${summary.count > reviews.length ? `<div class="feedback-pagination"><p class="feedback-note">Showing the ${reviews.length} most recent reviews.</p><button type="button" data-feedback-browse>Browse all ${summary.count} reviews</button></div>` : ""}<p class="feedback-note">New feedback appears after repository processing.</p>`;
+}
+
+export function readReviewCollection(document, game) {
+  if (document?.schema_version !== 1 || document.game !== game.slug)
+    throw new Error("Invalid review collection");
+  validateScore(document);
+  if (
+    document.reviews.length !== document.count ||
+    document.reviews.some((review) => !validReview(review, game.slug)) ||
+    new Set(document.reviews.map((review) => review.issue_number)).size !==
+      document.count
+  )
+    throw new Error("Invalid review collection");
+  return document;
+}
+
+export function renderReviewPage(document, game, { page = 0 } = {}) {
+  const collection = readReviewCollection(document, game);
+  if (!collection.count) return noReviews;
+  const pages = Math.ceil(collection.count / REVIEW_PAGE_SIZE);
+  if (!Number.isInteger(page) || page < 0 || page >= pages)
+    throw new Error("Invalid review page");
+  const offset = page * REVIEW_PAGE_SIZE;
+  return `${renderScore(collection)}${renderReviews(collection.reviews.slice(offset, offset + REVIEW_PAGE_SIZE))}<div class="feedback-pagination"><p class="feedback-note">Showing ${offset + 1}–${Math.min(offset + REVIEW_PAGE_SIZE, collection.count)} of ${collection.count} reviews · Newest first</p><div><button type="button" data-feedback-page="${page - 1}" ${page === 0 ? "disabled" : ""}>Previous</button><button type="button" data-feedback-page="${page + 1}" ${page + 1 === pages ? "disabled" : ""}>Next</button></div></div><p class="feedback-note">New feedback appears after repository processing.</p>`;
 }
 
 export function mountFeedback(
@@ -350,19 +498,52 @@ export function mountFeedback(
   root.addEventListener("click", onExternal);
   const controller = new AbortController();
   const reviews = root.querySelector("[data-feedback-reviews]");
+  let collection = null;
+  let loadingCollection = false;
+  const onReviewBrowse = async (event) => {
+    const button = event.target.closest?.(
+      "[data-feedback-browse], [data-feedback-page]",
+    );
+    if (!button || !reviews.contains(button) || loadingCollection) return;
+    if (collection && button.hasAttribute("data-feedback-page")) {
+      reviews.innerHTML = renderReviewPage(collection, game, {
+        page: Number(button.dataset.feedbackPage),
+      });
+      reviews.focus({ preventScroll: true });
+      return;
+    }
+    loadingCollection = true;
+    button.disabled = true;
+    button.textContent = "Loading all reviews…";
+    reviews.querySelector("[data-feedback-load-error]")?.remove();
+    try {
+      collection = readReviewCollection(
+        await fetchDocument(reviewDataUrl(game), fetcher, controller.signal),
+        game,
+      );
+      if (alive) {
+        reviews.innerHTML = renderReviewPage(collection, game);
+        reviews.focus({ preventScroll: true });
+      }
+    } catch {
+      if (alive) {
+        button.disabled = false;
+        button.textContent = "Retry loading all reviews";
+        const note = root.ownerDocument.createElement("p");
+        note.className = "feedback-note";
+        note.dataset.feedbackLoadError = "";
+        note.setAttribute("role", "status");
+        note.textContent =
+          "All reviews are unavailable right now. The recent reviews above remain available; retry or read reviews on GitHub.";
+        reviews.append(note);
+      }
+    } finally {
+      loadingCollection = false;
+    }
+  };
+  root.addEventListener("click", onReviewBrowse);
   if (typeof fetcher === "function") {
-    Promise.resolve()
-      .then(() =>
-        fetcher(SUMMARY_URL, {
-          signal: controller.signal,
-          cache: "no-cache",
-          credentials: "omit",
-        }),
-      )
-      .then((response) => {
-        if (!response.ok) throw new Error("Reviews unavailable");
-        return response.json();
-      })
+    loadPublicReviewSummary({ fetcher })
       .then((document) => {
         if (alive) reviews.innerHTML = renderReviewSummary(document, game);
       })
@@ -384,5 +565,6 @@ export function mountFeedback(
       .querySelector("[data-feedback-copy-button]")
       .removeEventListener("click", onCopy);
     root.removeEventListener("click", onExternal);
+    root.removeEventListener("click", onReviewBrowse);
   };
 }
