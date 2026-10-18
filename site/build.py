@@ -348,6 +348,11 @@ def build_staged(args) -> None:
 
     from launcher_feed import publish_launcher
     page = publish_launcher(repo_root, out, enhance_page(page))
+    if (repo_root / 'site/launcher-release.json').is_file():
+        page = page.replace('Download an installer, choose a desktop shortcut, and play.',
+                            'Use the Windows launcher to install, play and update your library, or choose an individual installer.')
+        page = page.replace('Run a newer installer to update. Some games also have a <strong>Check for updates</strong> Start Menu shortcut.',
+                            'Use <strong>Updates</strong> in the launcher. Individual installers and per-game <strong>Check for updates</strong> shortcuts are also supported.')
     (out / "index.html").write_text(page, encoding="utf-8", newline="\n")
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")

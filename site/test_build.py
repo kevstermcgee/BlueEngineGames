@@ -235,6 +235,13 @@ class Downloads(unittest.TestCase):
             (root / 'thumbs').mkdir()
             (root / 'thumbs/game.png').write_bytes(screenshot())
             wiki_fixture(root, 'game')
+            launcher_url = 'https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.0/BlueEngine-Games-Setup-x64.exe'
+            launcher_update = {'version': '0.1.0', 'notes': 'Launcher release',
+                               'platforms': {'windows-x86_64': {'url': launcher_url, 'signature': 'signed-release-fixture'}}}
+            (root / 'site').mkdir(exist_ok=True)
+            (root / 'site/launcher-release.json').write_text(json.dumps({
+                'version': '0.1.0', 'url': launcher_url, 'size': 20000000,
+                'sha256': 'd' * 64, 'update': launcher_update}))
             rows = [{'slug': 'game', 'name': 'Game café ✨', 'description': '<unsafe>', 'created': '2026-01-01',
                      'game_version': '0.1.0', 'kind': 'native', 'asset': 'https://bad/latest.zip', 'sha256': 'c' * 64}]
             with (root / 'catalog.tsv').open('w', encoding='utf-8', newline='') as out:
@@ -258,6 +265,9 @@ class Downloads(unittest.TestCase):
             page = (root / 'out/index.html').read_text(encoding='utf-8')
             self.assertIn('<strong>1 free game</strong> for Windows.', page)
             self.assertIn('Game café ✨', page)
+            self.assertIn(launcher_url, page)
+            self.assertIn('Use the Windows launcher to install, play and update', page)
+            self.assertEqual(json.loads((root / 'out/launcher-update.json').read_text()), launcher_update)
             self.assertFalse((root / 'out/web').exists())
             self.assertFalse(old_page.exists())
             self.assertNotIn('Play / Install', page)

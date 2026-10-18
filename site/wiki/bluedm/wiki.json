@@ -18,22 +18,30 @@
     {
       "name": "Vanguard",
       "description": "Procedural operative with a gold head accent and gold shoulder blocks over the team-colored body.",
-      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character.",
+      "image": "assets/wiki/9ca3198c181f1699.png",
+      "image_caption": "Vanguard in the Foundry loading hall — gold head and shoulder blocks."
     },
     {
       "name": "Recon",
       "description": "Procedural operative with lime head accents and a thin, wide head-top silhouette over the team-colored body.",
-      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character.",
+      "image": "assets/wiki/5c68c11913d3f296.png",
+      "image_caption": "Recon in the Foundry loading hall — green head, seen from the native observer’s view."
     },
     {
       "name": "Breacher",
       "description": "Broad-shouldered procedural operative with an orange head accent and orange shoulder blocks.",
-      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character.",
+      "image": "assets/wiki/c77020cb14a7c7d3.png",
+      "image_caption": "Breacher in the Foundry loading hall — orange head and broad orange shoulders."
     },
     {
       "name": "Field Tech",
       "description": "Procedural operative with sky-blue head accents and a matching rectangular backpack.",
-      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character."
+      "appearance_note": "A distinct procedural operative appearance assigned by the server from the joining player’s identifier; not a separate named story character.",
+      "image": "assets/wiki/bceb8e6d313f1903.png",
+      "image_caption": "Field Tech in the Foundry loading hall — sky-blue head and rectangular backpack."
     }
   ],
   "characters_note": "",
@@ -47,6 +55,26 @@
       "image": "assets/wiki/39a3640f8fd4f19e.png",
       "caption": "Atlas 5.56 in the team-deathmatch warehouse.",
       "alt": "Atlas 5.56 in the team-deathmatch warehouse."
+    },
+    {
+      "image": "assets/wiki/c77020cb14a7c7d3.png",
+      "caption": "Breacher in the Foundry loading hall — orange head and broad orange shoulders.",
+      "alt": "Breacher in the Foundry loading hall — orange head and broad orange shoulders."
+    },
+    {
+      "image": "assets/wiki/bceb8e6d313f1903.png",
+      "caption": "Field Tech in the Foundry loading hall — sky-blue head and rectangular backpack.",
+      "alt": "Field Tech in the Foundry loading hall — sky-blue head and rectangular backpack."
+    },
+    {
+      "image": "assets/wiki/9ca3198c181f1699.png",
+      "caption": "Vanguard in the Foundry loading hall — gold head and shoulder blocks.",
+      "alt": "Vanguard in the Foundry loading hall — gold head and shoulder blocks."
+    },
+    {
+      "image": "assets/wiki/5c68c11913d3f296.png",
+      "caption": "Recon in the Foundry loading hall — green head, seen from the native observer’s view.",
+      "alt": "Recon in the Foundry loading hall — green head, seen from the native observer’s view."
     }
   ],
   "design": {
