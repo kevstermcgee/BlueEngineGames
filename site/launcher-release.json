@@ -1,17 +1,17 @@
 {
   "update": {
+    "pub_date": "2026-10-18T04:18:40Z",
+    "notes": "Update all games from My library or Updates: checks the latest releases, queues the entire installed library across filters, skips running games and preserves saves. Includes signed launcher updates and the collapsible sidebar.",
+    "version": "0.1.2",
     "platforms": {
       "windows-x86_64": {
-        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUnlwSWV4SUc1K0l4VUxPUjJWQVhWWTFJeHA5c2Z6aWVBM1NqditFbHdNT0oxVWF1QWZ2NE0wa2NhNDJvMHlJUVpCZXY2aWl0c2MzaTU1UllpRVcrZUF3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjk1MzcwCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuMV94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjEKdm1xRW5BMDBpb0ZjTjJXMFZKSWozM2JXbTZDQlNZcGRTeG5EUEJ3ZXFpR1h0S250TWtkdGFnTHZ5WkdhbmRDZVRrZ0psTENNSkpTODlFdm1vMGlLQXc9PQo=",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.1/BlueEngine-Games-Setup-x64.exe"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.2/BlueEngine-Games-Setup-x64.exe",
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjdOaFFqK1ZlYXhRZHpWUFNjbWZJN0ttNmFhRVZPaFptai8wenNQVS8wWUJDYzVxb2RrbEJEUWdSczdsZWdIVTAybmU4QjJRTlZHSW95UEtDY3hiWkFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyMjk3MDQ1CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuMl94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjIKS3NHMmUyYmx6algwZlpMOWtHUUlJU3EyaHJKbnU0OENwbW92aHRJNUpHUi9zcHk1MzdTODJHNzNPUWxEQXRBQ2xJRXNNVFlFNXNXTTNhcklBWURRQVE9PQo="
       }
-    },
-    "version": "0.1.1",
-    "pub_date": "2026-10-18T03:51:30Z",
-    "notes": "Automatic launcher update detection, user-controlled signed updates and restart, collapsible sidebar, and the BlueEngine game library with built-in guides."
+    }
   },
-  "version": "0.1.1",
-  "size": 26487457,
-  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.1/BlueEngine-Games-Setup-x64.exe",
-  "sha256": "6ed894504d2ab0e21dbf34920766d7be3228f978da78732f480f8fe78b2635a4"
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.2/BlueEngine-Games-Setup-x64.exe",
+  "sha256": "cad321c85ad50869924655e69455a07d57685ac8757ffae26f203b989457796b",
+  "version": "0.1.2",
+  "size": 26489894
 }
