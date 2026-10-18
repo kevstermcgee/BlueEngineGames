@@ -29,6 +29,7 @@ public static class UpgradeToken {
   static extern bool GetTokenInformation(IntPtr token, int kind, out int value, int size, out int returned);
   [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
   [DllImport("user32.dll")] public static extern IntPtr GetShellWindow();
+  [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr window);
   public static bool IsElevated(IntPtr process) {
     IntPtr token;
     if (!OpenProcessToken(process, 8, out token)) throw new Win32Exception();
@@ -153,12 +154,24 @@ while ([DateTime]::UtcNow -lt $deadline) { Start-Sleep -Seconds 1 }
     Start-Sleep -Seconds 1
   }
   if (-not $restarted) { throw 'Signed installer did not restart the exact production executable' }
+  $maximizedDeadline = [DateTime]::UtcNow.AddSeconds(10)
+  $initialProductionMaximized = $false
+  do {
+    $restarted.Refresh()
+    if ($restarted.HasExited) { throw 'Production launcher exited before its startup window state was verified' }
+    if ($restarted.MainWindowHandle -ne 0 -and [UpgradeToken]::IsZoomed($restarted.MainWindowHandle)) {
+      $initialProductionMaximized = $true
+      break
+    }
+    Start-Sleep -Milliseconds 100
+  } while ([DateTime]::UtcNow -lt $maximizedDeadline)
+  if (-not $initialProductionMaximized) { throw 'Production launcher did not start maximized' }
   Checkpoint "Production launcher PID $($restarted.Id) opened its window with the expected executable hash."
   $before = Get-Content launcher-smoke/upgrade-before.json | ConvertFrom-Json
   if ((Get-Content $before.marker -Raw) -ne "Keep player files across a signed launcher upgrade`n") { throw 'Launcher upgrade changed the player save marker' }
   $health = Invoke-RestMethod 'http://127.0.0.1:9224/health'
   if ($health.manifestRequests -lt 1 -or $health.installerRequests -ne 2) { throw 'Upgrade did not reject the corrupt download and then retry the genuine signed artifact' }
-  $receipt = @{version=$version; previous_pid=$app.Id; restarted_pid=$restarted.Id; executable=$restarted.Path; sha256=$expectedHash; player_file_preserved=$true; corrupt_signature_rejected=$true; signed_feed=$health}
+  $receipt = @{version=$version; previous_pid=$app.Id; restarted_pid=$restarted.Id; executable=$restarted.Path; sha256=$expectedHash; initial_production_maximized=$initialProductionMaximized; player_file_preserved=$true; corrupt_signature_rejected=$true; signed_feed=$health}
   $receipt | ConvertTo-Json -Depth 5 | Set-Content launcher-smoke/upgrade-result.json -Encoding utf8NoBOM
   Diagnostics 'success'
   Write-Host "Verified automatic detection, user-triggered signed update, old-process exit and production $version restart."

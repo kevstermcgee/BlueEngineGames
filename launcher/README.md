@@ -1,5 +1,8 @@
 # BlueEngine Games for Windows
 
+The launcher opens maximized by default. Use the standard Windows restore button
+to return to a smaller window.
+
 The Tauri 2 launcher provides one library for game installation, launching,
 updates and the full game wiki. Discover and filter human-designed or
 AI-designed games, favorite games, queue downloads, and use **My library → Update
