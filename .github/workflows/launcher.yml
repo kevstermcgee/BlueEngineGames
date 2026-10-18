@@ -19,6 +19,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Verify standard Windows user can open a desktop app
+        shell: pwsh
+        run: ./launcher/prepare-upgrade-user.ps1
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
@@ -59,6 +62,13 @@ jobs:
       - name: Verify Windows library and real signed launcher upgrade
         shell: pwsh
         run: ./launcher/smoke-upgrade.ps1
+      - name: Remove temporary Windows test account
+        if: always()
+        shell: pwsh
+        run: |
+          if (Get-LocalUser -Name BlueEngineCI -ErrorAction SilentlyContinue) {
+            Remove-LocalUser -Name BlueEngineCI
+          }
       - uses: actions/upload-artifact@v4
         if: always()
         with:

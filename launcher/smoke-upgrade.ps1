@@ -3,7 +3,11 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 $version = (Get-Content launcher/package.json | ConvertFrom-Json).version
-$exe = (Resolve-Path 'launcher/src-tauri/target/release/blueengine-games-launcher.exe').Path
+$account = Get-Content (Join-Path $env:RUNNER_TEMP 'blueengine-upgrade-user.json') | ConvertFrom-Json
+$credential = Import-Clixml (Join-Path $env:RUNNER_TEMP 'blueengine-upgrade-credential.xml')
+[System.Diagnostics.Process]::EnterDebugMode()
+$exe = Join-Path $account.workdir 'blueengine-games-launcher.exe'
+Copy-Item launcher/src-tauri/target/release/blueengine-games-launcher.exe $exe
 $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
 if (-not $installer -or -not (Test-Path "$($installer.FullName).sig")) { throw 'Signed production NSIS artifact is missing' }
 $production = Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production.exe'
@@ -52,8 +56,9 @@ function Diagnostics([string]$stage) {
       } catch { $entry.inspection_error = $_.Exception.Message }
       $entry
     })
-    $entries = @(Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*','HKCU:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -eq 'BlueEngine Games' } | Select-Object DisplayName,DisplayVersion,InstallLocation,UninstallString,PSPath)
-    $locations = @($entries | ForEach-Object { if ($_.InstallLocation) { $_.InstallLocation.Trim('"') } }) + @((Join-Path $env:LOCALAPPDATA 'BlueEngine Games'))
+    $uninstallRoot = "Registry::HKEY_USERS\$($account.sid)\Software"
+    $entries = @(Get-ItemProperty "$uninstallRoot\Microsoft\Windows\CurrentVersion\Uninstall\*","$uninstallRoot\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -eq 'BlueEngine Games' } | Select-Object DisplayName,DisplayVersion,InstallLocation,UninstallString,PSPath)
+    $locations = @($entries | ForEach-Object { if ($_.InstallLocation) { $_.InstallLocation.Trim('"') } }) + @((Join-Path $account.local_app_data 'BlueEngine Games'))
     $installed = @($locations | Where-Object { $_ } | Select-Object -Unique | ForEach-Object {
       $path = Join-Path $_ 'blueengine-games-launcher.exe'
       if (Test-Path -LiteralPath $path) {
@@ -61,12 +66,13 @@ function Diagnostics([string]$stage) {
       }
     })
     try { $feed = Invoke-RestMethod 'http://127.0.0.1:9224/health' -TimeoutSec 3 } catch { $feed = @{error=$_.Exception.Message} }
-    @{stage=$stage; utc=[DateTime]::UtcNow.ToString('o'); expected_hash=$expectedHash; expected_version=$version; original_executable=$exe; shell_window=[UpgradeToken]::GetShellWindow().ToInt64(); processes=$processes; uninstall_entries=$entries; installed_files=$installed; feed=$feed} | ConvertTo-Json -Depth 8 | Set-Content "launcher-smoke/upgrade-diagnostics-$stage.json" -Encoding utf8NoBOM
+    @{stage=$stage; utc=[DateTime]::UtcNow.ToString('o'); account=$account; expected_hash=$expectedHash; expected_version=$version; original_executable=$exe; shell_window=[UpgradeToken]::GetShellWindow().ToInt64(); processes=$processes; uninstall_entries=$entries; installed_files=$installed; feed=$feed} | ConvertTo-Json -Depth 8 | Set-Content "launcher-smoke/upgrade-diagnostics-$stage.json" -Encoding utf8NoBOM
   } catch { Write-Warning "Could not capture upgrade diagnostics: $_" }
 }
 $feedScript = Join-Path $PSScriptRoot 'smoke-upgrade.mjs'
 $server = Start-Process node -ArgumentList @("`"$feedScript`"", 'serve') -PassThru -RedirectStandardOutput (Join-Path $root 'launcher-smoke/upgrade-server.log') -RedirectStandardError (Join-Path $root 'launcher-smoke/upgrade-server-error.log')
 $app = $null
+$wrapper = $null
 try {
   Checkpoint 'Starting loopback signed update feed.'
   $feedReady = $false
@@ -80,20 +86,39 @@ try {
     Start-Sleep -Milliseconds 250
   }
   if (-not $feedReady) { throw 'CI signed update feed did not become ready' }
-  # Hosted Windows runners are elevated and may have no Explorer shell. NSIS's
-  # RunAsUser cannot de-elevate without that shell. Start the test application as
-  # a basic user, matching the supported per-user installation/restart path.
-  Checkpoint 'Starting the instrumented launcher with a basic-user token.'
+  # The early preflight created a genuine standard-user desktop/profile. SAFER
+  # runas /trustlevel does not clear TokenElevation on hosted Windows runners.
+  Checkpoint "Starting the instrumented launcher as standard user $($account.user)."
   $beforePids = @(Get-Process -Name 'blueengine-games-launcher' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
-  $runas = Start-Process -FilePath "$env:SystemRoot\System32\runas.exe" -ArgumentList @('/trustlevel:0x20000', "`"$exe`"") -PassThru -RedirectStandardOutput (Join-Path $root 'launcher-smoke/upgrade-runas.log') -RedirectStandardError (Join-Path $root 'launcher-smoke/upgrade-runas-error.log')
+  $wrapperCode = @'
+$ErrorActionPreference = 'Stop'
+$identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+$sid = $identity.User.Value
+$profile = [Environment]::ExpandEnvironmentVariables((Get-ItemProperty -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$sid").ProfileImagePath)
+$env:USERPROFILE = $profile
+$env:LOCALAPPDATA = Join-Path $profile 'AppData\Local'
+$env:APPDATA = Join-Path $profile 'AppData\Roaming'
+$env:TEMP = Join-Path $env:LOCALAPPDATA 'Temp'
+$env:TMP = $env:TEMP
+New-Item -ItemType Directory -Path $env:TEMP -Force | Out-Null
+$app = Start-Process -FilePath '__APP_EXE__' -WorkingDirectory '__WORKDIR__' -PassThru
+$app.WaitForExit()
+# Hold LOGON_WITH_PROFILE open while the NSIS child installs and restarts the app.
+# The administrator's finally block terminates this wrapper after verification.
+$deadline = [DateTime]::UtcNow.AddMinutes(10)
+while ([DateTime]::UtcNow -lt $deadline) { Start-Sleep -Seconds 1 }
+'@
+  $wrapperCode = $wrapperCode.Replace('__APP_EXE__', $exe.Replace("'", "''")).Replace('__WORKDIR__', $account.workdir.Replace("'", "''"))
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($wrapperCode))
+  $wrapper = Start-Process -FilePath (Get-Process -Id $PID).Path -Credential $credential -LoadUserProfile -WorkingDirectory $account.workdir -ArgumentList @('-NoProfile','-NonInteractive','-EncodedCommand',$encoded) -PassThru
   $ready = $false
   for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 1
     if (-not $app) {
       $app = Get-Process -Name 'blueengine-games-launcher' -ErrorAction SilentlyContinue | Where-Object { $_.Id -notin $beforePids -and $_.Path -eq $exe } | Select-Object -First 1
       if (-not $app) {
-        $runas.Refresh()
-        if ($runas.HasExited -and $runas.ExitCode -ne 0) { throw "Basic-user launch failed with runas exit code $($runas.ExitCode)" }
+        $wrapper.Refresh()
+        if ($wrapper.HasExited) { throw "Standard-user launcher wrapper exited before app discovery: $($wrapper.ExitCode)" }
         continue
       }
     }
@@ -103,7 +128,7 @@ try {
   }
   if (-not $ready) { throw 'Launcher window did not become ready' }
   if ([UpgradeToken]::IsElevated($app.Handle)) { throw 'CI launcher must run with a non-elevated token for the NSIS restart check' }
-  Checkpoint "Basic-user launcher PID $($app.Id) opened its window."
+  Checkpoint "Standard-user launcher PID $($app.Id) opened its window without elevation."
   Diagnostics 'before-smoke'
   node launcher/smoke-windows.mjs
   if ($LASTEXITCODE -ne 0) { throw 'Real Windows library/native installation smoke failed' }
@@ -153,6 +178,12 @@ try {
   throw $failure
 } finally {
   Get-Process -Name 'blueengine-games-launcher' -ErrorAction SilentlyContinue | Stop-Process -Force
+  # Includes NSIS/WebView descendants after the original app PID has exited.
+  Get-Process -IncludeUserName -ErrorAction SilentlyContinue | Where-Object { $_.UserName -eq $account.user } | Stop-Process -Force -ErrorAction SilentlyContinue
+  if ($wrapper) {
+    $wrapper.Refresh()
+    if (-not $wrapper.HasExited) { Stop-Process -Id $wrapper.Id -Force }
+  }
   $server.Refresh()
   if (-not $server.HasExited) { Stop-Process -Id $server.Id -Force }
 }
