@@ -409,3 +409,20 @@ test("public summary coalesces simultaneous card/wiki reads, refreshes explicitl
   );
   assert.equal(await loadPublicReviewSummary({ fetcher: flaky }), document);
 });
+
+test("published review reads use the backend Unicode character limit for direct GitHub submissions", () => {
+  const enjoyed = "🎮".repeat(2000);
+  const document = {
+    schema_version: 1,
+    game: game.slug,
+    count: 1,
+    average: 8,
+    reviews: [{ ...publishedReview(1), enjoyed }],
+  };
+  assert.ok(renderReviewPage(document, game).includes(enjoyed));
+  document.reviews[0].enjoyed += "🎮";
+  assert.throws(
+    () => readReviewCollection(document, game),
+    /Invalid review collection/,
+  );
+});

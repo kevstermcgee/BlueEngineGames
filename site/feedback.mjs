@@ -236,8 +236,8 @@ function validReview(record, slug) {
     typeof record.version === "string" &&
     typeof record.enjoyed === "string" &&
     typeof record.disliked === "string" &&
-    record.enjoyed.length <= MAX_FEEDBACK_LENGTH &&
-    record.disliked.length <= MAX_FEEDBACK_LENGTH &&
+    Array.from(record.enjoyed).length <= MAX_FEEDBACK_LENGTH &&
+    Array.from(record.disliked).length <= MAX_FEEDBACK_LENGTH &&
     Number.isInteger(record.issue_number) &&
     record.issue_number > 0 &&
     record.source_url === `${ENGINE}/issues/${record.issue_number}`
