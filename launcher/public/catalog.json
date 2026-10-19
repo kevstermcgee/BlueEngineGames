@@ -8,13 +8,26 @@
       "version": "0.1.0",
       "created": "2026-10-17",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/afterpull-windows-x64.zip",
+            "size": 1147624,
+            "sha256": "265c34f5a8ffde932778687f79f566d4987baf430818b38bba14ff10907e364a",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/afterpull-windows-x64.zip",
@@ -206,10 +219,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/afterpull-windows-x64.zip",
-        "size": 1142775,
-        "sha256": "1526bd1e7760bdd3a81dda9628d13f9b1988f967e4cbcc94ef6fe87a8b4167ea",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/afterpull-windows-x64.zip",
+        "size": 1147624,
+        "sha256": "265c34f5a8ffde932778687f79f566d4987baf430818b38bba14ff10907e364a",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -219,13 +232,26 @@
       "version": "0.1.0",
       "created": "2026-10-17",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/backstop-windows-x64.zip",
+            "size": 1180340,
+            "sha256": "cfbfd0924e1aa90b74779e36fe0b85a3cf620fe0186efcce9676e5cdf92ef042",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/backstop-windows-x64.zip",
@@ -313,10 +339,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/backstop-windows-x64.zip",
-        "size": 1173664,
-        "sha256": "a8b202f36f7c1d48060c0818ef8aa1b1d7f9996392adaac8466ed0787c47e772",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/backstop-windows-x64.zip",
+        "size": 1180340,
+        "sha256": "cfbfd0924e1aa90b74779e36fe0b85a3cf620fe0186efcce9676e5cdf92ef042",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -326,13 +352,26 @@
       "version": "0.1.0",
       "created": "2026-09-26",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/bluedm-windows-x64.zip",
+            "size": 1360426,
+            "sha256": "03f36ce55331ff25d928b0d4f49bb02279eab4a70842f18b613185554082ea24",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/bluedm-windows-x64.zip",
@@ -1369,10 +1408,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/bluedm-windows-x64.zip",
-        "size": 1360421,
-        "sha256": "44eb72a6b30f26b3c4c395d1291babdd535d4af0a26ec6f03637df38d6fcfcc7",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/bluedm-windows-x64.zip",
+        "size": 1360426,
+        "sha256": "03f36ce55331ff25d928b0d4f49bb02279eab4a70842f18b613185554082ea24",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -1382,13 +1421,26 @@
       "version": "catalog",
       "created": "2026-09-26",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/blueengine-sandbox-windows-x64.zip",
+            "size": 23512763,
+            "sha256": "69c8735b7d98e0cb639e338ae1b03865a896e804cbbb24c9a15ede9788ebe0c5",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/blueengine-sandbox-windows-x64.zip",
@@ -2465,10 +2517,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/blueengine-sandbox-windows-x64.zip",
-        "size": 23466138,
-        "sha256": "3f9fdc662e4bd283707070c2d20bf29c028d9ba141cacf21dc0477e3d23c69ef",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/blueengine-sandbox-windows-x64.zip",
+        "size": 23512763,
+        "sha256": "69c8735b7d98e0cb639e338ae1b03865a896e804cbbb24c9a15ede9788ebe0c5",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -2478,13 +2530,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/bomb-defusal-windows-x64.zip",
+            "size": 3945914,
+            "sha256": "e43ff14a65806096ad8932e52d98e92dc1e46edbdf6f71551065c3312f008c9f",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/bomb-defusal-windows-x64.zip",
@@ -3301,10 +3366,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/bomb-defusal-windows-x64.zip",
-        "size": 3940997,
-        "sha256": "ea8a1d1293ddf6dad7b1e7560e2495e4e6dd98cb0783887cd1d688ded8dc738e",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/bomb-defusal-windows-x64.zip",
+        "size": 3945914,
+        "sha256": "e43ff14a65806096ad8932e52d98e92dc1e46edbdf6f71551065c3312f008c9f",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -3314,13 +3379,26 @@
       "version": "0.1.0",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/clockwork-pinball-windows-x64.zip",
+            "size": 1968693,
+            "sha256": "442a20ad32bd71ee04379154645ce2907ad0392af53c2cb5af71bc90d56646da",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/clockwork-pinball-windows-x64.zip",
@@ -4147,10 +4225,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/clockwork-pinball-windows-x64.zip",
-        "size": 1961743,
-        "sha256": "7e147037e45b0d22f4148c20291fd30fbc8b9a94cfa9234e1f7120fd4ded732f",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/clockwork-pinball-windows-x64.zip",
+        "size": 1968693,
+        "sha256": "442a20ad32bd71ee04379154645ce2907ad0392af53c2cb5af71bc90d56646da",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -4160,13 +4238,26 @@
       "version": "0.1.0",
       "created": "2026-10-08",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/corkscrew-key-windows-x64.zip",
+            "size": 1178509,
+            "sha256": "af3c00900912d682c904efa10f790559e5e30e139ca13d75e5c9399c751d6b84",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/corkscrew-key-windows-x64.zip",
@@ -4527,10 +4618,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/corkscrew-key-windows-x64.zip",
-        "size": 1173501,
-        "sha256": "eaf5026204d39ab02355d6c84735037c0cd3a33b97da4abdd15388fb5c92ae87",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/corkscrew-key-windows-x64.zip",
+        "size": 1178509,
+        "sha256": "af3c00900912d682c904efa10f790559e5e30e139ca13d75e5c9399c751d6b84",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -4540,13 +4631,26 @@
       "version": "0.1.0",
       "created": "2026-10-15",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/corner-clutch-windows-x64.zip",
+            "size": 1213872,
+            "sha256": "09224e19c0f861161d9fbba27733d1639a19b227022891f77ad4e1f48848e062",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/corner-clutch-windows-x64.zip",
@@ -4764,10 +4868,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/corner-clutch-windows-x64.zip",
-        "size": 1209926,
-        "sha256": "fcbc3cbee99ea89f96c19491555b702b9607af37e6f2d95a1a327dcc99a278ba",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/corner-clutch-windows-x64.zip",
+        "size": 1213872,
+        "sha256": "09224e19c0f861161d9fbba27733d1639a19b227022891f77ad4e1f48848e062",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -4777,13 +4881,26 @@
       "version": "0.1.0",
       "created": "2026-10-17",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/crosshaul-windows-x64.zip",
+            "size": 1465007,
+            "sha256": "c152d6a3d8e3dfc9652ae1fe56e66835a96bd781e7f71fc91e329629019ecc49",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/crosshaul-windows-x64.zip",
@@ -4939,10 +5056,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/crosshaul-windows-x64.zip",
-        "size": 1464156,
-        "sha256": "9ca7cd14df7509d8b89e1b3af620821c1a4672604ecc852f06051b19255454cc",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/crosshaul-windows-x64.zip",
+        "size": 1465007,
+        "sha256": "c152d6a3d8e3dfc9652ae1fe56e66835a96bd781e7f71fc91e329629019ecc49",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -4952,13 +5069,26 @@
       "version": "0.1.0",
       "created": "2026-10-01",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/dead-air-windows-x64.zip",
+            "size": 1462807,
+            "sha256": "07f2f46462d9d832d4dfa115e1204a51f8b3bb8a1a2a6a97e66dacf3cb8a0363",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/dead-air-windows-x64.zip",
@@ -5670,10 +5800,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/dead-air-windows-x64.zip",
-        "size": 1461420,
-        "sha256": "a470531436ac7da734b74955765bfe222e4fef6f33242f38f91b62bce094ff65",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/dead-air-windows-x64.zip",
+        "size": 1462807,
+        "sha256": "07f2f46462d9d832d4dfa115e1204a51f8b3bb8a1a2a6a97e66dacf3cb8a0363",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -5683,13 +5813,26 @@
       "version": "0.1.1",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/deadfall-windows-x64.zip",
+            "size": 3327431,
+            "sha256": "a1b8b523a61d535d3f4cb7391e41b9dedd0e5db896d8ce842f9528cf84e184ab",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/deadfall-windows-x64.zip",
@@ -6491,10 +6634,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/deadfall-windows-x64.zip",
-        "size": 3334255,
-        "sha256": "b70301955634708bcf22724c09635325cf176fec9e8a0c4af20b4da5a845bfb8",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/deadfall-windows-x64.zip",
+        "size": 3327431,
+        "sha256": "a1b8b523a61d535d3f4cb7391e41b9dedd0e5db896d8ce842f9528cf84e184ab",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -6504,13 +6647,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/echo-chambers-windows-x64.zip",
+            "size": 3946395,
+            "sha256": "52c1e5c650c1d0380f8aedfffb81a9c1d179b2ffd9acd2481250dd6af1d006b4",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/echo-chambers-windows-x64.zip",
@@ -7327,10 +7483,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/echo-chambers-windows-x64.zip",
-        "size": 3941478,
-        "sha256": "4d5cff555930cc5ff46c2f55d1b476665667874c14c23eeaec59c3913a2dbdeb",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/echo-chambers-windows-x64.zip",
+        "size": 3946395,
+        "sha256": "52c1e5c650c1d0380f8aedfffb81a9c1d179b2ffd9acd2481250dd6af1d006b4",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -7340,13 +7496,26 @@
       "version": "0.2.0-playtest.3",
       "created": "2026-10-04",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/feta-windows-x64.zip",
+            "size": 2307631,
+            "sha256": "073f00441d3a621d3d3dfae9fcd80a578ea47cebf631692fae1a564e2ecffb76",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/feta-windows-x64.zip",
@@ -7943,10 +8112,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/feta-windows-x64.zip",
-        "size": 2307626,
-        "sha256": "6cc17ec784c17e3922bf41468dd5784e427a779dd49bef7d7ed3e7ba88fde581",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/feta-windows-x64.zip",
+        "size": 2307631,
+        "sha256": "073f00441d3a621d3d3dfae9fcd80a578ea47cebf631692fae1a564e2ecffb76",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -7956,13 +8125,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/floor-is-lava-windows-x64.zip",
+            "size": 3946062,
+            "sha256": "ffe682545f811b924a2fed4d192656a04cf93de425cc72bfef10e7cbe60d3adc",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/floor-is-lava-windows-x64.zip",
@@ -8779,10 +8961,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/floor-is-lava-windows-x64.zip",
-        "size": 3941145,
-        "sha256": "bcac563c6c61b436426caaef33478703178caa857da8d0b93937ec47fc107991",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/floor-is-lava-windows-x64.zip",
+        "size": 3946062,
+        "sha256": "ffe682545f811b924a2fed4d192656a04cf93de425cc72bfef10e7cbe60d3adc",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -8792,13 +8974,26 @@
       "version": "0.1.0",
       "created": "2026-10-08",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/gap-flip-windows-x64.zip",
+            "size": 1161933,
+            "sha256": "fae7411b0109c0ac9ca6038d376892aa9003bfbb37a2e30b61a3ccd224e86bae",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/gap-flip-windows-x64.zip",
@@ -9185,10 +9380,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/gap-flip-windows-x64.zip",
-        "size": 1156082,
-        "sha256": "37f571ac0e3a857e9932240065743e681ac44af5f9e907cd29f6fb2c60ecf626",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/gap-flip-windows-x64.zip",
+        "size": 1161933,
+        "sha256": "fae7411b0109c0ac9ca6038d376892aa9003bfbb37a2e30b61a3ccd224e86bae",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -9198,13 +9393,26 @@
       "version": "0.1.0",
       "created": "2026-10-07",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/idea-forge-windows-x64.zip",
+            "size": 1173853,
+            "sha256": "da949227e6620ab1af561d59301da53cb26a19bb0fc2bc0d60cca871dbe16de3",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/idea-forge-windows-x64.zip",
@@ -9630,10 +9838,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/idea-forge-windows-x64.zip",
-        "size": 1168991,
-        "sha256": "30ee910aed68fa114f7aaf797c4c3ba47d74bb93878892860be507346f6510dc",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/idea-forge-windows-x64.zip",
+        "size": 1173853,
+        "sha256": "da949227e6620ab1af561d59301da53cb26a19bb0fc2bc0d60cca871dbe16de3",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -9643,13 +9851,26 @@
       "version": "0.1.0",
       "created": "2026-10-06",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/lantern-grove-windows-x64.zip",
+            "size": 1157374,
+            "sha256": "6565a4a59886dcca879e4520255e215a81591524fcdb7e14d6853b27f318d16e",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/lantern-grove-windows-x64.zip",
@@ -10189,10 +10410,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/lantern-grove-windows-x64.zip",
-        "size": 1152356,
-        "sha256": "af3dec6b1b9f9d7a9bc107f045b8fb5adcc9d750b272e534e095365ec47e46c9",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/lantern-grove-windows-x64.zip",
+        "size": 1157374,
+        "sha256": "6565a4a59886dcca879e4520255e215a81591524fcdb7e14d6853b27f318d16e",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -10202,13 +10423,26 @@
       "version": "0.1.0",
       "created": "2026-10-06",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/lantern-run-windows-x64.zip",
+            "size": 1209616,
+            "sha256": "e802c6afc1322c8c8912888b1f6093fc66026ca92eba7f043c099346f6278cd0",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/lantern-run-windows-x64.zip",
@@ -10748,10 +10982,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/lantern-run-windows-x64.zip",
-        "size": 1203327,
-        "sha256": "9e7f6b0aab2ba8a399ab68b6b13fd08f03cf526aa29f8c11383a6b39f9e0c1dc",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/lantern-run-windows-x64.zip",
+        "size": 1209616,
+        "sha256": "e802c6afc1322c8c8912888b1f6093fc66026ca92eba7f043c099346f6278cd0",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -10761,13 +10995,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/laser-vault-windows-x64.zip",
+            "size": 3947201,
+            "sha256": "91e102b38746f867b18eae15ec9228d60751f0f93551c980ca201372e5d3bf58",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/laser-vault-windows-x64.zip",
@@ -11584,10 +11831,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/laser-vault-windows-x64.zip",
-        "size": 3942283,
-        "sha256": "9893a4d9596ea6b3cf9848f60f500b78f23ece9a2c68106805d679e10608aed9",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/laser-vault-windows-x64.zip",
+        "size": 3947201,
+        "sha256": "91e102b38746f867b18eae15ec9228d60751f0f93551c980ca201372e5d3bf58",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -11597,13 +11844,26 @@
       "version": "0.1.0",
       "created": "2026-10-04",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/leo-windows-x64.zip",
+            "size": 31682247,
+            "sha256": "0c2b27abccdd90e147c2cda1a818a4cb2d072b0c2ee63f60b55c05de6e168379",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/leo-windows-x64.zip",
@@ -12189,10 +12449,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/leo-windows-x64.zip",
-        "size": 31677885,
-        "sha256": "fd8fd3273db2eba8c9269d2f551fdd27dd5d340ad14cc3f4b308fc41d5314988",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/leo-windows-x64.zip",
+        "size": 31682247,
+        "sha256": "0c2b27abccdd90e147c2cda1a818a4cb2d072b0c2ee63f60b55c05de6e168379",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -12202,13 +12462,26 @@
       "version": "0.1.0",
       "created": "2026-09-29",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/magnet-mine-windows-x64.zip",
+            "size": 1405665,
+            "sha256": "23f490db485ee175676ee4a1a5d35aa5c7488e4ddc334182b7660bb0601355ff",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/magnet-mine-windows-x64.zip",
@@ -13198,10 +13471,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/magnet-mine-windows-x64.zip",
-        "size": 1400451,
-        "sha256": "5d95a4e95a362dbb7efb7b990979f3d5f53ac506b44ab562b6613512f74f33d7",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/magnet-mine-windows-x64.zip",
+        "size": 1405665,
+        "sha256": "23f490db485ee175676ee4a1a5d35aa5c7488e4ddc334182b7660bb0601355ff",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -13211,13 +13484,26 @@
       "version": "0.1.0",
       "created": "2026-10-10",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/odd-matter-windows-x64.zip",
+            "size": 1676124,
+            "sha256": "d047c33a00c3f39693955852655378d7e66211effa3c097b2862b5a932da632b",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/odd-matter-windows-x64.zip",
@@ -13494,10 +13780,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/odd-matter-windows-x64.zip",
-        "size": 1679365,
-        "sha256": "1c8ea95f39158cfa261a035bcb3cbccd85e5ddd82cb22e2339a5d24d1ba3944a",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/odd-matter-windows-x64.zip",
+        "size": 1676124,
+        "sha256": "d047c33a00c3f39693955852655378d7e66211effa3c097b2862b5a932da632b",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -13507,13 +13793,26 @@
       "version": "0.1.0",
       "created": "2026-10-06",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/orchard-watch-windows-x64.zip",
+            "size": 1170131,
+            "sha256": "b6b0dc0a7d8be94fbad12f68cebc3df9c914b51643a44e5c1a496e2b1f9727a0",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/orchard-watch-windows-x64.zip",
@@ -14053,10 +14352,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/orchard-watch-windows-x64.zip",
-        "size": 1166089,
-        "sha256": "779e06ec4bba98dd6bd4d7e4c5ec3c01a247101f2eb17400cbf9f8e090203d0e",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/orchard-watch-windows-x64.zip",
+        "size": 1170131,
+        "sha256": "b6b0dc0a7d8be94fbad12f68cebc3df9c914b51643a44e5c1a496e2b1f9727a0",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -14066,13 +14365,26 @@
       "version": "0.1.0",
       "created": "2026-10-17",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/peelturn-windows-x64.zip",
+            "size": 1185835,
+            "sha256": "e4b3540d2e25cacf95b9ecbaecbbc24383588213499cec0b3ef1dc7327c63951",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/peelturn-windows-x64.zip",
@@ -14211,10 +14523,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/peelturn-windows-x64.zip",
-        "size": 1182430,
-        "sha256": "8c8dfa6e6d9038e87cdfb84dfc76442d6cd471dd6e850980377de37d11c3722b",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/peelturn-windows-x64.zip",
+        "size": 1185835,
+        "sha256": "e4b3540d2e25cacf95b9ecbaecbbc24383588213499cec0b3ef1dc7327c63951",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -14224,13 +14536,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/phantom-maze-windows-x64.zip",
+            "size": 3945114,
+            "sha256": "0efac59cc9ad4ee183de5be296f1742c5e8efbfe86ded45e622692258d493fe4",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/phantom-maze-windows-x64.zip",
@@ -15047,10 +15372,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/phantom-maze-windows-x64.zip",
-        "size": 3940197,
-        "sha256": "7cdb8e4b2e80fcc2d9fd69d58f99507d4fe37fe5c173d2b6433a898bf0e3767f",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/phantom-maze-windows-x64.zip",
+        "size": 3945114,
+        "sha256": "0efac59cc9ad4ee183de5be296f1742c5e8efbfe86ded45e622692258d493fe4",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -15060,13 +15385,26 @@
       "version": "0.1.0",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/physics-lab-windows-x64.zip",
+            "size": 1255200,
+            "sha256": "954f5fb00ff4ef1cbef4febe98612663140483614552baa1b82be253ac4a7e5c",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/physics-lab-windows-x64.zip",
@@ -15888,10 +16226,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/physics-lab-windows-x64.zip",
-        "size": 1255795,
-        "sha256": "36f1d263a3b37f055e88b6d94bd195f45687678b4a15afabde6c3b7fdbf990a4",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/physics-lab-windows-x64.zip",
+        "size": 1255200,
+        "sha256": "954f5fb00ff4ef1cbef4febe98612663140483614552baa1b82be253ac4a7e5c",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -15901,13 +16239,26 @@
       "version": "0.1.0",
       "created": "2026-10-17",
       "origin": "ai",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pinstride-windows-x64.zip",
+            "size": 1872566,
+            "sha256": "465b648efe7a1b30079b928d296ade06145a1bafef6a559498d98ffe1ee44724",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pinstride-windows-x64.zip",
@@ -16021,10 +16372,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pinstride-windows-x64.zip",
-        "size": 1870906,
-        "sha256": "650abd4b0fa844412b506096549db3428521c2b231e6f99bf0340c5785476d16",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pinstride-windows-x64.zip",
+        "size": 1872566,
+        "sha256": "465b648efe7a1b30079b928d296ade06145a1bafef6a559498d98ffe1ee44724",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -16034,13 +16385,26 @@
       "version": "0.1.0",
       "created": "2026-10-06",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pocket-breaker-windows-x64.zip",
+            "size": 1145872,
+            "sha256": "685d70fa6272f24bf32f7699a7662c750dcd4ae186392dcdff721a7e200152fa",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pocket-breaker-windows-x64.zip",
@@ -16580,10 +16944,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pocket-breaker-windows-x64.zip",
-        "size": 1139496,
-        "sha256": "327c9419038bca5faa2260ca84659f3b626105855bff92c9c3a82c7d34acf6e6",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pocket-breaker-windows-x64.zip",
+        "size": 1145872,
+        "sha256": "685d70fa6272f24bf32f7699a7662c750dcd4ae186392dcdff721a7e200152fa",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -16593,13 +16957,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/prism-matrix-windows-x64.zip",
+            "size": 3945854,
+            "sha256": "5f8c762dc684a33095d567af7b69f1f6bbdb8a360a03038f0621f36f77dac463",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/prism-matrix-windows-x64.zip",
@@ -17416,10 +17793,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/prism-matrix-windows-x64.zip",
-        "size": 3940937,
-        "sha256": "ecd839039f37c3c1a52162749070794246e5fee3a4c14efd549ba7821e27bafa",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/prism-matrix-windows-x64.zip",
+        "size": 3945854,
+        "sha256": "5f8c762dc684a33095d567af7b69f1f6bbdb8a360a03038f0621f36f77dac463",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -17429,13 +17806,26 @@
       "version": "0.1.0",
       "created": "2026-10-04",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/prop-hunt-windows-x64.zip",
+            "size": 2749017,
+            "sha256": "29f3a2ef62c48f07439a26fe2743bae2e069ee48c44e1b61a8bfd7eed0fc40ea",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/prop-hunt-windows-x64.zip",
@@ -18005,10 +18395,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/prop-hunt-windows-x64.zip",
-        "size": 2745094,
-        "sha256": "9fc2b4c79a75aa627a785d0ac92f59948bc857b8711ebdec6780703942a98230",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/prop-hunt-windows-x64.zip",
+        "size": 2749017,
+        "sha256": "29f3a2ef62c48f07439a26fe2743bae2e069ee48c44e1b61a8bfd7eed0fc40ea",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -18018,13 +18408,26 @@
       "version": "0.1.0",
       "created": "2026-09-28",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pulse-nova-windows-x64.zip",
+            "size": 1453592,
+            "sha256": "3afdfed56fc7ec574a972003ce4ef75b0b7fde8629eb4ef307ec079b179453aa",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pulse-nova-windows-x64.zip",
@@ -19013,10 +19416,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/pulse-nova-windows-x64.zip",
-        "size": 1452559,
-        "sha256": "500d2f7776cfa37e203f39b415c8ef016eee58d158c9740eaaa300a715fb4388",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/pulse-nova-windows-x64.zip",
+        "size": 1453592,
+        "sha256": "3afdfed56fc7ec574a972003ce4ef75b0b7fde8629eb4ef307ec079b179453aa",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -19026,13 +19429,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/relic-relay-windows-x64.zip",
+            "size": 3946127,
+            "sha256": "d5bf11e8b7875aed95523a1bcd794c21fbaf3dc514f333bd5e03c775d4c82554",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/relic-relay-windows-x64.zip",
@@ -19849,10 +20265,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/relic-relay-windows-x64.zip",
-        "size": 3941209,
-        "sha256": "0e63e25f3269dcb0c324f234aa5176400837a9baf982ea55464df985f1b88b16",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/relic-relay-windows-x64.zip",
+        "size": 3946127,
+        "sha256": "d5bf11e8b7875aed95523a1bcd794c21fbaf3dc514f333bd5e03c775d4c82554",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -19862,13 +20278,26 @@
       "version": "0.1.0",
       "created": "2026-10-11",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/reverie-windows-x64.zip",
+            "size": 153271463,
+            "sha256": "6b534f6484675e1b24f78bade34bd202531f1492f060690ea1b4d27c6bdb4503",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/reverie-windows-x64.zip",
@@ -20088,10 +20517,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/reverie-windows-x64.zip",
-        "size": 153272773,
-        "sha256": "6ef1298e524aee9d6da36b9f2080469c2b4a89fbe637ff55cfd66e3effce2fef",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/reverie-windows-x64.zip",
+        "size": 153271463,
+        "sha256": "6b534f6484675e1b24f78bade34bd202531f1492f060690ea1b4d27c6bdb4503",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -20101,13 +20530,26 @@
       "version": "0.1.0",
       "created": "2026-10-09",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/rift-delver-windows-x64.zip",
+            "size": 1545171,
+            "sha256": "6348156021127b685a9c01da8b9c8471862b86426b9d0066cdb49a09da323ab1",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/rift-delver-windows-x64.zip",
@@ -20472,10 +20914,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/rift-delver-windows-x64.zip",
-        "size": 1543259,
-        "sha256": "2608a8c4932c455eaf963fc8f777a742d54e8a2f60426535c11cafc6aab1fcb8",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/rift-delver-windows-x64.zip",
+        "size": 1545171,
+        "sha256": "6348156021127b685a9c01da8b9c8471862b86426b9d0066cdb49a09da323ab1",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -20485,13 +20927,26 @@
       "version": "0.1.0",
       "created": "2026-09-26",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/riftwake-windows-x64.zip",
+            "size": 1009974,
+            "sha256": "801e08fa5aef7ceaac5943e36e46503eb48e7565fd2b2b4d337c9d8d5ddd2697",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/riftwake-windows-x64.zip",
@@ -21477,10 +21932,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/riftwake-windows-x64.zip",
-        "size": 1009969,
-        "sha256": "2845fcff5d5f46002e8e5df9ab094c7e9b309dd28249c3b74ad83dede960770d",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/riftwake-windows-x64.zip",
+        "size": 1009974,
+        "sha256": "801e08fa5aef7ceaac5943e36e46503eb48e7565fd2b2b4d337c9d8d5ddd2697",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -21490,13 +21945,26 @@
       "version": "0.1.0",
       "created": "2026-10-06",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/signal-garden-windows-x64.zip",
+            "size": 1485506,
+            "sha256": "69ddabc82b2c6e0ae8975df53546fc87dd27da0426170a2aa5b5ce3b978b4adc",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/signal-garden-windows-x64.zip",
@@ -22028,10 +22496,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/signal-garden-windows-x64.zip",
-        "size": 1485231,
-        "sha256": "b889d81165496ee15c46e46a86061c26feee30b50a737aaa75190649bae4af0f",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/signal-garden-windows-x64.zip",
+        "size": 1485506,
+        "sha256": "69ddabc82b2c6e0ae8975df53546fc87dd27da0426170a2aa5b5ce3b978b4adc",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -22041,13 +22509,26 @@
       "version": "0.1.0",
       "created": "2026-09-29",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/skyhook-sprint-windows-x64.zip",
+            "size": 1418512,
+            "sha256": "4df28799bcce316e5f61cad0859589d70f9e264bf40279fa8ca723834472d678",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/skyhook-sprint-windows-x64.zip",
@@ -23031,10 +23512,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/skyhook-sprint-windows-x64.zip",
-        "size": 1413538,
-        "sha256": "f33a9df6366cd581bca915f32f06447caa4f83dbcbda67f288a31e1aacce200d",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/skyhook-sprint-windows-x64.zip",
+        "size": 1418512,
+        "sha256": "4df28799bcce316e5f61cad0859589d70f9e264bf40279fa8ca723834472d678",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -23044,13 +23525,26 @@
       "version": "0.1.0",
       "created": "2026-10-04",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/slapstick-windows-x64.zip",
+            "size": 2806730,
+            "sha256": "d6f3d12403e6edc4578786b2c13ea1bde102b8877d39b6718b13d1ab8d81edac",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/slapstick-windows-x64.zip",
@@ -23610,10 +24104,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/slapstick-windows-x64.zip",
-        "size": 2805523,
-        "sha256": "65ff0ce60ebc55574ac7e66f8f49488577d7f5f8afbcf3a954a5120ab76082f1",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/slapstick-windows-x64.zip",
+        "size": 2806730,
+        "sha256": "d6f3d12403e6edc4578786b2c13ea1bde102b8877d39b6718b13d1ab8d81edac",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -23623,13 +24117,26 @@
       "version": "0.1.0",
       "created": "2026-09-29",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/spooky-kart-windows-x64.zip",
+            "size": 2949820,
+            "sha256": "26107bf5e69cbdc931c285a2d38bcc9ee157de916a09f16fbd2a770bf5a84c4e",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/spooky-kart-windows-x64.zip",
@@ -24617,10 +25124,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/spooky-kart-windows-x64.zip",
-        "size": 2954154,
-        "sha256": "380fbd3228de477dc06388b4df7b566b103c06650cabe6f9f54781fad937e786",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/spooky-kart-windows-x64.zip",
+        "size": 2949820,
+        "sha256": "26107bf5e69cbdc931c285a2d38bcc9ee157de916a09f16fbd2a770bf5a84c4e",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -24630,13 +25137,26 @@
       "version": "0.1.0",
       "created": "2026-10-11",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/sway-windows-x64.zip",
+            "size": 2097437,
+            "sha256": "a6618b02b422d555d7016ea85075fdd986a0940437638aa312fdeb3513d0b839",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/sway-windows-x64.zip",
@@ -24877,10 +25397,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/sway-windows-x64.zip",
-        "size": 2082873,
-        "sha256": "cf24a274f65f6baad51975976741b266b03d29cd750ad7b8c26ab454ef6952d0",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/sway-windows-x64.zip",
+        "size": 2097437,
+        "sha256": "a6618b02b422d555d7016ea85075fdd986a0940437638aa312fdeb3513d0b839",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -24890,13 +25410,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/target-gallery-windows-x64.zip",
+            "size": 3945658,
+            "sha256": "efcdba0510cab845219cb067940226477beca7a08fa03fadaa5c493aa967dfce",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/target-gallery-windows-x64.zip",
@@ -25713,10 +26246,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/target-gallery-windows-x64.zip",
-        "size": 3940741,
-        "sha256": "ed86a1997975101b3bd7654844a26fba1def64e29501c02e3237912eee04e9e4",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/target-gallery-windows-x64.zip",
+        "size": 3945658,
+        "sha256": "efcdba0510cab845219cb067940226477beca7a08fa03fadaa5c493aa967dfce",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -25726,13 +26259,26 @@
       "version": "catalog",
       "created": "2026-09-26",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/three-switches-windows-x64.zip",
+            "size": 3942268,
+            "sha256": "3254707ef5ce847f48cba44e47c2339ab0568f7cd83db3652539d61511b2d6f5",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/three-switches-windows-x64.zip",
@@ -26925,10 +27471,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/three-switches-windows-x64.zip",
-        "size": 3937350,
-        "sha256": "29a86b0c74c7cd7f5acbeb0e6ee1bdbc09a85cd5cb3ed8350d3777c498080ce2",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/three-switches-windows-x64.zip",
+        "size": 3942268,
+        "sha256": "3254707ef5ce847f48cba44e47c2339ab0568f7cd83db3652539d61511b2d6f5",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -26938,13 +27484,26 @@
       "version": "0.1.0",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/tumble-maze-windows-x64.zip",
+            "size": 1966075,
+            "sha256": "45022f0ee0b3608da776e89e920a5f3c35b4c537ab27ec34680329185e5ffc32",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/tumble-maze-windows-x64.zip",
@@ -27769,10 +28328,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/tumble-maze-windows-x64.zip",
-        "size": 1961661,
-        "sha256": "71376e5342fe92021467ef1b3a01ca69ed853a8a7575a4be82325afbe651712e",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/tumble-maze-windows-x64.zip",
+        "size": 1966075,
+        "sha256": "45022f0ee0b3608da776e89e920a5f3c35b4c537ab27ec34680329185e5ffc32",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -27782,13 +28341,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/turret-trench-windows-x64.zip",
+            "size": 3945961,
+            "sha256": "444bedd7b2b4d5f41e8446a5d60980d1dcb3c0b0b7a4191529e4ab3db054373d",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/turret-trench-windows-x64.zip",
@@ -28605,10 +29177,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/turret-trench-windows-x64.zip",
-        "size": 3941044,
-        "sha256": "834ef69514f1b233b6beb0356971a72d86498ea77b3f7c0df58a32c02007cefb",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/turret-trench-windows-x64.zip",
+        "size": 3945961,
+        "sha256": "444bedd7b2b4d5f41e8446a5d60980d1dcb3c0b0b7a4191529e4ab3db054373d",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -28618,13 +29190,26 @@
       "version": "catalog",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/weight-balance-windows-x64.zip",
+            "size": 3945341,
+            "sha256": "dedb09d95c317f9aa4f5052a381b43861cf21d3c2c052c93a1a90356e649ecb9",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/weight-balance-windows-x64.zip",
@@ -29441,10 +30026,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/weight-balance-windows-x64.zip",
-        "size": 3940423,
-        "sha256": "486f72df927e19bcb35df313dd17b51b96dfe621d83145f983f612a266f3a7ba",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/weight-balance-windows-x64.zip",
+        "size": 3945341,
+        "sha256": "dedb09d95c317f9aa4f5052a381b43861cf21d3c2c052c93a1a90356e649ecb9",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -29454,13 +30039,26 @@
       "version": "0.1.0",
       "created": "2026-09-30",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wobble-tower-windows-x64.zip",
+            "size": 2024883,
+            "sha256": "523d9c7c3d8ce8d50fdf3be9e27c7acb902e664b5a539901cae805fa4b861640",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wobble-tower-windows-x64.zip",
@@ -30285,10 +30883,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wobble-tower-windows-x64.zip",
-        "size": 2020729,
-        "sha256": "ac395e0bd1d4006d74665139bc077011f8b84c66d1b8bb751902e0e5ca0f9ad2",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wobble-tower-windows-x64.zip",
+        "size": 2024883,
+        "sha256": "523d9c7c3d8ce8d50fdf3be9e27c7acb902e664b5a539901cae805fa4b861640",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -30298,13 +30896,26 @@
       "version": "0.1.0",
       "created": "2026-10-11",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wormhole-windows-x64.zip",
+            "size": 51651682,
+            "sha256": "c38abd7074586d91cfc780513a46ff1a7e3832c266ef7855518d685fb6dec462",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wormhole-windows-x64.zip",
@@ -30568,10 +31179,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wormhole-windows-x64.zip",
-        "size": 51646686,
-        "sha256": "93eae63d78b2462ae079fd43a08a60e9838810094b4d27aae2576dd1af9a7c22",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wormhole-windows-x64.zip",
+        "size": 51651682,
+        "sha256": "c38abd7074586d91cfc780513a46ff1a7e3832c266ef7855518d685fb6dec462",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -30581,13 +31192,26 @@
       "version": "0.1.0",
       "created": "2026-09-29",
       "origin": "human",
-      "released_at": "2026-10-18T07:54:17Z",
+      "released_at": "2026-10-19T04:25:59Z",
       "versions": [
+        {
+          "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1",
+          "name": "BlueEngine games (3122bb383a5c / engine 8dc7bbf8af41)",
+          "released_at": "2026-10-19T04:25:59Z",
+          "latest": true,
+          "package": {
+            "kind": "zip",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wrecking-orbit-windows-x64.zip",
+            "size": 1434330,
+            "sha256": "fc63456b3a279e9d66f2726f85b568601c9491d2ad991f978c19f42bc0c1c6a4",
+            "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
+          }
+        },
         {
           "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1",
           "name": "BlueEngine games (3ddb940c9bb4 / engine 1441a433a76a)",
           "released_at": "2026-10-18T07:54:17Z",
-          "latest": true,
+          "latest": false,
           "package": {
             "kind": "zip",
             "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wrecking-orbit-windows-x64.zip",
@@ -31570,10 +32194,10 @@
       },
       "package": {
         "kind": "zip",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1/wrecking-orbit-windows-x64.zip",
-        "size": 1427788,
-        "sha256": "af21e82be3417c4362e8dfdb9b3afb3a8e333a1c6ce7cbf35a440943acaf236f",
-        "release": "blueengine-1441a433a76a-games-3ddb940c9bb4-39107460617-1"
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1/wrecking-orbit-windows-x64.zip",
+        "size": 1434330,
+        "sha256": "fc63456b3a279e9d66f2726f85b568601c9491d2ad991f978c19f42bc0c1c6a4",
+        "release": "blueengine-8dc7bbf8af41-games-3122bb383a5c-39196735298-1"
       }
     },
     {
@@ -31981,6 +32605,88 @@
         "size": 14051309,
         "sha256": "d8337080f484b29e3780c903eb0256eb308fb835dca7eb3f02d0dda5070d4a34",
         "release": "v0.1.1"
+      }
+    },
+    {
+      "slug": "bluecraft",
+      "name": "BlueCraft",
+      "description": "Build a little world. Explore a sunny voxel landscape, mine blocks, and build with nine unlimited materials in this first-person creative sandbox.",
+      "version": "0.1.0",
+      "created": "2026-10-19",
+      "origin": "human",
+      "released_at": "2026-10-19T22:46:15Z",
+      "versions": [
+        {
+          "release": "bluecraft-v0.1.0",
+          "name": "BlueCraft 0.1.0",
+          "released_at": "2026-10-19T22:46:15Z",
+          "latest": true,
+          "package": {
+            "kind": "installer",
+            "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/bluecraft-setup-windows-x64.exe",
+            "size": 3175937,
+            "sha256": "ecd0736331e6a6f8b748bc8a2a9e3302cd48675e31e1e8aaf2da6f08e14fdb49",
+            "release": "bluecraft-v0.1.0"
+          }
+        }
+      ],
+      "presentation": "3d",
+      "networking": "offline",
+      "image": "https://kevstermcgee.github.io/BlueEngineGames/thumbs/bluecraft.png",
+      "guide_url": "https://kevstermcgee.github.io/BlueEngineGames/games/bluecraft/",
+      "wiki": {
+        "version": 1,
+        "overview": "BlueCraft is a small first-person creative voxel sandbox made with BlueEngine. Explore a finite block landscape with a starter cottage, grassy hills, trees and a sandy pond, then reshape it by breaking and placing blocks. A nine-slot palette provides unlimited building materials, so you can make a shelter, change the cottage or experiment with a small landscape without collecting resources.\n\nThe crosshair outlines the block within reach and names its material. Walk, sprint and jump around your work, pick a material directly from the terrain, and save a checkpoint to return to a previous design. The world is a compact 64 × 64 × 32 grid of one-metre blocks.",
+        "rules": [
+          "Choose your own building project or explore the landscape. There are no required quests, score targets, victory screen or loss condition, and no survival, health, hunger or enemy systems.",
+          "Aim the crosshair at a block within six metres. Left click breaks the targeted block; right click places the selected material against the targeted face. Mining does not consume a tool or earn an inventory item.",
+          "The nine materials are unlimited: grass, dirt, stone, sand, oak log, leaves, oak planks, brick and glass. Water and bedrock are not available in the building palette.",
+          "You can edit only inside the 64 × 64 × 32 world. The bottom bedrock layer is unbreakable, and placement cannot overlap your body or replace an existing solid block.",
+          "Walk and jump to traverse the terrain. If you fall below the world or travel far beyond its horizontal boundary, the game returns you to the arrival area without a death penalty.",
+          "F5 writes a manual checkpoint, and F9 restores it, including the world and player position. Restoring a checkpoint replaces changes made since that checkpoint.",
+          "Normal play resumes your previous automatic world, saves progress every 15 seconds, and saves on a clean exit. Automatic progress and the manual checkpoint use separate save slots. Starting with --fresh or --seed N creates a world without automatic saves; F5 can still write a checkpoint."
+        ],
+        "controls": [
+          "W, A, S and D: move forward, left, backward and right. Move the mouse to look around.",
+          "Space: jump. Hold Shift while moving to sprint.",
+          "Left mouse button: break the block under the crosshair. Right mouse button: place the selected material against its face.",
+          "Number keys 1–9 or the mouse wheel: select a palette material. The order is grass, dirt, stone, sand, oak log, leaves, oak planks, brick and glass.",
+          "Middle mouse button: select the targeted material when it belongs to the nine-material palette.",
+          "F5: save a manual checkpoint. F9: load the manual checkpoint.",
+          "E: show or hide the control guide. Escape: pause or resume. F: toggle fullscreen."
+        ],
+        "story": "BlueCraft has no scripted narrative, named protagonist or quest. Its setting is a compact, sunny block landscape with a wooden starter cottage, a meadow, trees and a pond. The player supplies the purpose by exploring and building.",
+        "characters": [],
+        "characters_note": "The game is viewed through a first-person camera and does not render a player character model, visible hands, NPCs, animals or enemies. There are no separately depicted characters to illustrate.",
+        "gallery": [
+          {
+            "image": "https://kevstermcgee.github.io/BlueEngineGames/games/bluecraft/images/47b1262df9a65715d9db.png",
+            "caption": "The starter cottage and open meadow in a fresh seed-7 world, before any edits.",
+            "alt": "First-person view of a wooden cottage with log corners, glass windows and a stepped roof, surrounded by grass and blocky trees; the nine-material palette is visible."
+          },
+          {
+            "image": "https://kevstermcgee.github.io/BlueEngineGames/games/bluecraft/images/6c3ba50ce4b1e0b8692e.png",
+            "caption": "Walking from the meadow reveals the pond, its sandy shoreline and the surrounding wooded slopes.",
+            "alt": "Blue block water fills a pond edged with pale sand, grass-topped dirt terraces and leafy cubic trees; the first-person crosshair and material palette remain visible."
+          },
+          {
+            "image": "https://kevstermcgee.github.io/BlueEngineGames/games/bluecraft/images/9c66f9351eaeb2faa935.png",
+            "caption": "After mining a grass block, a stone block fills the opening; stone is selected in palette slot 3.",
+            "alt": "A single grey stone block sits flush with a green grass surface beneath the crosshair, with Stone selected in the third slot of the nine-material palette."
+          }
+        ],
+        "design": {
+          "origin": "human",
+          "original_prompt": "Using BlueEngine, create a simple Minecraft clone called BlueCraft",
+          "prompt_note": "The original creation request is reproduced verbatim. The user subsequently requested the latest engine version; this guide describes the implemented creative sandbox."
+        }
+      },
+      "package": {
+        "kind": "installer",
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/bluecraft-setup-windows-x64.exe",
+        "size": 3175937,
+        "sha256": "ecd0736331e6a6f8b748bc8a2a9e3302cd48675e31e1e8aaf2da6f08e14fdb49",
+        "release": "bluecraft-v0.1.0"
       }
     }
   ]

@@ -293,9 +293,14 @@ fn cancel_download(state: State<'_, Library>) {
     state.cancel.store(true, Ordering::SeqCst);
 }
 #[tauri::command]
-fn open_feedback_url(url: String) -> Result<(), String> {
-    crate::feedback::validate_url(&url)?;
-    open_browser_url(&url)
+async fn submit_feedback(
+    review: crate::feedback::Review,
+    state: State<'_, Library>,
+) -> Result<crate::feedback::Receipt, String> {
+    state.game(&review.game)?;
+    tauri::async_runtime::spawn_blocking(move || crate::feedback::submit(&review))
+        .await
+        .map_err(|_| "Feedback could not be sent. Your draft is saved; try again.".to_string())?
 }
 #[tauri::command]
 fn open_game_versions(slug: String, state: State<'_, Library>) -> Result<(), String> {
@@ -417,7 +422,7 @@ pub fn run() {
             install_game,
             cancel_download,
             uninstall_game,
-            open_feedback_url,
+            submit_feedback,
             open_game_versions
         ])
         .run(tauri::generate_context!())

@@ -316,7 +316,7 @@ function renderGuide(g) {
           : undefined,
       },
       native
-        ? { openExternal: (url) => invoke("open_feedback_url", { url }) }
+        ? { submitReview: (review) => invoke("submit_feedback", { review }) }
         : {},
     );
   }
