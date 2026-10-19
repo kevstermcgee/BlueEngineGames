@@ -65,6 +65,18 @@ jobs:
         if: steps.metadata.outputs.ready == 'true'
         run: python3 site/build.py --catalog catalog.tsv --release-json release.json --releases-json releases.json --games-dir games --thumbs site/thumbs --out _site
 
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.metadata.outputs.ready == 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.metadata.outputs.ready == 'true'
+        with:
+          workspaces: launcher/src-tauri
+
+      - name: Verify generated catalog with the Windows launcher
+        if: steps.metadata.outputs.ready == 'true'
+        run: cargo run --manifest-path launcher/src-tauri/Cargo.toml --no-default-features --locked --example check-catalog -- _site/catalog.json
+
       - name: Audit download-only deployment
         if: steps.metadata.outputs.ready == 'true'
         run: python3 site/check.py _site

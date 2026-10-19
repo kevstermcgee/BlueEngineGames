@@ -155,16 +155,28 @@
       "source_url": "https://github.com/kevstermcgee/BlueCraft/tree/9d1294c5dd39af3fecddcd3b2f2b5220722d1dd2/src",
       "install_help": "Run the Windows x64 installer. WASD moves, the mouse looks, left click mines, right click builds, and E opens the controls guide. Automatic progress and F5/F9 checkpoints are stored separately. Run a newer BlueCraft installer to upgrade while retaining saves and settings.",
       "published_release": {
-        "tag_name": "v0.1.0",
+        "tag_name": "bluecraft-v0.1.0",
         "name": "BlueCraft 0.1.0",
-        "published_at": "2026-10-19T18:19:16Z",
-        "html_url": "https://github.com/kevstermcgee/BlueCraft/releases/tag/v0.1.0",
+        "published_at": "2026-10-19T22:46:15Z",
+        "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecraft-v0.1.0",
         "assets": [
           {
             "name": "bluecraft-setup-windows-x64.exe",
             "size": 3175937,
-            "browser_download_url": "https://github.com/kevstermcgee/BlueCraft/releases/download/v0.1.0/bluecraft-setup-windows-x64.exe",
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/bluecraft-setup-windows-x64.exe",
             "digest": "sha256:ecd0736331e6a6f8b748bc8a2a9e3302cd48675e31e1e8aaf2da6f08e14fdb49"
+          },
+          {
+            "name": "release-metadata.json",
+            "size": 634,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/release-metadata.json",
+            "digest": "sha256:b8d6fa85ab943b902e4979fa0f686432221fe8cd82ad2c43733b7acfaa2e3a3e"
+          },
+          {
+            "name": "SHA256SUMS.txt",
+            "size": 99,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/SHA256SUMS.txt",
+            "digest": "sha256:74dec7ae38a2983db4f7b7e1f1f120f46e1c9d0d4d78c9cfd8297727e057d80f"
           }
         ]
       },
