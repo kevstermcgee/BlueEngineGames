@@ -1,7 +1,8 @@
 const ENGINE = "https://github.com/kevstermcgee/BlueEngine";
 export const FEEDBACK_FORMAT = "blueengine-player-feedback-v1";
 export const MAX_FEEDBACK_LENGTH = 2000;
-export const MAX_HANDOFF_LENGTH = 7500;
+export const MAX_REVIEWER_NAME_LENGTH = 80;
+export const FEEDBACK_SUBMIT_URL = "https://blue-engine.duckdns.org/feedback";
 export const SUMMARY_URL =
   "https://raw.githubusercontent.com/kevstermcgee/BlueEngine/main/docs/player-feedback/summary.json";
 const summaryRequests = new WeakMap();
@@ -73,6 +74,8 @@ const esc = (value = "") =>
         c
       ],
   );
+const submissionIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const draftKey = (game) => `blueengine.feedback.v1.${game.slug}`;
 const initialVersion = (game) =>
   String(
@@ -84,6 +87,12 @@ const initialVersion = (game) =>
 
 export function validateReview(review) {
   const errors = {};
+  if (
+    review.name !== undefined &&
+    (typeof review.name !== "string" ||
+      review.name.length > MAX_REVIEWER_NAME_LENGTH)
+  )
+    errors.name = "Keep your name within 80 characters.";
   if (!/^(?:[1-9]|10)$/.test(String(review.rating)))
     errors.rating = "Choose a whole-number rating from 1 to 10.";
   if (typeof review.version !== "string" || review.version.length > 160)
@@ -106,6 +115,8 @@ export function validateReview(review) {
 
 export function loadFeedbackDraft(game, storage) {
   const fallback = {
+    name: "",
+    submission_id: "",
     version: initialVersion(game),
     rating: "",
     enjoyed: "",
@@ -115,6 +126,10 @@ export function loadFeedbackDraft(game, storage) {
     const saved = JSON.parse(storage?.getItem(draftKey(game)) || "null");
     if (!saved || saved.format !== FEEDBACK_FORMAT) return fallback;
     return {
+      name: typeof saved.name === "string" ? saved.name : "",
+      submission_id: submissionIdPattern.test(saved.submission_id)
+        ? saved.submission_id
+        : "",
       version:
         typeof saved.version === "string"
           ? saved.version.slice(0, 160)
@@ -144,100 +159,123 @@ export function saveFeedbackDraft(game, review, storage) {
   }
 }
 
-function fenced(value) {
-  const longest = Math.max(
-    2,
-    ...(String(value).match(/`+/g) || []).map((s) => s.length),
-  );
-  const fence = "`".repeat(longest + 1);
-  return `${fence}text\n${value}\n${fence}`;
-}
-
-export function formatReviewMarkdown(game, review) {
-  return [
-    ["Game", game.slug],
-    ["Game version", review.version.trim() || "_No response_"],
-    ["Rating (1–10)", String(review.rating)],
-    ["What I enjoyed", review.enjoyed.trim() || "_No response_"],
-    ["What could be better", review.disliked.trim() || "_No response_"],
-    ["Feedback format", FEEDBACK_FORMAT],
-  ]
-    .map(([heading, value]) => `### ${heading}\n\n${fenced(value)}`)
-    .join("\n\n");
-}
-
-export function buildFeedbackHandoff(game, review) {
+export function buildFeedbackSubmission(game, review, submissionId) {
   const errors = validateReview(review);
   if (Object.keys(errors).length) return { errors };
-  const url = new URL(`${ENGINE}/issues/new`);
-  url.searchParams.set("template", "player-feedback.yml");
-  const title = `[Player feedback] ${game.name} — ${review.rating}/10`;
-  url.searchParams.set("title", title);
-  for (const [field, value] of Object.entries({
-    game: game.slug,
-    version: review.version.trim(),
-    rating: String(review.rating),
-    enjoyed: review.enjoyed.trim(),
-    disliked: review.disliked.trim(),
-    format: FEEDBACK_FORMAT,
-  }))
-    url.searchParams.set(field, value);
-  const fullUrl = url.href;
-  const blankUrl = new URL(`${ENGINE}/issues/new`);
-  blankUrl.searchParams.set("title", title);
-  // Browsers and GitHub can reject long query strings, particularly with Unicode.
-  // Preserve the complete body for an explicit copy-and-paste handoff instead.
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(game.slug))
+    throw new Error("Invalid game identity");
+  if (!submissionIdPattern.test(submissionId))
+    throw new Error("Invalid submission identity");
   return {
     errors: {},
-    title,
-    url: fullUrl.length <= MAX_HANDOFF_LENGTH ? fullUrl : blankUrl.href,
-    copyUrl: blankUrl.href,
-    needsCopy: fullUrl.length > MAX_HANDOFF_LENGTH,
-    markdown: formatReviewMarkdown(game, review),
+    payload: {
+      format: FEEDBACK_FORMAT,
+      submission_id: submissionId,
+      game: game.slug,
+      name: (review.name || "").trim(),
+      version: review.version.trim(),
+      rating: Number(review.rating),
+      enjoyed: review.enjoyed.trim(),
+      disliked: review.disliked.trim(),
+    },
   };
 }
 
-export function reviewListUrl(game) {
-  const url = new URL(`${ENGINE}/issues`);
-  url.searchParams.set(
-    "q",
-    `is:issue "${FEEDBACK_FORMAT}" "${game.slug}" in:body`,
+export async function submitFeedback(
+  payload,
+  { fetcher = globalThis.fetch, signal, url = FEEDBACK_SUBMIT_URL } = {},
+) {
+  if (typeof fetcher !== "function") throw new Error("Feedback unavailable");
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener("abort", abort, { once: true });
+  const timeout = setTimeout(abort, 60000);
+  try {
+    const response = await fetcher(url, {
+      method: "POST",
+      credentials: "omit",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error("Feedback unavailable");
+    const result = await response.json();
+    if (
+      result?.accepted !== true ||
+      result.submission_id !== payload.submission_id
+    )
+      throw new Error("Feedback was not acknowledged");
+    return result;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener("abort", abort);
+  }
+}
+
+function createSubmissionId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  const bytes = Uint8Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 256),
   );
-  return url.href;
+  globalThis.crypto?.getRandomValues?.(bytes);
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes)
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 export function renderFeedback(game) {
   return `<section class="feedback-center" id="guide-feedback" aria-labelledby="feedback-heading">
-    <div class="feedback-header"><div><p class="feedback-kicker">HELP SHAPE WHAT COMES NEXT</p><h2 id="feedback-heading">Feedback center</h2></div><a data-feedback-external href="${esc(reviewListUrl(game))}" target="_blank" rel="noopener noreferrer">Reviews on GitHub ↗</a></div>
+    <div class="feedback-header"><div><p class="feedback-kicker">HELP SHAPE WHAT COMES NEXT</p><h2 id="feedback-heading">Feedback center</h2></div></div>
     <p>How was ${esc(game.name)}? Share what worked, what didn’t, and what you would like to see next. The engine uses these reviews to guide future improvements.</p>
     <h3 class="feedback-public-heading">Player scores &amp; reviews</h3><p class="feedback-note">Read published reviews here without signing in. Scores include all published reviews, across game versions.</p><div class="feedback-reviews" data-feedback-reviews aria-live="polite" tabindex="-1"><p class="feedback-note">Loading player reviews…</p></div>
     <form data-feedback-form novalidate>
+      <div class="feedback-name"><label for="feedback-name">Your name <span>(optional)</span></label><input id="feedback-name" name="name" maxlength="80" autocomplete="nickname" placeholder="Anonymous" aria-describedby="feedback-name-error"><p class="feedback-error" id="feedback-name-error" data-feedback-error="name"></p></div>
       <div class="feedback-fields"><div><label for="feedback-rating">Your rating <span>(out of 10)</span></label><select id="feedback-rating" name="rating" required aria-describedby="feedback-rating-error"><option value="">Choose a rating</option>${Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">${i + 1} / 10</option>`).join("")}</select><p class="feedback-error" id="feedback-rating-error" data-feedback-error="rating"></p></div>
       <div><label for="feedback-version">Version played <span>(optional)</span></label><input id="feedback-version" name="version" maxlength="160" value="${esc(initialVersion(game))}" aria-describedby="feedback-version-error"><p class="feedback-error" id="feedback-version-error" data-feedback-error="version"></p></div></div>
       <label for="feedback-enjoyed">What did you enjoy?</label><textarea id="feedback-enjoyed" name="enjoyed" rows="4" maxlength="2000" placeholder="A favorite mechanic, a memorable moment, a character you liked…" aria-describedby="feedback-enjoyed-count feedback-enjoyed-error"></textarea><div class="feedback-field-meta"><p class="feedback-error" id="feedback-enjoyed-error" data-feedback-error="enjoyed"></p><span id="feedback-enjoyed-count" data-feedback-count="enjoyed">0 / 2,000</span></div>
       <label for="feedback-disliked">What could be better?</label><textarea id="feedback-disliked" name="disliked" rows="4" maxlength="2000" placeholder="Something confusing, a frustrating rule, a change you would enjoy…" aria-describedby="feedback-disliked-count feedback-disliked-error"></textarea><div class="feedback-field-meta"><p class="feedback-error" id="feedback-disliked-error" data-feedback-error="disliked"></p><span id="feedback-disliked-count" data-feedback-count="disliked">0 / 2,000</span></div>
-      <p class="feedback-note">Add at least one written answer. Reviews are public in the BlueEngine repository. GitHub sign-in is required; review and publish the issue on GitHub to submit your feedback. Don’t include private information.</p>
-      <div class="feedback-actions"><button type="submit">Review &amp; submit on GitHub ↗</button><span data-feedback-draft class="feedback-note">Your draft stays on this device.</span></div>
-      <p data-feedback-manual hidden><a data-feedback-open-copy href="${ENGINE}/issues/new?template=player-feedback.yml" target="_blank" rel="noopener noreferrer">Open GitHub review form ↗</a></p>
-      <div class="feedback-copy" data-feedback-copy hidden><p>To submit manually, copy the complete review, open a blank GitHub issue, and paste it into the issue body. The title is included in the link below.</p><label for="feedback-copy-title">Issue title</label><input id="feedback-copy-title" data-feedback-copy-title readonly><label for="feedback-copy-body">Complete review</label><textarea id="feedback-copy-body" data-feedback-copy-body rows="10" readonly></textarea><div class="feedback-actions"><button type="button" data-feedback-copy-button>Copy review</button><a data-feedback-open-copy href="${ENGINE}/issues/new" target="_blank" rel="noopener noreferrer">Open blank GitHub issue ↗</a></div></div>
+      <p class="feedback-note">Add at least one written answer. No account is needed. Your name is optional; leave it blank to appear as Anonymous. Feedback is public and saved in the BlueEngine repository to guide improvement cycles. Don’t include private information.</p>
+      <div class="feedback-actions"><button type="submit">Submit feedback</button><span data-feedback-draft class="feedback-note">Your draft stays on this device.</span></div>
       <p class="feedback-status" data-feedback-status role="status"></p>
     </form>
   </section>`;
 }
 
+function reviewIdentity(record) {
+  return submissionIdPattern.test(record.submission_id)
+    ? `submission:${record.submission_id.toLowerCase()}`
+    : `issue:${record.issue_number}`;
+}
+
 function validReview(record, slug) {
+  if (
+    !record ||
+    record.game !== slug ||
+    !Number.isInteger(record.rating) ||
+    record.rating < 1 ||
+    record.rating > 10 ||
+    typeof record.version !== "string" ||
+    Array.from(record.version).length > 160 ||
+    typeof record.enjoyed !== "string" ||
+    typeof record.disliked !== "string" ||
+    Array.from(record.enjoyed).length > MAX_FEEDBACK_LENGTH ||
+    Array.from(record.disliked).length > MAX_FEEDBACK_LENGTH
+  )
+    return false;
+  if (
+    record.name !== undefined &&
+    (typeof record.name !== "string" ||
+      Array.from(record.name).length > MAX_REVIEWER_NAME_LENGTH)
+  )
+    return false;
+  if (record.submission_id !== undefined)
+    return submissionIdPattern.test(record.submission_id);
   return (
-    record &&
-    record.game === slug &&
-    Number.isInteger(record.rating) &&
-    record.rating >= 1 &&
-    record.rating <= 10 &&
     typeof record.author === "string" &&
-    typeof record.version === "string" &&
-    typeof record.enjoyed === "string" &&
-    typeof record.disliked === "string" &&
-    Array.from(record.enjoyed).length <= MAX_FEEDBACK_LENGTH &&
-    Array.from(record.disliked).length <= MAX_FEEDBACK_LENGTH &&
     Number.isInteger(record.issue_number) &&
     record.issue_number > 0 &&
     record.source_url === `${ENGINE}/issues/${record.issue_number}`
@@ -246,7 +284,7 @@ function validReview(record, slug) {
 
 function validateSummaryDocument(document) {
   if (
-    document?.schema_version !== 1 ||
+    ![1, 2].includes(document?.schema_version) ||
     !document.games ||
     typeof document.games !== "object" ||
     Array.isArray(document.games)
@@ -316,7 +354,7 @@ export async function mountPublicScores(root, options = {}) {
 }
 
 function renderReviews(reviews) {
-  return `<div class="feedback-review-list">${reviews.map((review) => `<article class="feedback-review"><div><h3>${esc(review.author)}</h3><strong>${review.rating} / 10</strong></div><p class="feedback-note">Version ${esc(review.version || "not specified")}</p>${review.enjoyed && review.enjoyed !== "_No response_" ? `<h4>Enjoyed</h4><p>${esc(review.enjoyed)}</p>` : ""}${review.disliked && review.disliked !== "_No response_" ? `<h4>Could be better</h4><p>${esc(review.disliked)}</p>` : ""}<a data-feedback-external href="${esc(review.source_url)}" target="_blank" rel="noopener noreferrer">Review #${review.issue_number} on GitHub ↗</a></article>`).join("")}</div>`;
+  return `<div class="feedback-review-list">${reviews.map((review) => `<article class="feedback-review"><div><h3>${esc((review.name ?? review.author ?? "").trim() || "Anonymous")}</h3><strong>${review.rating} / 10</strong></div><p class="feedback-note">Version ${esc(review.version || "not specified")}</p>${review.enjoyed && review.enjoyed !== "_No response_" ? `<h4>Enjoyed</h4><p>${esc(review.enjoyed)}</p>` : ""}${review.disliked && review.disliked !== "_No response_" ? `<h4>Could be better</h4><p>${esc(review.disliked)}</p>` : ""}</article>`).join("")}</div>`;
 }
 
 function renderScore(summary) {
@@ -334,14 +372,13 @@ export function renderReviewSummary(document, game) {
 }
 
 export function readReviewCollection(document, game) {
-  if (document?.schema_version !== 1 || document.game !== game.slug)
+  if (![1, 2].includes(document?.schema_version) || document.game !== game.slug)
     throw new Error("Invalid review collection");
   validateScore(document);
   if (
     document.reviews.length !== document.count ||
     document.reviews.some((review) => !validReview(review, game.slug)) ||
-    new Set(document.reviews.map((review) => review.issue_number)).size !==
-      document.count
+    new Set(document.reviews.map(reviewIdentity)).size !== document.count
   )
     throw new Error("Invalid review collection");
   return document;
@@ -360,7 +397,7 @@ export function renderReviewPage(document, game, { page = 0 } = {}) {
 export function mountFeedback(
   root,
   game,
-  { openExternal, storage, fetcher = globalThis.fetch, clipboard } = {},
+  { storage, fetcher = globalThis.fetch, submitReview } = {},
 ) {
   const form = root.querySelector("[data-feedback-form]");
   if (!form) throw new Error("Feedback markup is missing");
@@ -369,34 +406,29 @@ export function mountFeedback(
   } catch {
     /* unavailable in private or restricted contexts */
   }
-  try {
-    clipboard ??= globalThis.navigator?.clipboard;
-  } catch {
-    /* copy box is always available */
-  }
-  openExternal ||= (url) => {
-    const opened = globalThis.open(url, "_blank", "noopener,noreferrer");
-    // noopener can return null for a successfully opened window; keep manual links visible.
-    return opened;
-  };
+  submitReview ||= (payload, options) =>
+    submitFeedback(payload, { ...options, fetcher });
   const fields = Object.fromEntries(
-    ["version", "rating", "enjoyed", "disliked"].map((name) => [
+    ["name", "version", "rating", "enjoyed", "disliked"].map((name) => [
       name,
       form.elements.namedItem(name),
     ]),
   );
   const status = form.querySelector("[data-feedback-status]");
   const draftNote = form.querySelector("[data-feedback-draft]");
-  const copyBox = form.querySelector("[data-feedback-copy]");
-  const manualLink = form.querySelector("[data-feedback-manual]");
+  const submitButton = form.querySelector('[type="submit"]');
+  const controller = new AbortController();
   let alive = true;
-  let handoff = null;
+  let submitting = false;
+  let completed = false;
   const draft = loadFeedbackDraft(game, storage);
-  for (const [name, value] of Object.entries(draft)) fields[name].value = value;
+  let submissionId = draft.submission_id;
+  for (const [name, input] of Object.entries(fields)) input.value = draft[name];
   const read = () =>
     Object.fromEntries(
       Object.entries(fields).map(([name, input]) => [name, input.value]),
     );
+  let snapshot = JSON.stringify(read());
   const count = () => {
     for (const name of ["enjoyed", "disliked"])
       form.querySelector(`[data-feedback-count="${name}"]`).textContent =
@@ -404,10 +436,20 @@ export function mountFeedback(
   };
   count();
   const persist = () => {
-    const saved = saveFeedbackDraft(game, read(), storage);
+    if (completed) return;
+    const current = JSON.stringify(read());
+    if (current !== snapshot) {
+      submissionId = "";
+      snapshot = current;
+    }
+    const saved = saveFeedbackDraft(
+      game,
+      { ...read(), submission_id: submissionId },
+      storage,
+    );
     draftNote.textContent = saved
       ? "Draft saved on this device."
-      : "Local saving is unavailable. Keep this page open or copy your review.";
+      : "Local saving is unavailable. Keep this page open to preserve your review.";
   };
   const clearErrors = () => {
     for (const [name, input] of Object.entries(fields)) {
@@ -416,87 +458,85 @@ export function mountFeedback(
     }
   };
   const onInput = () => {
+    completed = false;
     count();
     persist();
     clearErrors();
-    copyBox.hidden = true;
-    manualLink.hidden = true;
-    status.textContent = "";
-  };
-  const open = async (url, submission = false) => {
-    try {
-      await openExternal(url);
-    } catch {
-      if (alive) {
-        if (submission) copyBox.hidden = false;
-        status.textContent =
-          "Could not open GitHub. Retry the review-form link or copy your complete review below and submit it manually.";
-      }
-    }
+    if (!submitting) status.textContent = "";
   };
   const onSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) return;
     clearErrors();
+    completed = false;
     persist();
-    handoff = buildFeedbackHandoff(game, read());
-    if (Object.keys(handoff.errors).length) {
-      for (const [name, message] of Object.entries(handoff.errors)) {
+    const errors = validateReview(read());
+    if (Object.keys(errors).length) {
+      for (const [name, message] of Object.entries(errors)) {
         fields[name].setAttribute("aria-invalid", "true");
         form.querySelector(`[data-feedback-error="${name}"]`).textContent =
           message;
       }
-      fields[Object.keys(handoff.errors)[0]].focus();
-      status.textContent = "Check the highlighted fields before continuing.";
+      fields[Object.keys(errors)[0]].focus();
+      status.textContent = "Check the highlighted fields before submitting.";
       return;
     }
-    form.querySelector("[data-feedback-copy-title]").value = handoff.title;
-    form.querySelector("[data-feedback-copy-body]").value = handoff.markdown;
-    manualLink.querySelector("[data-feedback-open-copy]").href = handoff.url;
-    copyBox.querySelector("[data-feedback-open-copy]").href = handoff.copyUrl;
-    if (handoff.needsCopy) {
-      copyBox.hidden = false;
-      status.textContent =
-        "Your full review is ready to copy. It has not been published yet.";
-      copyBox.scrollIntoView?.({ block: "nearest" });
-      return;
-    }
-    manualLink.hidden = false;
-    status.textContent =
-      "Continue on GitHub to publish your review. Your draft stays saved here until you change it.";
-    await open(handoff.url, true);
-  };
-  const onCopy = async () => {
-    if (!handoff) return;
-    const body = form.querySelector("[data-feedback-copy-body]");
+    submissionId ||= createSubmissionId();
+    const { payload } = buildFeedbackSubmission(game, read(), submissionId);
+    const submittedSnapshot = snapshot;
+    persist();
+    submitting = true;
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting…";
+    form.setAttribute("aria-busy", "true");
+    status.textContent = "Submitting your feedback…";
     try {
-      if (!clipboard?.writeText) throw new Error("Clipboard unavailable");
-      await clipboard.writeText(handoff.markdown);
-      if (alive)
+      const result = await submitReview(payload, { signal: controller.signal });
+      if (
+        result?.accepted !== true ||
+        result.submission_id !== payload.submission_id
+      )
+        throw new Error("Feedback was not acknowledged");
+      if (!alive) return;
+      if (JSON.stringify(read()) === submittedSnapshot) {
+        const empty = loadFeedbackDraft(game);
+        for (const [name, input] of Object.entries(fields))
+          input.value = empty[name];
+        snapshot = JSON.stringify(read());
+        submissionId = "";
+        completed = true;
+        try {
+          storage?.removeItem(draftKey(game));
+        } catch {
+          // An empty replacement prevents an accepted review being retried on this device.
+          saveFeedbackDraft(game, { ...read(), submission_id: "" }, storage);
+        }
+        count();
+        draftNote.textContent = "Your feedback has been submitted.";
         status.textContent =
-          "Review copied. Open a blank GitHub issue, paste the review, check the title above, then publish the issue on GitHub.";
+          "Thank you! Your feedback was saved to the BlueEngine repository for future improvement cycles. Published reviews update after processing.";
+      } else {
+        persist();
+        status.textContent =
+          "Thank you! Your feedback was saved to the BlueEngine repository. Your newer changes remain saved as a separate draft.";
+      }
     } catch {
-      body.focus();
-      body.select();
-      status.textContent =
-        "Select and copy the complete review above, then paste it into a blank GitHub issue.";
-    }
-  };
-  const onExternal = (event) => {
-    const link = event.target.closest?.(
-      "[data-feedback-external], [data-feedback-open-copy]",
-    );
-    if (link && root.contains(link)) {
-      event.preventDefault();
-      void open(link.href);
+      if (alive) {
+        persist();
+        status.textContent =
+          "Feedback could not be submitted right now. Your draft is still here. Check your connection and try again; retrying won’t create a duplicate review.";
+      }
+    } finally {
+      submitting = false;
+      if (alive) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit feedback";
+        form.removeAttribute("aria-busy");
+      }
     }
   };
   form.addEventListener("input", onInput);
   form.addEventListener("submit", onSubmit);
-  form
-    .querySelector("[data-feedback-copy-button]")
-    .addEventListener("click", onCopy);
-  root.addEventListener("click", onExternal);
-  const controller = new AbortController();
   const reviews = root.querySelector("[data-feedback-reviews]");
   let collection = null;
   let loadingCollection = false;
@@ -534,7 +574,7 @@ export function mountFeedback(
         note.dataset.feedbackLoadError = "";
         note.setAttribute("role", "status");
         note.textContent =
-          "All reviews are unavailable right now. The recent reviews above remain available; retry or read reviews on GitHub.";
+          "All reviews are unavailable right now. The recent reviews above remain available. Please retry in a moment.";
         reviews.append(note);
       }
     } finally {
@@ -550,7 +590,7 @@ export function mountFeedback(
       .catch(() => {
         if (alive)
           reviews.innerHTML =
-            '<p class="feedback-note">Player reviews are unavailable right now. You can still write a review or read published reviews on GitHub.</p>';
+            '<p class="feedback-note">Player reviews are unavailable right now. You can still write and submit your feedback.</p>';
       });
   } else
     reviews.innerHTML =
@@ -561,10 +601,6 @@ export function mountFeedback(
     controller.abort();
     form.removeEventListener("input", onInput);
     form.removeEventListener("submit", onSubmit);
-    form
-      .querySelector("[data-feedback-copy-button]")
-      .removeEventListener("click", onCopy);
-    root.removeEventListener("click", onExternal);
     root.removeEventListener("click", onReviewBrowse);
   };
 }

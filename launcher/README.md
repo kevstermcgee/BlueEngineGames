@@ -27,17 +27,25 @@ The release includes the current game guides and screenshots for offline browsin
 The small chevron above the sidebar switches to an icon rail and remembers your
 choice. Navigation, refresh and launcher updates remain available when collapsed.
 
-Each game guide includes a **Feedback center** with a 1–10 rating, the version
-played, and writeups for what you enjoyed and what could be better. Drafts stay
-on the device, including while browsing offline. **Review & submit on GitHub**
-opens a prefilled public review in the BlueEngine repository; the player signs
-into GitHub and publishes the issue there. Long reviews have a complete copy and
-paste fallback. Posted reviews are automatically archived in the engine repo
-and considered by future IdeaForge planning, building and review. Public ratings
-and review counts appear on catalog cards and guide headers when online. The wiki
-shows recent reviews and a paginated browser for every published review; reading
-requires no GitHub account. The launcher opens verified BlueEngine issue links and each game's official
-versions page in the player's browser; no repository token is bundled.
+Each game guide includes a **Feedback center** with an optional display name,
+a 1–10 rating, the version played, and writeups for what you enjoyed and what
+could be better. **Submit feedback** sends the review directly; no account or
+sign-in is required. A blank name appears as **Anonymous**. Names and reviews
+are public, so keep private information out of the form.
+
+Drafts stay on the device while offline or after a failed submission. Retrying
+the same review uses the same submission ID to avoid duplicates. The launcher
+confirms success only after the receiver publishes the review to the engine
+repository. Accepted reviews feed future improvement cycles and IdeaForge
+planning, building and review. Public ratings and a paginated review browser
+remain available in the launcher. The application contains no repository write
+credential; publication uses the receiver's server-side Git configuration.
+
+The receiver is deployed separately from the static download site. See the
+engine repository's `deploy/feedback/README.md` for HTTPS, Git credentials and
+service setup. The frontend and native transport must use the same verified
+public endpoint before releasing the launcher. Publication checks the receiver's
+health endpoint and stops if it is unavailable.
 
 Installs use `%LOCALAPPDATA%\BlueEngine\Games\<slug>`, sharing receipts with
 existing per-game installers. Old `%LOCALAPPDATA%\BlueEngineLauncher\games`
@@ -92,6 +100,11 @@ real published ZIP game and both independent installers in temporary folders, bu
 and checks the real Windows WebView renders the library, searches guides, installs
 a game through native IPC and uninstalls it while keeping a player-created save.
 The Windows UI checks use a separate executable built with tauri.ci.conf.json
+and the `feedback-smoke` feature. Its feedback endpoint is fixed to loopback, so
+synthetic reviews can never reach the production repository. The checks exercise
+native submission, a failed request, retry identity and the publication receipt.
+The production binary is built without that feature.
+The separate executable is needed
 because Wry overrides the WebView environment arguments. That executable uses an
 older test version and a loopback feed to reject a corrupted signed update, retry
 the genuine installer, and verify restart into the exact production binary with

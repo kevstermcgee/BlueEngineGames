@@ -132,22 +132,8 @@
 .feedback-status:empty {
   display: none;
 }
-.feedback-copy {
-  margin-top: 20px;
-  padding: 18px;
-  background: var(--bg, #0b1322);
-  border: 1px solid var(--card, #3c506e);
-  border-radius: 8px;
-}
-.feedback-copy[hidden] {
-  display: none;
-}
-.feedback-copy input {
-  margin-bottom: 14px;
-}
-.feedback-copy textarea {
-  font-family: ui-monospace, monospace;
-  font-size: 0.8rem;
+.feedback-name {
+  margin-bottom: 18px;
 }
 .feedback-reviews {
   padding: 10px 0 0;
@@ -201,11 +187,6 @@
   font-size: 0.85rem;
   white-space: pre-wrap;
   margin: 4px 0;
-}
-.feedback-review a {
-  display: inline-block;
-  margin-top: 14px;
-  font-size: 0.82rem;
 }
 .feedback-review > div > strong {
   white-space: nowrap;

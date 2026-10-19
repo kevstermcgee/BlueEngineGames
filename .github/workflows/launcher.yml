@@ -25,6 +25,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Verify account-free feedback receiver before publication
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        shell: pwsh
+        run: |
+          $status = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/health' -TimeoutSec 15
+          if ($status.ready -ne $true -or $status.service -ne 'blueengine-player-feedback' -or $status.format -ne 'blueengine-player-feedback-v1') {
+            throw 'Deploy and verify the HTTPS feedback receiver before publishing this launcher.'
+          }
       - name: Verify standard Windows user can open a desktop app
         shell: pwsh
         run: ./launcher/prepare-upgrade-user.ps1
@@ -72,7 +80,7 @@ jobs:
         # Wry overrides WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. Only this separate
         # older executable gets a CDP port and loopback HTTP feed. The signed
         # production NSIS bundle above retains its HTTPS endpoint and real version.
-        run: npm run tauri -- build --no-bundle --config src-tauri/tauri.ci.conf.json
+        run: npm run tauri -- build --no-bundle --features feedback-smoke --config src-tauri/tauri.ci.conf.json
       - name: Verify Windows library and real signed launcher upgrade
         shell: pwsh
         run: ./launcher/smoke-upgrade.ps1
@@ -110,10 +118,10 @@ jobs:
           $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
           $date = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          $update = @{version=$version; notes='Game installs and updates no longer create individual desktop shortcuts, including independent installers with a remembered shortcut preference. Includes game guides, star favorites, dated versions and signed launcher updates.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
+          $update = @{version=$version; notes='Submit game feedback directly with an optional name and no account. Reviews are saved to the engine repository for improvement cycles; offline drafts and safe retries are preserved.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
           $update | ConvertTo-Json -Depth 6 | Set-Content launcher-update.json -Encoding utf8NoBOM
           "$hash  $($installer.Name)" | Set-Content LAUNCHER-SHA256SUMS.txt -Encoding ascii
-          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "Game installations and updates through the launcher no longer create individual desktop shortcuts. Independent installers explicitly disable the desktop shortcut task even when an earlier standalone installation remembered it. Future bundled game installers also omit desktop shortcuts. Includes star favorites, dated version history, maximized startup, whole-library Update all, public reviews, and signed launcher updates. Existing installations can install this version through Update & restart." --latest=false
+          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "Game feedback can be submitted directly with an optional display name and no account or sign-in. Accepted reviews are saved to the BlueEngine repository for improvement cycles. Offline drafts are retained after failures, and retries use the same submission ID to avoid duplicate reviews. Includes public scores and reviews, game guides, favorites and signed launcher updates. Existing installations can install this version through Update & restart." --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed; existing versions are never overwritten' }
           $metadata = @{version=$version; url=$url; sha256=$hash; size=$installer.Length; update=$update}
           git config user.name 'github-actions[bot]'

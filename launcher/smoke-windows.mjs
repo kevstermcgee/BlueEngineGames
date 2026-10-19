@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { writeFile, readFile, unlink, mkdir } from "node:fs/promises";
 import { join } from "node:path";
+import { createServer } from "node:http";
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, label, timeout = 60000) {
   const end = Date.now() + timeout;
@@ -90,9 +91,36 @@ async function expectFeedbackInView(label) {
     label,
   );
 }
+// The feedback-smoke Cargo feature confines these requests to loopback.
+const feedbackSmoke = { reviews: [], fail: true };
+const feedbackServer = createServer(async (request, response) => {
+  response.setHeader("Content-Type", "application/json");
+  if (request.method !== "POST" || request.url !== "/feedback") {
+    response.writeHead(404).end(JSON.stringify({ error: "Not found" }));
+    return;
+  }
+  try {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    const review = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    feedbackSmoke.reviews.push(review);
+    if (feedbackSmoke.fail)
+      response.writeHead(503).end(JSON.stringify({ error: "Offline fixture" }));
+    else
+      response.end(
+        JSON.stringify({ accepted: true, submission_id: review.submission_id }),
+      );
+  } catch {
+    response.writeHead(400).end(JSON.stringify({ error: "Invalid fixture" }));
+  }
+});
 const createdSaves = [];
 let observingDownloads = false;
 try {
+  await new Promise((resolve, reject) => {
+    feedbackServer.once("error", reject);
+    feedbackServer.listen(9235, "127.0.0.1", resolve);
+  });
   await call("Page.enable");
   await call("Runtime.enable");
   await until(
@@ -303,28 +331,12 @@ try {
     `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`,
   );
   assert.equal(await evaluate(`document.querySelector('#guide').open`), true);
-  // Keep this synthetic review inside the isolated test profile. Verify the
-  // browser handoff without posting fabricated player feedback to the repo.
+  // The CI build posts through real native HTTP to the loopback fixture server.
   await evaluate(`(() => {
-    const originalFetch = window.fetch;
-    window.__feedbackSmoke = { originalFetch, urls: [] };
-    // Tauri's invoke/ipc properties are immutable. Its custom protocol uses
-    // the browser's fetch; intercept only this test's valid browser handoff.
-    window.fetch = (input, options) => {
-      const endpoint = new URL(typeof input === 'string' ? input : input.url, location.href);
-      if (endpoint.hostname === 'ipc.localhost' && endpoint.pathname === '/open_feedback_url') {
-        const payload = JSON.parse(options.body);
-        if (payload.url.startsWith('https://github.com/kevstermcgee/BlueEngine/issues')) {
-          window.__feedbackSmoke.urls.push(payload.url);
-          return Promise.resolve(new Response('null', {
-            headers: {'Content-Type': 'application/json', 'Tauri-Response': 'ok'}
-          }));
-        }
-      }
-      return originalFetch(input, options);
-    };
+    window.__feedbackSmoke = {};
     const form = document.querySelector('[data-feedback-form]');
     form.elements.rating.value = '8';
+    form.elements.name.value = '';
     form.elements.enjoyed.value = 'Smoke fixture: satisfying movement and clear characters.';
     form.elements.disliked.value = 'Smoke fixture: add clearer explanations for new players.';
     form.dispatchEvent(new Event('input', {bubbles: true}));
@@ -344,37 +356,67 @@ try {
   await evaluate(
     `document.querySelector('[data-feedback-form]').requestSubmit()`,
   );
-  const reviewUrl = new URL(
-    await until(
-      () => evaluate(`window.__feedbackSmoke.urls[0]`),
-      "feedback browser handoff",
-    ),
+  const review = await until(
+    () => feedbackSmoke.reviews[0],
+    "review submitted through native HTTP to the loopback fixture",
   );
-  assert.equal(reviewUrl.origin, "https://github.com");
-  assert.equal(reviewUrl.pathname, "/kevstermcgee/BlueEngine/issues/new");
-  assert.equal(reviewUrl.searchParams.get("game"), "embertrail");
-  assert.equal(reviewUrl.searchParams.get("rating"), "8");
+  assert.equal(review.game, "embertrail");
+  assert.equal(review.rating, 8);
+  assert.equal(review.name, "");
+  assert.equal(review.format, "blueengine-player-feedback-v1");
+  assert.match(review.submission_id, /^[a-f0-9-]{36}$/);
   assert.equal(
-    reviewUrl.searchParams.get("format"),
-    "blueengine-player-feedback-v1",
-  );
-  assert.equal(
-    reviewUrl.searchParams.get("enjoyed"),
+    review.enjoyed,
     "Smoke fixture: satisfying movement and clear characters.",
   );
   assert.equal(
-    reviewUrl.searchParams.get("disliked"),
+    review.disliked,
     "Smoke fixture: add clearer explanations for new players.",
   );
-  assert(reviewUrl.searchParams.get("version"));
+  assert(review.version);
+  await until(
+    () =>
+      evaluate(
+        `!document.querySelector('[data-feedback-form] button[type="submit"]').disabled`,
+      ),
+    "failed submission enables retry",
+  );
+  await closeGuide();
+  await evaluate(`document.querySelector('[data-guide="embertrail"]').click()`);
   assert.equal(
-    await evaluate(`(async () => {
-      try {
-        await window.__TAURI_INTERNALS__.invoke('open_feedback_url', {url: 'file:///C:/Windows/System32/cmd.exe'});
-        return false;
-      } catch { return true; }
-    })()`),
-    true,
+    await evaluate(
+      `document.querySelector('[data-feedback-form]').elements.enjoyed.value`,
+    ),
+    review.enjoyed,
+  );
+  feedbackSmoke.fail = false;
+  await evaluate(
+    `document.querySelector('[data-feedback-form]').requestSubmit()`,
+  );
+  const retried = await until(
+    () => feedbackSmoke.reviews[1],
+    "saved draft retry",
+  );
+  assert.equal(retried.submission_id, review.submission_id);
+  await until(
+    () =>
+      evaluate(`!localStorage.getItem('blueengine.feedback.v1.embertrail')`),
+    "published receipt clears draft",
+  );
+  // A later review can have a display name; leave it as a saved offline draft.
+  await evaluate(`(() => {
+    const form = document.querySelector('[data-feedback-form]');
+    form.elements.name.value = 'A player';
+    form.elements.enjoyed.value = 'A second unsent review';
+    form.dispatchEvent(new Event('input', {bubbles:true}));
+  })()`);
+  await closeGuide();
+  await evaluate(`document.querySelector('[data-guide="embertrail"]').click()`);
+  assert.equal(
+    await evaluate(
+      `document.querySelector('[data-feedback-form]').elements.name.value`,
+    ),
+    "A player",
   );
   assert.equal(
     await evaluate(`(async () => {
@@ -385,18 +427,6 @@ try {
     })()`),
     true,
     "Unknown games cannot open a version-history destination",
-  );
-  await evaluate(`document.querySelector('#close-guide').click()`);
-  await until(
-    () => evaluate(`!document.querySelector('#guide').open`),
-    "closed feedback guide",
-  );
-  await evaluate(`document.querySelector('[data-guide="embertrail"]').click()`);
-  assert.equal(
-    await evaluate(
-      `document.querySelector('[data-feedback-form]').elements.enjoyed.value`,
-    ),
-    "Smoke fixture: satisfying movement and clear characters.",
   );
   await evaluate(
     `document.querySelector('#guide-feedback').scrollIntoView({block: 'start'})`,
@@ -410,7 +440,6 @@ try {
     Buffer.from(feedbackScreenshot.data, "base64"),
   );
   await evaluate(`(() => {
-    window.fetch = window.__feedbackSmoke.originalFetch;
     delete window.__feedbackSmoke;
     document.querySelector('#close-guide').click();
   })()`);
@@ -422,7 +451,7 @@ try {
     `localStorage.removeItem('blueengine.feedback.v1.embertrail')`,
   );
   console.log(
-    "Wiki feedback fields, whole review handoff, native URL restriction and saved drafts passed without posting a test review.",
+    "Anonymous native HTTP review submission, idempotent retry, named drafts and receipt handling passed against the loopback fixture.",
   );
   await mkdir("launcher-smoke", { recursive: true });
   const screenshot = await call("Page.captureScreenshot", {
@@ -702,6 +731,8 @@ try {
     `Windows IPC installs, sequential whole-library Update all under a zero-result search, latest receipts, and save-preserving confirmed uninstalls passed for ${games.map((g) => g.name).join(" and ")}.`,
   );
 } finally {
+  if (feedbackServer.listening)
+    await new Promise((resolve) => feedbackServer.close(resolve));
   if (observingDownloads) {
     try {
       await evaluate(`(async () => {
