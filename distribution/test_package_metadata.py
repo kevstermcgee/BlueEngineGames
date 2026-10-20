@@ -97,7 +97,29 @@ class PackageMetadataTests(unittest.TestCase):
 
     def test_vendored_reader_is_the_reviewed_cross_repository_contract(self):
         self.assertEqual(hashlib.sha256(Path(metadata.__file__).read_bytes()).hexdigest(),
-                         'e991033e5a1cc075166cd2a84363f4388debe29ad73617ea75236e29d0c318e6')
+                         'ff39cdb8854dd8f88756392a129b21474238ae166722c7bb0f4f531b953e8634')
+
+    def test_raw_zip_backslash_and_nul_names_cannot_hide_behind_stdlib_normalization(self):
+        document = adapter.build_document(self.root, 'sample', self.engine)
+        for member in ('dir\\play.exe', 'dir/play.exe\0ignored', 'blueengine.game.json\0ignored'):
+            with self.subTest(member=member):
+                archive = self.stage.parent / 'unsafe.zip'
+                placeholder = 'x' * len(member)
+                with zipfile.ZipFile(archive, 'w') as bundle:
+                    bundle.writestr(placeholder, b'payload')
+                    bundle.writestr(metadata.MANIFEST, metadata.canonical_payload(document))
+                    bundle.comment = metadata.make_envelope(document)
+                raw = archive.read_bytes()
+                # Inject original names into both headers after the writer has
+                # closed: ZipInfo itself sanitizes NUL and Windows separators.
+                self.assertEqual(raw.count(placeholder.encode('ascii')), 2)
+                raw = raw.replace(placeholder.encode('ascii'), member.encode('ascii'))
+                archive.write_bytes(raw)
+                with self.assertRaises(metadata.MetadataError):
+                    metadata.extract(archive)
+                with self.assertRaises(metadata.MetadataError):
+                    metadata.embed(archive, document)
+                self.assertEqual(archive.read_bytes(), raw)
 
     def test_engine_managed_exports_use_original_source_not_companion(self):
         # Windows may materialize CRLF while the immutable exported Git blob is
