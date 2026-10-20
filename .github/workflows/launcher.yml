@@ -8,6 +8,9 @@ on:
       - site/feedback.mjs
       - site/feedback.css
       - site/feedback.test.mjs
+      - site/collaboration.mjs
+      - site/collaboration.css
+      - site/collaboration.test.mjs
       - .github/workflows/launcher.yml
   workflow_dispatch:
     inputs:
@@ -25,13 +28,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Verify account-free feedback receiver before publication
+      - name: Verify feedback and community receiver before publication
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         shell: pwsh
         run: |
           $status = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/health' -TimeoutSec 15
           if ($status.ready -ne $true -or $status.service -ne 'blueengine-player-feedback' -or $status.format -ne 'blueengine-player-feedback-v1') {
             throw 'Deploy and verify the HTTPS feedback receiver before publishing this launcher.'
+          }
+          $community = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/community/v1/games' -TimeoutSec 15
+          if ($community.schema_version -ne 1 -or $null -eq $community.games) {
+            throw 'Enable and verify the community API before publishing this launcher.'
           }
       - name: Verify standard Windows user can open a desktop app
         shell: pwsh

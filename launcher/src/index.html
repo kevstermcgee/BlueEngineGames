@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="updater.css" />
     <link rel="stylesheet" href="feedback.css" />
+    <link rel="stylesheet" href="collaboration.css" />
   </head>
   <body>
     <aside id="sidebar" aria-label="Launcher sidebar">
@@ -52,6 +53,10 @@
         ><button data-view="favorites" aria-label="Favorites" title="Favorites">
           <span class="nav-icon" aria-hidden="true">☆</span
           ><span class="nav-text">Favorites</span>
+        </button>
+        <button id="open-creator" title="Create and collaborate">
+          <span class="nav-icon" aria-hidden="true">＋</span
+          ><span class="nav-text">Create &amp; collaborate</span>
         </button>
       </nav>
       <div class="sidebar-bottom">
@@ -143,6 +148,12 @@
         ×
       </button>
       <div id="guide-content"></div>
+    </dialog>
+    <dialog id="creator">
+      <button class="close" id="close-creator" aria-label="Close creator hub">
+        ×
+      </button>
+      <div id="creator-content"></div>
     </dialog>
     <dialog id="confirmation">
       <h2>Uninstall this game?</h2>

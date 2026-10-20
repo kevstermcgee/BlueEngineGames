@@ -34,6 +34,8 @@ PAGE = """<!DOCTYPE html>
 <title>BlueEngine Games</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="feedback.css">
+<link rel="stylesheet" href="collaboration.css">
+<script type="module" src="wiki-feedback.mjs"></script>
 </head>
 <body>
 <header>
@@ -41,6 +43,8 @@ PAGE = """<!DOCTYPE html>
   <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer and play.</p>
   <p class="design-note">Explore human-designed and AI-designed games. Design credits refer to the game concept and rules; either may use AI-assisted development.</p>
 </header>
+
+<details class="creator-hub"><summary>Create &amp; collaborate with your AI</summary><div data-community-root></div></details>
 
 <section class="notes">
   <ul>
@@ -188,6 +192,7 @@ GAME_PAGE = """<!DOCTYPE html>
 <link rel="stylesheet" href="../../style.css">
 <link rel="stylesheet" href="../../wiki.css">
 <link rel="stylesheet" href="../../feedback.css">
+<link rel="stylesheet" href="../../collaboration.css">
 <script type="module" src="../../wiki-feedback.mjs"></script>
 </head>
 <body>
@@ -208,6 +213,7 @@ GAME_PAGE = """<!DOCTYPE html>
     </div>
   </section>
   {wiki}
+  <div data-community-root data-community-game="{community_metadata}"></div>
   {preview}
   <section class="version-history" aria-labelledby="versions-heading">
     <h2 id="versions-heading">Versions</h2>
@@ -323,6 +329,7 @@ def build_staged(args) -> None:
     <p><a href="preview.mp4">Download the MP4 recording</a></p>
   </section>'''
         (game_out / "index.html").write_text(GAME_PAGE.format(
+            community_metadata=html.escape(json.dumps({"slug": slug, "name": row["name"]}), quote=True),
             slug=html.escape(slug), name=name, desc=html.escape(row.get("description", "")),
             thumb=thumb.replace('src="thumbs/', 'src="../../thumbs/'),
             version=version_label(row.get("game_version", "")), created=html.escape(created),
@@ -368,7 +375,7 @@ def build_staged(args) -> None:
     shutil.copy2(site_dir / "style.css", out / "style.css")
     shutil.copy2(site_dir / "app.js", out / "app.js")
     shutil.copy2(site_dir / "wiki.css", out / "wiki.css")
-    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs'):
+    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs', 'collaboration.css', 'collaboration.mjs'):
         shutil.copy2(site_dir / filename, out / filename)
     (out / ".nojekyll").touch()
     print(f"wrote {out}/index.html with {len(games)} games")

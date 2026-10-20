@@ -41,6 +41,28 @@ planning, building and review. Public ratings and a paginated review browser
 remain available in the launcher. The application contains no repository write
 credential; publication uses the receiver's server-side Git configuration.
 
+**Create & collaborate** in the sidebar opens the creator hub. Each game guide
+also includes **Collaborate**, with pinned source revisions, fork ancestry,
+source downloads and a copyable handoff for a fresh AI session. Contributors can
+register new games, create forks, submit full source commit SHAs, request
+publication, and send targeted human or AI development feedback. Source may
+come from the upstream engine or a verified GitHub fork. Configured maintainers
+have equal rights; other contributors maintain their own games and forks.
+
+Connecting uses a GitHub access token held only in memory. Disconnecting clears
+it across the creator hub and game guide. The app allows collaboration requests
+only to `https://blue-engine.duckdns.org/community/v1`; credentials are not
+included in copied prompts or source URLs and redirects cannot forward them.
+Publication remains pending until the native release gates succeed, and the
+panel links to the resulting publication checks when available. The new source
+revision never replaces an installed game directly.
+
+Before deploying these panels, enable the receiver’s community extension and
+include the website and Tauri origins in its explicit CORS configuration. The
+engine [collaboration guide](https://github.com/kevstermcgee/BlueEngine/blob/main/docs/COLLABORATION.md)
+contains the service, identity and source-publishing setup. Public game downloads
+and existing anonymous reviews continue to work when collaboration is offline.
+
 The receiver is deployed separately from the static download site. See the
 engine repository's `deploy/feedback/README.md` for HTTPS, Git credentials and
 service setup. The frontend and native transport must use the same verified
