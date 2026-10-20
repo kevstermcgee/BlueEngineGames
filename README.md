@@ -24,7 +24,7 @@ screenshots and creation notes, plus story and named characters when implemented
 design rationale; human designs include the original creation request when it
 can be recovered. Missing historical originals are clearly labeled.
 **New games require a complete guide, three distinct gameplay captures and
-character screenshots before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
+screenshots for each listed named character before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
 for the content format and validation commands.
 
 Every wiki and launcher guide includes a **Feedback center**: rate the game
