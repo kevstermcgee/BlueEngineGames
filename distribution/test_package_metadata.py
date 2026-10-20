@@ -318,6 +318,73 @@ class PackageMetadataTests(unittest.TestCase):
         self.assertNotIn('verified', refreshed)
         self.assertTrue(refreshed['metadata_repack']['requires_native_review'])
 
+    def test_capitalized_producer_executable_keeps_actual_case_and_integrity(self):
+        self.release['native_playables'][0]['kind'] = 'cargo-package'
+        self.commit()
+        executable = self.stage / 'Sample.exe'
+        asset = self.stage / 'unchanged.png'
+        executable.write_bytes(pe())
+        asset.write_bytes(b'original image fixture')
+        stamp = dict(exe='Sample.exe', files=['Sample.exe', 'unchanged.png'],
+                     file_sha256={name: adapter.sha256_file(self.stage / name) for name in ('Sample.exe', 'unchanged.png')},
+                     exe_sha256=adapter.sha256_file(executable), review_source_sha256='a' * 64)
+        ship = self.stage / 'ship.json'
+        ship.write_text(json.dumps(stamp))
+
+        # Reproduce Windows's lowercase existence probe on Linux too. Returning
+        # that probe's spelling used to detach the changed file from ship.json.
+        original_is_file = Path.is_file
+
+        def case_insensitive_is_file(path):
+            if path.parent == self.stage and path.name.casefold() == 'sample.exe':
+                return True
+            return original_is_file(path)
+
+        with mock.patch.object(Path, 'is_file', case_insensitive_is_file):
+            self.assertEqual(adapter.entrypoint(self.stage, 'sample'), 'Sample.exe')
+        document = adapter.stage_package(self.root, 'sample', self.stage, self.engine)
+        self.assertEqual(document['package']['entrypoint'], 'Sample.exe')
+        self.assertEqual(document['package']['playable_executables'], ['Sample.exe'])
+        refreshed = json.loads(ship.read_text())
+        self.assertNotIn('sample.exe', refreshed['file_sha256'])
+        self.assertEqual(refreshed['exe_sha256'], adapter.sha256_file(executable))
+        self.assertEqual(refreshed['file_sha256']['Sample.exe'], adapter.sha256_file(executable))
+        self.assertEqual(refreshed['file_sha256']['unchanged.png'], stamp['file_sha256']['unchanged.png'])
+        self.assertEqual(refreshed['review_source_sha256'], stamp['review_source_sha256'])
+        with zipfile.ZipFile(self.zip()) as bundle:
+            self.assertIn('Sample.exe', bundle.namelist())
+            self.assertNotIn('sample.exe', bundle.namelist())
+        self.assertEqual(metadata.extract(executable), document)
+
+        # The casing repair must not bless unrelated corruption that happens
+        # between the producer check and the final inventory refresh.
+        executable.write_bytes(pe())
+        ship.write_text(json.dumps(stamp))
+        before = ship.read_bytes()
+        original_embed = metadata.embed
+
+        def corrupt_unowned_asset(*args, **kwargs):
+            original_embed(*args, **kwargs)
+            asset.write_bytes(b'tampered after producer validation')
+
+        with mock.patch.object(metadata, 'embed', side_effect=corrupt_unowned_asset):
+            with self.assertRaisesRegex(ValueError, 'Unchanged producer payload was corrupted: unchanged.png'):
+                adapter.stage_package(self.root, 'sample', self.stage, self.engine)
+        self.assertEqual(ship.read_bytes(), before)
+
+    def test_case_aliased_executable_members_are_rejected_before_embedding(self):
+        uppercase, lowercase = self.stage / 'Sample.exe', self.stage / 'sample.exe'
+        uppercase.write_bytes(pe())
+        lowercase.write_bytes(pe())
+        if len(list(self.stage.iterdir())) != 2:
+            self.skipTest('This filesystem cannot materialize case-aliased members')
+        with mock.patch.object(metadata, 'embed', side_effect=AssertionError('ambiguous executable was stamped')):
+            with self.assertRaisesRegex(ValueError, 'case-aliased executable names'):
+                adapter.stage_package(self.root, 'sample', self.stage, self.engine)
+        self.assertFalse((self.stage / adapter.MANIFEST).exists())
+        self.assertEqual(uppercase.read_bytes(), pe())
+        self.assertEqual(lowercase.read_bytes(), pe())
+
 
 if __name__ == '__main__':
     unittest.main()
