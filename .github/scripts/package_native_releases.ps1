@@ -87,19 +87,25 @@ try {
         $kind = [string]$game.kind
         $directory = [System.IO.Path]::GetFullPath((Join-Path $repoRoot ([string]$game.directory)))
         if ($kind -notin 'engine-sandbox', 'release-asset') {
-            # Engine-owned games may retain their authoring-relative dependency after export.
-            # Bind path dependencies to the catalog-pinned engine for this build only.
+            # Exported games can retain either authoring-relative paths or old git pins.
+            # Bind both to the catalog engine, preserving the remaining lockfile exactly.
             $manifest = Join-Path $directory 'Cargo.toml'
-            $text = [IO.File]::ReadAllText($manifest)
-            $engineCargoPath = $engineRootPath.Replace('\', '/')
-            $pattern = '(?m)^(vesper3d\s*=\s*\{[^}\r\n]*\bpath\s*=\s*)"[^"]+"'
-            $bound = [regex]::Replace($text, $pattern, [Text.RegularExpressions.MatchEvaluator]{
-                param($match)
-                return $match.Groups[1].Value + '"' + $engineCargoPath + '"'
-            })
-            if ($bound -ne $text) {
-                $originalManifests[$manifest] = [IO.File]::ReadAllBytes($manifest)
-                [IO.File]::WriteAllText($manifest, $bound, [Text.UTF8Encoding]::new($false))
+            $originalManifests[$manifest] = [IO.File]::ReadAllBytes($manifest)
+            $lock = Join-Path $directory 'Cargo.lock'
+            if (Test-Path -LiteralPath $lock -PathType Leaf) {
+                $originalManifests[$lock] = [IO.File]::ReadAllBytes($lock)
+            }
+            & python (Join-Path $repoRoot 'distribution/bind_engine.py') --manifest $manifest --engine $engineRootPath
+            if ($LASTEXITCODE -ne 0) { throw "$name catalog engine binding failed with exit code $LASTEXITCODE" }
+            $metadataText = & cargo metadata --locked --format-version 1 --manifest-path $manifest
+            if ($LASTEXITCODE -ne 0) { throw "$name locked dependency verification failed with exit code $LASTEXITCODE" }
+            $metadata = ($metadataText -join "`n") | ConvertFrom-Json
+            $engines = @($metadata.packages | Where-Object name -eq 'be2')
+            $expectedManifest = Join-Path $engineRootPath 'Cargo.toml'
+            if ($engines.Count -ne 1 -or $null -ne $engines[0].source -or
+                -not [IO.Path]::GetFullPath([string]$engines[0].manifest_path).Equals(
+                    $expectedManifest, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "$name resolved an engine outside the catalog engine checkout."
             }
         }
         $stage = Join-Path $tempRoot "games-native-release-$slug"
