@@ -43,18 +43,19 @@ def validate_wiki(root, document, origin, legacy=False):
     if not isinstance(document, dict) or document.get('version') != 1:
         raise ValueError('Wiki document needs version 1')
     text(document.get('overview'), 'overview', 120)
-    text(document.get('story'), 'story or explicit absence of a story', 40)
+    if document.get('story') is not None:
+        text(document['story'], 'implemented story')
     for field, count, minimum in (('rules', 3, 20), ('controls', 1, 8)):
         items = document.get(field)
         if not isinstance(items, list) or len(items) < count:
             raise ValueError(f'Wiki needs at least {count} {field}')
         for item in items:
             text(item, field, minimum)
-    characters = document.get('characters')
+    characters = document.get('characters', [])
     if not isinstance(characters, list):
         raise ValueError('Wiki characters must be a list')
-    if not characters:
-        text(document.get('characters_note'), 'explanation of no characters', 20)
+    if document.get('characters_note'):
+        text(document['characters_note'], 'character note')
     names = set()
     for character in characters:
         if not isinstance(character, dict):
@@ -153,7 +154,7 @@ def render_wiki(document, image_root, destination, legacy=False, game=None):
         return (f'<figure><a href="{url}"><img src="{url}" alt="{esc(item["alt"], quote=True)}" '
                 f'loading="lazy" width="640" height="360"></a><figcaption>{esc(item["caption"])}</figcaption></figure>')
     characters = ''
-    for character in document['characters']:
+    for character in document.get('characters', []):
         picture = ''
         if character.get('image'):
             url = image_url(character['image'])
@@ -167,7 +168,7 @@ def render_wiki(document, image_root, destination, legacy=False, game=None):
         appearance = paragraphs(character['appearance_note']) if character.get('appearance_note') else ''
         characters += f'<article class="wiki-character">{picture}<h3>{esc(character["name"])}</h3>{paragraphs(character["description"])}{appearance}</article>'
     if not characters:
-        characters = paragraphs(document['characters_note'])
+        characters = paragraphs(document.get('characters_note') or '')
     design = document['design']
     if design['origin'] == 'ai':
         title = 'Why the AI chose this game'
@@ -188,19 +189,23 @@ def render_wiki(document, image_root, destination, legacy=False, game=None):
             sources.append(f'<li><a href="{esc(url, quote=True)}">{esc(source)}</a></li>')
     documentation = '<details class="wiki-sources"><summary>Source documentation</summary><ul>' + ''.join(sources) + '</ul></details>' if sources else ''
     note = ('<p class="archive-note">More gameplay and character captures are being archived for this earlier release.</p>'
-            if legacy and (len(document['gallery']) < 3 or any(not c.get('image') for c in document['characters'])) else '')
+            if legacy and (len(document['gallery']) < 3 or any(not c.get('image') for c in document.get('characters', []))) else '')
     feedback = ''
     if game is not None:
         metadata = html.escape(json.dumps(game, ensure_ascii=False), quote=True)
         feedback = f'''<div data-feedback-game="{metadata}"><section class="feedback-center" id="guide-feedback" aria-labelledby="feedback-heading"><h2 id="feedback-heading">Feedback center</h2><p>Rate this game out of 10 and share what you enjoyed or would improve. Reviews are public in the BlueEngine repository and help guide future improvements.</p><p><a href="https://github.com/kevstermcgee/BlueEngine/issues/new?template=player-feedback.yml">Write a review on GitHub</a> (GitHub sign-in required).</p><noscript><p>Enable JavaScript to save a draft here and automatically include this game's name and version.</p></noscript></section></div>'''
+    story = document.get('story')
+    optional_nav = ('<a href="#story">Story</a>' if story else '') + ('<a href="#characters">Characters</a>' if characters else '')
+    story_section = f'<section id="story"><h2>Story &amp; setting</h2>{paragraphs(story)}</section>' if story else ''
+    character_section = f'<section id="characters"><h2>Characters &amp; roles</h2><div class="wiki-characters">{characters}</div></section>' if characters else ''
     return f'''<section class="game-wiki" aria-labelledby="guide-heading">
   <h2 id="guide-heading">Game guide</h2>
-  <nav class="wiki-nav" aria-label="Game guide sections"><a href="#overview">Overview</a><a href="#rules">Rules</a><a href="#controls">Controls</a><a href="#story">Story</a><a href="#characters">Characters</a><a href="#gallery">Screenshots</a><a href="#creation">Creation</a>{'<a href="#guide-feedback">Feedback</a><a href="#guide-collaborate">Fork &amp; publish</a>' if game is not None else ''}<a href="#versions-heading">Versions</a></nav>
+  <nav class="wiki-nav" aria-label="Game guide sections"><a href="#overview">Overview</a><a href="#rules">Rules</a><a href="#controls">Controls</a>{optional_nav}<a href="#gallery">Screenshots</a><a href="#creation">Creation</a>{'<a href="#guide-feedback">Feedback</a><a href="#guide-collaborate">Fork &amp; publish</a>' if game is not None else ''}<a href="#versions-heading">Versions</a></nav>
   <section id="overview"><h2>What is this game?</h2>{paragraphs(document['overview'])}</section>
   <section id="rules"><h2>Rules &amp; objectives</h2>{listing(document['rules'], True)}</section>
   <section id="controls"><h2>How to play</h2>{listing(document['controls'])}</section>
-  <section id="story"><h2>Story &amp; setting</h2>{paragraphs(document['story'])}</section>
-  <section id="characters"><h2>Characters &amp; roles</h2><div class="wiki-characters">{characters}</div></section>
+  {story_section}
+  {character_section}
   <section id="gallery"><h2>Screenshot gallery</h2><p>Open an image to see the full capture.</p><div class="wiki-gallery">{gallery}</div>{note}</section>
   <section id="creation"><h2>{title}</h2>{provenance}</section>
   {feedback}

@@ -42,7 +42,7 @@ for (const g of catalog.games) {
     dir = `../games/${g.slug}`;
   }
   const doc = JSON.parse(await readFile(`${dir}/wiki.json`, "utf8"));
-  for (const p of [...doc.gallery, ...doc.characters]) {
+  for (const p of [...doc.gallery, ...(doc.characters || [])]) {
     if (!p.image) continue;
     const bytes = await readFile(`${dir}/${p.image}`),
       hash = createHash("sha256").update(bytes).digest("hex").slice(0, 20);

@@ -275,8 +275,8 @@ def build_staged(args) -> None:
         launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created,
                                                releases=releases))
         searchable = ' '.join([row['name'], row.get('description', ''), wiki_document['overview'],
-                               wiki_document['story'], *wiki_document['rules'],
-                               *(character['name'] for character in wiki_document['characters'])])
+                               wiki_document.get('story') or '', *wiki_document['rules'],
+                               *(character['name'] for character in wiki_document.get('characters', []))])
 
         thumb_src = game_screenshot(Path(args.thumbs), Path(args.games_dir), slug)
         shutil.copy2(thumb_src, thumbs_out / f"{slug}.png")

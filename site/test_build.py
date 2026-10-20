@@ -347,6 +347,32 @@ class Downloads(unittest.TestCase):
             self.assertEqual(previous, {str(p.relative_to(root / 'out')): p.read_bytes()
                                        for p in (root / 'out').rglob('*') if p.is_file()})
 
+    def test_storyless_game_builds_search_guide_and_installed_launcher_feed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / 'thumbs').mkdir()
+            (root / 'thumbs/scatterlock.png').write_bytes(screenshot())
+            document = wiki_fixture(root, 'scatterlock')
+            for field in ('story', 'characters', 'characters_note'):
+                document.pop(field)
+            (root / 'games/scatterlock/wiki.json').write_text(json.dumps(document))
+            row = {'slug': 'scatterlock', 'name': 'Scatterlock', 'release': 'current', 'sha256': 'b' * 64}
+            with (root / 'catalog.tsv').open('w', newline='') as out:
+                writer = csv.DictWriter(out, fieldnames=row.keys(), delimiter='\t')
+                writer.writeheader()
+                writer.writerow(row)
+            (root / 'release.json').write_text(json.dumps(release('current', ['scatterlock-setup-windows-x64.exe', 'scatterlock-windows-x64.zip'])))
+            site.build(SimpleNamespace(catalog=root / 'catalog.tsv', release_json=root / 'release.json',
+                                       games_dir=root / 'games', thumbs=root / 'thumbs', out=root / 'out'))
+            index = (root / 'out/index.html').read_text()
+            self.assertIn('a block moves only when the square beyond it is empty.', index)
+            page = (root / 'out/games/scatterlock/index.html').read_text()
+            self.assertNotIn('id="story"', page)
+            self.assertNotIn('id="characters"', page)
+            feed = json.loads((root / 'out/catalog.json').read_text())
+            self.assertEqual(feed['games'][0]['wiki']['characters'], [])
+            self.assertNotIn('story', feed['games'][0]['wiki'])
+
     def test_deployment_audit_rejects_web_payloads_and_download_links(self):
         from check import check
         with tempfile.TemporaryDirectory() as temp:

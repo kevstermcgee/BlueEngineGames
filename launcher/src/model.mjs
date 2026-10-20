@@ -37,7 +37,7 @@ export function filterGames(
             g.wiki.overview,
             g.wiki.story,
             ...g.wiki.rules,
-            ...g.wiki.characters.map((c) => c.name),
+            ...(g.wiki.characters || []).map((c) => c.name),
           ]
             .join(" ")
             .toLowerCase()

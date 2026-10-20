@@ -1,13 +1,14 @@
 # Publishing a game guide
 
 Every catalog game has a mini-wiki on its detail page: a substantive overview,
-rules and objectives, exact controls, story and setting, characters and roles,
-captioned screenshot gallery, and creation provenance. Describe the shipped game,
+rules and objectives, exact controls, a captioned screenshot gallery, and creation
+provenance, plus story and named characters when implemented. Describe the shipped game,
 including its actual win/loss/retry and progression rules. Do not invent a story,
 characters, mechanics, original user prompts, or historical AI decisions.
 
-For a game without a narrative or characters, explain that explicitly. Utilities,
-simulations and abstract games are welcome; they still need meaningful usage rules.
+Story and character fields are optional. Omit them for a game without a narrative
+or named characters; no absence essay is required. Utilities, simulations and
+abstract games still need meaningful usage rules.
 
 ## Content location
 
@@ -29,7 +30,7 @@ Use this shape (replace all example content with verified game details):
     "Explain progression, success and failure or recovery."
   ],
   "controls": ["Exact keyboard, mouse and supported controller inputs."],
-  "story": "At least 40 characters describing the implemented setting and premise, or explicitly explaining that this game has no narrative.",
+  "story": "Optional: describe the implemented setting and premise.",
   "characters": [
     {
       "name": "The actual character name or player role",
@@ -37,7 +38,7 @@ Use this shape (replace all example content with verified game details):
       "image": "assets/wiki/character.png"
     }
   ],
-  "characters_note": "For a game with no characters, use an empty characters array and explain their absence here.",
+  "characters_note": "Optional context about the actual characters or their appearance.",
   "gallery": [
     {"image": "assets/wiki/opening.png", "caption": "The opening gameplay challenge.", "alt": "Describe what is visible in this opening challenge."},
     {"image": "assets/wiki/later.png", "caption": "A different later challenge.", "alt": "Describe the different situation shown in this later scene."},
@@ -50,6 +51,10 @@ Use this shape (replace all example content with verified game details):
   }
 }
 ```
+
+For abstract or storyless games, omit `story`, `characters` and `characters_note`
+when they do not apply. `story: null` and `characters: []` are also accepted.
+Every listed named character still requires its description and real screenshot.
 
 For AI-designed games, use `design.origin: "ai"`, `original_prompt: null` and a
 `design.rationale` of at least 120 characters. Explain **why this specific game**
@@ -89,7 +94,7 @@ rows. A failed build leaves the previously completed site intact.
 `site/wiki/legacy-games.json` is the fixed roster of 50 games already published
 on October 17, 2026. It allows sparse historical images and clearly labeled
 unrecovered original prompts/rationales while those archives are completed.
-It still requires substantive rules, controls, setting, character descriptions
-and at least one authentic screenshot. Do not add future games to this roster.
+It still requires substantive rules, controls, descriptions of implemented story
+and named characters, and at least one authentic screenshot. Do not add future games to this roster.
 New games must satisfy the full requirements, including multiple images and
 original provenance. Do not mark a guide as legacy inside its own JSON.
