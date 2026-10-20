@@ -1,10 +1,10 @@
 name: Native game checks
 on:
   pull_request:
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, distribution/bind_engine.py, distribution/test_bind_engine.py, .github/workflows/native-game-checks.yml]
   push:
     branches: [main]
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, distribution/bind_engine.py, distribution/test_bind_engine.py, .github/workflows/native-game-checks.yml]
   workflow_dispatch:
     inputs:
       game_slug:
@@ -24,7 +24,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Verify native game selection
-        run: python3 -m unittest discover -s distribution -p 'test_native_checks.py' -v
+        run: |
+          python3 -m unittest discover -s distribution -p 'test_native_checks.py' -v
+          python3 -m unittest discover -s distribution -p 'test_bind_engine.py' -v
       - name: Select validated source and pinned engine
         id: select
         env:
@@ -65,12 +67,16 @@ jobs:
       - name: Bind game to the catalog engine
         shell: python
         run: |
-          import os, pathlib, re
+          import json, os, pathlib, subprocess, sys
           manifest = pathlib.Path(os.environ['GAME_DIRECTORY']) / 'Cargo.toml'
-          engine = pathlib.Path('_engine').resolve().as_posix()
-          text = re.sub(r'(vesper3d\s*=\s*\{[^}\n]*\bpath\s*=\s*)"[^"]+"',
-                        lambda m: m[1] + '"' + engine + '"', manifest.read_text())
-          manifest.write_text(text)
+          engine = pathlib.Path('_engine').resolve()
+          subprocess.run([sys.executable, 'distribution/bind_engine.py', '--manifest', str(manifest), '--engine', str(engine)], check=True)
+          metadata = json.loads(subprocess.run(['cargo', 'metadata', '--locked', '--format-version', '1', '--manifest-path', str(manifest)],
+                                              check=True, text=True, stdout=subprocess.PIPE).stdout)
+          engines = [package for package in metadata['packages'] if package['name'] == 'be2']
+          if (len(engines) != 1 or engines[0]['source'] is not None
+                  or pathlib.Path(engines[0]['manifest_path']).resolve() != engine / 'Cargo.toml'):
+              raise RuntimeError('Native checks resolved an SDK outside the exact catalog engine checkout')
       - name: Build the shared hub for real room tests
         if: matrix.game.hub
         shell: pwsh
