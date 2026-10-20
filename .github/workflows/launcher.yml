@@ -11,6 +11,9 @@ on:
       - site/collaboration.mjs
       - site/collaboration.css
       - site/collaboration.test.mjs
+      - site/game-metadata.mjs
+      - site/game-metadata.test.mjs
+      - distribution/game_metadata.py
       - .github/workflows/launcher.yml
   workflow_dispatch:
     inputs:

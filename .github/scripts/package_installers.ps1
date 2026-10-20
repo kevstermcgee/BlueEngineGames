@@ -34,6 +34,17 @@ foreach ($game in $definitions) {
     $stage = Join-Path ([IO.Path]::GetTempPath()) "blueengine-installer-$([Guid]::NewGuid().ToString('N'))"
     try {
         Expand-Archive -LiteralPath $archive -DestinationPath $stage
+        # Preserve the root manifest and ZIP comment across updater repacking.
+        # Explicit historical backfills keep their original archive immutable.
+        $legacyRow = "$stage.legacy-row.json"
+        if ($PreserveArchives) {
+            $catalog | Where-Object slug -eq $game.slug | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $legacyRow -Encoding utf8NoBOM
+            & python (Join-Path $repoRoot 'distribution/package_metadata.py') restore --archive $archive --stage $stage --legacy-row $legacyRow
+        } else {
+            & python (Join-Path $repoRoot 'distribution/package_metadata.py') restore --archive $archive --stage $stage
+        }
+        if ($LASTEXITCODE -ne 0) { throw "Portable ZIP metadata validation failed for $($game.slug)" }
+        if (Test-Path -LiteralPath $legacyRow) { Remove-Item -LiteralPath $legacyRow -Force }
         if (-not $game.exe) {
             $play = Join-Path $stage "Play-$($game.slug).exe"
             $plain = Join-Path $stage "$($game.slug).exe"
@@ -54,6 +65,8 @@ foreach ($game in $definitions) {
         if (-not $PreserveArchives) {
             Remove-Item $archive
             Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+            & python (Join-Path $repoRoot 'distribution/package_metadata.py') archive --stage $stage --archive $archive
+            if ($LASTEXITCODE -ne 0) { throw "Updater repacking lost portable metadata for $($game.slug)" }
         }
         ($catalog | Where-Object slug -eq $game.slug).sha256 = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
         $manifest = @(Get-ChildItem $stage -Recurse -File | ForEach-Object {
@@ -68,7 +81,14 @@ foreach ($game in $definitions) {
                 "/DAppFolder=$($game.folder)" "/DSourceDir=$stage" "/DOutputDir=$dist" `
                 "/DReleaseTag=$env:RELEASE_TAG" @iconArgs (Join-Path $PSScriptRoot 'game_installer.iss')
         if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed for $($game.slug)" }
-    } finally { if (Test-Path $stage) { Remove-Item $stage -Recurse -Force } }
+        $installer = Join-Path $dist "$($game.slug)-setup-windows-x64.exe"
+        # Only this just-compiled, unsigned Inno output may carry an SFX overlay.
+        & python (Join-Path $repoRoot 'distribution/package_metadata.py') installer --stage $stage --installer $installer
+        if ($LASTEXITCODE -ne 0) { throw "Portable installer metadata failed for $($game.slug)" }
+    } finally {
+        if (Test-Path "$stage.legacy-row.json") { Remove-Item "$stage.legacy-row.json" -Force }
+        if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+    }
 }
 Remove-Item $updater
 

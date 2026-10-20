@@ -13,6 +13,8 @@ import {
   renderPublishedReleases,
   mountCollaboration,
   clearCommunitySession,
+  metadataImportPlan,
+  renderImportedMetadata,
 } from "./collaboration.mjs";
 
 globalThis.crypto ||= webcrypto;
@@ -107,8 +109,14 @@ test("source handoffs retain exact commits, folder and ancestry without credenti
   assert.match(prompt, /Community parent revision: revision-1/);
   assert.match(prompt, /native Windows x64 EXE installers only/);
   assert.match(prompt, /no rat image/);
-  assert.match(prompt, /centered, text-only BlueEngine Games opening title card/);
-  assert.match(prompt, /Do not reuse retired Feta\/white-rat artwork as branding or new game art/);
+  assert.match(
+    prompt,
+    /centered, text-only BlueEngine Games opening title card/,
+  );
+  assert.match(
+    prompt,
+    /Do not reuse retired Feta\/white-rat artwork as branding or new game art/,
+  );
   assert.match(prompt, /even if historical source instructions approve it/);
   assert.match(prompt, /pending request as a published/);
   assert.doesNotMatch(prompt, /Bearer|private-token/);
@@ -174,7 +182,10 @@ test("rendering escapes community content and rejects mutable or foreign source 
   assert.match(renderCollaboration(), /data-community-action="create"/);
   assert.match(renderCollaboration(), /Copy new-game AI handoff/);
   assert.match(buildNewGameHandoff(), /exact source SHA/);
-  assert.match(buildNewGameHandoff(), /Do not reuse retired Feta\/white-rat artwork as branding or new game art/);
+  assert.match(
+    buildNewGameHandoff(),
+    /Do not reuse retired Feta\/white-rat artwork as branding or new game art/,
+  );
   assert.match(
     renderCollaboration(game),
     /Human and AI feedback enter the same queue/,
@@ -199,7 +210,7 @@ function node() {
     },
   };
 }
-function fixture(t, { fetcher, initialGame = game } = {}) {
+function fixture(t, { fetcher, initialGame = game, metadataReader } = {}) {
   clearCommunitySession();
   const originalFormData = globalThis.FormData;
   globalThis.FormData = function (form) {
@@ -212,7 +223,26 @@ function fixture(t, { fetcher, initialGame = game } = {}) {
     status = node(),
     identity = node(),
     disconnect = node(),
-    root = node();
+    root = node(),
+    importedPreview = node();
+  const forms = Object.fromEntries(
+    ["create", "revision", "fork"].map((action) => {
+      const fields = {},
+        details = {};
+      const form = {
+        fields,
+        details,
+        closest: () => details,
+        querySelector(selector) {
+          const name = selector.match(/name="([^"]+)"/)?.[1];
+          return name ? (fields[name] ||= { value: "" }) : null;
+        },
+      };
+      return [action, form];
+    }),
+  );
+  panel.querySelector = (selector) =>
+    forms[selector.match(/action="([^"]+)"/)?.[1]] || null;
   root.contains = () => true;
   root.querySelector = (selector) =>
     ({
@@ -220,8 +250,13 @@ function fixture(t, { fetcher, initialGame = game } = {}) {
       "[data-community-status]": status,
       "[data-community-identity]": identity,
       "[data-community-disconnect]": disconnect,
+      "[data-community-imported]": importedPreview,
+      '[data-community-action="create"]': forms.create,
     })[selector] || null;
-  const cleanup = mountCollaboration(root, initialGame, { fetcher });
+  const cleanup = mountCollaboration(root, initialGame, {
+    fetcher,
+    metadataReader,
+  });
   t.after(() => {
     cleanup();
     clearCommunitySession();
@@ -250,6 +285,9 @@ function fixture(t, { fetcher, initialGame = game } = {}) {
     identity,
     disconnect,
     submit,
+    importFile: cleanup.importFile,
+    forms,
+    importedPreview,
     loaded: () => new Promise((resolve) => setImmediate(resolve)),
   };
 }
@@ -580,4 +618,291 @@ test("only canonical pinned source layouts enter fresh AI handoffs", () => {
       /could not be verified/,
     );
   }
+});
+
+const importedGame = (overrides = {}) => ({
+  format: "blueengine.game",
+  schema_version: 1,
+  game: {
+    slug: "orbit",
+    title: "Embedded Orbit",
+    version: "0.2.0",
+    description: "Description from the game.",
+    controls: "Space to orbit",
+    authors: ["My cousin"],
+    tags: ["puzzle"],
+    ...overrides,
+  },
+  source: {
+    repository: "kevstermcgee/BlueEngine",
+    commit: "b".repeat(40),
+    game_path: `games/${overrides.slug || "orbit"}`,
+  },
+  engine: null,
+});
+const ok = (value) => ({ ok: true, json: async () => value });
+
+test("imported existing source selects its registered revision without a duplicate write", async (t) => {
+  const metadata = importedGame();
+  metadata.source.commit = revision.source_commit;
+  const calls = [];
+  const view = fixture(t, {
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      calls.push(options);
+      return ok(document());
+    },
+  });
+  await view.loaded();
+  await view.importFile({ name: "wrong-name.exe" });
+  assert.match(view.status.textContent, /already registered/);
+  assert.equal(
+    calls.some((call) => call.method === "POST"),
+    false,
+  );
+  assert.match(view.importedPreview.innerHTML, /Embedded Orbit/);
+  assert.doesNotMatch(view.importedPreview.innerHTML, /wrong-name/);
+});
+
+test("a new imported source autofills an update and uses current live history with a stale-session warning", async (t) => {
+  const metadata = importedGame();
+  metadata.lineage = { revision_id: "older-session", parent_game: null };
+  const calls = [];
+  const view = fixture(t, {
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      const payload = options.body && JSON.parse(options.body);
+      calls.push({ url, payload });
+      if (url.endsWith("/me"))
+        return ok({ actor: { login: "cousin", role: "maintainer" } });
+      return ok(payload ? receipt(payload) : document());
+    },
+  });
+  await view.loaded();
+  await view.importFile({});
+  assert.equal(view.forms.revision.fields.source_commit.value, "b".repeat(40));
+  assert.equal(view.forms.revision.fields.version.value, "0.2.0");
+  assert.equal(view.forms.revision.details.open, true);
+  assert.match(view.importedPreview.innerHTML, /advanced after this file/);
+  assert.equal(
+    calls.some((call) => call.payload),
+    false,
+  );
+  await view.submit("connect", { token: "cousin-token" });
+  await view.submit(
+    "revision",
+    Object.fromEntries(
+      Object.entries(view.forms.revision.fields).map(([name, input]) => [
+        name,
+        input.value,
+      ]),
+    ),
+  );
+  assert.equal(
+    calls.find((call) => call.url.endsWith("/revisions"))?.payload
+      .expected_revision,
+    revision.id,
+  );
+});
+
+test("history navigation after import keeps displayed and requested revisions in agreement", async (t) => {
+  const metadata = importedGame();
+  metadata.source.commit = revision.source_commit;
+  const older = {
+    ...revision,
+    id: "old-revision",
+    version: "0.0.9",
+    source_commit: "c".repeat(40),
+  };
+  const history = { ...game, revisions: [revision, older] };
+  let requested;
+  const view = fixture(t, {
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      const payload = options.body && JSON.parse(options.body);
+      if (url.endsWith("/me"))
+        return ok({ actor: { login: "cousin", role: "maintainer" } });
+      if (payload) {
+        requested = payload;
+        return ok(receipt(payload));
+      }
+      return ok(document(history));
+    },
+  });
+  await view.loaded();
+  await view.importFile({});
+  await view.root.emit("change", {
+    value: older.id,
+    matches: (selector) => selector === "[data-community-revision]",
+  });
+  assert.match(view.panel.innerHTML, /value="old-revision" selected/);
+  await view.submit("connect", { token: "cousin-token" });
+  await view.submit("publish", {});
+  assert.equal(requested.revision_id, older.id);
+});
+
+test("new imported forks reserve through the parent API before submitting their filled source", async (t) => {
+  const metadata = importedGame({
+    slug: "orbit-cousin",
+    title: "Cousin's Orbit",
+  });
+  metadata.lineage = {
+    root_game: "orbit",
+    parent_game: "orbit",
+    parent_revision: revision.id,
+  };
+  const child = {
+    ...game,
+    slug: "orbit-cousin",
+    title: "Cousin's Orbit",
+    parent_game: "orbit",
+    parent_revision: revision.id,
+  };
+  let reserved = false;
+  const writes = [];
+  const view = fixture(t, {
+    initialGame: null,
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      const payload = options.body && JSON.parse(options.body);
+      if (url.endsWith("/me"))
+        return ok({ actor: { login: "cousin", role: "contributor" } });
+      if (payload) {
+        writes.push({ url, payload });
+        reserved = true;
+        return ok(receipt(payload));
+      }
+      if (url.endsWith("/orbit-cousin") && !reserved)
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ error: "Not registered" }),
+        };
+      return ok(document(reserved ? child : game));
+    },
+  });
+  await view.importFile({});
+  assert.equal(view.forms.fork.fields.slug.value, "orbit-cousin");
+  assert.match(view.status.textContent, /preserve its parent history/);
+  assert.equal(writes.length, 0);
+  await view.submit("connect", { token: "cousin-token" });
+  await view.submit("fork", { slug: "orbit-cousin", title: "Cousin's Orbit" });
+  assert.match(writes[0].url, /\/games\/orbit\/forks$/);
+  assert.equal(writes[0].payload.source_revision, revision.id);
+  assert.equal(view.forms.revision.fields.source_game.value, "orbit-cousin");
+  assert.equal(
+    view.forms.revision.fields.source_commit.value,
+    metadata.source.commit,
+  );
+  assert.equal(
+    writes.some((entry) => entry.url === COMMUNITY_URL + "/games"),
+    false,
+  );
+});
+
+test("draft, incompatible and standalone imported metadata gives an AI export next step and escapes previews", () => {
+  const metadata = importedGame({ title: '<img src=x onerror="steal()">' });
+  const html = renderImportedMetadata(metadata);
+  assert.doesNotMatch(html, /<img/);
+  assert.match(html, /&lt;img/);
+  metadata.source.dirty = true;
+  let plan = metadataImportPlan(metadata, game);
+  assert.equal(plan.ready, false);
+  assert.equal(plan.fields.source_commit, "");
+  assert.match(plan.messages.join(" "), /Ask your AI to commit/);
+  delete metadata.source.dirty;
+  metadata.source.commit = "b".repeat(64);
+  assert.match(metadataImportPlan(metadata).messages.join(" "), /40-character/);
+  metadata.source.commit = "b".repeat(40);
+  metadata.source.game_path = ".";
+  assert.match(
+    metadataImportPlan(metadata).messages.join(" "),
+    /community checkout/,
+  );
+});
+
+test("official asset-folder source pins select registered history and prefill supported updates", () => {
+  const metadata = importedGame({ slug: "leo" });
+  metadata.source.game_path = "assets/games/leo";
+  const current = {
+    ...game,
+    slug: "leo",
+    revisions: [
+      {
+        ...revision,
+        source_game: "leo",
+        source: { game_path: "assets/games/leo" },
+      },
+    ],
+  };
+  metadata.source.commit = revision.source_commit;
+  assert.equal(metadataImportPlan(metadata, current).mode, "existing");
+  metadata.source.commit = "b".repeat(40);
+  const plan = metadataImportPlan(metadata, current);
+  assert.equal(plan.mode, "update");
+  assert.equal(plan.ready, true);
+  assert.equal(plan.fields.source_game, "leo");
+  assert.equal(plan.messages.length, 0);
+});
+
+test("unchanged official exports select server history across commits, repositories and paths", async (t) => {
+  const metadata = importedGame({ slug: "leo" });
+  metadata.source.tree = "C".repeat(40);
+  metadata.source.repository = "publisher/BlueEngineGames";
+  metadata.source.game_path = "games/leo";
+  const registered = {
+    ...revision,
+    source_game: "leo",
+    source_tree: "c".repeat(40),
+    source_repository: "kevstermcgee/BlueEngine",
+    source: { game_path: "assets/games/leo" },
+  };
+  const current = { ...game, slug: "leo", revisions: [registered] };
+  const plan = metadataImportPlan(metadata, current);
+  assert.equal(plan.mode, "existing");
+  assert.equal(plan.matchKind, "tree");
+  assert.equal(plan.revision, registered.id);
+  assert.deepEqual(plan.messages, []);
+  const calls = [];
+  const view = fixture(t, {
+    initialGame: current,
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      calls.push(options);
+      return ok(document(current));
+    },
+  });
+  await view.loaded();
+  await view.importFile({ name: "exported-leo.exe" });
+  assert.match(
+    view.status.textContent,
+    /source files match an already registered revision/,
+  );
+  assert.equal(
+    calls.some((call) => call.method === "POST"),
+    false,
+  );
+  metadata.source.tree = "d".repeat(40);
+  assert.equal(metadataImportPlan(metadata, current).mode, "update");
+  assert.equal(
+    metadataImportPlan(metadata, { ...current, slug: "other" }).mode,
+    "create",
+  );
+  metadata.source.dirty = true;
+  assert.equal(metadataImportPlan(metadata, current).ready, false);
+});
+
+test("exact source identity takes priority over an older tree-equivalent revision", () => {
+  const metadata = importedGame();
+  metadata.source.tree = "c".repeat(40);
+  const treeRevision = { ...revision, source_tree: metadata.source.tree };
+  const exactRevision = {
+    ...revision,
+    id: "exact-revision",
+    source_commit: metadata.source.commit,
+  };
+  const current = { ...game, revisions: [treeRevision, exactRevision] };
+  const plan = metadataImportPlan(metadata, current);
+  assert.equal(plan.matchKind, "source");
+  assert.equal(plan.revision, exactRevision.id);
 });

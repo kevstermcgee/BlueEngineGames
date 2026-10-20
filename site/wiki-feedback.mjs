@@ -1,4 +1,8 @@
-import { renderCollaboration, mountCollaboration } from "./collaboration.mjs";
+import {
+  renderCollaboration,
+  mountCollaboration,
+  mountGlobalGameDrop,
+} from "./collaboration.mjs";
 import {
   mountFeedback,
   renderFeedback,
@@ -14,6 +18,7 @@ if (root) {
 
 void mountPublicScores(document);
 
+let globalImporter;
 for (const element of document.querySelectorAll("[data-community-root]")) {
   const game = element.dataset.communityGame
     ? JSON.parse(element.dataset.communityGame)
@@ -21,5 +26,13 @@ for (const element of document.querySelectorAll("[data-community-root]")) {
   element.innerHTML = renderCollaboration(game, {
     sectionId: game ? "guide-collaborate" : "creator-collaborate",
   });
-  mountCollaboration(element, game);
+  const importer = mountCollaboration(element, game);
+  if (!globalImporter) {
+    globalImporter = importer;
+    mountGlobalGameDrop(document, importer.importFile, () => {
+      const details = element.closest("details");
+      if (details) details.open = true;
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 }

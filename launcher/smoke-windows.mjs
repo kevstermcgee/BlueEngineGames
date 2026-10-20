@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { writeFile, readFile, unlink, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { createServer } from "node:http";
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, label, timeout = 60000) {
   const end = Date.now() + timeout;
@@ -31,6 +33,20 @@ let serial = 0;
 const pending = new Map();
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
+  if (message.method === "Fetch.requestPaused") {
+    void call("Fetch.fulfillRequest", {
+      requestId: message.params.requestId,
+      responseCode: 404,
+      responseHeaders: [
+        { name: "Content-Type", value: "application/json" },
+        { name: "Access-Control-Allow-Origin", value: "*" },
+      ],
+      body: Buffer.from(
+        JSON.stringify({ error: "Unregistered import fixture" }),
+      ).toString("base64"),
+    });
+    return;
+  }
   if (!message.id) return;
   const p = pending.get(message.id);
   if (!p) return;
@@ -134,6 +150,134 @@ try {
   console.log(
     `Real Windows app rendered ${snapshot.catalog.games.length} games through native IPC.`,
   );
+  // Real Windows File paths travel through CDP's native drag data into WebView2,
+  // not a synthetic JavaScript drop object. The canonical Python writer creates
+  // this inert BAT's initial metadata block. Its body must never be launched.
+  const artifact = join(snapshot.root, "unrelated-import-name.bat");
+  const documentPath = join(snapshot.root, "portable-import-fixture.json");
+  const executed = join(snapshot.root, "portable-import-must-not-execute.txt");
+  const metadata = {
+    format: "blueengine.game",
+    schema_version: 1,
+    game: {
+      slug: "metadata-native-drop",
+      title: "Embedded Windows Drop",
+      version: "9.8.7",
+      description: "Details carried by the actual dropped game file.",
+      controls: "Arrows move",
+      authors: ["A cousin"],
+      tags: ["test"],
+    },
+    source: {
+      repository: "kevstermcgee/BlueEngine",
+      commit: "a".repeat(40),
+      game_path: "games/metadata-native-drop",
+    },
+    engine: null,
+  };
+  await writeFile(documentPath, JSON.stringify(metadata));
+  await writeFile(artifact, `@echo Unexpected execution>"${executed}"\r\n`);
+  createdSaves.push(artifact, documentPath);
+  execFileSync("python", [
+    "-c",
+    "import importlib.util,json,pathlib,sys; spec=importlib.util.spec_from_file_location('metadata',sys.argv[1]); m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m); m.embed(pathlib.Path(sys.argv[2]),json.loads(pathlib.Path(sys.argv[3]).read_text(encoding='utf-8')))",
+    resolve("distribution/game_metadata.py"),
+    artifact,
+    documentPath,
+  ]);
+  await call("Fetch.enable", {
+    patterns: [
+      {
+        urlPattern:
+          "https://blue-engine.duckdns.org/community/v1/games/metadata-native-drop",
+        requestStage: "Request",
+      },
+    ],
+  });
+  try {
+    for (const type of ["dragEnter", "dragOver", "drop"])
+      await call("Input.dispatchDragEvent", {
+        type,
+        x: 100,
+        y: 100,
+        data: { items: [], files: [artifact], dragOperationsMask: 1 },
+      });
+    await until(
+      () =>
+        evaluate(
+          `document.querySelector('#creator').open && document.querySelector('#creator-content [data-community-action="create"] [name="slug"]').value === 'metadata-native-drop'`,
+        ),
+      "native file drop opens creator and fills its embedded identity",
+    );
+    const imported = await evaluate(
+      `(() => { const form=document.querySelector('#creator-content [data-community-action="create"]'); return Object.fromEntries(new FormData(form)); })()`,
+    );
+    assert.equal(imported.title, metadata.game.title);
+    assert.equal(imported.version, metadata.game.version);
+    assert.equal(imported.source_commit, metadata.source.commit);
+    assert.equal(imported.source_repository, metadata.source.repository);
+    assert.equal(imported.source_game, metadata.game.slug);
+    assert.ok(imported.note);
+    const preview = await evaluate(
+      `document.querySelector('#creator-content [data-community-imported]').textContent`,
+    );
+    for (const expected of [
+      metadata.game.description,
+      metadata.game.controls,
+      "A cousin",
+    ])
+      assert.ok(preview.includes(expected));
+    assert.equal(preview.includes("unrelated-import-name"), false);
+    await assert.rejects(readFile(executed), { code: "ENOENT" });
+    const image = await call("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: false,
+    });
+    await mkdir("launcher-smoke", { recursive: true });
+    await writeFile(
+      "launcher-smoke/windows-game-file-import.png",
+      Buffer.from(image.data, "base64"),
+    );
+    // Clear the prior result so this proves the picker performs a fresh import.
+    await evaluate(
+      `document.querySelector('#creator-content [data-community-action="create"] [name="title"]').value = ''`,
+    );
+    // The accessible picker follows the same parser and refill flow.
+    const dom = await call("DOM.getDocument");
+    const input = await call("DOM.querySelector", {
+      nodeId: dom.root.nodeId,
+      selector: "#creator-content [data-community-file]",
+    });
+    await call("DOM.setFileInputFiles", {
+      nodeId: input.nodeId,
+      files: [artifact],
+    });
+    await until(
+      () =>
+        evaluate(
+          `document.querySelector('#creator-content [data-community-action="create"] [name="title"]').value === 'Embedded Windows Drop' && document.querySelector('#creator-content [data-community-status]').textContent.includes('Game details loaded')`,
+        ),
+      "native file picker metadata import",
+    );
+    await assert.rejects(readFile(executed), { code: "ENOENT" });
+    await writeFile(
+      "launcher-smoke/game-file-import-proof.json",
+      JSON.stringify(
+        {
+          native_file_drop: true,
+          picker: true,
+          fields: imported,
+          metadata_preview: true,
+          untrusted_body_not_executed: true,
+        },
+        null,
+        2,
+      ),
+    );
+    await evaluate(`document.querySelector('#close-creator').click()`);
+  } finally {
+    await call("Fetch.disable");
+  }
   assert.equal(
     await evaluate(
       `document.querySelector('#sidebar-toggle').getAttribute('aria-expanded')`,

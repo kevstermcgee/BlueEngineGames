@@ -169,3 +169,42 @@
 .community-center .community-drift p {
   margin: 8px 0;
 }
+
+.community-import-drop {
+  border: 2px dashed var(--muted, #75899f);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 22px 0;
+  background: var(--bg, #0b1322);
+}
+.community-import-drop.dragging {
+  border-color: var(--accent, #79bdff);
+  background: var(--surface, #142033);
+}
+.community-import-drop p {
+  margin: 8px 0 12px;
+}
+.community-import-drop input[type="file"] {
+  max-width: 100%;
+  padding: 10px;
+}
+.community-imported {
+  border-left: 3px solid var(--accent, #79bdff);
+  padding: 4px 18px;
+  margin: 18px 0;
+}
+.community-imported dl {
+  display: grid;
+  grid-template-columns: minmax(60px, auto) minmax(0, 1fr);
+  gap: 8px 16px;
+}
+.community-imported dt {
+  font-weight: 650;
+}
+.community-imported dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.community-import-next {
+  color: var(--accent, #a6d1ff);
+}

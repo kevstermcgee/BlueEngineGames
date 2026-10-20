@@ -7,6 +7,9 @@ import tempfile
 import unittest
 import zipfile
 
+from distribution import game_metadata
+from distribution.test_package_metadata import pe
+
 
 @unittest.skipUnless(shutil.which('pwsh'), 'PowerShell is required for native release packaging')
 class NativePackaging(unittest.TestCase):
@@ -33,7 +36,19 @@ class NativePackaging(unittest.TestCase):
                 shutil.copy2(source / '.github/scripts/package_native_releases.ps1', scripts)
                 shutil.copy2(source / 'distribution/check_catalog.py', root / 'distribution')
                 shutil.copy2(source / 'distribution/bind_engine.py', root / 'distribution')
-                (root / '.games-catalog.json').write_text(json.dumps({'playables': []}))
+                for name in ('game_metadata.py', 'package_metadata.py'):
+                    shutil.copy2(source / 'distribution' / name, root / 'distribution')
+                for checkout, repository in ((engine, 'Engine'), (root, 'Games')):
+                    subprocess.run(['git', '-C', str(checkout), 'init', '-q', '-b', 'main'], check=True)
+                    subprocess.run(['git', '-C', str(checkout), 'config', 'user.name', 'Fixture'], check=True)
+                    subprocess.run(['git', '-C', str(checkout), 'config', 'user.email', 'fixture@invalid'], check=True)
+                    subprocess.run(['git', '-C', str(checkout), 'config', 'core.autocrlf', 'false'], check=True)
+                    subprocess.run(['git', '-C', str(checkout), 'remote', 'add', 'origin', f'https://github.com/public/{repository}.git'], check=True)
+                subprocess.run(['git', '-C', str(engine), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(engine), 'commit', '-qm', 'Frozen engine'], check=True)
+                engine_head = subprocess.check_output(['git', '-C', str(engine), 'rev-parse', 'HEAD'], text=True).strip()
+                (root / '.games-catalog.json').write_text(json.dumps({'playables': [], 'files': [],
+                    'source_repository': 'public/Engine', 'source_revision': engine_head}))
                 manifest = dict(version=1, game_roots=['games'], data_playables=[],
                                 native_playables=[dict(slug='sample', name='Sample', directory='games/sample',
                                                        kind='cargo-package', binary='sample')],
@@ -67,7 +82,9 @@ class NativePackaging(unittest.TestCase):
                     'if os.environ["FAIL_PACKAGE"] == "true":\n'
                     '    raise SystemExit(7)\n'
                     'Path("dist").mkdir(exist_ok=True)\n'
-                    'Path("dist/sample.exe").write_bytes(b"MZfixture")\n')
+                    f'Path("dist/sample.exe").write_bytes(bytes.fromhex("{pe().hex()}"))\n')
+                subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+                subprocess.run(['git', '-C', str(root), 'commit', '-qm', 'Committed game'], check=True)
                 harness = base / 'run.ps1'
                 harness.write_text('''$ErrorActionPreference = 'Stop'
 function global:cargo {
@@ -136,7 +153,16 @@ exit 0
                     self.assertFalse(archive.exists())
                 else:
                     with zipfile.ZipFile(archive) as package:
-                        self.assertEqual(package.read('sample.exe'), b'MZfixture')
+                        executable = package.read('sample.exe')
+                        self.assertTrue(executable.startswith(pe()))
+                        self.assertEqual(package.getinfo('blueengine.game.json').compress_type, zipfile.ZIP_STORED)
+                        document = json.loads(package.read('blueengine.game.json'))
+                    self.assertEqual(game_metadata.extract(archive), document)
+                    self.assertEqual(document['game']['slug'], 'sample')
+                    self.assertEqual(document['engine']['commit'], engine_head)
+                    checksum = (root / 'dist/SHA256SUMS.txt').read_text().strip()
+                    import hashlib
+                    self.assertEqual(checksum, hashlib.sha256(archive.read_bytes()).hexdigest() + '  sample-windows-x64.zip')
 
 
 if __name__ == '__main__':
