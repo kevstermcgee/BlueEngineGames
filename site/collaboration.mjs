@@ -245,7 +245,7 @@ export function metadataImportPlan(document, current = null) {
         ? game.changelog.slice(0, 4000)
         : `Update ${game.title}${game.version ? ` to ${game.version}` : " from the exported game"}.`,
   };
-  const match =
+  const exactMatch =
     source &&
     !source.dirty &&
     current?.slug === game.slug &&
@@ -257,6 +257,21 @@ export function metadataImportPlan(document, current = null) {
           "kevstermcgee/BlueEngine") === source.repository &&
         (r.source?.game_path || `games/${r.source_game}`) === source.game_path,
     );
+  // Artifact provenance can use another repository or commit for identical
+  // files. Select only an existing ID from this game's verified server history.
+  const treeMatch =
+    !exactMatch &&
+    source &&
+    !source.dirty &&
+    source.tree &&
+    current?.slug === game.slug &&
+    current.revisions.find(
+      (r) =>
+        typeof r.source_tree === "string" &&
+        r.source_tree.toLowerCase() === source.tree.toLowerCase(),
+    );
+  const match = exactMatch || treeMatch;
+  const matchKind = exactMatch ? "source" : treeMatch ? "tree" : null;
   let mode = match
     ? "existing"
     : current?.slug === game.slug
@@ -271,15 +286,18 @@ export function metadataImportPlan(document, current = null) {
     messages.push(
       "These are draft game details. Ask your AI to commit the finished native source and export the game again; its source pin will fill in automatically.",
     );
-  else if (!validSlug(game.slug) || !SHA.test(source.commit.toLowerCase()))
+  else if (
+    !match &&
+    (!validSlug(game.slug) || !SHA.test(source.commit.toLowerCase()))
+  )
     messages.push(
       "These game details use an identity or source pin that this publishing service cannot accept yet. Ask your AI to export a game slug of at most 80 characters with a full 40-character Git commit.",
     );
-  else if (!canonical)
+  else if (!match && !canonical)
     messages.push(
       "Ask your AI to import this source into a canonical games/ folder with the current community checkout command, commit it, and export again before publishing.",
     );
-  else if (!game.version.trim())
+  else if (!match && !game.version.trim())
     messages.push(
       "Ask your AI to set a game version and export again; the publishing details will then be complete.",
     );
@@ -296,8 +314,9 @@ export function metadataImportPlan(document, current = null) {
   return {
     mode,
     fields,
-    ready,
+    ready: !!match || ready,
     revision: match?.id || null,
+    matchKind,
     parent: lineage?.parent_game || null,
     parentRevision: lineage?.parent_revision || null,
     messages,
@@ -599,7 +618,9 @@ export function mountCollaboration(
       status.textContent = !plan.ready
         ? plan.messages[0]
         : plan.mode === "existing"
-          ? "This source revision is already registered. It is selected below; review its publication status or request publication."
+          ? plan.matchKind === "tree"
+            ? "This game's source files match an already registered revision. It is selected below; review its publication status or request publication."
+            : "This source revision is already registered. It is selected below; review its publication status or request publication."
           : plan.mode === "update"
             ? "Game details loaded. Review the filled update below, then submit your source revision."
             : "Game details loaded. Review the filled registration, then connect your GitHub account and submit.";

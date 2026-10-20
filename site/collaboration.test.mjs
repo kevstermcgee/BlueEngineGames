@@ -844,3 +844,65 @@ test("official asset-folder source pins select registered history and prefill su
   assert.equal(plan.fields.source_game, "leo");
   assert.equal(plan.messages.length, 0);
 });
+
+test("unchanged official exports select server history across commits, repositories and paths", async (t) => {
+  const metadata = importedGame({ slug: "leo" });
+  metadata.source.tree = "C".repeat(40);
+  metadata.source.repository = "publisher/BlueEngineGames";
+  metadata.source.game_path = "games/leo";
+  const registered = {
+    ...revision,
+    source_game: "leo",
+    source_tree: "c".repeat(40),
+    source_repository: "kevstermcgee/BlueEngine",
+    source: { game_path: "assets/games/leo" },
+  };
+  const current = { ...game, slug: "leo", revisions: [registered] };
+  const plan = metadataImportPlan(metadata, current);
+  assert.equal(plan.mode, "existing");
+  assert.equal(plan.matchKind, "tree");
+  assert.equal(plan.revision, registered.id);
+  assert.deepEqual(plan.messages, []);
+  const calls = [];
+  const view = fixture(t, {
+    initialGame: current,
+    metadataReader: async () => ({ document: metadata }),
+    fetcher: async (url, options) => {
+      calls.push(options);
+      return ok(document(current));
+    },
+  });
+  await view.loaded();
+  await view.importFile({ name: "exported-leo.exe" });
+  assert.match(
+    view.status.textContent,
+    /source files match an already registered revision/,
+  );
+  assert.equal(
+    calls.some((call) => call.method === "POST"),
+    false,
+  );
+  metadata.source.tree = "d".repeat(40);
+  assert.equal(metadataImportPlan(metadata, current).mode, "update");
+  assert.equal(
+    metadataImportPlan(metadata, { ...current, slug: "other" }).mode,
+    "create",
+  );
+  metadata.source.dirty = true;
+  assert.equal(metadataImportPlan(metadata, current).ready, false);
+});
+
+test("exact source identity takes priority over an older tree-equivalent revision", () => {
+  const metadata = importedGame();
+  metadata.source.tree = "c".repeat(40);
+  const treeRevision = { ...revision, source_tree: metadata.source.tree };
+  const exactRevision = {
+    ...revision,
+    id: "exact-revision",
+    source_commit: metadata.source.commit,
+  };
+  const current = { ...game, revisions: [treeRevision, exactRevision] };
+  const plan = metadataImportPlan(metadata, current);
+  assert.equal(plan.matchKind, "source");
+  assert.equal(plan.revision, exactRevision.id);
+});

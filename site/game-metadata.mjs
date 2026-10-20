@@ -112,7 +112,8 @@ export function validateGameMetadata(document) {
       !commit(source.commit) ||
       (key === "source" &&
         (!portablePath(source.game_path) ||
-          ("dirty" in source && typeof source.dirty !== "boolean")))
+          ("dirty" in source && typeof source.dirty !== "boolean") ||
+          ("tree" in source && !commit(source.tree))))
     )
       fail("Game metadata has an invalid source pin.");
   }

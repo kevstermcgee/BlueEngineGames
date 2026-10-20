@@ -293,6 +293,8 @@ test("generic and publishing hints enforce limits without trusting authorship or
     (d) => d.game.authors.push(""),
     (d) => (d.game.controls = "a".repeat(8001)),
     (d) => (d.source.commit = "main"),
+    (d) => (d.source.tree = "main"),
+    (d) => (d.source.tree = null),
     (d) => (d.source.game_path = "games/NUL"),
     (d) => (d.game.title = "\ud800"),
     (d) => (d.hint = 1.5),
@@ -334,6 +336,7 @@ test("actual canonical Python writer interoperates with JS for EXE, signed EXE, 
     2: "after ten",
   };
   unicode.source.commit = "A".repeat(40);
+  unicode.source.tree = "B".repeat(40);
   await writeFile(join(directory, "metadata.json"), canonicalMetadata(unicode));
   for (const [name, signed] of [
     ["native.exe", false],
