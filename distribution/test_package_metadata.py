@@ -84,7 +84,8 @@ class PackageMetadataTests(unittest.TestCase):
 
     def test_actual_source_identity_and_public_information(self):
         document = adapter.build_document(self.root, 'sample', self.engine)
-        self.assertEqual(document['source'], dict(repository='public/Games', commit=command(self.root, 'rev-parse', 'HEAD'), game_path='games/sample'))
+        self.assertEqual(document['source'], dict(repository='public/Games', commit=command(self.root, 'rev-parse', 'HEAD'),
+                                                 game_path='games/sample', tree=command(self.root, 'rev-parse', 'HEAD:games/sample')))
         self.assertEqual(document['engine']['commit'], self.catalog['source_revision'])
         self.assertEqual(document['game']['version'], '1.2.3')
         self.assertEqual(document['game']['controls'], 'WASD')
@@ -96,18 +97,33 @@ class PackageMetadataTests(unittest.TestCase):
 
     def test_vendored_reader_is_the_reviewed_cross_repository_contract(self):
         self.assertEqual(hashlib.sha256(Path(metadata.__file__).read_bytes()).hexdigest(),
-                         'd858cab3d524de4dba1f69c2f959a10adbfb18cb3300046affe340c288c73936')
+                         'e991033e5a1cc075166cd2a84363f4388debe29ad73617ea75236e29d0c318e6')
 
     def test_engine_managed_exports_use_original_source_not_companion(self):
         self.catalog['files'] = [dict(path='games/sample/Cargo.toml', sha256=hashlib.sha256((self.game / 'Cargo.toml').read_bytes()).hexdigest())]
         self.commit()
         document = adapter.build_document(self.root, 'sample', self.engine)
-        self.assertEqual(document['source'], dict(repository='public/Engine', commit=self.catalog['source_revision'], game_path='games/sample'))
+        self.assertEqual(document['source'], dict(repository='public/Engine', commit=self.catalog['source_revision'],
+                                                 game_path='games/sample', tree=command(self.engine, 'rev-parse', 'HEAD:games/sample')))
         (self.game / 'Cargo.toml').write_text('[package]\nname="sample"\nversion="9.0.0"\n')
         command(self.root, 'add', '.')
         command(self.root, 'commit', '-qm', 'Unexported local edit')
         with self.assertRaisesRegex(ValueError, 'managed game changed'):
             adapter.build_document(self.root, 'sample', self.engine)
+
+    def test_unchanged_game_folder_keeps_tree_hint_across_snapshot_commits(self):
+        before = adapter.build_document(self.root, 'sample', self.engine)['source']
+        (self.root / 'unrelated.txt').write_text('Unrelated repository update')
+        command(self.root, 'add', '.')
+        command(self.root, 'commit', '-qm', 'Advance source snapshot')
+        after = adapter.build_document(self.root, 'sample', self.engine)['source']
+        self.assertNotEqual(before['commit'], after['commit'])
+        self.assertEqual(before['tree'], after['tree'])
+        self.assertEqual(before['tree'], command(self.root, 'rev-parse', 'HEAD:games/sample'))
+
+    def test_file_source_never_invents_a_folder_tree_hint(self):
+        binding = dict(repository='public/Games', commit=command(self.root, 'rev-parse', 'HEAD'), game_path='games/sample/Cargo.toml')
+        self.assertNotIn('tree', adapter.source_tree_binding(self.root, binding))
 
     def test_dirty_source_and_wrong_engine_never_get_a_publishable_pin(self):
         (self.game / 'Cargo.toml').write_text('uncommitted source')

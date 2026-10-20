@@ -6,10 +6,10 @@ The ZIP contains a stored root `blueengine.game.json` and the same bounded
 metadata envelope in its comment. This checksum protects the document's bytes;
 it does not authenticate a creator or authorize publication.
 
-`game_metadata.py` is vendored byte-for-byte from BlueEngine commit `5d3ce7d`:
+`game_metadata.py` is vendored byte-for-byte from BlueEngine commit `4a2b926`:
 
 ```text
-SHA256 d858cab3d524de4dba1f69c2f959a10adbfb18cb3300046affe340c288c73936
+SHA256 e991033e5a1cc075166cd2a84363f4388debe29ad73617ea75236e29d0c318e6
 ```
 
 Keeping the reader here lets packaging use the established catalog Engine SDK
@@ -22,6 +22,8 @@ Engine-owned exports use the catalog commit and original export path. Companion
 games use their committed GitHub source. Game controls, public author names,
 version, tags and available wiki information travel with those pins. Uncommitted
 game or Engine source cannot acquire a committed source claim.
+Folder sources also include their exact Git tree ID, allowing the launcher to
+recognize already registered game content across snapshot commits or exports.
 
 Packaging stamps owned outputs before hashes are computed. Installer packaging
 preserves the manifest and restores the ZIP comment after adding the updater.

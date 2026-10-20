@@ -73,6 +73,19 @@ def committed_inputs(root, paths):
     return git(root, 'rev-parse', 'HEAD').decode().strip()
 
 
+def source_tree_binding(root, binding):
+    """Add a hint from the exact committed folder, never from working files."""
+    target = (f"{binding['commit']}^{{tree}}" if binding['game_path'] == '.'
+              else f"{binding['commit']}:{binding['game_path']}")
+    kind = git(root, 'cat-file', '-t', target).strip()
+    if kind == b'tree':
+        binding['tree'] = git(root, 'rev-parse', target).decode().strip()
+    elif kind != b'blob':
+        raise ValueError('Pinned game source is not a committed folder or file')
+    # A source file, such as the First Light demo, cannot claim a folder tree.
+    return binding
+
+
 def definition(root, slug):
     if not SLUG.fullmatch(slug):
         raise ValueError('Unsafe game slug')
@@ -124,7 +137,7 @@ def managed_source(root, engine, catalog, directory, entry):
     original = inverse_export(engine, entry)
     game_path = str(PurePosixPath(original).parent) if PurePosixPath(original).name in (
         'Cargo.toml', 'game.project.json', 'game.json', 'catalog.json') else original
-    return dict(repository=catalog['source_repository'], commit=pin, game_path=game_path)
+    return source_tree_binding(engine, dict(repository=catalog['source_repository'], commit=pin, game_path=game_path))
 
 
 def build_document(root, slug, engine=None):
@@ -161,7 +174,7 @@ def build_document(root, slug, engine=None):
     description = identity.get('tagline') or cargo.get('description') or (wiki or {}).get('overview') or game['name']
     source = None if external else managed_source(root, engine, catalog, directory, entry) if entry else None
     if not external and source is None:
-        source = dict(repository=repository(root), commit=head, game_path=directory)
+        source = source_tree_binding(root, dict(repository=repository(root), commit=head, game_path=directory))
     engine_pin = None if external else dict(repository=catalog['source_repository'], commit=catalog['source_revision'])
     document = metadata.build_document(project, slug=slug, title=identity.get('title') or game['name'], version=version,
                                        description=description, source=source, engine=engine_pin, wiki=wiki)
