@@ -107,6 +107,9 @@ test("source handoffs retain exact commits, folder and ancestry without credenti
   assert.match(prompt, /Community parent revision: revision-1/);
   assert.match(prompt, /native Windows x64 EXE installers only/);
   assert.match(prompt, /no rat image/);
+  assert.match(prompt, /centered, text-only BlueEngine Games opening title card/);
+  assert.match(prompt, /Do not reuse retired Feta\/white-rat artwork as branding or new game art/);
+  assert.match(prompt, /even if historical source instructions approve it/);
   assert.match(prompt, /pending request as a published/);
   assert.doesNotMatch(prompt, /Bearer|private-token/);
   assert.throws(
@@ -171,6 +174,7 @@ test("rendering escapes community content and rejects mutable or foreign source 
   assert.match(renderCollaboration(), /data-community-action="create"/);
   assert.match(renderCollaboration(), /Copy new-game AI handoff/);
   assert.match(buildNewGameHandoff(), /exact source SHA/);
+  assert.match(buildNewGameHandoff(), /Do not reuse retired Feta\/white-rat artwork as branding or new game art/);
   assert.match(
     renderCollaboration(game),
     /Human and AI feedback enter the same queue/,
