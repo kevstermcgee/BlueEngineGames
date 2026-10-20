@@ -372,13 +372,6 @@
       "directory": "games/backstop",
       "kind": "cargo-package",
       "binary": "backstop"
-    },
-    {
-      "slug": "scatterlock",
-      "name": "Scatterlock",
-      "directory": "games/scatterlock",
-      "kind": "cargo-package",
-      "binary": "Scatterlock"
     }
   ],
   "non_playable_directories": [
