@@ -2,7 +2,19 @@ name: Build Windows launcher
 on:
   push:
     branches: [main]
-    paths: [launcher/**, site/launcher_feed.py, .github/workflows/launcher.yml]
+    paths:
+      - launcher/**
+      - site/launcher_feed.py
+      - site/feedback.mjs
+      - site/feedback.css
+      - site/feedback.test.mjs
+      - site/collaboration.mjs
+      - site/collaboration.css
+      - site/collaboration.test.mjs
+      - site/game-metadata.mjs
+      - site/game-metadata.test.mjs
+      - distribution/game_metadata.py
+      - .github/workflows/launcher.yml
   workflow_dispatch:
     inputs:
       publish:
@@ -19,15 +31,31 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Verify feedback and community receiver before publication
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        shell: pwsh
+        run: |
+          $status = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/health' -TimeoutSec 15
+          if ($status.ready -ne $true -or $status.service -ne 'blueengine-player-feedback' -or $status.format -ne 'blueengine-player-feedback-v1') {
+            throw 'Deploy and verify the HTTPS feedback receiver before publishing this launcher.'
+          }
+          $community = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/community/v1/games' -TimeoutSec 15
+          if ($community.schema_version -ne 1 -or $null -eq $community.games) {
+            throw 'Enable and verify the community API before publishing this launcher.'
+          }
+      - name: Verify standard Windows user can open a desktop app
+        shell: pwsh
+        run: ./launcher/prepare-upgrade-user.ps1
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: launcher/package-lock.json
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: launcher/src-tauri
+          cache-on-failure: true
       - name: Install frontend tools
         working-directory: launcher
         run: npm ci
@@ -35,62 +63,61 @@ jobs:
         working-directory: launcher
         run: |
           npm test
+          python -m unittest discover -s . -p 'test_publish.py' -v
           cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked
+          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked --example verify-update-signature
           cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked round_trip -- --ignored
       - name: Build per-user installer and signed app update
         working-directory: launcher
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
         run: npm run tauri -- build --bundles nsis
-      - name: Verify Windows app starts and renders its library
+      - name: Extract exact signed installer payload for upgrade verification
         shell: pwsh
         run: |
-          $exe = Resolve-Path 'launcher/src-tauri/target/release/blueengine-games-launcher.exe'
-          $app = Start-Process $exe -PassThru
-          try {
-            $ready = $false
-            for ($i = 0; $i -lt 30; $i++) {
-              Start-Sleep -Seconds 1
-              $app.Refresh()
-              if ($app.HasExited) { throw "Launcher exited before opening its window" }
-              if ($app.MainWindowHandle -ne 0 -and $app.MainWindowTitle -eq 'BlueEngine Games') { $ready = $true; break }
-            }
-            if (-not $ready) { throw 'Launcher window did not become ready' }
-          } finally {
-            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          $config = Get-Content launcher/src-tauri/tauri.conf.json | ConvertFrom-Json
+          if ($config.plugins.updater.dangerousInsecureTransportProtocol -or $config.app.windows[0].additionalBrowserArgs) { throw 'Production configuration must not enable CI transport or debugging' }
+          # Tauri patches a bundle-type marker into the packaged EXE, then restores
+          # the raw target/release EXE. Compare against the signed installer payload.
+          $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          $payload = Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production-payload'
+          & 'C:\Program Files\7-Zip\7z.exe' x $installer.FullName "-o$payload" -y | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'Could not extract the signed installer payload for verification' }
+          $main = @(Get-ChildItem $payload -Recurse -Filter 'blueengine-games-launcher.exe')
+          if ($main.Count -ne 1) { throw 'Expected exactly one launcher executable in the signed installer' }
+          Copy-Item $main[0].FullName (Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-production.exe')
+      - name: Build isolated WebView instrumentation for Windows UI checks
+        working-directory: launcher
+        # Wry overrides WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS. Only this separate
+        # older executable gets a CDP port and loopback HTTP feed. The signed
+        # production NSIS bundle above retains its HTTPS endpoint and real version.
+        run: npm run tauri -- build --no-bundle --features feedback-smoke --config src-tauri/tauri.ci.conf.json
+      - name: Verify Windows library and real signed launcher upgrade
+        shell: pwsh
+        run: ./launcher/smoke-upgrade.ps1
+      - name: Remove temporary Windows test account
+        if: always()
+        shell: pwsh
+        run: |
+          if (Get-LocalUser -Name BlueEngineCI -ErrorAction SilentlyContinue) {
+            Remove-LocalUser -Name BlueEngineCI
           }
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: BlueEngine-Games-Windows-x64
           path: |
             launcher/src-tauri/target/release/bundle/nsis/*.exe
             launcher/src-tauri/target/release/bundle/nsis/*.sig
+            launcher-smoke/*.png
+            launcher-smoke/*.json
+            launcher-smoke/*.log
       - name: Publish installer and signed update metadata
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          $version = (Get-Content launcher/package.json | ConvertFrom-Json).version
-          $tag = "launcher-v$version"
-          $installer = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
-          $signature = Get-Content "$($installer.FullName).sig" -Raw
-          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-          $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
-          $date = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          $update = @{version=$version; notes='BlueEngine Games library, verified game installs, saved-game-preserving updates and built-in game guides.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
-          $update | ConvertTo-Json -Depth 6 | Set-Content launcher-update.json -Encoding utf8NoBOM
-          "$hash  $($installer.Name)" | Set-Content LAUNCHER-SHA256SUMS.txt -Encoding ascii
-          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "One Windows library to install, play and update BlueEngine games. Includes game guides, design credits, screenshots, favorites, a download queue and offline installed play. Windows may show a reputation warning for this unsigned installer. Game downloads are verified against pinned SHA256 values; launcher updates require a valid signing key." --latest=false
-          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed; existing versions are never overwritten' }
-          $metadata = @{version=$version; url=$url; sha256=$hash; size=$installer.Length; update=$update}
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin main
-          git checkout -B launcher-release-site origin/main
-          $metadata | ConvertTo-Json -Depth 8 | Set-Content site/launcher-release.json -Encoding utf8NoBOM
-          git add site/launcher-release.json
-          git commit -m "Publish Windows launcher $version download and signed update feed"
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) { throw 'Installer is published; retry the site metadata commit after resolving concurrent main updates' }
+          python launcher/publish.py --repository "$env:GITHUB_REPOSITORY" --source "$env:GITHUB_SHA" --bundle-directory launcher/src-tauri/target/release/bundle/nsis
+          if ($LASTEXITCODE -ne 0) { throw 'Launcher publication was not confirmed; retry the original source workflow without overwriting release assets.' }

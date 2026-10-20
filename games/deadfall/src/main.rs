@@ -7,9 +7,12 @@
 //!   deadfall --capture DIR --frames 60,300 [--solo] [--screen stats|settings|host|join|online]
 //!                                     save screenshots of those frames, then exit (for runs nobody watches)
 //!   --shadows off|simple|full         shadow quality for this run (default: the Settings choice, else simple)
-//!   --size WxH   --mute   --novsync
+//!   --size WxH   --windowed   --fullscreen   --mute   --novsync
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use deadfall::client::{app::App, platform};
+use deadfall::{
+    client::{app::App, platform},
+    prefs::Prefs,
+};
 use macroquad::prelude::*;
 use vesper3d::viewer::{
     devkit::{flag_value, has_flag, parse_size},
@@ -27,6 +30,7 @@ fn window() -> macroquad::conf::Conf {
         ),
     );
     let args: Vec<String> = std::env::args().collect();
+    conf.miniquad_conf.fullscreen = Prefs::load().fullscreen_for(&args);
     if let Some((w, h)) = flag_value(&args, "--size").and_then(parse_size) {
         conf.miniquad_conf.window_width = w.clamp(320, 7680) as i32;
         conf.miniquad_conf.window_height = h.clamp(240, 4320) as i32;
@@ -39,6 +43,7 @@ fn window() -> macroquad::conf::Conf {
 
 #[macroquad::main(window)]
 async fn main() {
+    vesper3d::viewer::startup::show().await;
     let args: Vec<String> = std::env::args().collect();
     if has_flag(&args, "--help") || has_flag(&args, "-h") {
         println!(

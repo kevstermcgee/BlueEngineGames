@@ -19,13 +19,40 @@ not whether AI helped write the code. A catalog row may explicitly set
 `design_origin` to `ai` or `human` to override that classification. Keep the full
 Git history when building the site so IdeaForge credits remain available.
 
-Each game page also has a built-in game guide: overview, rules, controls, story,
-characters, screenshots and creation notes. AI designs include their recorded
+Each game page also has a built-in game guide: overview, rules, controls,
+screenshots and creation notes, plus story and named characters when implemented. AI designs include their recorded
 design rationale; human designs include the original creation request when it
 can be recovered. Missing historical originals are clearly labeled.
 **New games require a complete guide, three distinct gameplay captures and
-character screenshots before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
+screenshots for each listed named character before publication.** See [guide authoring](site/WIKI_AUTHORING.md)
 for the content format and validation commands.
+
+Every wiki and launcher guide includes a **Feedback center**: rate the game
+from 1–10 and describe what you enjoyed or would improve. Drafts are saved on
+the device. Add an optional display name and select **Submit feedback**; no
+account or sign-in is required. Accepted reviews are automatically saved under `docs/player-feedback/` in the engine repository and
+included in future IdeaForge planning, building and review. Wikis show public
+rating summaries and recent reviews when online.
+
+The website’s **Create & collaborate** hub and each game’s **Fork, improve &
+publish** panel connect to the BlueEngine community service. Browse source
+revisions and fork ancestry, copy a handoff into a fresh AI session, create a
+fork, submit a committed update, or request publication. GitHub identifies each
+contributor; configured maintainers have equal editing and publishing access.
+Access tokens stay in memory and are cleared on disconnect or page close.
+Development feedback records whether a human or AI wrote it and targets the
+engine, launcher, or a specific game in the daily improvement queue.
+
+Publication requests create a reviewable source change; a request is **pending**
+until the existing native Windows build, guide, gameplay screenshot, installer
+and checksum gates pass. The playable catalog and installed games continue to
+use verified immutable releases. Source archives are labeled separately from
+Windows game installers. See the engine’s
+[collaboration guide](https://github.com/kevstermcgee/BlueEngine/blob/main/docs/COLLABORATION.md)
+for fresh-session commands, server setup and maintainer configuration. These
+panels require the community-enabled service at
+`https://blue-engine.duckdns.org/community/v1`; an unavailable service leaves
+the existing game downloads and account-free reviews usable.
 
 Every game card and detail page uses a real in-game capture from
 `site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
@@ -34,8 +61,10 @@ as substitutes. CI checks screenshot coverage for every release definition, and
 a failed screenshot check leaves the previous website intact.
 
 **[Download ready-to-play Windows builds](../../releases/latest).** Each game has a
-Windows x64 installer that installs for your user, adds Start Menu shortcuts, and
-offers a desktop shortcut. No Rust toolchain or command line is required.
+Windows x64 installer that installs for your user and adds Start Menu shortcuts.
+New installers do not create individual game desktop shortcuts. Use the
+[Windows launcher](launcher/README.md) to install, play and update your library
+from one place. No Rust toolchain or command line is required.
 
 Run a newer installer to upgrade the same installation while keeping saves and
 settings. Games built by this repository also have a **Check for updates** Start
@@ -69,9 +98,9 @@ See [DISTRIBUTION.md](DISTRIBUTION.md) for release, versioning, and update detai
 
 Each experiment includes deterministic headless tests and an engine-feedback prompt.
 
-On Windows, double-click `Install-Physics-Game-Shortcuts.cmd` to package the
-games and place their launch shortcuts on the Desktop. Each game also has its own
-installer if you only want one shortcut.
+The legacy `Install-Physics-Game-Shortcuts.cmd` developer tool explicitly
+packages games and creates Desktop shortcuts when manually invoked. Normal
+launcher installations and updates do not use that tool.
 
 Most of this repository is an automatically maintained, browsable copy. BlueEngine is
 the source of truth for cataloged content. Standalone games explicitly named by the

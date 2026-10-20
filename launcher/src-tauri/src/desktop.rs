@@ -28,6 +28,9 @@ struct Installed {
     slug: String,
     installed: bool,
     release: String,
+    version: Option<String>,
+    released_at: Option<String>,
+    installed_at: Option<u64>,
     running: bool,
     path: String,
 }
@@ -100,13 +103,23 @@ impl Library {
             .iter()
             .map(|g| {
                 let dir = self.dir(&g.slug);
+                let installed = install::playable(&dir, &g.slug).is_some();
+                let release = fs::read_to_string(dir.join(".installed-release"))
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string();
+                let metadata = installed
+                    .then(|| install::metadata(&dir, &release))
+                    .flatten();
                 Installed {
                     slug: g.slug.clone(),
-                    installed: install::playable(&dir, &g.slug).is_some(),
-                    release: fs::read_to_string(dir.join(".installed-release"))
-                        .unwrap_or_default()
-                        .trim()
-                        .to_string(),
+                    installed,
+                    release,
+                    version: metadata.as_ref().map(|receipt| receipt.version.clone()),
+                    released_at: metadata
+                        .as_ref()
+                        .and_then(|receipt| receipt.released_at.clone()),
+                    installed_at: metadata.map(|receipt| receipt.installed_at),
                     running: children.contains_key(&g.slug)
                         || processes
                             .processes()
@@ -175,8 +188,9 @@ fn launch(slug: String, state: State<'_, Library>) -> Result<(), String> {
     }
     let dir = state.dir(&slug);
     let exe = install::playable(&dir, &slug).ok_or("Install this game first")?;
-    let child = Command::new(exe)
-        .current_dir(dir)
+    let working = exe.parent().unwrap_or(&dir);
+    let child = Command::new(&exe)
+        .current_dir(working)
         .spawn()
         .map_err(|e| e.to_string())?;
     state.children.lock().unwrap().insert(slug, child);
@@ -279,8 +293,64 @@ fn cancel_download(state: State<'_, Library>) {
     state.cancel.store(true, Ordering::SeqCst);
 }
 #[tauri::command]
-fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
+async fn submit_feedback(
+    review: crate::feedback::Review,
+    state: State<'_, Library>,
+) -> Result<crate::feedback::Receipt, String> {
+    state.game(&review.game)?;
+    tauri::async_runtime::spawn_blocking(move || crate::feedback::submit(&review))
+        .await
+        .map_err(|_| "Feedback could not be sent. Your draft is saved; try again.".to_string())?
+}
+#[tauri::command]
+fn open_game_versions(slug: String, state: State<'_, Library>) -> Result<(), String> {
     let game = state.game(&slug)?;
+    open_browser_url(&format!(
+        "https://kevstermcgee.github.io/BlueEngineGames/games/{}/#versions-heading",
+        game.slug
+    ))
+}
+#[tauri::command]
+fn open_community_url(url: String) -> Result<(), String> {
+    crate::community_links::validate(&url)?;
+    open_browser_url(&url)
+}
+fn open_browser_url(url: &str) -> Result<(), String> {
+    // ShellExecute opens a URL with the user's browser. No command shell or
+    // interpolated script receives a URL.
+    #[link(name = "shell32")]
+    extern "system" {
+        fn ShellExecuteW(
+            window: *mut std::ffi::c_void,
+            operation: *const u16,
+            file: *const u16,
+            parameters: *const u16,
+            directory: *const u16,
+            show: i32,
+        ) -> isize;
+    }
+    let wide: Vec<u16> = url.encode_utf16().chain(std::iter::once(0)).collect();
+    // SAFETY: callers validate or construct the URL; wide is NUL-terminated and remains alive
+    // through this call; optional pointer arguments are null as documented.
+    let result = unsafe {
+        ShellExecuteW(
+            std::ptr::null_mut(),
+            std::ptr::null(),
+            wide.as_ptr(),
+            std::ptr::null(),
+            std::ptr::null(),
+            1,
+        )
+    };
+    if result <= 32 {
+        Err("Could not open your browser. Please try again.".into())
+    } else {
+        Ok(())
+    }
+}
+#[tauri::command]
+async fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String> {
+    state.game(&slug)?;
     if state.busy.swap(true, Ordering::SeqCst) {
         return Err("Wait for the current installation".into());
     }
@@ -291,7 +361,7 @@ fn uninstall_game(slug: String, state: State<'_, Library>) -> Result<(), String>
         let dir = state.dir(&slug);
         let _guard = lock(dir.parent().ok_or("Invalid folder")?, &slug)?;
         let uninstaller = dir.join("unins000.exe");
-        if game.package.kind == "installer" && uninstaller.is_file() {
+        if uninstaller.is_file() {
             install::uninstall_external(&dir)
         } else {
             install::uninstall(&dir)
@@ -324,9 +394,25 @@ pub fn run() {
                 .filter(|c| catalog::validate(c).is_ok());
             let bundled: Catalog = serde_json::from_str(include_str!("../../public/catalog.json"))?;
             catalog::validate(&bundled).map_err(std::io::Error::other)?;
+            let catalog = cached.unwrap_or(bundled);
+            let old_root = root
+                .parent()
+                .and_then(|p| p.parent())
+                .unwrap_or(&root)
+                .join("BlueEngineLauncher/games");
+            for game in &catalog.games {
+                for parent in [&root, &old_root] {
+                    if parent.join(format!(".{}-backup", game.slug)).is_dir() {
+                        if let Ok(_guard) = lock(parent, &game.slug) {
+                            let _ =
+                                install::recover_interrupted(&parent.join(&game.slug), &game.slug);
+                        }
+                    }
+                }
+            }
             app.manage(Library {
                 root,
-                catalog: Mutex::new(cached.unwrap_or(bundled)),
+                catalog: Mutex::new(catalog),
                 children: Mutex::new(HashMap::new()),
                 busy: AtomicBool::new(false),
                 active: Mutex::new(None),
@@ -340,7 +426,10 @@ pub fn run() {
             launch,
             install_game,
             cancel_download,
-            uninstall_game
+            uninstall_game,
+            submit_feedback,
+            open_game_versions,
+            open_community_url
         ])
         .run(tauri::generate_context!())
         .expect("Could not start BlueEngine Games");

@@ -1,0 +1,17 @@
+{
+  "version": "0.1.11",
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.11/BlueEngine-Games-Setup-x64.exe",
+  "sha256": "8b64336d2d708c2dc3f929b4db1cb80946e3dbe220a8ecd2969ae6e5e872d4c1",
+  "size": 28131266,
+  "update": {
+    "version": "0.1.11",
+    "notes": "Create, fork and improve native games with shared source history, fresh AI handoffs, publication requests and human or AI development feedback. Includes account-free player reviews, game guides, favorites and signed launcher updates.",
+    "pub_date": "2026-10-20T18:02:14Z",
+    "platforms": {
+      "windows-x86_64": {
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjMzMEN4aWpLcXVaMzhHd2ZGRGhpL1VDMEs1b1lmc05OaVRLSnJsbUZSTVAxNmUzTk1rWC9adFN3cDN2R25GZlhiNnRvVWpEdjRwTHFYMEtKQ0UrM1FrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE5MTM0CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuMTFfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMS4xMQpvUVZYbEZaSDllMXd0Ny83SW05TDR0V2x5N2JWQmJiUmtST1NodGRkVTA3blR2YlNDc1Q0RFpNVmplMjNtVGplNXZabjNLMVdQck0zeGIzcXRmbWhBdz09Cg==",
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.11/BlueEngine-Games-Setup-x64.exe"
+      }
+    }
+  }
+}

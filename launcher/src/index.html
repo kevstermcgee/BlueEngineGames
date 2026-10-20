@@ -5,29 +5,79 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>BlueEngine Games</title>
     <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="updater.css" />
+    <link rel="stylesheet" href="feedback.css" />
+    <link rel="stylesheet" href="collaboration.css" />
   </head>
   <body>
-    <aside>
-      <a class="brand" href="#"
-        ><b>B</b><span>BLUEENGINE<small>GAMES</small></span></a
-      >
+    <aside id="sidebar" aria-label="Launcher sidebar">
+      <div class="sidebar-header">
+        <a
+          class="brand"
+          href="#"
+          aria-label="BlueEngine Games"
+          title="BlueEngine Games"
+          ><b aria-hidden="true">B</b
+          ><span>BLUEENGINE<small>GAMES</small></span></a
+        >
+        <button
+          id="sidebar-toggle"
+          type="button"
+          aria-controls="sidebar"
+          aria-expanded="true"
+          aria-label="Collapse sidebar"
+          title="Collapse sidebar"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+      </div>
       <p class="nav-label">YOUR PLAYGROUND</p>
-      <nav>
-        <button data-view="discover" class="selected">
-          ◈ &nbsp; Discover <span id="total-count"></span></button
-        ><button data-view="library">
-          ▦ &nbsp; My library <span id="library-count"></span></button
-        ><button data-view="updates">
-          ↓ &nbsp; Updates <span id="update-count"></span></button
-        ><button data-view="favorites">♡ &nbsp; Favorites</button>
+      <nav aria-label="Game collections">
+        <button
+          data-view="discover"
+          class="selected"
+          aria-label="Discover"
+          title="Discover"
+        >
+          <span class="nav-icon" aria-hidden="true">◈</span
+          ><span class="nav-text">Discover</span
+          ><span class="nav-count" id="total-count"></span></button
+        ><button data-view="library" aria-label="My library" title="My library">
+          <span class="nav-icon" aria-hidden="true">▦</span
+          ><span class="nav-text">My library</span
+          ><span class="nav-count" id="library-count"></span></button
+        ><button data-view="updates" aria-label="Updates" title="Updates">
+          <span class="nav-icon" aria-hidden="true">↓</span
+          ><span class="nav-text">Updates</span
+          ><span class="nav-count" id="update-count"></span></button
+        ><button data-view="favorites" aria-label="Favorites" title="Favorites">
+          <span class="nav-icon" aria-hidden="true">☆</span
+          ><span class="nav-text">Favorites</span>
+        </button>
+        <button id="open-creator" title="Create and collaborate">
+          <span class="nav-icon" aria-hidden="true">＋</span
+          ><span class="nav-text">Create &amp; collaborate</span>
+        </button>
       </nav>
       <div class="sidebar-bottom">
         <div>
           <i id="status-dot"></i><span id="connection">Connecting…</span
-          ><button id="refresh" aria-label="Refresh catalog">↻</button>
+          ><button
+            id="refresh"
+            aria-label="Refresh catalog"
+            title="Refresh catalog"
+          >
+            ↻
+          </button>
         </div>
-        <button id="app-update">Check launcher updates</button
-        ><small>BlueEngine Games · 0.1.0</small>
+        <button
+          id="app-update"
+          aria-label="Check launcher updates"
+          title="Check launcher updates"
+        >
+          <span class="update-icon" aria-hidden="true">⤓</span
+          ><span id="app-update-label">Check launcher updates</span></button
+        ><small>BlueEngine Games · <span id="app-version"></span></small>
       </div>
     </aside>
     <main>
@@ -54,6 +104,10 @@
       <div class="collection-head">
         <h2 id="collection-title">Explore the collection</h2>
         <p id="results"></p>
+      </div>
+      <div id="library-updates" hidden>
+        <p id="library-update-status" role="status"></p>
+        <button id="update-all">Update all</button>
       </div>
       <div class="filters">
         <div class="segments" role="group" aria-label="Presentation">
@@ -94,6 +148,12 @@
         ×
       </button>
       <div id="guide-content"></div>
+    </dialog>
+    <dialog id="creator">
+      <button class="close" id="close-creator" aria-label="Close creator hub">
+        ×
+      </button>
+      <div id="creator-content"></div>
     </dialog>
     <dialog id="confirmation">
       <h2>Uninstall this game?</h2>

@@ -17,8 +17,10 @@ class DownloadPage(HTMLParser):
             path = unquote(urlsplit(attrs.get(key, '')).path).lower()
             if 'web' in path.split('/') or path.endswith(('.wasm', '.webmanifest', '.zip')):
                 raise ValueError(f"Web-play or non-EXE download: {attrs[key]}")
-        if tag == 'script' and Path(attrs.get('src', '')).name != 'app.js':
-            raise ValueError('Only the catalog UI script is allowed')
+        if tag == 'script':
+            source = attrs.get('src', '')
+            if source != 'app.js' and not (source in {'../../wiki-feedback.mjs', 'wiki-feedback.mjs'} and attrs.get('type') == 'module'):
+                raise ValueError('Only the catalog and game feedback UI scripts are allowed')
         if tag == 'a' and 'dl' in attrs.get('class', '').split():
             if not urlsplit(attrs.get('href', '')).path.lower().endswith('.exe'):
                 raise ValueError('Game downloads must link to Windows EXE assets')

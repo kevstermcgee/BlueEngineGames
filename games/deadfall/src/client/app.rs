@@ -266,6 +266,8 @@ fn pick(options: &[u16], v: u16) -> usize {
 impl App {
     pub async fn new(args: &[String]) -> App {
         let mut prefs = Prefs::load();
+        let mut shell = GameShell::new();
+        shell.fullscreen = prefs.fullscreen_for(args);
         let hub = hub::default_hub(flag_value(args, "--hub"), prefs.last_hub.as_deref());
         if let Some(m) = flag_value(args, "--map").and_then(|v| v.parse::<u8>().ok()) {
             prefs.map = m.min(2);
@@ -293,7 +295,7 @@ impl App {
             stats: Stats::load(),
             renderer,
             audio,
-            shell: GameShell::new(),
+            shell,
             input: ClientInput::new(),
             controls: Controls::new(),
             menu: Menu::new(),
@@ -419,7 +421,7 @@ impl App {
             Item::Slider("Stick sensitivity".into(), p.stick_sensitivity, 0.3, 3.),
             Item::Toggle("Invert look".into(), p.invert_y),
             Item::Slider("Volume".into(), p.volume, 0., 1.),
-            Item::Toggle("Fullscreen".into(), p.fullscreen),
+            Item::Toggle("Fullscreen".into(), self.shell.fullscreen),
             Item::Choice(
                 "Shadows".into(),
                 ShadowQuality::ALL.iter().map(|q| q.label().to_string()).collect(),
@@ -703,7 +705,13 @@ impl App {
                 .session
                 .as_ref()
                 .is_some_and(|s| !s.over_handled && s.client.view().latest().is_some_and(|l| !l.snap.over));
+        let fullscreen = self.shell.fullscreen;
         self.input.begin_frame(&mut self.shell, alive, super::platform::focused());
+        if self.shell.fullscreen != fullscreen {
+            if let Some(Item::Toggle(_, selected)) = self.settings_items.get_mut(5) {
+                *selected = self.shell.fullscreen;
+            }
+        }
         // Explicit scripted captures must keep playing when launched in a hidden Windows window.
         if self.capture_dir.is_some() && (self.controls.script.is_some() || self.autopilot) {
             self.shell.paused = false;
@@ -951,8 +959,9 @@ impl App {
                     self.audio.set_volume(*v);
                 }
                 if let Some(Item::Toggle(_, v)) = items.get(5) {
-                    if *v != self.prefs.fullscreen {
+                    if *v != self.shell.fullscreen {
                         self.prefs.fullscreen = *v;
+                        self.shell.fullscreen = *v;
                         set_fullscreen(*v);
                     }
                 }

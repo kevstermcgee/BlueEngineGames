@@ -12,6 +12,23 @@ from fetch_release import stage
 
 
 class Coverage(unittest.TestCase):
+    def test_published_data_games_select_their_packaged_document(self):
+        root = Path(__file__).resolve().parent.parent
+        manifest = json.loads((root / '.release-games.json').read_text())
+        for game in manifest['data_playables']:
+            with self.subTest(game=game['slug']):
+                arguments = game['arguments']
+                self.assertIn('--game', arguments, 'A bare path launches the default engine room')
+                selector = arguments.index('--game')
+                self.assertLess(selector + 1, len(arguments))
+                selected = Path(arguments[selector + 1])
+                self.assertEqual(selected.parts[0], 'content')
+                document = Path(*selected.parts[1:])
+                self.assertTrue((root / document).is_file(), 'Selected game document must exist')
+                self.assertTrue(any(document == Path(name) or Path(name) in document.parents
+                                    for name in game['files']), 'Selected document must be packaged')
+                self.assertIn('map', json.loads((root / document).read_text()))
+
     def test_nested_manifest_is_rejected_before_compilation(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

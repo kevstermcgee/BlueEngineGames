@@ -7,11 +7,14 @@ installation. Keep optional engine browser tooling separate from this repository
 Download a game's `*-setup-windows-x64.exe` from the website or GitHub Releases.
 The installer uses `%LOCALAPPDATA%\BlueEngine\Games\<slug>` by default, needs no
 administrator rights, and creates Start Menu play and **Check for updates**
-shortcuts. A desktop shortcut is optional. Windows Apps settings can uninstall it.
+shortcuts. New game installers do not offer or create desktop shortcuts. Windows
+Apps settings can uninstall the game.
 The Windows **BlueEngine Games** launcher is the central library for installing,
 playing and updating these games. It shares the same default folders and release
 receipts. See [launcher/README.md](launcher/README.md) for application behavior,
-security and build instructions. Individual installers remain available.
+security and build instructions. Launcher installs and updates explicitly disable
+individual desktop shortcuts, including a remembered standalone installer choice.
+Individual installers remain available.
 
 Run **Check for updates** with the game closed. The game's updater checks the
 latest `Games-catalog.tsv`, compares the installed release receipt, downloads the
@@ -138,6 +141,21 @@ Leo already has a native installer. These games retain fixed-step simulation,
 keyboard/mouse/controller input, audio and save/load; no browser is required.
 The release definitions also cover the newly exported Signal Garden native game.
 Timed Relay is an authored engine test fixture, not a standalone game product.
+
+The **Native game checks** workflow also accepts any registered `cargo` or
+`cargo-package` slug for a focused Linux and Windows review:
+
+```sh
+gh workflow run native-game-checks.yml --ref YOUR_REVIEW_BRANCH -f game_slug=YOUR_GAME_SLUG
+```
+
+Its default `all` selection retains the nine existing curated games. The selector
+validates download metadata, source paths and the immutable engine pin before
+constructing the matrix. Every selected game runs formatting, default-feature
+tests and Clippy; `cargo-package` games additionally run their private shortcut
+package check and Linux package smoke. Plain Cargo games do not need `ship.py`.
+Forks containing the shared-hub integration tests retain the hub binary setup.
+Windows installer review and production release checks remain in `releases.yml`.
 
 Native game checks run on Windows and Linux; Linux is a verification host, not
 a public download target. EXE installers appear on the site only after the

@@ -23,17 +23,13 @@ RestartApplications=no
 #ifdef AppIcon
 SetupIconFile={#AppIcon}
 #endif
-[Tasks]
-Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
-
 [Files]
 ; No broad cleanup: player saves and settings survive upgrades and uninstallation.
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
+; Individual game desktop shortcuts are intentionally omitted; use the launcher.
 Name: "{userprograms}\BlueEngine Games\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"
-Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"; Tasks: desktopicon
-
 Name: "{userprograms}\BlueEngine Games\{#AppName} - Check for updates"; Filename: "{app}\Update-{#AppSlug}.exe"; WorkingDir: "{app}"
 
 [Run]

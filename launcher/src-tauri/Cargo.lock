@@ -303,9 +303,11 @@ dependencies = [
 
 [[package]]
 name = "blueengine-games-launcher"
-version = "0.1.0"
+version = "0.1.11"
 dependencies = [
+ "base64 0.22.1",
  "fs2",
+ "minisign-verify",
  "reqwest 0.12.28",
  "serde",
  "serde_json",

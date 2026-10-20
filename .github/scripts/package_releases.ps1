@@ -90,6 +90,7 @@ $enginePath = [System.IO.Path]::GetFullPath($EngineExe)
 if (-not (Test-Path -LiteralPath $enginePath -PathType Leaf)) {
     throw "Engine executable does not exist: $enginePath"
 }
+$engineRootPath = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetDirectoryName($enginePath)) '../..'))
 
 $dist = Join-Path $repoRoot 'dist'
 if (Test-Path -LiteralPath $dist) {
@@ -112,9 +113,11 @@ if ($LASTEXITCODE -ne 0) {
 $notes = @(
     "Windows x64 playable builds from ``$($catalog.source_repository)`` at ``$($catalog.source_revision)``.",
     '',
-    'Download the game installer (.exe) for a per-user installation with optional desktop shortcut. Portable ZIPs are also available.',
+    'Use the BlueEngine Games launcher to install, play and update your library. Individual game installers (.exe) install per-user without desktop shortcuts. Portable ZIPs are also available.',
     '',
     '> These executables are not code-signed, so Windows may show a SmartScreen warning.',
+    '',
+    'Games now open fullscreen by default and show a brief, skippable **BlueEngine Games** studio card before gameplay starts. Use F/F11 to switch to a window; remembered display settings and explicit windowed launches are respected.',
     '',
     '## Included builds',
     ''
@@ -154,8 +157,12 @@ foreach ($playable in $playables) {
     )
     Set-Content -LiteralPath (Join-Path $stage 'README.txt') -Value $readme -Encoding utf8NoBOM
 
+    & python (Join-Path $repoRoot 'distribution/package_metadata.py') stage --root $repoRoot --slug $slug --stage $stage --engine-root $engineRootPath --extra-exe $EngineName
+    if ($LASTEXITCODE -ne 0) { throw "$slug portable executable metadata failed with exit code $LASTEXITCODE" }
     $archive = Join-Path $dist "$slug-windows-x64.zip"
     Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+    & python (Join-Path $repoRoot 'distribution/package_metadata.py') archive --stage $stage --archive $archive
+    if ($LASTEXITCODE -ne 0) { throw "$slug portable ZIP metadata failed with exit code $LASTEXITCODE" }
     Remove-Item -LiteralPath $stage -Recurse -Force
     $notes += "- **$($playable.name)** — ``$([System.IO.Path]::GetFileName($archive))``"
 }

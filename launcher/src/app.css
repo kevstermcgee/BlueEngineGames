@@ -4,6 +4,11 @@
   background: #0c111c;
   color-scheme: dark;
   --muted: #8d9cb3;
+  --sidebar-expanded-width: 228px;
+  --sidebar-width: var(--sidebar-expanded-width);
+}
+:root[data-sidebar-collapsed="true"] {
+  --sidebar-width: 65px;
 }
 * {
   box-sizing: border-box;
@@ -45,7 +50,7 @@ a {
   color: #97c7ff;
 }
 aside {
-  width: 228px;
+  width: var(--sidebar-width);
   position: fixed;
   inset: 0 auto 0 0;
   background: #101724;
@@ -53,6 +58,29 @@ aside {
   padding: 32px 18px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  z-index: 6;
+}
+.sidebar-header {
+  position: relative;
+  padding-top: 18px;
+}
+#sidebar-toggle {
+  position: absolute;
+  top: -20px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 23px;
+  color: #9aaac1;
+  background: none;
+  border-color: transparent;
+}
+#sidebar-toggle:hover {
+  background: #293e59;
 }
 .brand {
   display: flex;
@@ -95,6 +123,9 @@ aside nav {
   gap: 7px;
 }
 aside nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-align: left;
   background: none;
   border-color: transparent;
@@ -107,8 +138,14 @@ aside nav .selected {
   color: #acd4ff;
   border-color: #29496e;
 }
-aside nav span {
-  float: right;
+aside nav .nav-icon {
+  width: 18px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 18px;
+}
+aside nav .nav-count {
+  margin-left: auto;
   font-size: 11px;
   background: #101e32;
   padding: 2px 5px;
@@ -141,9 +178,17 @@ aside nav span {
   font-size: 19px;
 }
 #app-update {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   font-size: 11px;
   width: 100%;
   margin-top: 12px;
+}
+.update-icon {
+  font-size: 18px;
+  line-height: 1;
 }
 .sidebar-bottom small {
   display: block;
@@ -151,8 +196,8 @@ aside nav span {
   color: #60728d;
 }
 main {
-  margin-left: 228px;
-  width: calc(100% - 228px);
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
   max-width: 1900px;
   padding: 38px 42px 24px;
 }
@@ -403,7 +448,7 @@ header p:not(.eyebrow) {
   letter-spacing: -0.25px;
 }
 .favorite {
-  padding: 0 2px;
+  padding: 2px 5px;
   background: none !important;
   border: 0;
   font-size: 22px;
@@ -490,7 +535,8 @@ dialog::backdrop {
   background: #030b18cc;
   backdrop-filter: blur(5px);
 }
-#guide {
+#guide,
+#creator {
   width: min(1060px, 94vw);
   padding: 0;
 }
@@ -510,8 +556,7 @@ dialog::backdrop {
 }
 .guide-hero {
   position: relative;
-  height: 300px;
-  overflow: hidden;
+  min-height: 340px;
   display: flex;
   align-items: end;
   padding: 30px;
@@ -533,19 +578,74 @@ dialog::backdrop {
 .guide-hero > div {
   position: relative;
   z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+.guide-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .guide-hero h1 {
   font-size: 38px;
 }
+.guide-heading .favorite {
+  flex-shrink: 0;
+  font-size: 30px;
+}
+.game-release-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 12px;
+  color: #b7cbe4;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.game-release-summary b {
+  color: #e0edff;
+  margin-right: 5px;
+}
 .guide-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
 }
-.guide-actions span {
+.guide-actions .package-size {
   font-size: 11px;
   color: #9bb2ce;
+}
+.game-update {
+  position: relative;
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-color: #68b49a;
+  background: #153d36;
+  color: #adf3d9;
+  font-size: 23px;
+}
+.update-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  top: 3px;
+  right: 3px;
+  background: #adf3d9;
+}
+.game-update-note {
+  color: #adf3d9;
+  font-size: 11px;
+}
+.game-update-note small {
+  display: block;
+  margin-top: 2px;
+  color: #a7bdd8;
+  overflow-wrap: anywhere;
 }
 .guide-nav {
   display: flex;
@@ -568,6 +668,65 @@ dialog::backdrop {
 .guide-body section {
   padding-top: 22px;
   scroll-margin-top: 65px;
+}
+.versions-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.versions-heading .guide-link {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.game-version {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #2d3d55;
+  border-radius: 7px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.game-version > div {
+  min-width: 0;
+}
+.game-version strong,
+.game-version code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.game-version code {
+  margin-top: 5px;
+  color: #90a7c4;
+  font-size: 10px;
+}
+.version-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.version-status time {
+  display: block;
+  width: 100%;
+  text-align: right;
+  color: #a9bad0;
+  font-size: 11px;
+}
+.installed-version {
+  color: #adf3d9;
+  background: #153d36;
+}
+.game-versions summary {
+  padding: 12px 0;
+  cursor: pointer;
+  color: #a3ccff;
+  font-size: 12px;
 }
 .guide-body h2 {
   font-size: 20px;
@@ -699,7 +858,7 @@ dialog::backdrop {
 #download-bar {
   position: fixed;
   bottom: 0;
-  left: 228px;
+  left: var(--sidebar-width);
   right: 0;
   background: #1b2c43;
   border-top: 1px solid #415c7c;
@@ -730,9 +889,36 @@ progress {
 #cancel {
   font-size: 11px;
 }
+#library-updates {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid #29496e;
+  border-radius: 8px;
+  background: #142337;
+}
+#library-update-status {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a9bfd9;
+}
 #update-all {
-  font-size: 10px;
-  margin-left: 15px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #10203d;
+  background: #a4cdff;
+  border-color: #b8daff;
+  font-weight: 650;
+}
+@media (max-width: 650px) {
+  #library-updates {
+    align-items: start;
+    flex-direction: column;
+  }
 }
 [hidden] {
   display: none !important;
@@ -749,8 +935,10 @@ progress {
   }
 }
 @media (max-width: 1050px) {
+  :root {
+    --sidebar-expanded-width: 190px;
+  }
   aside {
-    width: 190px;
     padding: 25px 12px;
   }
   .brand {
@@ -758,8 +946,6 @@ progress {
     gap: 8px;
   }
   main {
-    margin-left: 190px;
-    width: calc(100% - 190px);
     padding: 30px 25px;
   }
   header {
@@ -779,9 +965,6 @@ progress {
   .feature-note {
     display: none;
   }
-  #download-bar {
-    left: 190px;
-  }
   .filters {
     flex-wrap: wrap;
   }
@@ -790,32 +973,7 @@ progress {
   }
 }
 @media (max-width: 650px) {
-  aside {
-    width: 65px;
-    padding: 25px 8px;
-  }
-  .brand {
-    padding: 0;
-  }
-  .brand > span,
-  .nav-label,
-  aside nav span,
-  .sidebar-bottom {
-    display: none;
-  }
-  aside nav {
-    margin-top: 35px;
-  }
-  aside nav button {
-    font-size: 0;
-    padding: 14px 8px;
-  }
-  aside nav button:first-letter {
-    font-size: 18px;
-  }
   main {
-    margin-left: 65px;
-    width: calc(100% - 65px);
     padding: 25px 15px;
   }
   h1 {
@@ -860,11 +1018,16 @@ progress {
   .guide-hero h1 {
     font-size: 30px;
   }
-  .guide-actions span {
+  .guide-actions .package-size {
     font-size: 10px;
   }
+  .game-version {
+    align-items: start;
+  }
+  .version-status {
+    max-width: 40%;
+  }
   #download-bar {
-    left: 65px;
     flex-wrap: wrap;
     padding: 12px;
   }
@@ -878,9 +1041,61 @@ progress {
     display: none;
   }
   #toast {
-    left: 80px;
+    left: calc(var(--sidebar-width) + 15px);
     right: 15px;
   }
+}
+
+:root[data-sidebar-collapsed="true"] aside {
+  padding: 25px 8px;
+}
+:root[data-sidebar-collapsed="true"] .sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+}
+:root[data-sidebar-collapsed="true"] .brand {
+  padding: 0;
+}
+:root[data-sidebar-collapsed="true"] #sidebar-toggle {
+  position: static;
+}
+:root[data-sidebar-collapsed="true"] .brand > span,
+:root[data-sidebar-collapsed="true"] .nav-label,
+:root[data-sidebar-collapsed="true"] .nav-text,
+:root[data-sidebar-collapsed="true"] .nav-count,
+:root[data-sidebar-collapsed="true"] #connection,
+:root[data-sidebar-collapsed="true"] #app-update-label,
+:root[data-sidebar-collapsed="true"] .sidebar-bottom small {
+  display: none;
+}
+:root[data-sidebar-collapsed="true"] aside nav {
+  margin-top: 30px;
+}
+:root[data-sidebar-collapsed="true"] aside nav button {
+  justify-content: center;
+  padding: 13px 8px;
+}
+:root[data-sidebar-collapsed="true"] .sidebar-bottom > div {
+  position: relative;
+  justify-content: center;
+}
+:root[data-sidebar-collapsed="true"] #status-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  pointer-events: none;
+}
+:root[data-sidebar-collapsed="true"] #refresh {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+}
+:root[data-sidebar-collapsed="true"] #app-update {
+  height: 40px;
+  padding: 0;
 }
 
 .play-installed {

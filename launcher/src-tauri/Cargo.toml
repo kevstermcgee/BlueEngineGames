@@ -1,6 +1,6 @@
 [package]
 name = "blueengine-games-launcher"
-version = "0.1.0"
+version = "0.1.11"
 edition = "2021"
 description = "One library for native BlueEngine games, guides and updates"
 license = "MIT"
@@ -12,6 +12,8 @@ path = "src/lib.rs"
 [features]
 default = ["desktop"]
 desktop = ["dep:tauri", "dep:tauri-plugin-updater", "dep:tauri-plugin-process", "dep:tauri-plugin-single-instance"]
+# Only the separately built Windows CI executable uses a loopback receiver.
+feedback-smoke = []
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -34,6 +36,8 @@ tauri-build = { version = "2", features = [] }
 
 [dev-dependencies]
 tempfile = "3"
+base64 = "0.22"
+minisign-verify = "0.3"
 
 [profile.release]
 opt-level = "s"

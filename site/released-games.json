@@ -6,27 +6,67 @@
       "name": "Embertrail",
       "description": "Bring Mote\u2019s stolen Dawnheart home through 32 courses, eight worlds and eight bosses. Enjoy smoother platform rides, animated root stairways and boss music that starts as guardians appear. Controller-first on PC, with 32 regional underground routes and 16 named tracks you can download from pause.",
       "created": "2026-10-12",
-      "game_version": "0.2.2",
+      "game_version": "0.2.4",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
-      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/5197c465ee734b1d79243b4905f3b49a5c745c8e/games/embertrail",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/9c72da451c1926b85593ebbfc2e0623698fbea26/games/embertrail",
       "install_help": "Run the Windows installer to play. To update, run a newer Embertrail installer; your saves and settings are preserved.",
       "published_release": {
-        "tag_name": "v0.2.2",
-        "name": "Embertrail 0.2.2",
-        "published_at": "2026-10-16T13:08:07Z",
-        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.2",
+        "tag_name": "v0.2.4",
+        "name": "Embertrail 0.2.4",
+        "published_at": "2026-10-20T15:19:56Z",
+        "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.4",
         "assets": [
           {
             "name": "embertrail-setup-windows-x64.exe",
-            "size": 168694987,
-            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.2/embertrail-setup-windows-x64.exe",
-            "digest": "sha256:534f1a4a934ce211f486f1fd499230939a2b98006423f67ed42e3e1f827c134b"
+            "size": 168725217,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.4/embertrail-setup-windows-x64.exe",
+            "digest": "sha256:a612f2938d9732f60c2cf45b912481098c010fd9db7b9c34891e4005a0b3309a"
+          },
+          {
+            "name": "native-release-proof.json",
+            "size": 13380,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.4/native-release-proof.json",
+            "digest": "sha256:e9dbe49b4305b4cf7bc6144d1bc9bafa1ad37cb27346ba2d68e6ea0cb82cb62a"
+          },
+          {
+            "name": "SHA256SUMS.txt",
+            "size": 100,
+            "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.4/SHA256SUMS.txt",
+            "digest": "sha256:bb36764dab853f52559718d146b13f433c3a2670d5e70a9535e54cf7053c1d31"
           }
         ]
       },
       "previous_releases": [
+        {
+          "tag_name": "v0.2.3",
+          "name": "Embertrail 0.2.3",
+          "published_at": "2026-10-18T05:43:57Z",
+          "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.3",
+          "assets": [
+            {
+              "name": "embertrail-setup-windows-x64.exe",
+              "size": 168802632,
+              "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.3/embertrail-setup-windows-x64.exe",
+              "digest": "sha256:0444a05531313dfa95b3cfccc4f51eb804a42c3022ba4337601eebcf8c08021e"
+            }
+          ]
+        },
+        {
+          "tag_name": "v0.2.2",
+          "name": "Embertrail 0.2.2",
+          "published_at": "2026-10-16T13:08:07Z",
+          "html_url": "https://github.com/kevstermcgee/Embertrail/releases/tag/v0.2.2",
+          "assets": [
+            {
+              "name": "embertrail-setup-windows-x64.exe",
+              "size": 168694987,
+              "browser_download_url": "https://github.com/kevstermcgee/Embertrail/releases/download/v0.2.2/embertrail-setup-windows-x64.exe",
+              "digest": "sha256:534f1a4a934ce211f486f1fd499230939a2b98006423f67ed42e3e1f827c134b"
+            }
+          ]
+        },
         {
           "tag_name": "v0.2.1",
           "name": "Embertrail 0.2.1",
@@ -90,27 +130,136 @@
       "name": "Harvest Hollow",
       "description": "Tend a cozy farm: till soil, plant and water crops, harvest, chop trees, clear debris, and improve your homestead through changing days with an original pastoral soundtrack.",
       "created": "2026-10-13",
-      "game_version": "0.1.0",
+      "game_version": "0.1.2",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
-      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/d4675097ce36237a79c274359cd0cf4c16fff5b9/games/harvest-hollow",
+      "source_url": "https://github.com/kevstermcgee/BlueEngine/tree/c59dbfa2e25357428b09ec08d6c95130737dada8/games/harvest-hollow",
       "install_help": "Run the Windows installer to play. To update, run a newer Harvest Hollow installer; your saves and settings are preserved.",
       "published_release": {
-        "tag_name": "v0.1.0",
-        "name": "Harvest Hollow 0.1.0 for Windows",
-        "published_at": "2026-10-14T03:41:07Z",
-        "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.0",
+        "tag_name": "v0.1.2",
+        "name": "Harvest Hollow 0.1.2 for Windows",
+        "published_at": "2026-10-20T14:53:50Z",
+        "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.2",
         "assets": [
           {
             "name": "harvest-hollow-setup-windows-x64.exe",
-            "size": 13944898,
-            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.0/harvest-hollow-setup-windows-x64.exe",
-            "digest": "sha256:dffeebbb5edb394cadbcfaecb709d1ecccdb59b261d1fad2c7b4234319a21b9a"
+            "size": 13984555,
+            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.2/harvest-hollow-setup-windows-x64.exe",
+            "digest": "sha256:86f0edf532b75980daf488340b567a60aab112ac9c7f9b286bcbb4def4aef699"
+          },
+          {
+            "name": "native-release-proof.json",
+            "size": 3487,
+            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.2/native-release-proof.json",
+            "digest": "sha256:2bac1d015af4dfc7c2a4a2d7fb0884af499c71c3d2ea7cbeb11c432e1d285595"
+          },
+          {
+            "name": "SHA256SUMS.txt",
+            "size": 104,
+            "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.2/SHA256SUMS.txt",
+            "digest": "sha256:ce1473bfc434080636febed64fd8cae94ebe20f8a11280ced4fe2cedb10b2570"
           }
         ]
       },
-      "previous_releases": []
+      "previous_releases": [
+        {
+          "tag_name": "v0.1.1",
+          "name": "Harvest Hollow 0.1.1 for Windows",
+          "published_at": "2026-10-18T05:53:00Z",
+          "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.1",
+          "assets": [
+            {
+              "name": "harvest-hollow-setup-windows-x64.exe",
+              "size": 14051309,
+              "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.1/harvest-hollow-setup-windows-x64.exe",
+              "digest": "sha256:d8337080f484b29e3780c903eb0256eb308fb835dca7eb3f02d0dda5070d4a34"
+            }
+          ]
+        },
+        {
+          "tag_name": "v0.1.0",
+          "name": "Harvest Hollow 0.1.0 for Windows",
+          "published_at": "2026-10-14T03:41:07Z",
+          "html_url": "https://github.com/kevstermcgee/HarvestHollow/releases/tag/v0.1.0",
+          "assets": [
+            {
+              "name": "harvest-hollow-setup-windows-x64.exe",
+              "size": 13944898,
+              "browser_download_url": "https://github.com/kevstermcgee/HarvestHollow/releases/download/v0.1.0/harvest-hollow-setup-windows-x64.exe",
+              "digest": "sha256:dffeebbb5edb394cadbcfaecb709d1ecccdb59b261d1fad2c7b4234319a21b9a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bluecraft",
+      "name": "BlueCraft",
+      "description": "Build a little world. Explore a sunny voxel landscape, mine blocks, and build with nine unlimited materials in this first-person creative sandbox.",
+      "created": "2026-10-19",
+      "game_version": "0.1.1",
+      "engine_version": "1a5b696ee653",
+      "kind": "native game",
+      "presentation": "3d",
+      "networking": "offline",
+      "design_origin": "human",
+      "source_url": "https://github.com/kevstermcgee/BlueCraft/tree/0174983b4d84d0dab0ed14b87ffb3c061f006965/src",
+      "install_help": "Run the Windows x64 installer. WASD moves, the mouse looks, left click mines, right click builds, and E opens the controls guide. Automatic progress and F5/F9 checkpoints are stored separately. Run a newer BlueCraft installer to upgrade while retaining saves and settings.",
+      "published_release": {
+        "tag_name": "bluecraft-v0.1.1",
+        "name": "BlueCraft 0.1.1",
+        "published_at": "2026-10-20T14:58:44Z",
+        "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecraft-v0.1.1",
+        "assets": [
+          {
+            "name": "bluecraft-setup-windows-x64.exe",
+            "size": 3107941,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.1/bluecraft-setup-windows-x64.exe",
+            "digest": "sha256:5d479c525ad48bcb6d86d41005286512282409e5918abfcaa4bb7c2e5743b289"
+          },
+          {
+            "name": "release-metadata.json",
+            "size": 668,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.1/release-metadata.json",
+            "digest": "sha256:ebec9503b78443bca9b46c0472cd4f16c135a0392bff032d3ed3c7c9d263bdc4"
+          },
+          {
+            "name": "SHA256SUMS.txt",
+            "size": 99,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.1/SHA256SUMS.txt",
+            "digest": "sha256:0553e3bcd93355a2045aeceb357fd9c7b0fa8226786f0d3313f472d297cf2e22"
+          }
+        ]
+      },
+      "previous_releases": [
+        {
+          "tag_name": "bluecraft-v0.1.0",
+          "name": "BlueCraft 0.1.0",
+          "published_at": "2026-10-19T22:46:15Z",
+          "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecraft-v0.1.0",
+          "assets": [
+            {
+              "name": "bluecraft-setup-windows-x64.exe",
+              "size": 3175937,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/bluecraft-setup-windows-x64.exe",
+              "digest": "sha256:ecd0736331e6a6f8b748bc8a2a9e3302cd48675e31e1e8aaf2da6f08e14fdb49"
+            },
+            {
+              "name": "release-metadata.json",
+              "size": 634,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/release-metadata.json",
+              "digest": "sha256:b8d6fa85ab943b902e4979fa0f686432221fe8cd82ad2c43733b7acfaa2e3a3e"
+            },
+            {
+              "name": "SHA256SUMS.txt",
+              "size": 99,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecraft-v0.1.0/SHA256SUMS.txt",
+              "digest": "sha256:74dec7ae38a2983db4f7b7e1f1f120f46e1c9d0d4d78c9cfd8297727e057d80f"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

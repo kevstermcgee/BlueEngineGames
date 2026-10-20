@@ -28,4 +28,7 @@
   kindButtons.forEach(btn=>btn.addEventListener('click',()=>{kind=btn.dataset.kind;kindButtons.forEach(b=>b.classList.toggle('active',b===btn));apply();}));
   window.addEventListener('storage',e=>{if(e.key===storageKey){load();apply();}});
   load();apply();
+  import('./feedback.mjs').then(({mountPublicScores})=>mountPublicScores(document)).catch(()=>{
+    document.querySelectorAll('[data-public-score]').forEach(node=>{node.textContent='Reviews unavailable';});
+  });
 })();

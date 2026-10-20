@@ -20,6 +20,9 @@ await build({
 });
 await copyFile("src/index.html", "dist/index.html");
 await copyFile("src/app.css", "dist/app.css");
+await copyFile("src/updater.css", "dist/updater.css");
+await copyFile("../site/feedback.css", "dist/feedback.css");
+await copyFile("../site/collaboration.css", "dist/collaboration.css");
 await cp("public", "dist", { recursive: true });
 const catalog = JSON.parse(await readFile("public/catalog.json", "utf8")),
   images = {};
@@ -39,7 +42,7 @@ for (const g of catalog.games) {
     dir = `../games/${g.slug}`;
   }
   const doc = JSON.parse(await readFile(`${dir}/wiki.json`, "utf8"));
-  for (const p of [...doc.gallery, ...doc.characters]) {
+  for (const p of [...doc.gallery, ...(doc.characters || [])]) {
     if (!p.image) continue;
     const bytes = await readFile(`${dir}/${p.image}`),
       hash = createHash("sha256").update(bytes).digest("hex").slice(0, 20);

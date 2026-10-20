@@ -335,6 +335,7 @@ fn save_music(music_wav: &OnceLock<Vec<u8>>, title: &str) -> Notice {
 
 #[macroquad::main(window)]
 async fn main() {
+    vesper3d::viewer::startup::show().await;
     let args: Vec<String> = std::env::args().collect();
     let identity = identity();
     let mut life = Lifecycle::<Held>::start_or_exit(&args, &CUES);

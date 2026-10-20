@@ -2,7 +2,7 @@ name: Deploy download site
 
 on:
   workflow_run:
-    workflows: ["Build Windows releases"]
+    workflows: ["Build Windows releases", "Build Windows launcher"]
     types: [completed]
     branches: [main]
   push:
@@ -38,6 +38,13 @@ jobs:
       - name: Verify Windows-only site builder
         run: python3 -m unittest discover -s site -p 'test_*.py' -v
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Verify community and feedback interactions
+        run: node --test site/feedback.test.mjs site/collaboration.test.mjs site/game-metadata.test.mjs
+
       - name: Verify independently released Windows installers
         run: python3 site/released_games.py
 
@@ -64,6 +71,18 @@ jobs:
       - name: Build site
         if: steps.metadata.outputs.ready == 'true'
         run: python3 site/build.py --catalog catalog.tsv --release-json release.json --releases-json releases.json --games-dir games --thumbs site/thumbs --out _site
+
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.metadata.outputs.ready == 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.metadata.outputs.ready == 'true'
+        with:
+          workspaces: launcher/src-tauri
+
+      - name: Verify generated catalog with the Windows launcher
+        if: steps.metadata.outputs.ready == 'true'
+        run: cargo run --manifest-path launcher/src-tauri/Cargo.toml --no-default-features --locked --example check-catalog -- _site/catalog.json
 
       - name: Audit download-only deployment
         if: steps.metadata.outputs.ready == 'true'

@@ -8,6 +8,8 @@ Everything (models, sounds, map) is generated in code; the game is one executabl
 
 ## Playing
 
+New players start fullscreen, with a brief BlueEngine Games studio card before the menu. Your saved fullscreen setting is remembered. Use `--windowed` or `--size WxH` for a window, or `--fullscreen` to override the saved setting for one run. Capture and scripted runs keep their requested window size and skip the studio card.
+
 * **Play Online**: the easy way to play with friends. Both of you click **Play Online**: you see a list of rooms (the *Public*
   room first, then rooms people made, with player counts and *Lobby* / *In match*). Click a room to join it, or **Create Room**,
   name it, pick a map and mode, leave **1v1 duel** enabled, and your friend picks it from the same list. The host cannot start until both players join and press Ready. **Copy invite** in the lobby copies the room name and hub address. Nobody types an address or opens a router port. If a match is already

@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "BlueEngine Games",
+        "width": 1380,
+        "height": 900,
+        "minWidth": 800,
+        "minHeight": 600,
+        "dragDropEnabled": false,
+        "backgroundColor": "#0c111c",
+        "additionalBrowserArgs": "--remote-debugging-port=9223 --remote-debugging-address=127.0.0.1 --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection",
+        "dataDirectory": "BlueEngineGames-CI"
+      }
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": ["http://127.0.0.1:9224/launcher-update.json"],
+      "dangerousInsecureTransportProtocol": true
+    }
+  }
+}

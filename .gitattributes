@@ -1,0 +1,2 @@
+# This vendored reader must retain the reviewed upstream bytes on Windows too.
+distribution/game_metadata.py text eol=lf

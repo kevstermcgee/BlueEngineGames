@@ -33,13 +33,18 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BlueEngine Games</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="feedback.css">
+<link rel="stylesheet" href="collaboration.css">
+<script type="module" src="wiki-feedback.mjs"></script>
 </head>
 <body>
 <header>
   <h1>BlueEngine Games</h1>
-  <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer, choose a desktop shortcut, and play.</p>
+  <p class="tagline"><strong>{game_count} free {game_noun}</strong> for Windows. Download an installer and play.</p>
   <p class="design-note">Explore human-designed and AI-designed games. Design credits refer to the game concept and rules; either may use AI-assisted development.</p>
 </header>
+
+<details class="creator-hub"><summary>Create &amp; collaborate with your AI</summary><div data-community-root></div></details>
 
 <section class="notes">
   <ul>
@@ -88,6 +93,7 @@ CARD = """<article class="card" id="{slug}" data-slug="{slug}" data-name="{name_
   <div class="body">
     <h2><a class="game-title" href="games/{slug}/">{name}</a>{badge}</h2>
     <p class="design-credit"><span class="design-badge design-{design_origin}">{design_label}</span></p>
+    <a class="public-score" data-public-score="{slug}" href="games/{slug}/#guide-feedback"><span class="public-score-empty">Loading player scores…</span></a>
     <p class="desc">{desc}</p>
     <p class="meta">{version}added {created}{size}</p>
     <a class="dl" href="{asset}">{download_label}</a>
@@ -185,6 +191,9 @@ GAME_PAGE = """<!DOCTYPE html>
 <title>{name} · BlueEngine Games</title>
 <link rel="stylesheet" href="../../style.css">
 <link rel="stylesheet" href="../../wiki.css">
+<link rel="stylesheet" href="../../feedback.css">
+<link rel="stylesheet" href="../../collaboration.css">
+<script type="module" src="../../wiki-feedback.mjs"></script>
 </head>
 <body>
 <header>
@@ -197,12 +206,14 @@ GAME_PAGE = """<!DOCTYPE html>
     <div>
       <p>{desc}</p>
       <p class="design-credit"><span class="design-badge design-{design_origin}">{design_label}</span>{design_explanation}</p>
+      <p><a class="public-score" data-public-score="{slug}" href="#guide-feedback"><span class="public-score-empty">Loading player scores…</span></a></p>
       <p class="meta">{version}added {created} &middot; Windows x64</p>
       <a class="dl" href="{asset}">{download_label}</a>
       <p class="game-help">{install_help}</p>
     </div>
   </section>
   {wiki}
+  <div data-community-root data-community-game="{community_metadata}"></div>
   {preview}
   <section class="version-history" aria-labelledby="versions-heading">
     <h2 id="versions-heading">Versions</h2>
@@ -261,10 +272,11 @@ def build_staged(args) -> None:
         project = json.loads(project_path.read_text(encoding='utf-8')) if project_path.is_file() else {}
         launcher_row = row | {'presentation': project.get('presentation', row.get('presentation', '3d')),
                               'networking': project.get('networking', row.get('networking', 'unknown'))}
-        launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created))
+        launcher_entries.append(launcher_entry(launcher_row, game_release, wiki_document, image_root, origin, created,
+                                               releases=releases))
         searchable = ' '.join([row['name'], row.get('description', ''), wiki_document['overview'],
-                               wiki_document['story'], *wiki_document['rules'],
-                               *(character['name'] for character in wiki_document['characters'])])
+                               wiki_document.get('story') or '', *wiki_document['rules'],
+                               *(character['name'] for character in wiki_document.get('characters', []))])
 
         thumb_src = game_screenshot(Path(args.thumbs), Path(args.games_dir), slug)
         shutil.copy2(thumb_src, thumbs_out / f"{slug}.png")
@@ -299,7 +311,11 @@ def build_staged(args) -> None:
         versions = [game_release] + [r for r in history if r.get("tag_name") != game_release.get("tag_name")]
         game_out = out / "games" / slug
         game_out.mkdir(parents=True, exist_ok=True)
-        wiki_html = render_wiki(wiki_document, image_root, game_out, legacy)
+        wiki_html = render_wiki(wiki_document, image_root, game_out, legacy, game={
+            'slug': slug, 'name': row['name'],
+            'version': row.get('game_version') or game_release.get('tag_name', 'Unknown version'),
+            'package': {'release': game_release.get('tag_name', '')},
+        })
         preview = ""
         preview_src = Path(__file__).resolve().parent / "previews" / f"{slug}.mp4"
         if preview_src.is_file():
@@ -313,7 +329,8 @@ def build_staged(args) -> None:
     <p><a href="preview.mp4">Download the MP4 recording</a></p>
   </section>'''
         (game_out / "index.html").write_text(GAME_PAGE.format(
-            name=name, desc=html.escape(row.get("description", "")),
+            community_metadata=html.escape(json.dumps({"slug": slug, "name": row["name"]}), quote=True),
+            slug=html.escape(slug), name=name, desc=html.escape(row.get("description", "")),
             thumb=thumb.replace('src="thumbs/', 'src="../../thumbs/'),
             version=version_label(row.get("game_version", "")), created=html.escape(created),
             asset=html.escape(asset), download_label=download_label, preview=preview, wiki=wiki_html,
@@ -348,11 +365,18 @@ def build_staged(args) -> None:
 
     from launcher_feed import publish_launcher
     page = publish_launcher(repo_root, out, enhance_page(page))
+    if (repo_root / 'site/launcher-release.json').is_file():
+        page = page.replace('Download an installer and play.',
+                            'Use the Windows launcher to install, play and update your library, or choose an individual installer.')
+        page = page.replace('Run a newer installer to update. Some games also have a <strong>Check for updates</strong> Start Menu shortcut.',
+                            'Use <strong>Updates</strong> in the launcher. Individual installers and per-game <strong>Check for updates</strong> shortcuts are also supported.')
     (out / "index.html").write_text(page, encoding="utf-8", newline="\n")
     site_dir = Path(__file__).resolve().parent
     shutil.copy2(site_dir / "style.css", out / "style.css")
     shutil.copy2(site_dir / "app.js", out / "app.js")
     shutil.copy2(site_dir / "wiki.css", out / "wiki.css")
+    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs', 'collaboration.css', 'collaboration.mjs', 'game-metadata.mjs'):
+        shutil.copy2(site_dir / filename, out / filename)
     (out / ".nojekyll").touch()
     print(f"wrote {out}/index.html with {len(games)} games")
 
