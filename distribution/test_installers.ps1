@@ -21,11 +21,28 @@ try {
     $desktopPathOwned = $true
     New-Item -ItemType Directory (Join-Path $temp '.github/scripts'),(Join-Path $temp 'distribution'),$dist | Out-Null
     Copy-Item (Join-Path $repoRoot '.github/scripts/package_installers.ps1'),(Join-Path $repoRoot '.github/scripts/game_installer.iss') (Join-Path $temp '.github/scripts')
-    Copy-Item (Join-Path $repoRoot 'distribution/GameUpdater.cs') (Join-Path $temp 'distribution')
+    foreach ($file in 'GameUpdater.cs','game_metadata.py','package_metadata.py') {
+        Copy-Item (Join-Path $repoRoot "distribution/$file") (Join-Path $temp 'distribution')
+    }
     foreach ($version in 'one','two') {
         $stage = Join-Path $temp "stage-$version"
         New-Item -ItemType Directory $stage | Out-Null
         Copy-Item $env:ComSpec (Join-Path $stage 'Play-test-game.exe')
+        $originalExeHash = (Get-FileHash (Join-Path $stage 'Play-test-game.exe') -Algorithm SHA256).Hash
+        # ComSpec is an immutable signed fixture. Describe it through our ZIP and
+        # fresh Inno installer, without appending anything to the signed binary.
+        $fixtureWriter = @'
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[3])
+from game_metadata import canonical_payload
+document = {'format':'blueengine.game','schema_version':1,
+ 'game':{'slug':'test-game','title':sys.argv[2],'version':'0.1.0','description':'Installer compatibility fixture','controls':'','authors':[],'tags':[]},
+ 'source':None,'engine':None,'posting':{'source_status':'unavailable'}}
+Path(sys.argv[1]).write_bytes(canonical_payload(document))
+'@
+        & python -c $fixtureWriter (Join-Path $stage 'blueengine.game.json') $name (Join-Path $temp 'distribution')
+        Assert ($LASTEXITCODE -eq 0) 'Could not create fixture metadata'
         Set-Content (Join-Path $stage 'version.txt') $version
         Add-Type -AssemblyName System.Drawing
         $iconFile = [IO.File]::Create((Join-Path $stage 'game.ico'))
@@ -33,6 +50,8 @@ try {
         $zip = Join-Path $dist 'test-game-windows-x64.zip'
         if (Test-Path $zip) { Remove-Item $zip }
         Compress-Archive (Join-Path $stage '*') $zip
+        & python (Join-Path $temp 'distribution/package_metadata.py') archive --stage $stage --archive $zip
+        Assert ($LASTEXITCODE -eq 0) 'Could not embed fixture ZIP metadata'
         $env:RELEASE_TAG = "test-$version"
         $header = @('slug','name','description','created','game_version','engine_version','kind','asset','release','sha256') -join "`t"
         $row = @('test-game',$name,'Test game','2026-01-01','0.1.0','engine','native','https://example.com/game.zip',$env:RELEASE_TAG,'') -join "`t"
@@ -43,9 +62,19 @@ try {
         if ($version -eq 'two') { Assert ((Get-FileHash $zip -Algorithm SHA256).Hash -eq $originalHash) 'Archive packaging changed the original ZIP' }
         $catalog = Get-Content -Raw (Join-Path $dist 'Games-catalog.tsv') | ConvertFrom-Csv -Delimiter "`t"
         Assert ($catalog.sha256 -eq (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()) 'ZIP checksum does not match catalog'
+        $zipMetadata = & python (Join-Path $temp 'distribution/game_metadata.py') inspect $zip | ConvertFrom-Json
+        Assert ($LASTEXITCODE -eq 0 -and $zipMetadata.game.slug -eq 'test-game') 'Updater ZIP lost portable metadata'
+        $setup = Join-Path $dist 'test-game-setup-windows-x64.exe'
+        $setupMetadata = & python (Join-Path $temp 'distribution/game_metadata.py') inspect $setup | ConvertFrom-Json
+        Assert ($LASTEXITCODE -eq 0 -and $setupMetadata.game.title -eq $name) 'Fresh Inno installer lost portable metadata'
+        Assert (($setupMetadata | ConvertTo-Json -Depth 20 -Compress) -eq ($zipMetadata | ConvertTo-Json -Depth 20 -Compress)) 'ZIP and installer metadata disagree'
+        $setupHash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLowerInvariant()
+        Assert ((Get-Content (Join-Path $dist 'SHA256SUMS.txt')) -contains "$setupHash  test-game-setup-windows-x64.exe") 'Installer checksum predates metadata embedding'
         Run-Setup (Join-Path $dist 'test-game-setup-windows-x64.exe') @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=`"$install`"",'/TASKS=desktopicon')
         Assert ((Get-Content (Join-Path $install '.installed-release')) -eq $env:RELEASE_TAG) 'Installation receipt missing'
         Assert ((Get-Content (Join-Path $install 'version.txt')) -eq $version) 'Installer did not replace payload'
+        Assert ((Get-FileHash (Join-Path $install 'Play-test-game.exe') -Algorithm SHA256).Hash -eq $originalExeHash) 'Packaging modified the immutable signed fixture'
+        Assert ((Get-Content -Raw (Join-Path $install 'blueengine.game.json') | ConvertFrom-Json).game.slug -eq 'test-game') 'Installed game lost portable metadata'
         Assert (Test-Path (Join-Path $install 'Update-test-game.exe')) 'Update helper not installed'
         # Even a remembered legacy task request must not create a game desktop shortcut.
         Assert (Test-Path $playLink) 'Start Menu game shortcut missing'
@@ -79,7 +108,7 @@ try {
     Assert (-not (Test-Path $updatesLink)) 'Uninstaller left the Start Menu update shortcut'
     Assert (Test-Path $shortcut) 'Uninstaller removed a user-created desktop item'
     Assert ((Get-FileHash $shortcut -Algorithm SHA256).Hash -eq $markerHash) 'Uninstaller changed a user-created desktop item'
-    Write-Output 'Installer tests passed: no automatic desktop shortcut, player desktop item preservation, Start Menu shortcuts, receipt, checksum, upgrade, saves and uninstall.'
+    Write-Output 'Installer tests passed: portable ZIP and Inno metadata, final checksum, signed payload preservation, no automatic desktop shortcut, player desktop item preservation, Start Menu shortcuts, receipt, upgrade, saves and uninstall.'
 } finally {
     if ($desktopPathOwned -and (Test-Path $shortcut)) { Remove-Item -LiteralPath $shortcut -Force }
     if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }

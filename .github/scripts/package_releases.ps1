@@ -90,6 +90,7 @@ $enginePath = [System.IO.Path]::GetFullPath($EngineExe)
 if (-not (Test-Path -LiteralPath $enginePath -PathType Leaf)) {
     throw "Engine executable does not exist: $enginePath"
 }
+$engineRootPath = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::GetDirectoryName($enginePath)) '../..'))
 
 $dist = Join-Path $repoRoot 'dist'
 if (Test-Path -LiteralPath $dist) {
@@ -156,8 +157,12 @@ foreach ($playable in $playables) {
     )
     Set-Content -LiteralPath (Join-Path $stage 'README.txt') -Value $readme -Encoding utf8NoBOM
 
+    & python (Join-Path $repoRoot 'distribution/package_metadata.py') stage --root $repoRoot --slug $slug --stage $stage --engine-root $engineRootPath --extra-exe $EngineName
+    if ($LASTEXITCODE -ne 0) { throw "$slug portable executable metadata failed with exit code $LASTEXITCODE" }
     $archive = Join-Path $dist "$slug-windows-x64.zip"
     Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+    & python (Join-Path $repoRoot 'distribution/package_metadata.py') archive --stage $stage --archive $archive
+    if ($LASTEXITCODE -ne 0) { throw "$slug portable ZIP metadata failed with exit code $LASTEXITCODE" }
     Remove-Item -LiteralPath $stage -Recurse -Force
     $notes += "- **$($playable.name)** — ``$([System.IO.Path]::GetFileName($archive))``"
 }

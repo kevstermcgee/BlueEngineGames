@@ -72,6 +72,7 @@ $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { [System.IO.Path]::
 $expectedEngine = [System.IO.Path]::GetFullPath((Join-Path $repoRoot '..\BlueEngine'))
 $createdJunction = $false
 $originalManifests = @{}
+$metadataDocuments = @()
 try {
     if (-not $expectedEngine.Equals($engineRootPath, [System.StringComparison]::OrdinalIgnoreCase)) {
         if (Test-Path -LiteralPath $expectedEngine) {
@@ -86,6 +87,11 @@ try {
         $name = [string]$game.name
         $kind = [string]$game.kind
         $directory = [System.IO.Path]::GetFullPath((Join-Path $repoRoot ([string]$game.directory)))
+        # Freeze clean source identity before the temporary catalog SDK binding.
+        $metadataDocument = Join-Path $tempRoot "game-metadata-$slug-$([Guid]::NewGuid().ToString('N')).json"
+        $metadataDocuments += $metadataDocument
+        & python (Join-Path $repoRoot 'distribution/package_metadata.py') document --root $repoRoot --slug $slug --engine-root $engineRootPath --output $metadataDocument
+        if ($LASTEXITCODE -ne 0) { throw "$name portable source metadata failed with exit code $LASTEXITCODE" }
         if ($kind -notin 'engine-sandbox', 'release-asset') {
             # Exported games can retain either authoring-relative paths or old git pins.
             # Bind both to the catalog engine, preserving the remaining lockfile exactly.
@@ -117,6 +123,13 @@ try {
             & python (Join-Path $repoRoot 'distribution/fetch_release.py') --source (Join-Path $directory 'release-source.json') --output $stage
             if ($LASTEXITCODE -ne 0) { throw "$name pinned release download failed with exit code $LASTEXITCODE" }
             Copy-Item (Join-Path $directory 'README.md') (Join-Path $stage 'README.md')
+            # Immutable third-party executables may already be signed. Keep them
+            # byte-identical and attach metadata only to our fresh launch wrapper.
+            $sourceRelease = Get-Content -Raw (Join-Path $directory 'release-source.json') | ConvertFrom-Json
+            & rustc (Join-Path $PSScriptRoot 'play_launcher.rs') -O -o (Join-Path $stage "Play-$slug.exe")
+            if ($LASTEXITCODE -ne 0) { throw "$name portable wrapper compilation failed with exit code $LASTEXITCODE" }
+            Set-Content -LiteralPath (Join-Path $stage 'engine.name') -Value ([string]$sourceRelease.executable) -Encoding utf8NoBOM
+            Set-Content -LiteralPath (Join-Path $stage 'launch.args') -Value '' -Encoding utf8NoBOM
         } elseif ($kind -eq 'engine-sandbox') {
             # package_sandbox.py reads <engine>/target/release, so this game keeps the engine's own target
             # directory (already warm from the engine build step) instead of the shared one below.
@@ -165,13 +178,20 @@ try {
             }
         }
 
+        & python (Join-Path $repoRoot 'distribution/package_metadata.py') stage --root $repoRoot --slug $slug --stage $stage --document $metadataDocument
+        if ($LASTEXITCODE -ne 0) { throw "$name portable executable metadata failed with exit code $LASTEXITCODE" }
         $archive = Join-Path $dist "$slug-windows-x64.zip"
         if (Test-Path -LiteralPath $archive) { Remove-Item -LiteralPath $archive -Force }
         Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $archive -CompressionLevel Optimal
+        & python (Join-Path $repoRoot 'distribution/package_metadata.py') archive --stage $stage --archive $archive
+        if ($LASTEXITCODE -ne 0) { throw "$name portable ZIP metadata failed with exit code $LASTEXITCODE" }
         Remove-Item -LiteralPath $stage -Recurse -Force
         Add-Content -LiteralPath (Join-Path $dist 'release-notes.md') -Value "- **$name** — ``$([System.IO.Path]::GetFileName($archive))``" -Encoding utf8NoBOM
     }
 } finally {
+    foreach ($document in $metadataDocuments) {
+        if (Test-Path -LiteralPath $document) { Remove-Item -LiteralPath $document -Force }
+    }
     foreach ($manifest in $originalManifests.Keys) {
         [IO.File]::WriteAllBytes($manifest, $originalManifests[$manifest])
     }
