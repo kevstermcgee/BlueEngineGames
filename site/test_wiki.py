@@ -54,6 +54,38 @@ class GameWiki(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'in-game screenshot'):
                 validate_wiki(game, missing, 'human')
 
+    def test_abstract_ideaforge_game_omits_optional_story_and_characters(self):
+        # Retained Scatterlock exports precisely this shape: rules, controls,
+        # screenshots and AI rationale, with no invented story/character fields.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            document = wiki_fixture(root, 'scatterlock', 'ai')
+            for field in ('story', 'characters', 'characters_note'):
+                document.pop(field)
+            document['overview'] = ('Scatterlock is a six-chamber spatial cargo puzzle. Choose a beacon and '
+                                    'preview a pulse that spreads or gathers every loose cube at once, '
+                                    'then execute it to carry the formation through a suspended 3D chamber.')
+            game = root / 'games/scatterlock'
+            (game / 'wiki.json').write_text(json.dumps(document))
+            loaded, images, legacy = load_wiki(root, root / 'games', {'slug': 'scatterlock'}, 'ai')
+            destination = root / 'output'
+            destination.mkdir()
+            rendered = render_wiki(loaded, images, destination, legacy)
+            for absent in ('id="story"', 'href="#story"', 'id="characters"', 'href="#characters"'):
+                self.assertNotIn(absent, rendered)
+            for present in ('id="rules"', 'id="controls"', 'id="gallery"', 'id="creation"'):
+                self.assertIn(present, rendered)
+            self.assertEqual(len(list((destination / 'images').glob('*.png'))), 3)
+            validate_wiki(game, dict(document, story=None, characters=[]), 'ai')
+            for field, value in (('story', 7), ('story', ' '), ('characters', None), ('characters', 'blocks')):
+                with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                    validate_wiki(game, dict(document, **{field: value}), 'ai')
+            for field in ('overview', 'rules', 'controls', 'gallery', 'design'):
+                incomplete = copy.deepcopy(document)
+                incomplete.pop(field)
+                with self.subTest(missing=field), self.assertRaises(ValueError):
+                    validate_wiki(game, incomplete, 'ai')
+
     def test_gallery_rejects_duplicates_traversal_missing_and_tiny_images(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

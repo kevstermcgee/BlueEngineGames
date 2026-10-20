@@ -19,8 +19,8 @@ not whether AI helped write the code. A catalog row may explicitly set
 `design_origin` to `ai` or `human` to override that classification. Keep the full
 Git history when building the site so IdeaForge credits remain available.
 
-Each game page also has a built-in game guide: overview, rules, controls, story,
-characters, screenshots and creation notes. AI designs include their recorded
+Each game page also has a built-in game guide: overview, rules, controls,
+screenshots and creation notes, plus story and named characters when implemented. AI designs include their recorded
 design rationale; human designs include the original creation request when it
 can be recovered. Missing historical originals are clearly labeled.
 **New games require a complete guide, three distinct gameplay captures and

@@ -74,5 +74,17 @@ class PublishedVersions(unittest.TestCase):
         self.assertEqual(feed['versions'][1]['package']['kind'], 'installer')
 
 
+class OptionalWikiCompatibility(unittest.TestCase):
+    def test_storyless_feed_keeps_installed_launcher_character_iteration_safe(self):
+        wiki = {'overview': 'Abstract spatial cargo puzzle', 'rules': ['Dock every cargo cube.'],
+                'controls': ['Space pulses.'], 'gallery': []}
+        row = dict(slug='example', name='Example', game_version='1.0', sha256='b' * 64)
+        result = entry(row, release('current'), wiki, None, 'ai', '2020-01-01')
+        self.assertEqual(result['wiki']['characters'], [])
+        self.assertNotIn('story', result['wiki'])
+        self.assertNotIn('characters_note', result['wiki'])
+        self.assertNotIn('characters', wiki, 'Feed defaults must not rewrite authored wiki facts')
+
+
 if __name__ == '__main__':
     unittest.main()

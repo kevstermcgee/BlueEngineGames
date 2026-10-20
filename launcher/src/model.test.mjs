@@ -62,3 +62,17 @@ test("running games with a newer release remain visible in Updates until updated
   );
   assert.equal(status(games[0], installs["old-running"]), "running");
 });
+
+test("abstract games remain searchable without optional story or characters", () => {
+  const value = game("scatterlock", "ai");
+  delete value.wiki.story;
+  delete value.wiki.characters;
+  assert.deepEqual(
+    filterGames([value], {}, { query: "beacon" }).map((g) => g.slug),
+    ["scatterlock"],
+  );
+  assert.deepEqual(
+    filterGames([value], {}, { query: "invented-character" }),
+    [],
+  );
+});

@@ -72,6 +72,9 @@ def entry(row, release, wiki, image_root, origin, created, releases=()):
     if len(digest) != 64 or any(c not in '0123456789abcdefABCDEF' for c in digest):
         raise ValueError(f'{slug}: launcher package needs a SHA256')
     doc = copy.deepcopy(wiki)
+    # Released launchers through 0.1.11 iterate this list unconditionally. Keep
+    # their feed shape compatible without inventing story or character facts.
+    doc.setdefault('characters', [])
     for picture in [*doc['gallery'], *doc['characters']]:
         if picture.get('image'):
             digest_image = hashlib.sha256((image_root / picture['image']).read_bytes()).hexdigest()[:20]
