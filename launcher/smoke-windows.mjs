@@ -238,6 +238,10 @@ try {
       "launcher-smoke/windows-game-file-import.png",
       Buffer.from(image.data, "base64"),
     );
+    // Clear the prior result so this proves the picker performs a fresh import.
+    await evaluate(
+      `document.querySelector('#creator-content [data-community-action="create"] [name="title"]').value = ''`,
+    );
     // The accessible picker follows the same parser and refill flow.
     const dom = await call("DOM.getDocument");
     const input = await call("DOM.querySelector", {
@@ -251,7 +255,7 @@ try {
     await until(
       () =>
         evaluate(
-          `document.querySelector('#creator-content [data-community-status]').textContent.includes('Game details loaded')`,
+          `document.querySelector('#creator-content [data-community-action="create"] [name="title"]').value === 'Embedded Windows Drop' && document.querySelector('#creator-content [data-community-status]').textContent.includes('Game details loaded')`,
         ),
       "native file picker metadata import",
     );
