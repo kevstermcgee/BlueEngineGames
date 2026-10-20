@@ -75,7 +75,7 @@ jobs:
         if: matrix.game.hub
         shell: pwsh
         run: |
-          cargo build --locked --manifest-path _engine/Cargo.toml --no-default-features --bin be2-hub
+          cargo build --locked --manifest-path _engine/Cargo.toml --no-default-features --features networking --bin be2-hub
           if ($LASTEXITCODE -ne 0) { throw 'Hub build failed' }
           $suffix = if ($IsWindows) { '.exe' } else { '' }
           "BE2_HUB=$env:CARGO_TARGET_DIR/debug/be2-hub$suffix" >> $env:GITHUB_ENV
