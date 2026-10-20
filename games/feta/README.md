@@ -10,9 +10,9 @@ Q changes Feta's camera. The Scientist attacks with the left/right mouse buttons
 Esc opens the menu. F11 switches between fullscreen and a window. Solo exploration
 has no opponent or round timer.
 
-This catalog packages the existing **0.2.0-playtest.3** Windows build, preserving
-the game's own runtime and approved rat artwork. It starts fullscreen with a brief,
-skippable **BlueEngine Games** intro. Its archive checksum and source
+This catalog packages the existing **0.2.0-playtest.4** Windows build. It starts fullscreen
+with a brief, skippable **BlueEngine Games** title card using centered text. The
+retired rat logo is absent. Its archive checksum and source
 revision are pinned in release-source.json. It is a playtest; human Windows input
 and gameplay still need playtesting.
 

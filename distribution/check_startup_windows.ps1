@@ -97,7 +97,7 @@ function Save-Window([IntPtr]$Window, [string]$Name, [switch]$StudioCard, [switc
     if ($StudioCard) {
       # Inspect the rendered title area, not an embedded string or capture fixture.
       # The retained PNG is also reviewed visually before publication.
-      $scale = [Math]::Min($width / 900.0, $height / 600.0)
+      $scale = [Math]::Clamp([Math]::Min($width / 900.0, $height / 600.0), 0.3, 2.0)
       $lightPixels = 0
       $y0 = [Math]::Max(0, [int]($height * 0.43 + 10 * $scale))
       $y1 = [Math]::Min($height, [int]($height * 0.43 + 80 * $scale))
@@ -110,6 +110,22 @@ function Save-Window([IntPtr]$Window, [string]$Name, [switch]$StudioCard, [switc
         }
       }
       if ($lightPixels -lt 30) { throw "Studio title was not visible in $Name.png (light title samples: $lightPixels)." }
+      # An old executable can still show the title while also showing retired artwork.
+      # Keep the former logo area above the centered text clear in the shipped game.
+      $artworkPixels = 0
+      $artworkSamples = 0
+      $y0 = [Math]::Max(0, [int]($height * 0.43 - 102 * $scale))
+      $y1 = [Math]::Min($height, [int]($height * 0.43 - 10 * $scale))
+      $x0 = [Math]::Max(0, [int]($width / 2 - 50 * $scale))
+      $x1 = [Math]::Min($width, [int]($width / 2 + 50 * $scale))
+      for ($y = $y0; $y -lt $y1; $y += 3) {
+        for ($x = $x0; $x -lt $x1; $x += 3) {
+          $pixel = $bitmap.GetPixel($x, $y)
+          $artworkSamples++
+          if ($pixel.R -gt 32 -or $pixel.G -gt 32 -or $pixel.B -gt 32) { $artworkPixels++ }
+        }
+      }
+      if ($artworkPixels * 20 -gt $artworkSamples) { throw "Retired studio artwork was visible in $Name.png ($artworkPixels of $artworkSamples samples)." }
     } elseif ($GameFrame) {
       # Ignore title bars/taskbars: they can be visible while the client is still black.
       $visiblePixels = 0
@@ -220,6 +236,7 @@ try {
   $proof = @{
     schema_version = 1; title = $ExpectedTitle; executable_sha256 = (Get-FileHash $Executable -Algorithm SHA256).Hash.ToLowerInvariant()
     normal_fullscreen = $true; studio_card = $intro; game_after_intro = $game
+    retired_studio_artwork_absent = $true
     toggle_key = $ToggleKey; first_toggle_windowed = $toggled; second_toggle_fullscreen = $true
     explicit_windowed_studio_card = $windowed; explicit_windowed_game = $windowedGame
     isolated_player_data = $true; game_arguments = @($GameArguments)
