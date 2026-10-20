@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "overview": "Feta is a two-player cat-and-mouse playtest set in a furnished house and garden. Players choose Feta or the Scientist, with solo exploration also available when no opponent is connected. The catalog preserves the game’s 0.2.0-playtest.2 build and approved rat artwork.",
+  "overview": "Feta is a two-player cat-and-mouse playtest set in a furnished house and garden. Players choose Feta or the Scientist, with solo exploration also available when no opponent is connected. The 0.2.0-playtest.4 build opens with a clean, centered BlueEngine Games text title card. The retired studio image is absent.",
   "rules": [
     "Online play needs two players choosing opposite characters.",
     "Connect using the host’s server address and private join code; the host supplies the code.",

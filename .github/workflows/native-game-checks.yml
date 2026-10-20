@@ -1,42 +1,58 @@
 name: Native game checks
 on:
   pull_request:
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, distribution/bind_engine.py, distribution/test_bind_engine.py, .github/workflows/native-game-checks.yml]
   push:
     branches: [main]
-    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, .github/workflows/native-game-checks.yml]
+    paths: [games/deadfall/**, games/prop-hunt/**, games/slapstick/**, games/lantern-run/**, games/pocket-breaker/**, games/orchard-watch/**, games/lantern-grove/**, games/signal-garden/**, games/idea-forge/**, distribution/native_checks.py, distribution/test_native_checks.py, distribution/bind_engine.py, distribution/test_bind_engine.py, .github/workflows/native-game-checks.yml]
   workflow_dispatch:
     inputs:
       game_slug:
-        description: Check Deadfall alone for review, or every native game
-        type: choice
-        options: [all, deadfall, idea-forge]
+        description: One registered native Cargo game slug, or all for the nine curated games
+        type: string
         default: all
 permissions:
   contents: read
 jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      games: ${{ steps.select.outputs.games }}
+      engine_revision: ${{ steps.select.outputs.engine_revision }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Verify native game selection
+        run: |
+          python3 -m unittest discover -s distribution -p 'test_native_checks.py' -v
+          python3 -m unittest discover -s distribution -p 'test_bind_engine.py' -v
+      - name: Select validated source and pinned engine
+        id: select
+        env:
+          REQUESTED_GAME_SLUG: ${{ github.event.inputs.game_slug || 'all' }}
+        run: python3 distribution/native_checks.py --github-output "$GITHUB_OUTPUT"
   game:
+    needs: select
+    name: game (${{ matrix.os }}, ${{ matrix.game.slug }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        slug: ${{ fromJSON(github.event.inputs.game_slug == 'deadfall' && '["deadfall"]' || github.event.inputs.game_slug == 'idea-forge' && '["idea-forge"]' || '["deadfall", "prop-hunt", "slapstick", "lantern-run", "pocket-breaker", "orchard-watch", "lantern-grove", "signal-garden", "idea-forge"]') }}
+        game: ${{ fromJSON(needs.select.outputs.games) }}
     runs-on: ${{ matrix.os }}
     env:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target
-      GAME_SLUG: ${{ matrix.slug }}
+      GAME_SLUG: ${{ matrix.game.slug }}
+      GAME_DIRECTORY: ${{ matrix.game.directory }}
+      CATALOG_ENGINE_REVISION: ${{ needs.select.outputs.engine_revision }}
+      BE2_TOOLING_ROOT: ${{ github.workspace }}/_engine
     steps:
       - uses: actions/checkout@v7
-      - name: Read pinned engine revision
-        id: catalog
-        shell: pwsh
-        run: |
-          $catalog = Get-Content -Raw .games-catalog.json | ConvertFrom-Json
-          "revision=$($catalog.source_revision)" >> $env:GITHUB_OUTPUT
       - uses: actions/checkout@v7
         with:
           repository: kevstermcgee/BlueEngine
-          ref: ${{ steps.catalog.outputs.revision }}
+          ref: ${{ needs.select.outputs.engine_revision }}
           path: _engine
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
@@ -45,52 +61,71 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            games/${{ matrix.slug }} -> ../../target
+            ${{ matrix.game.directory }} -> ../../target
       - name: Install Linux runtime dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev pkg-config xvfb libgl1-mesa-dri
       - name: Bind game to the catalog engine
         shell: python
         run: |
-          import os, pathlib, re
-          manifest = pathlib.Path('games') / os.environ['GAME_SLUG'] / 'Cargo.toml'
-          engine = pathlib.Path('_engine').resolve().as_posix()
-          text = re.sub(r'(vesper3d\s*=\s*\{[^}\n]*\bpath\s*=\s*)"[^"]+"',
-                        lambda m: m[1] + '"' + engine + '"', manifest.read_text())
-          manifest.write_text(text)
-      - name: Build the shared hub for Deadfall's real room tests
-        if: matrix.slug == 'deadfall'
+          import json, os, pathlib, subprocess, sys
+          manifest = pathlib.Path(os.environ['GAME_DIRECTORY']) / 'Cargo.toml'
+          engine = pathlib.Path('_engine').resolve()
+          subprocess.run([sys.executable, 'distribution/bind_engine.py', '--manifest', str(manifest), '--engine', str(engine)], check=True)
+          metadata = json.loads(subprocess.run(['cargo', 'metadata', '--locked', '--format-version', '1', '--manifest-path', str(manifest)],
+                                              check=True, text=True, stdout=subprocess.PIPE).stdout)
+          engines = [package for package in metadata['packages'] if package['name'] == 'be2']
+          if (len(engines) != 1 or engines[0]['source'] is not None
+                  or pathlib.Path(engines[0]['manifest_path']).resolve() != engine / 'Cargo.toml'):
+              raise RuntimeError('Native checks resolved an SDK outside the exact catalog engine checkout')
+      - name: Build the shared hub for real room tests
+        if: matrix.game.hub
         shell: pwsh
         run: |
-          cargo build --locked --manifest-path _engine/Cargo.toml --no-default-features --bin be2-hub
+          cargo build --locked --manifest-path _engine/Cargo.toml --no-default-features --features networking --bin be2-hub
           if ($LASTEXITCODE -ne 0) { throw 'Hub build failed' }
           $suffix = if ($IsWindows) { '.exe' } else { '' }
           "BE2_HUB=$env:CARGO_TARGET_DIR/debug/be2-hub$suffix" >> $env:GITHUB_ENV
       - name: Rules, networking, identity and code checks
         shell: pwsh
         run: |
-          $manifest = "games/$env:GAME_SLUG/Cargo.toml"
+          $manifest = "$env:GAME_DIRECTORY/Cargo.toml"
           cargo fmt --manifest-path $manifest --check
           if ($LASTEXITCODE -ne 0) { throw 'Formatting failed' }
           cargo test --locked --manifest-path $manifest
           if ($LASTEXITCODE -ne 0) { throw 'Game tests failed' }
           cargo clippy --locked --all-targets --manifest-path $manifest -- -D warnings
           if ($LASTEXITCODE -ne 0) { throw 'Clippy failed' }
+          $engineCommit = (git -C _engine rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $engineCommit -cne $env:CATALOG_ENGINE_REVISION) { throw 'The checked engine source changed' }
+          git -C _engine diff --quiet HEAD --
+          if ($LASTEXITCODE -ne 0) { throw 'Game checks changed the pinned engine source' }
+          New-Item -ItemType Directory -Path .native-checks -Force | Out-Null
+          @{
+            schema_version = 1
+            game = $env:GAME_SLUG
+            games_commit = $env:GITHUB_SHA
+            engine_commit = $engineCommit
+            os = $env:RUNNER_OS
+            checks = @('format', 'default_tests', 'clippy')
+            bound_lock_sha256 = (Get-FileHash "$env:GAME_DIRECTORY/Cargo.lock" -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json -Depth 3 | Set-Content ".native-checks/$env:GAME_SLUG-$env:RUNNER_OS.json" -Encoding utf8NoBOM
       - name: Package with a private shortcut (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.game.ship
         shell: pwsh
-        run: python "games/$env:GAME_SLUG/scripts/ship.py" ship --folder "$env:RUNNER_TEMP/game-shortcuts" --no-launch --no-smoke
+        run: python "$env:GAME_DIRECTORY/scripts/ship.py" ship --folder "$env:RUNNER_TEMP/game-shortcuts" --no-launch --no-smoke
       - name: Run the clean package on a virtual display (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.game.ship
         shell: bash
         run: |
           printf 'pcm.!default { type null }\nctl.!default { type null }\n' > "$RUNNER_TEMP/asound.conf"
-          xvfb-run -a env LIBGL_ALWAYS_SOFTWARE=1 ALSA_CONFIG_PATH="$RUNNER_TEMP/asound.conf" python "games/$GAME_SLUG/scripts/ship.py" ship --folder "$RUNNER_TEMP/game-shortcuts" --no-launch
+          xvfb-run -a env LIBGL_ALWAYS_SOFTWARE=1 ALSA_CONFIG_PATH="$RUNNER_TEMP/asound.conf" python "$GAME_DIRECTORY/scripts/ship.py" ship --folder "$RUNNER_TEMP/game-shortcuts" --no-launch
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: native-${{ matrix.slug }}-${{ runner.os }}
+          name: native-${{ matrix.game.slug }}-${{ runner.os }}
           path: |
-            games/${{ matrix.slug }}/dist/ship.json
-            games/${{ matrix.slug }}/.blue-check/
+            .native-checks/${{ matrix.game.slug }}-${{ runner.os }}.json
+            ${{ matrix.game.directory }}/dist/ship.json
+            ${{ matrix.game.directory }}/.blue-check/
           include-hidden-files: true

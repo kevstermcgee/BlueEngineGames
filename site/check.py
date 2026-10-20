@@ -19,7 +19,7 @@ class DownloadPage(HTMLParser):
                 raise ValueError(f"Web-play or non-EXE download: {attrs[key]}")
         if tag == 'script':
             source = attrs.get('src', '')
-            if source != 'app.js' and not (source == '../../wiki-feedback.mjs' and attrs.get('type') == 'module'):
+            if source != 'app.js' and not (source in {'../../wiki-feedback.mjs', 'wiki-feedback.mjs'} and attrs.get('type') == 'module'):
                 raise ValueError('Only the catalog and game feedback UI scripts are allowed')
         if tag == 'a' and 'dl' in attrs.get('class', '').split():
             if not urlsplit(attrs.get('href', '')).path.lower().endswith('.exe'):

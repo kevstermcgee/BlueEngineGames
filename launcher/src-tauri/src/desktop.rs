@@ -310,6 +310,11 @@ fn open_game_versions(slug: String, state: State<'_, Library>) -> Result<(), Str
         game.slug
     ))
 }
+#[tauri::command]
+fn open_community_url(url: String) -> Result<(), String> {
+    crate::community_links::validate(&url)?;
+    open_browser_url(&url)
+}
 fn open_browser_url(url: &str) -> Result<(), String> {
     // ShellExecute opens a URL with the user's browser. No command shell or
     // interpolated script receives a URL.
@@ -423,7 +428,8 @@ pub fn run() {
             cancel_download,
             uninstall_game,
             submit_feedback,
-            open_game_versions
+            open_game_versions,
+            open_community_url
         ])
         .run(tauri::generate_context!())
         .expect("Could not start BlueEngine Games");

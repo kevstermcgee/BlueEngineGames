@@ -38,6 +38,13 @@ jobs:
       - name: Verify Windows-only site builder
         run: python3 -m unittest discover -s site -p 'test_*.py' -v
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Verify community and feedback interactions
+        run: node --test site/feedback.test.mjs site/collaboration.test.mjs
+
       - name: Verify independently released Windows installers
         run: python3 site/released_games.py
 

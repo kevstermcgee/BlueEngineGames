@@ -41,6 +41,28 @@ planning, building and review. Public ratings and a paginated review browser
 remain available in the launcher. The application contains no repository write
 credential; publication uses the receiver's server-side Git configuration.
 
+**Create & collaborate** in the sidebar opens the creator hub. Each game guide
+also includes **Collaborate**, with pinned source revisions, fork ancestry,
+source downloads and a copyable handoff for a fresh AI session. Contributors can
+register new games, create forks, submit full source commit SHAs, request
+publication, and send targeted human or AI development feedback. Source may
+come from the upstream engine or a verified GitHub fork. Configured maintainers
+have equal rights; other contributors maintain their own games and forks.
+
+Connecting uses a GitHub access token held only in memory. Disconnecting clears
+it across the creator hub and game guide. The app allows collaboration requests
+only to `https://blue-engine.duckdns.org/community/v1`; credentials are not
+included in copied prompts or source URLs and redirects cannot forward them.
+Publication remains pending until the native release gates succeed, and the
+panel links to the resulting publication checks when available. The new source
+revision never replaces an installed game directly.
+
+Before deploying these panels, enable the receiver’s community extension and
+include the website and Tauri origins in its explicit CORS configuration. The
+engine [collaboration guide](https://github.com/kevstermcgee/BlueEngine/blob/main/docs/COLLABORATION.md)
+contains the service, identity and source-publishing setup. Public game downloads
+and existing anonymous reviews continue to work when collaboration is offline.
+
 The receiver is deployed separately from the static download site. See the
 engine repository's `deploy/feedback/README.md` for HTTPS, Git credentials and
 service setup. The frontend and native transport must use the same verified
@@ -114,6 +136,20 @@ pass. Each `launcher-v<version>` release is immutable and is **not** GitHub's
 latest game release. Publication writes the website download and signed app
 update metadata. Bump versions in package.json, package-lock.json, Cargo.toml,
 Cargo.lock and tauri.conf.json together for subsequent releases.
+
+If publication is interrupted after the immutable release is created, rerun the
+original workflow at its original source commit. The publisher proves the tag's
+exact commit, downloads the original installer, signature, update JSON and
+checksums, and validates GitHub asset digests, byte lengths and the signed
+version with that source's public key. It reuses those original bytes even when
+a new build of the same source differs. Existing assets and tags are never
+replaced; a tag for a different commit or incomplete release metadata blocks
+publication and requires investigation or a new version.
+
+Only the website metadata commit is retried after a concurrent main update.
+Each attempt starts from fresh main in an isolated worktree, preserves other
+changes, and uses a normal non-force push. An already matching feed succeeds
+without another commit; a newer advertised launcher is never downgraded.
 
 Set the repository secret `TAURI_SIGNING_PRIVATE_KEY` to the protected Tauri
 updater key. Its public counterpart is in tauri.conf.json. Back up the private

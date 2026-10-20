@@ -1,6 +1,6 @@
 [package]
 name = "blueengine-games-launcher"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 description = "One library for native BlueEngine games, guides and updates"
 license = "MIT"
@@ -36,6 +36,8 @@ tauri-build = { version = "2", features = [] }
 
 [dev-dependencies]
 tempfile = "3"
+base64 = "0.22"
+minisign-verify = "0.3"
 
 [profile.release]
 opt-level = "s"

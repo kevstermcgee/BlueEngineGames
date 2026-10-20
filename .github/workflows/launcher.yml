@@ -8,6 +8,9 @@ on:
       - site/feedback.mjs
       - site/feedback.css
       - site/feedback.test.mjs
+      - site/collaboration.mjs
+      - site/collaboration.css
+      - site/collaboration.test.mjs
       - .github/workflows/launcher.yml
   workflow_dispatch:
     inputs:
@@ -25,13 +28,17 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Verify account-free feedback receiver before publication
+      - name: Verify feedback and community receiver before publication
         if: github.event_name == 'workflow_dispatch' && inputs.publish
         shell: pwsh
         run: |
           $status = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/health' -TimeoutSec 15
           if ($status.ready -ne $true -or $status.service -ne 'blueengine-player-feedback' -or $status.format -ne 'blueengine-player-feedback-v1') {
             throw 'Deploy and verify the HTTPS feedback receiver before publishing this launcher.'
+          }
+          $community = Invoke-RestMethod -Uri 'https://blue-engine.duckdns.org/community/v1/games' -TimeoutSec 15
+          if ($community.schema_version -ne 1 -or $null -eq $community.games) {
+            throw 'Enable and verify the community API before publishing this launcher.'
           }
       - name: Verify standard Windows user can open a desktop app
         shell: pwsh
@@ -53,7 +60,9 @@ jobs:
         working-directory: launcher
         run: |
           npm test
+          python -m unittest discover -s . -p 'test_publish.py' -v
           cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked
+          cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked --example verify-update-signature
           cargo test --manifest-path src-tauri/Cargo.toml --no-default-features --locked round_trip -- --ignored
       - name: Build per-user installer and signed app update
         working-directory: launcher
@@ -107,29 +116,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
-          $version = (Get-Content launcher/package.json | ConvertFrom-Json).version
-          $tag = "launcher-v$version"
-          $built = Get-ChildItem launcher/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
-          $published = Join-Path $env:RUNNER_TEMP 'BlueEngine-Games-Setup-x64.exe'
-          Copy-Item $built.FullName $published
-          Copy-Item "$($built.FullName).sig" "$published.sig"
-          $installer = Get-Item $published
-          $signature = Get-Content "$($installer.FullName).sig" -Raw
-          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-          $url = "https://github.com/${{ github.repository }}/releases/download/$tag/$($installer.Name)"
-          $date = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-          $update = @{version=$version; notes='Submit game feedback directly with an optional name and no account. Reviews are saved to the engine repository for improvement cycles; offline drafts and safe retries are preserved.'; pub_date=$date; platforms=@{'windows-x86_64'=@{url=$url; signature=$signature.Trim()}}}
-          $update | ConvertTo-Json -Depth 6 | Set-Content launcher-update.json -Encoding utf8NoBOM
-          "$hash  $($installer.Name)" | Set-Content LAUNCHER-SHA256SUMS.txt -Encoding ascii
-          gh release create $tag $installer.FullName "$($installer.FullName).sig" launcher-update.json LAUNCHER-SHA256SUMS.txt --repo ${{ github.repository }} --target ${{ github.sha }} --title "BlueEngine Games Launcher $version" --notes "Game feedback can be submitted directly with an optional display name and no account or sign-in. Accepted reviews are saved to the BlueEngine repository for improvement cycles. Offline drafts are retained after failures, and retries use the same submission ID to avoid duplicate reviews. Includes public scores and reviews, game guides, favorites and signed launcher updates. Existing installations can install this version through Update & restart." --latest=false
-          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed; existing versions are never overwritten' }
-          $metadata = @{version=$version; url=$url; sha256=$hash; size=$installer.Length; update=$update}
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git fetch origin main
-          git checkout -B launcher-release-site origin/main
-          $metadata | ConvertTo-Json -Depth 8 | Set-Content site/launcher-release.json -Encoding utf8NoBOM
-          git add site/launcher-release.json
-          git commit -m "Publish Windows launcher $version download and signed update feed"
-          git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) { throw 'Installer is published; retry the site metadata commit after resolving concurrent main updates' }
+          python launcher/publish.py --repository "$env:GITHUB_REPOSITORY" --source "$env:GITHUB_SHA" --bundle-directory launcher/src-tauri/target/release/bundle/nsis
+          if ($LASTEXITCODE -ne 0) { throw 'Launcher publication was not confirmed; retry the original source workflow without overwriting release assets.' }

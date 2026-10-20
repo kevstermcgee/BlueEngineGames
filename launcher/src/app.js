@@ -18,6 +18,10 @@ import {
   renderPublicScore,
   loadPublicReviewSummary,
 } from "../../site/feedback.mjs";
+import {
+  renderCollaboration,
+  mountCollaboration,
+} from "../../site/collaboration.mjs";
 import { version as launcherVersion } from "../package.json";
 const $ = (s) => document.querySelector(s),
   native = !!window.__TAURI_INTERNALS__;
@@ -43,6 +47,7 @@ let games = [],
   checkingGameUpdates = false,
   downloadGeneration = 0,
   cleanupGuideFeedback = null,
+  cleanupGuideCommunity = null,
   publicReviewState = {};
 function readFavorites() {
   try {
@@ -279,10 +284,16 @@ function renderGuide(g) {
   const activeElement = $("#guide-content").contains(document.activeElement)
     ? document.activeElement
     : null;
+  const activeSelection =
+    activeElement && typeof activeElement.selectionStart === "number"
+      ? [activeElement.selectionStart, activeElement.selectionEnd]
+      : null;
   const focusId = activeElement?.id;
   const focusHref = activeElement?.matches("a[href]")
     ? activeElement.getAttribute("href")
     : null;
+  const previousCommunity = sameGame ? $("#guide-collaborate") : null;
+  if (!previousCommunity) cleanupGuideCommunity?.();
   const versionsExpanded = $("#guide-versions details")?.open;
   const content = $("#guide-content"),
     previous =
@@ -298,7 +309,7 @@ function renderGuide(g) {
         : null;
   if (!previous) cleanupGuideFeedback?.();
   $("#guide-content").innerHTML =
-    `<div class="guide-hero"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><div class="guide-heading"><h1>${esc(g.name)}</h1>${favorite(g, true)}</div><div class="badges">${badges(g)}</div><a class="public-score" href="#guide-feedback">${renderPublicScore(g, publicReviewState)}</a>${releaseSummary(g)}<div class="guide-actions">${guidePrimary(g)}<span class="package-size">${size(g.package.size)} · Windows x64</span></div></div></div><nav class="guide-nav">${["Overview", "Versions", "Rules", "Controls", "Story", "Characters", "Gallery", "Creation", "Feedback"].map((n) => `<a href="#guide-${n.toLowerCase()}">${n}</a>`).join("")}</nav><div class="guide-body"><section id="guide-overview"><h2>Overview</h2>${paragraphs(w.overview)}</section>${renderVersions(g)}<div class="guide-columns"><section id="guide-rules"><h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></section><section id="guide-controls"><h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></section></div><section id="guide-story"><h2>The story</h2>${paragraphs(w.story)}</section><section id="guide-characters"><h2>Characters</h2>${paragraphs(w.characters_note)}<div class="character-grid">${w.characters.map((c) => `<article>${c.image ? `<img src="${img(c.image)}" alt="${esc(c.name)} in-game screenshot" loading="lazy">` : ""}<div><h3>${esc(c.name)}</h3>${paragraphs(c.description)}${paragraphs(c.appearance_note)}${c.image_caption ? `<small>${esc(c.image_caption)}</small>` : ""}${!c.image && c.image_status !== "not-rendered" ? "<small>Character screenshot not yet captured.</small>" : ""}</div></article>`).join("")}</div></section><section id="guide-gallery"><h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div></section><section id="guide-creation"><h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}</section>${renderFeedback(g)}${installs[g.slug]?.installed ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>` : ""}</div>`;
+    `<div class="guide-hero"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><div class="guide-heading"><h1>${esc(g.name)}</h1>${favorite(g, true)}</div><div class="badges">${badges(g)}</div><a class="public-score" href="#guide-feedback">${renderPublicScore(g, publicReviewState)}</a>${releaseSummary(g)}<div class="guide-actions">${guidePrimary(g)}<span class="package-size">${size(g.package.size)} · Windows x64</span></div></div></div><nav class="guide-nav">${["Overview", "Versions", "Rules", "Controls", "Story", "Characters", "Gallery", "Creation", "Feedback", "Collaborate"].map((n) => `<a href="#guide-${n.toLowerCase()}">${n}</a>`).join("")}</nav><div class="guide-body"><section id="guide-overview"><h2>Overview</h2>${paragraphs(w.overview)}</section>${renderVersions(g)}<div class="guide-columns"><section id="guide-rules"><h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></section><section id="guide-controls"><h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></section></div><section id="guide-story"><h2>The story</h2>${paragraphs(w.story)}</section><section id="guide-characters"><h2>Characters</h2>${paragraphs(w.characters_note)}<div class="character-grid">${w.characters.map((c) => `<article>${c.image ? `<img src="${img(c.image)}" alt="${esc(c.name)} in-game screenshot" loading="lazy">` : ""}<div><h3>${esc(c.name)}</h3>${paragraphs(c.description)}${paragraphs(c.appearance_note)}${c.image_caption ? `<small>${esc(c.image_caption)}</small>` : ""}${!c.image && c.image_status !== "not-rendered" ? "<small>Character screenshot not yet captured.</small>" : ""}</div></article>`).join("")}</div></section><section id="guide-gallery"><h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div></section><section id="guide-creation"><h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}</section>${renderFeedback(g)}${renderCollaboration(g)}${installs[g.slug]?.installed ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>` : ""}</div>`;
   content.dataset.game = g.slug;
   if (previous) {
     content.querySelector("#guide-feedback").replaceWith(previous);
@@ -320,16 +331,30 @@ function renderGuide(g) {
         : {},
     );
   }
+  if (previousCommunity)
+    content.querySelector("#guide-collaborate").replaceWith(previousCommunity);
+  else
+    cleanupGuideCommunity = mountCollaboration(
+      content.querySelector("#guide-collaborate"),
+      g,
+      native
+        ? { openExternal: (url) => invoke("open_community_url", { url }) }
+        : {},
+    );
   if (sameGame) {
     const details = content.querySelector("#guide-versions details");
     if (details) details.open = !!versionsExpanded;
     if (!focused && activeElement) {
-      const replacement = focusId
-        ? document.getElementById(focusId)
-        : [...content.querySelectorAll("a[href]")].find(
-            (a) => a.getAttribute("href") === focusHref,
-          );
+      const replacement = content.contains(activeElement)
+        ? activeElement
+        : focusId
+          ? document.getElementById(focusId)
+          : [...content.querySelectorAll("a[href]")].find(
+              (a) => a.getAttribute("href") === focusHref,
+            );
       replacement?.focus({ preventScroll: true });
+      if (activeSelection && replacement?.setSelectionRange)
+        replacement.setSelectionRange(...activeSelection);
     }
     dialog.scrollTop = scrollPosition;
   }
@@ -565,6 +590,8 @@ $("#guide").addEventListener("close", () => {
   guideSlug = null;
   cleanupGuideFeedback?.();
   cleanupGuideFeedback = null;
+  cleanupGuideCommunity?.();
+  cleanupGuideCommunity = null;
   $("#guide-content").removeAttribute("data-game");
 });
 $("#keep").onclick = () => $("#confirmation").close();
@@ -642,3 +669,16 @@ async function start() {
   );
 }
 start();
+
+$("#creator-content").innerHTML = renderCollaboration(null, {
+  sectionId: "creator-collaborate",
+});
+mountCollaboration(
+  $("#creator-content"),
+  null,
+  native
+    ? { openExternal: (url) => invoke("open_community_url", { url }) }
+    : {},
+);
+$("#open-creator").onclick = () => $("#creator").showModal();
+$("#close-creator").onclick = () => $("#creator").close();

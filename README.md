@@ -34,6 +34,26 @@ account or sign-in is required. Accepted reviews are automatically saved under `
 included in future IdeaForge planning, building and review. Wikis show public
 rating summaries and recent reviews when online.
 
+The website’s **Create & collaborate** hub and each game’s **Fork, improve &
+publish** panel connect to the BlueEngine community service. Browse source
+revisions and fork ancestry, copy a handoff into a fresh AI session, create a
+fork, submit a committed update, or request publication. GitHub identifies each
+contributor; configured maintainers have equal editing and publishing access.
+Access tokens stay in memory and are cleared on disconnect or page close.
+Development feedback records whether a human or AI wrote it and targets the
+engine, launcher, or a specific game in the daily improvement queue.
+
+Publication requests create a reviewable source change; a request is **pending**
+until the existing native Windows build, guide, gameplay screenshot, installer
+and checksum gates pass. The playable catalog and installed games continue to
+use verified immutable releases. Source archives are labeled separately from
+Windows game installers. See the engine’s
+[collaboration guide](https://github.com/kevstermcgee/BlueEngine/blob/main/docs/COLLABORATION.md)
+for fresh-session commands, server setup and maintainer configuration. These
+panels require the community-enabled service at
+`https://blue-engine.duckdns.org/community/v1`; an unavailable service leaves
+the existing game downloads and account-free reviews usable.
+
 Every game card and detail page uses a real in-game capture from
 `site/thumbs/<slug>.png`. New games must include a visually reviewed landscape
 screenshot (at least 320 × 180); launcher icons and initial tiles are never used
