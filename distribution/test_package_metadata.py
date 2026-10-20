@@ -100,7 +100,14 @@ class PackageMetadataTests(unittest.TestCase):
                          'e991033e5a1cc075166cd2a84363f4388debe29ad73617ea75236e29d0c318e6')
 
     def test_engine_managed_exports_use_original_source_not_companion(self):
-        self.catalog['files'] = [dict(path='games/sample/Cargo.toml', sha256=hashlib.sha256((self.game / 'Cargo.toml').read_bytes()).hexdigest())]
+        # Windows may materialize CRLF while the immutable exported Git blob is
+        # LF. Build the catalog from the committed bytes, like the real exporter.
+        command(self.root, 'config', 'core.autocrlf', 'true')
+        path = self.game / 'Cargo.toml'
+        path.write_bytes(path.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n'))
+        committed = subprocess.check_output(['git', '-C', str(self.root), 'show', 'HEAD:games/sample/Cargo.toml'])
+        self.assertNotEqual(committed, (self.game / 'Cargo.toml').read_bytes())
+        self.catalog['files'] = [dict(path='games/sample/Cargo.toml', sha256=hashlib.sha256(committed).hexdigest())]
         self.commit()
         document = adapter.build_document(self.root, 'sample', self.engine)
         self.assertEqual(document['source'], dict(repository='public/Engine', commit=self.catalog['source_revision'],
