@@ -137,6 +137,20 @@ latest game release. Publication writes the website download and signed app
 update metadata. Bump versions in package.json, package-lock.json, Cargo.toml,
 Cargo.lock and tauri.conf.json together for subsequent releases.
 
+If publication is interrupted after the immutable release is created, rerun the
+original workflow at its original source commit. The publisher proves the tag's
+exact commit, downloads the original installer, signature, update JSON and
+checksums, and validates GitHub asset digests, byte lengths and the signed
+version with that source's public key. It reuses those original bytes even when
+a new build of the same source differs. Existing assets and tags are never
+replaced; a tag for a different commit or incomplete release metadata blocks
+publication and requires investigation or a new version.
+
+Only the website metadata commit is retried after a concurrent main update.
+Each attempt starts from fresh main in an isolated worktree, preserves other
+changes, and uses a normal non-force push. An already matching feed succeeds
+without another commit; a newer advertised launcher is never downgraded.
+
 Set the repository secret `TAURI_SIGNING_PRIVATE_KEY` to the protected Tauri
 updater key. Its public counterpart is in tauri.conf.json. Back up the private
 key outside the repository; losing it prevents updating existing installations.
