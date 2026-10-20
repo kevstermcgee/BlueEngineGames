@@ -142,6 +142,21 @@ keyboard/mouse/controller input, audio and save/load; no browser is required.
 The release definitions also cover the newly exported Signal Garden native game.
 Timed Relay is an authored engine test fixture, not a standalone game product.
 
+The **Native game checks** workflow also accepts any registered `cargo` or
+`cargo-package` slug for a focused Linux and Windows review:
+
+```sh
+gh workflow run native-game-checks.yml --ref YOUR_REVIEW_BRANCH -f game_slug=YOUR_GAME_SLUG
+```
+
+Its default `all` selection retains the nine existing curated games. The selector
+validates download metadata, source paths and the immutable engine pin before
+constructing the matrix. Every selected game runs formatting, default-feature
+tests and Clippy; `cargo-package` games additionally run their private shortcut
+package check and Linux package smoke. Plain Cargo games do not need `ship.py`.
+Forks containing the shared-hub integration tests retain the hub binary setup.
+Windows installer review and production release checks remain in `releases.yml`.
+
 Native game checks run on Windows and Linux; Linux is a verification host, not
 a public download target. EXE installers appear on the site only after the
 complete Windows release succeeds. The Pages gate removes all stale web-play
