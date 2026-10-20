@@ -1,3 +1,5 @@
+import { readGameMetadata, validateGameMetadata } from "./game-metadata.mjs";
+
 export const COMMUNITY_URL = "https://blue-engine.duckdns.org/community/v1";
 const ENGINE = "https://github.com/kevstermcgee/BlueEngine";
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -71,11 +73,13 @@ export async function communityRequest(
           if (typeof body.error === "string") detail = body.error.slice(0, 500);
         } catch {}
       }
-      throw new Error(
+      const error = new Error(
         detail ||
           errors[response.status] ||
           "The collaboration service is unavailable. Your changes have not been confirmed; retry safely.",
       );
+      error.status = response.status;
+      throw error;
     }
     const document = await response.json();
     if (
@@ -213,6 +217,97 @@ const note = (name = "note", label = "What changed?") =>
 const revisionFields = (slug = "", repository = "") =>
   `${field("Source repository (owner/repo)", "source_repository", { required: false, placeholder: "kevstermcgee/BlueEngine or your GitHub fork", value: repository })}${field("Full source commit SHA", "source_commit", { max: 40, placeholder: "40 lowercase hexadecimal characters" })}${field("Source folder in games/", "source_game", { max: 80, placeholder: "your-game-slug", value: slug })}${field("Game version", "version")}${note()}`;
 
+const createForm = () =>
+  `<form data-community-action="create">${field("New game slug", "slug", { max: 80 })}${field("Game title", "title")}${revisionFields()}<button type="submit">Register new game</button></form>`;
+export function metadataImportPlan(document, current = null) {
+  validateGameMetadata(document);
+  const { game, source, lineage } = document;
+  const canonical = ["games", "assets/games", "assets"].some(
+    (base) => source?.game_path === `${base}/${game.slug}`,
+  );
+  const ready = !!(
+    source &&
+    !source.dirty &&
+    SHA.test(source.commit.toLowerCase()) &&
+    validSlug(game.slug) &&
+    canonical &&
+    game.version.trim()
+  );
+  const fields = {
+    slug: game.slug,
+    title: game.title,
+    version: game.version,
+    source_repository: source?.repository || "",
+    source_commit: source && !source.dirty ? source.commit.toLowerCase() : "",
+    source_game: canonical ? game.slug : "",
+    note:
+      typeof game.changelog === "string" && game.changelog.trim()
+        ? game.changelog.slice(0, 4000)
+        : `Update ${game.title}${game.version ? ` to ${game.version}` : " from the exported game"}.`,
+  };
+  const match =
+    source &&
+    !source.dirty &&
+    current?.slug === game.slug &&
+    current.revisions.find(
+      (r) =>
+        r.source_commit.toLowerCase() === fields.source_commit &&
+        (r.source_repository ||
+          r.source?.repository ||
+          "kevstermcgee/BlueEngine") === source.repository &&
+        (r.source?.game_path || `games/${r.source_game}`) === source.game_path,
+    );
+  let mode = match
+    ? "existing"
+    : current?.slug === game.slug
+      ? current.head_revision
+        ? "update"
+        : "create"
+      : lineage?.parent_game
+        ? "fork"
+        : "create";
+  const messages = [];
+  if (!source || source.dirty)
+    messages.push(
+      "These are draft game details. Ask your AI to commit the finished native source and export the game again; its source pin will fill in automatically.",
+    );
+  else if (!validSlug(game.slug) || !SHA.test(source.commit.toLowerCase()))
+    messages.push(
+      "These game details use an identity or source pin that this publishing service cannot accept yet. Ask your AI to export a game slug of at most 80 characters with a full 40-character Git commit.",
+    );
+  else if (!canonical)
+    messages.push(
+      "Ask your AI to import this source into a canonical games/ folder with the current community checkout command, commit it, and export again before publishing.",
+    );
+  else if (!game.version.trim())
+    messages.push(
+      "Ask your AI to set a game version and export again; the publishing details will then be complete.",
+    );
+  if (
+    current &&
+    current.slug === game.slug &&
+    !match &&
+    lineage?.revision_id &&
+    lineage.revision_id !== current.head_revision
+  )
+    messages.push(
+      "This game advanced after this file's source session began. Merge the latest source before submitting; the server will verify the source history.",
+    );
+  return {
+    mode,
+    fields,
+    ready,
+    revision: match?.id || null,
+    parent: lineage?.parent_game || null,
+    parentRevision: lineage?.parent_revision || null,
+    messages,
+  };
+}
+export function renderImportedMetadata(document, messages = []) {
+  const { game, source, lineage } = document;
+  return `<article class="community-imported"><h3>${esc(game.title)}${game.version ? ` · ${esc(game.version)}` : ""}</h3><p>${esc(game.description || "No description supplied.")}</p><dl><dt>Controls</dt><dd>${esc(game.controls || "Not supplied")}</dd><dt>Credits</dt><dd>${esc(game.authors.join(", ") || "Not supplied")}</dd>${game.tags.length ? `<dt>Tags</dt><dd>${esc(game.tags.join(", "))}</dd>` : ""}${source ? `<dt>Source</dt><dd><code>${esc(source.repository)} · ${esc(source.commit)} · ${esc(source.game_path)}</code></dd>` : ""}${lineage?.parent_game ? `<dt>Fork ancestry</dt><dd>${esc(lineage.parent_game)} · ${esc(lineage.parent_revision || "Parent revision not supplied")}</dd>` : ""}</dl><p>Review the filled details below. Publishing checks your GitHub access, pinned source and native release tests.</p>${messages.map((m) => `<p class="community-import-next">${esc(m)}</p>`).join("")}</article>`;
+}
+
 export function renderCollaboration(
   game = null,
   { sectionId = "guide-collaborate" } = {},
@@ -220,9 +315,10 @@ export function renderCollaboration(
   return `<section class="community-center" id="${esc(sectionId)}" aria-labelledby="${esc(sectionId)}-heading">
     <p class="community-kicker">BUILD TOGETHER</p><h2 id="${esc(sectionId)}-heading">${game ? "Fork, improve &amp; publish" : "Create &amp; collaborate"}</h2>
     <p>Give a game your own twist, improve an existing version, or start something new with your AI. Every revision keeps its author, source commit and parent history.</p>
+    <div class="community-import-drop" data-community-import-drop><strong>Drop your exported game here</strong><p>Your EXE, BAT, CMD or ZIP supplies its game details and source pin for publishing.</p><label class="community-file-label">Choose a game file<input data-community-file type="file" accept=".exe,.bat,.cmd,.zip"></label><small>Reads embedded details locally. Use a current BlueEngine export, then review and submit the pinned source below.</small></div><div data-community-imported aria-live="polite"></div>
     <details class="community-access"><summary>Connect to contribute</summary><p>Use your GitHub access token to identify your account. It stays in memory until you disconnect or close this page. Your GitHub account determines access; maintainers have equal publishing and editing rights.</p><form data-community-action="connect">${field("GitHub access token", "token", { type: "password", max: 255 })}<button type="submit">Connect GitHub account</button></form></details>
     <p data-community-identity>Public history is available without signing in.</p><button type="button" data-community-disconnect hidden>Disconnect account</button>
-    ${!game ? `<form data-community-action="lookup" class="community-lookup">${field("Open a game or fork", "slug", { max: 80, placeholder: "game-slug" })}<button type="submit">Open history</button></form><div data-community-directory></div><details><summary>Create a new game</summary><p>Start in a fresh AI session using the creator guide. When your source is committed, register it here and request a verified Windows build.</p><textarea data-community-new-prompt rows="8" readonly aria-label="New-game AI handoff">${esc(buildNewGameHandoff())}</textarea><button type="button" data-community-copy-new>Copy new-game AI handoff</button><p><a href="${ENGINE}/blob/main/docs/COLLABORATION.md" target="_blank" rel="noopener noreferrer">Open the creator and publishing guide</a></p><form data-community-action="create">${field("New game slug", "slug", { max: 80 })}${field("Game title", "title")}${revisionFields()}<button type="submit">Register new game</button></form></details>` : ""}
+    ${!game ? `<form data-community-action="lookup" class="community-lookup">${field("Open a game or fork", "slug", { max: 80, placeholder: "game-slug" })}<button type="submit">Open history</button></form><div data-community-directory></div><details data-community-create><summary>Create a new game / enter source details</summary><p>Start in a fresh AI session using the creator guide. Export a game file to fill these details automatically, or enter committed source details here.</p>${createForm()}<details><summary>Start a new AI session</summary><textarea data-community-new-prompt rows="8" readonly aria-label="New-game AI handoff">${esc(buildNewGameHandoff())}</textarea><button type="button" data-community-copy-new>Copy new-game AI handoff</button><p><a href="${ENGINE}/blob/main/docs/COLLABORATION.md" target="_blank" rel="noopener noreferrer">Open the creator and publishing guide</a></p></details></details>` : `<details data-community-create hidden><summary>Register the imported game</summary>${createForm()}</details>`}
     <div data-community-game><p>Loading collaboration history…</p></div>
     <details><summary>Development feedback for the daily improvement cycle</summary><p>Share a concrete issue or improvement with its reproduction steps and expected outcome. Human and AI feedback enter the same queue.</p><form data-community-action="feedback"><div class="community-fields"><label>About<select name="target_type"><option value="${game ? "game" : "engine"}">${game ? "This game" : "Engine"}</option><option value="launcher">Launcher / website</option>${game ? '<option value="engine">Engine</option>' : '<option value="game" disabled>Choose a game above</option>'}</select></label><label>Written by<select name="kind"><option value="human">Human</option><option value="ai">AI development session</option></select></label></div>${field("Category", "category", { max: 80, placeholder: "bug, usability, feature, performance…" })}${field("Version or source commit", "version", { required: false })}${note("note", "Evidence and suggested improvement")}<button type="submit">Submit development feedback</button></form></details>
     <p class="community-status" data-community-status role="status"></p>
@@ -365,6 +461,7 @@ export function mountCollaboration(
     fetcher = globalThis.fetch,
     clipboard = globalThis.navigator?.clipboard,
     openExternal,
+    metadataReader = readGameMetadata,
   } = {},
 ) {
   const controller = new AbortController();
@@ -373,7 +470,9 @@ export function mountCollaboration(
   let game = null,
     selected = "",
     alive = true,
-    generation = 0;
+    generation = 0,
+    importGeneration = 0,
+    imported = null;
   const pending = new WeakMap();
   const request = (path, payload) =>
     communityRequest(path, {
@@ -388,8 +487,49 @@ export function mountCollaboration(
       : "Public history is available without signing in.";
     root.querySelector("[data-community-disconnect]").hidden = !session.actor;
   };
+  const fill = (form, fields) => {
+    if (!form) return;
+    for (const [name, value] of Object.entries(fields)) {
+      const input = form.querySelector(`[name="${name}"]`);
+      if (input) input.value = value;
+    }
+    const details = form.closest?.("details");
+    if (details) {
+      details.hidden = false;
+      details.open = true;
+    }
+  };
+  const applyImported = () => {
+    if (!imported) return;
+    const plan = metadataImportPlan(imported, game);
+    if (game?.slug === imported.game.slug) {
+      if (plan.mode === "update")
+        fill(
+          panel.querySelector('[data-community-action="revision"]'),
+          plan.fields,
+        );
+      else if (plan.mode === "existing") {
+        /* History selection remains the user's choice after import. */
+      } else
+        fill(
+          root.querySelector('[data-community-action="create"]'),
+          plan.fields,
+        );
+    } else if (plan.mode === "fork" && game?.slug === plan.parent) {
+      fill(panel.querySelector('[data-community-action="fork"]'), {
+        slug: plan.fields.slug,
+        title: plan.fields.title,
+      });
+    } else if (!game)
+      fill(root.querySelector('[data-community-action="create"]'), plan.fields);
+    const preview = root.querySelector("[data-community-imported]");
+    if (preview)
+      preview.innerHTML = renderImportedMetadata(imported, plan.messages);
+    return plan;
+  };
   const showGame = () => {
     panel.innerHTML = renderCommunityGame(game, selected);
+    applyImported();
   };
   const loadGame = async (slug) => {
     if (!validSlug(slug))
@@ -409,6 +549,65 @@ export function mountCollaboration(
     if (sourceGame) {
       sourceGame.textContent = `Game: ${game.title}`;
       sourceGame.disabled = false;
+    }
+    return next;
+  };
+  const importFile = async (file) => {
+    const ticket = ++importGeneration;
+    imported = null;
+    status.textContent = "Reading this game's embedded details…";
+    try {
+      const result = await metadataReader(file);
+      if (!alive || ticket !== importGeneration) return;
+      imported = result.document;
+      validateGameMetadata(imported);
+      let current = null;
+      try {
+        current = await loadGame(imported.game.slug);
+      } catch (error) {
+        if (error.status !== 404) throw error;
+      }
+      if (!alive || ticket !== importGeneration) return;
+      let plan = metadataImportPlan(imported, current);
+      if (!current && plan.mode === "fork" && validSlug(plan.parent)) {
+        await loadGame(plan.parent);
+        if (!alive || ticket !== importGeneration) return;
+        if (game.revisions.some((r) => r.id === plan.parentRevision))
+          selected = plan.parentRevision;
+        else
+          throw new Error(
+            "The embedded parent revision is unavailable. Open the original game's history and choose a verified parent before creating this fork.",
+          );
+        showGame();
+        status.textContent =
+          "Fork details loaded. Create this fork below to preserve its parent history; its source revision will then be filled in for you.";
+        if (game.head_revision !== plan.parentRevision)
+          status.textContent +=
+            " The parent has newer changes; merge its latest source before publishing.";
+        return;
+      }
+      if (!current) {
+        game = null;
+        selected = "";
+        panel.innerHTML =
+          "<p>Review the imported details and register the new game's pinned source above.</p>";
+      } else if (plan.mode === "existing") {
+        selected = plan.revision;
+        showGame();
+      }
+      plan = applyImported();
+      status.textContent = !plan.ready
+        ? plan.messages[0]
+        : plan.mode === "existing"
+          ? "This source revision is already registered. It is selected below; review its publication status or request publication."
+          : plan.mode === "update"
+            ? "Game details loaded. Review the filled update below, then submit your source revision."
+            : "Game details loaded. Review the filled registration, then connect your GitHub account and submit.";
+    } catch (error) {
+      if (alive && ticket === importGeneration) {
+        if (imported) applyImported();
+        status.textContent = `${error.message} You can also enter source details manually.`;
+      }
     }
   };
   const directory = root.querySelector("[data-community-directory]");
@@ -510,6 +709,23 @@ export function mountCollaboration(
           );
         if (action === "create" && !validSlug(values.slug.trim()))
           throw new Error("Enter a valid game slug.");
+        if (action === "revision") {
+          const existing = game.revisions.find(
+            (r) =>
+              r.source_commit === source &&
+              (r.source_repository || "kevstermcgee/BlueEngine") ===
+                (values.source_repository.trim() ||
+                  "kevstermcgee/BlueEngine") &&
+              r.source_game === values.source_game.trim(),
+          );
+          if (existing) {
+            selected = existing.id;
+            showGame();
+            status.textContent =
+              "This source revision is already registered. Review the selected revision's publication status below.";
+            return;
+          }
+        }
         path = action === "create" ? "/games" : `/games/${game.slug}/revisions`;
         Object.assign(
           payload,
@@ -669,20 +885,81 @@ export function mountCollaboration(
     }
   };
   const onChange = (event) => {
+    if (event.target.matches("[data-community-file]")) {
+      const files = event.target.files;
+      if (files?.length === 1) void importFile(files[0]);
+      else
+        status.textContent =
+          "Choose one game file to fill its publishing details.";
+      event.target.value = "";
+      return;
+    }
     if (event.target.matches("[data-community-revision]")) {
       selected = event.target.value;
       showGame();
     }
   };
+  const onDragOver = (event) => {
+    if (event.dataTransfer?.types?.includes("Files")) {
+      event.preventDefault();
+      event.stopPropagation?.();
+      root
+        .querySelector("[data-community-import-drop]")
+        ?.classList.add("dragging");
+    }
+  };
+  const onDrop = (event) => {
+    if (!event.dataTransfer?.files?.length) return;
+    event.preventDefault();
+    event.stopPropagation?.();
+    root
+      .querySelector("[data-community-import-drop]")
+      ?.classList.remove("dragging");
+    if (event.dataTransfer.files.length === 1)
+      void importFile(event.dataTransfer.files[0]);
+    else status.textContent = "Drop one game file at a time.";
+  };
+  const onDragLeave = () =>
+    root
+      .querySelector("[data-community-import-drop]")
+      ?.classList.remove("dragging");
   root.addEventListener("submit", onSubmit);
   root.addEventListener("click", onClick);
   root.addEventListener("change", onChange);
-  return () => {
+  root.addEventListener("dragover", onDragOver);
+  root.addEventListener("drop", onDrop);
+  root.addEventListener("dragleave", onDragLeave);
+  const cleanup = () => {
     alive = false;
     identityViews.delete(showIdentity);
     controller.abort();
     root.removeEventListener("submit", onSubmit);
     root.removeEventListener("click", onClick);
     root.removeEventListener("change", onChange);
+    root.removeEventListener("dragover", onDragOver);
+    root.removeEventListener("drop", onDrop);
+    root.removeEventListener("dragleave", onDragLeave);
+  };
+  cleanup.importFile = importFile;
+  return cleanup;
+}
+
+export function mountGlobalGameDrop(target, importFile, activate = () => {}) {
+  const over = (event) => {
+    if (event.dataTransfer?.types?.includes("Files")) event.preventDefault();
+  };
+  const drop = (event) => {
+    if (!event.dataTransfer?.files?.length) return;
+    event.preventDefault();
+    activate();
+    if (event.dataTransfer.files.length === 1)
+      void importFile(event.dataTransfer.files[0]);
+    else void importFile(null);
+  };
+  target.addEventListener("dragover", over);
+  target.addEventListener("drop", drop);
+  return () => {
+    target.removeEventListener("dragover", over);
+    target.removeEventListener("drop", drop);
   };
 }

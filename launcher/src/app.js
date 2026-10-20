@@ -21,6 +21,7 @@ import {
 import {
   renderCollaboration,
   mountCollaboration,
+  mountGlobalGameDrop,
 } from "../../site/collaboration.mjs";
 import { version as launcherVersion } from "../package.json";
 const $ = (s) => document.querySelector(s),
@@ -673,7 +674,7 @@ start();
 $("#creator-content").innerHTML = renderCollaboration(null, {
   sectionId: "creator-collaborate",
 });
-mountCollaboration(
+const creator = mountCollaboration(
   $("#creator-content"),
   null,
   native
@@ -682,3 +683,6 @@ mountCollaboration(
 );
 $("#open-creator").onclick = () => $("#creator").showModal();
 $("#close-creator").onclick = () => $("#creator").close();
+mountGlobalGameDrop(document, creator.importFile, () => {
+  if (!$("#creator").open) $("#creator").showModal();
+});

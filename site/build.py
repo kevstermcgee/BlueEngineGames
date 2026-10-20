@@ -375,7 +375,7 @@ def build_staged(args) -> None:
     shutil.copy2(site_dir / "style.css", out / "style.css")
     shutil.copy2(site_dir / "app.js", out / "app.js")
     shutil.copy2(site_dir / "wiki.css", out / "wiki.css")
-    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs', 'collaboration.css', 'collaboration.mjs'):
+    for filename in ('feedback.css', 'feedback.mjs', 'wiki-feedback.mjs', 'collaboration.css', 'collaboration.mjs', 'game-metadata.mjs'):
         shutil.copy2(site_dir / filename, out / filename)
     (out / ".nojekyll").touch()
     print(f"wrote {out}/index.html with {len(games)} games")

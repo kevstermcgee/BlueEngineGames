@@ -43,7 +43,7 @@ jobs:
           node-version: "22"
 
       - name: Verify community and feedback interactions
-        run: node --test site/feedback.test.mjs site/collaboration.test.mjs
+        run: node --test site/feedback.test.mjs site/collaboration.test.mjs site/game-metadata.test.mjs
 
       - name: Verify independently released Windows installers
         run: python3 site/released_games.py
