@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 771,
+    "games": 883,
     "prototypes": 10,
     "tests": 64
   },
@@ -2939,6 +2939,454 @@
       "sha256": "4dc418cba6b7cddee87b2f908745d865cf03d5ccfa6876b74cced2a77fb8f5b1"
     },
     {
+      "path": "games/scatterlock/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/scatterlock/AGENTS.md",
+      "sha256": "215f7cc269e2853b9fefb32e716237db1fe37787bf94119fedf5864373863778"
+    },
+    {
+      "path": "games/scatterlock/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/scatterlock/Cargo.lock",
+      "sha256": "0aa21bcd5630ad5cb48047af5428ca069d2e36d51f0c30e91dd44f3efe66c091"
+    },
+    {
+      "path": "games/scatterlock/Cargo.toml",
+      "sha256": "440ce0a36ae344ffcd967a9bf94090ab54fe18deebfa1b5721dbb7eac0eae41f"
+    },
+    {
+      "path": "games/scatterlock/README.md",
+      "sha256": "0ab80dcbae07f26137fa121a55b69b559ff786cc13eb43582e08097760981673"
+    },
+    {
+      "path": "games/scatterlock/STATUS.md",
+      "sha256": "686538f85d40e4ccaefcf0ccdcbbaf0355d1d99abcd71929994b5bf081727a09"
+    },
+    {
+      "path": "games/scatterlock/assets/icon.ico",
+      "sha256": "55615f351b3324774dc212ec4fb3ac1cb7fc46dbf17a290c72c4c5067033ae13"
+    },
+    {
+      "path": "games/scatterlock/assets/icon.png",
+      "sha256": "8dc420fa151663250c905c04fec934897d48f7a100109ac1e1d9e499a4afe163"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_16.rgba",
+      "sha256": "a676275ac451753eae34743872f73a913675524338aa81b026b1b2994bca1f25"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_32.rgba",
+      "sha256": "7eb071a8d6eed1821f537b5985b297dc8bf77bb89d5f747fe18e20505e6ccca4"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_64.rgba",
+      "sha256": "1435b23f42a291170c6e70d7d09327e2f991878693fa4fe571d454acda75df4d"
+    },
+    {
+      "path": "games/scatterlock/assets/identity.json",
+      "sha256": "fb173fa8a5bc26c0178a2bb9dbacd3bcadf4efbdf1b674454c638758eb8bcbf5"
+    },
+    {
+      "path": "games/scatterlock/assets/native-review.json",
+      "sha256": "e38d6ffdb4c96bd3a2612d9136e45b5f6ec8ec9f59f39a482b8ab93818e3adeb"
+    },
+    {
+      "path": "games/scatterlock/assets/verification.script",
+      "sha256": "ad39a2f534910983d25fc1f31c2670920f25881fab34f8700486ec9159da9311"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/constellation-secured.png",
+      "sha256": "132bd6465939b5049ae796fe8752e14a0abeae708434f359c7ed4715d055d960"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/delivery-detour.png",
+      "sha256": "ad27cde7862f114ebbd4df73ab7b748d8b195d4bce92c03d40943f089b2ea1b2"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/origin-shift.png",
+      "sha256": "3311c23a8272a1cc99d9210f1937a62ff31f500394b64f14fbe9b81b27ae3668"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/upper-berth.png",
+      "sha256": "ccc1111a412b37da62145af264cfe4274c0aed03ec2bf971f81cfef29ea71141"
+    },
+    {
+      "path": "games/scatterlock/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/alsa-null.conf",
+      "sha256": "f53ef439501886bb7eb8d1a8cc5437ce13c659681e7967c3143c68d59df8229c"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00030.png",
+      "sha256": "e0e71a57cc5e1c5a31a3f32a2adca1c93f56654cd9230060b190e58990a835a7"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00115.png",
+      "sha256": "def22a3981989cb9eb01cb84578c6022067fbb3733f36b15188edb17ad15a586"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00250.png",
+      "sha256": "ccc1111a412b37da62145af264cfe4274c0aed03ec2bf971f81cfef29ea71141"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00385.png",
+      "sha256": "18d9cc595767802095350c37ecee3af83c888eb0c01780f9cc2aba760f02cab0"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00650.png",
+      "sha256": "3e1e9c25f48b7f47ec6181c5973d70b7a0d7a208d1e2d0aed23b957a18da3222"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00745.png",
+      "sha256": "05ca0cf111fa9c520e96ea7d558f9a52cea75756b9223027331253ce9efba01e"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00835.png",
+      "sha256": "ad27cde7862f114ebbd4df73ab7b748d8b195d4bce92c03d40943f089b2ea1b2"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_00880.png",
+      "sha256": "9c6031a83e610705751d5989bbd2506dc13709f83d91f83b45d193885b7f252b"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_01105.png",
+      "sha256": "c74e9a702cb317cbdd6a0e4348c6b8ca133561e69eb06b175c6d412532ad5661"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/frames/shot_01210.png",
+      "sha256": "132bd6465939b5049ae796fe8752e14a0abeae708434f359c7ed4715d055d960"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign-current/native-campaign.log",
+      "sha256": "2e3e5d8189aa066404cb2a6e4e5976e2c51a9a9502fd2d1866400e3d1bb42c63"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign.log",
+      "sha256": "81977ba527ac491a246ef074ddeda278b5f2715d3a78b1d95591a5c20fee3efc"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign/shot_00355.png",
+      "sha256": "faad0056781718dec9a4bf1a4726b6a61b0ec19590a7897d33347daf7e21371f"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign/shot_00840.png",
+      "sha256": "beb6c6ac581d8e3b089005798c15ac40c8b3ab01edc6117b92528434f8d5eb3d"
+    },
+    {
+      "path": "games/scatterlock/evidence/campaign/shot_01210.png",
+      "sha256": "eb1574a468290b3b239750a822bb4a7d6550defac00046d2fe42170fcec50c21"
+    },
+    {
+      "path": "games/scatterlock/evidence/closer/shot_00001.png",
+      "sha256": "4f3f8650f367362bdda27ab0fab2d8e53934c5c7d6beb02735a767aea74c3668"
+    },
+    {
+      "path": "games/scatterlock/evidence/closer/shot_00090.png",
+      "sha256": "0da628e1ccc8be68a03e141f44b27610dd41f46993a5ec8fb5c3e0412c2aa6ae"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/01-start.png",
+      "sha256": "f80b4917df7108603a60fde4ae43d3016e4bd330273d18d5fbaf6fad0d71304b"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/01b-number-beacon-b.png",
+      "sha256": "463f5eb8e717554e2030f37c43ad1a32f49fc37a87f55006c35689aeef650a41"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/01c-number-beacon-a.png",
+      "sha256": "f80b4917df7108603a60fde4ae43d3016e4bd330273d18d5fbaf6fad0d71304b"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/01d-world-beacon-b.png",
+      "sha256": "463f5eb8e717554e2030f37c43ad1a32f49fc37a87f55006c35689aeef650a41"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/02-exhausted.png",
+      "sha256": "05702ae9ca980ab3a80f1e798bb7de21983afb3ebcd64ccc119edaa00b087b23"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/03-undo.png",
+      "sha256": "f1ef2ab4d4c8bc6735d42d6fedaec470673fa37705a99c11cce73a14617d68e0"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/04-click-beacon.png",
+      "sha256": "463f5eb8e717554e2030f37c43ad1a32f49fc37a87f55006c35689aeef650a41"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/05-secured.png",
+      "sha256": "766599a7591aa56aba74a975fc0874bc1550941f29a082573a3b0570fb51a777"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/06-save-resumed.png",
+      "sha256": "24f4f5ea24ac43df9232ca6cc09fffa9e2892cf82170b34d596cda3f780a9315"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/07-orbit-zoom.png",
+      "sha256": "60117a35135381b04e04fa4a5ef5f879a4d1f051eb09b1cbf47a0cf4a18ba70b"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/08-paused.png",
+      "sha256": "d8e90747d6ee27196af60bdb29cd8638bf1a7ae180236be6ca99080bf6aef269"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/alsa-null.conf",
+      "sha256": "f53ef439501886bb7eb8d1a8cc5437ce13c659681e7967c3143c68d59df8229c"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/native-input.log",
+      "sha256": "829ce5061219a8180faf5a9abd16329b79deba088e9b06864f13f39f4fc5879e"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/saves/quick.be2save",
+      "sha256": "c8e71d3de69f7cb379e31ae2809c28b388d86a5cefed6657de5672a7199b7f31"
+    },
+    {
+      "path": "games/scatterlock/evidence/controls/saves/quick.be2save.bak",
+      "sha256": "8cbd6942a2028e28fdd3aed78a6347893234cb0a9b5b915e0abd1daa7b468e21"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-camera-retry-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-camera-retry/shot_00030.png",
+      "sha256": "cc1a5326700b89a774fa69062a80b1169e39d35ea25c1374729532bedd2c5bef"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-camera-xvfb.log",
+      "sha256": "48ffc7e7469ded2e2f82ebaceabb18fd6402906e6747a53b3eaa5c9ed1f10d4f"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-campaign-next-xvfb.log",
+      "sha256": "48ffc7e7469ded2e2f82ebaceabb18fd6402906e6747a53b3eaa5c9ed1f10d4f"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-campaign-retry-xvfb.log",
+      "sha256": "4a746e750418879870851a022d56045aa53955eaee6b6a09931076a6bbd6b728"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-campaign-sheet.png",
+      "sha256": "ac5d8f8762dacda4547be7a763a22a4ff8f0f1d4805b5cee68489c65bcb638bd"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-campaign-xvfb.log",
+      "sha256": "48ffc7e7469ded2e2f82ebaceabb18fd6402906e6747a53b3eaa5c9ed1f10d4f"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-campaign.log",
+      "sha256": "ae7bba3d14b020493dbd85ce799d56c20b2f39d3acd53ad0882ab4b79d3c3124"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-controls-sheet.png",
+      "sha256": "a5c9c70749d59af82ba4d5b77978d6feeca1c158014e6ae268988c83d3ac95da"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/01-start.png",
+      "sha256": "3311c23a8272a1cc99d9210f1937a62ff31f500394b64f14fbe9b81b27ae3668"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/01b-number-beacon-b.png",
+      "sha256": "caf8676c48268b69f4c59c9686cc6be26aa56f91b6630e073527980f1bf6adcc"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/01c-number-beacon-a.png",
+      "sha256": "3311c23a8272a1cc99d9210f1937a62ff31f500394b64f14fbe9b81b27ae3668"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/01d-world-beacon-b.png",
+      "sha256": "caf8676c48268b69f4c59c9686cc6be26aa56f91b6630e073527980f1bf6adcc"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/02-exhausted.png",
+      "sha256": "1a098f3849963528ec9907d5b2ef84712b076362d1776654376f417584d17a73"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/03-undo.png",
+      "sha256": "0f7c1e35649912793de673ef118f21004fdb8196337b2c5f5e95d84c4651553e"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/04-click-beacon.png",
+      "sha256": "caf8676c48268b69f4c59c9686cc6be26aa56f91b6630e073527980f1bf6adcc"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/05-secured.png",
+      "sha256": "4ee24ce2b7ca21841dd36383f47ebbce2d1801cd6c5a13cfdbaf6cdebc3cc1d6"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/06-save-resumed.png",
+      "sha256": "52cc79b4488199ed6fd08159f67e1456333d3a3a7cf3771d64eefe43b826e8e0"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/07-orbit-zoom.png",
+      "sha256": "fb769a1d250109290851bcbb6a60b4c1f99992f9729f356134b9fb185de6ee8d"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/08-paused.png",
+      "sha256": "9f82fbd285899a13ad5901903a795c72bc8a68e9e3e7e861a2d839f47572f9e9"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/alsa-null.conf",
+      "sha256": "f53ef439501886bb7eb8d1a8cc5437ce13c659681e7967c3143c68d59df8229c"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/native-input.log",
+      "sha256": "02fced857025acdba7dd36f9e236c4c62b35de288729dca38a7650adb12457d8"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-native-review/saves/quick.be2save",
+      "sha256": "f0e129d893bd16da5f0214e02cd5a41c91eea9b0529f5b7c98b5f8bd26814c74"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-opening-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-opening/00-opening.png",
+      "sha256": "f860477c71c023fe3b0ed461caca820aa4235f8a0b73a1e5adc02e827090e3dd"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-opening/alsa-null.conf",
+      "sha256": "f53ef439501886bb7eb8d1a8cc5437ce13c659681e7967c3143c68d59df8229c"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-ship-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/current-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/direct-current/shot_00030.png",
+      "sha256": "bc349c59e8412ce254ccb319aaef2fb4e194ba177ff2eded6a60ac443d104545"
+    },
+    {
+      "path": "games/scatterlock/evidence/direct/shot_00001.png",
+      "sha256": "2e81405ff66a087ab61af1ac34bd09244058edfa7e912943e898fb8b9d328811"
+    },
+    {
+      "path": "games/scatterlock/evidence/direct/shot_00050.png",
+      "sha256": "03cbf75efaad0b0fcbe18ccafc4e05b48771a587d0c1f17cc298ce91d3e10e21"
+    },
+    {
+      "path": "games/scatterlock/evidence/direct/shot_00110.png",
+      "sha256": "4a4c7878bf5bf0221e1af309e98aba4ee295f36ce064068725da6f4bd9dbc5b7"
+    },
+    {
+      "path": "games/scatterlock/evidence/final-shipping-xvfb.log",
+      "sha256": "48ffc7e7469ded2e2f82ebaceabb18fd6402906e6747a53b3eaa5c9ed1f10d4f"
+    },
+    {
+      "path": "games/scatterlock/evidence/review-campaign-xvfb.log",
+      "sha256": "b3a5a75d2b0aad2c45dbf61d015b6a9709a8d4e39ead73a0734c3fcda9d7bbf7"
+    },
+    {
+      "path": "games/scatterlock/evidence/review-campaign.log",
+      "sha256": "ae7bba3d14b020493dbd85ce799d56c20b2f39d3acd53ad0882ab4b79d3c3124"
+    },
+    {
+      "path": "games/scatterlock/evidence/ship-direct-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/evidence/shipping-complete-xvfb.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "games/scatterlock/game.project.json",
+      "sha256": "774a2f1092387bd66c6de94e85844e020d61a02782f48beecf5459abafa3682c"
+    },
+    {
+      "path": "games/scatterlock/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/scatterlock/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/scatterlock/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/scatterlock/scripts/capture_campaign.py",
+      "sha256": "1ad468f7f07b03d60e89cb483f5f4c05158d6d19fccf9dcd4fe4d0446973b56d"
+    },
+    {
+      "path": "games/scatterlock/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/scatterlock/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/scatterlock/scripts/installer.json",
+      "sha256": "3f9c8d7d7e7b03334aaf70fb8638c622e1daa8b1baecbe1dd10e28a0ae0d00c9"
+    },
+    {
+      "path": "games/scatterlock/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/scatterlock/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/scatterlock/scripts/tooling.json",
+      "sha256": "a7ebef27a30ed3b11c18774a061a3d9e49d3ddbd699ab819e56979f7ca01a57d"
+    },
+    {
+      "path": "games/scatterlock/scripts/tooling.py",
+      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+    },
+    {
+      "path": "games/scatterlock/scripts/verify_controls.py",
+      "sha256": "eb826629cf8b89044945605db4a3917c0557bc73f5fd34038b6f46a42f531687"
+    },
+    {
+      "path": "games/scatterlock/src/controls.rs",
+      "sha256": "d05df8e8a7348c4a0bc08b74422ed3f133d07fc2fd049b169e4b196121849d91"
+    },
+    {
+      "path": "games/scatterlock/src/lib.rs",
+      "sha256": "c409f3021de17d78716401e0a0116c797e58bf28cb16885b20d4c1417dc81e2a"
+    },
+    {
+      "path": "games/scatterlock/src/main.rs",
+      "sha256": "c8dddba00d526c975c55337fbd433d2dc72f62c598694513fde3069f833ea9a0"
+    },
+    {
+      "path": "games/scatterlock/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/scatterlock/tests/determinism.rs",
+      "sha256": "75ef2f8f2de721d10f8b76b1271ba7eb6fc00e54d38f0f1f2e32bb973ea356d4"
+    },
+    {
+      "path": "games/scatterlock/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
+      "path": "games/scatterlock/wiki.json",
+      "sha256": "ad69f92efad84a2db53ae4feb78bb1054e55f084b67b511b41b4c4500bb76d44"
+    },
+    {
       "path": "games/signal-garden/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -3776,6 +4224,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "015e07a8b28a651b625cddcff11cc301831c80e4",
+  "source_revision": "f9c5dca03bba11b34cadb316056ed4500c7e21a6",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
