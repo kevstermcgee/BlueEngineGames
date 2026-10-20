@@ -45,6 +45,7 @@ jobs:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target
       GAME_SLUG: ${{ matrix.game.slug }}
       GAME_DIRECTORY: ${{ matrix.game.directory }}
+      CATALOG_ENGINE_REVISION: ${{ needs.select.outputs.engine_revision }}
       BE2_TOOLING_ROOT: ${{ github.workspace }}/_engine
     steps:
       - uses: actions/checkout@v7
@@ -95,6 +96,20 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Game tests failed' }
           cargo clippy --locked --all-targets --manifest-path $manifest -- -D warnings
           if ($LASTEXITCODE -ne 0) { throw 'Clippy failed' }
+          $engineCommit = (git -C _engine rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $engineCommit -cne $env:CATALOG_ENGINE_REVISION) { throw 'The checked engine source changed' }
+          git -C _engine diff --quiet HEAD --
+          if ($LASTEXITCODE -ne 0) { throw 'Game checks changed the pinned engine source' }
+          New-Item -ItemType Directory -Path .native-checks -Force | Out-Null
+          @{
+            schema_version = 1
+            game = $env:GAME_SLUG
+            games_commit = $env:GITHUB_SHA
+            engine_commit = $engineCommit
+            os = $env:RUNNER_OS
+            checks = @('format', 'default_tests', 'clippy')
+            bound_lock_sha256 = (Get-FileHash "$env:GAME_DIRECTORY/Cargo.lock" -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json -Depth 3 | Set-Content ".native-checks/$env:GAME_SLUG-$env:RUNNER_OS.json" -Encoding utf8NoBOM
       - name: Package with a private shortcut (Windows)
         if: runner.os == 'Windows' && matrix.game.ship
         shell: pwsh
@@ -106,10 +121,11 @@ jobs:
           printf 'pcm.!default { type null }\nctl.!default { type null }\n' > "$RUNNER_TEMP/asound.conf"
           xvfb-run -a env LIBGL_ALWAYS_SOFTWARE=1 ALSA_CONFIG_PATH="$RUNNER_TEMP/asound.conf" python "$GAME_DIRECTORY/scripts/ship.py" ship --folder "$RUNNER_TEMP/game-shortcuts" --no-launch
       - uses: actions/upload-artifact@v4
-        if: always() && matrix.game.ship
+        if: always()
         with:
           name: native-${{ matrix.game.slug }}-${{ runner.os }}
           path: |
+            .native-checks/${{ matrix.game.slug }}-${{ runner.os }}.json
             ${{ matrix.game.directory }}/dist/ship.json
             ${{ matrix.game.directory }}/.blue-check/
           include-hidden-files: true
