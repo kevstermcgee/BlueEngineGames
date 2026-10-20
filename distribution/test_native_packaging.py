@@ -86,8 +86,9 @@ function global:cargo {
         $source = 'git+https://github.com/kevstermcgee/BlueEngine.git?rev=old-engine#old-engine'
     }
     $global:LASTEXITCODE = 0
-    @{ packages = @(@{ name = 'be2'; source = $source; manifest_path = $engineManifest }) } |
+    $enginePackage = @{ name = 'be2'; source = $source; manifest_path = $engineManifest } |
         ConvertTo-Json -Depth 5 -Compress
+    '{"packages":[' + $enginePackage + ',{"name":"feature-case-fixture","features":{"USB":[],"usb":[]}}]}'
 }
 $before = $env:BE2_TOOLING_ROOT
 $failed = $false

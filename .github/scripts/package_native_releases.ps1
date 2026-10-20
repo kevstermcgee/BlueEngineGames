@@ -99,7 +99,7 @@ try {
             if ($LASTEXITCODE -ne 0) { throw "$name catalog engine binding failed with exit code $LASTEXITCODE" }
             $metadataText = & cargo metadata --locked --format-version 1 --manifest-path $manifest
             if ($LASTEXITCODE -ne 0) { throw "$name locked dependency verification failed with exit code $LASTEXITCODE" }
-            $metadata = ($metadataText -join "`n") | ConvertFrom-Json
+            $metadata = ($metadataText -join "`n") | ConvertFrom-Json -AsHashtable
             $engines = @($metadata.packages | Where-Object name -eq 'be2')
             $expectedManifest = Join-Path $engineRootPath 'Cargo.toml'
             if ($engines.Count -ne 1 -or $null -ne $engines[0].source -or
