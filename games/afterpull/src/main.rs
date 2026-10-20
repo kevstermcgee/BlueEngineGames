@@ -1,3 +1,4 @@
+mod native;
 use vesper3d::two_d::{client, GameLogic};
 fn config() -> macroquad::conf::Conf {
     let identity =
@@ -17,7 +18,7 @@ fn config() -> macroquad::conf::Conf {
     #[cfg(target_os = "linux")]
     {
         // Identify this process's X window before restoring the display title.
-        config.miniquad_conf.window_title = vesper3d::viewer::focus::window_title(&identity.title);
+        config.miniquad_conf.window_title = native::window_title();
         config.miniquad_conf.platform.linux_backend =
             macroquad::miniquad::conf::LinuxBackend::X11Only;
     }
@@ -25,5 +26,5 @@ fn config() -> macroquad::conf::Conf {
 }
 #[macroquad::main(config)]
 async fn main() {
-    client::run::<afterpull::Afterpull>().await;
+    client::run::<native::NativeGame>().await;
 }

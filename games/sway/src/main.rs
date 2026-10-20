@@ -271,7 +271,6 @@ fn config() -> Conf {
         window_title: "Sway".into(),
         window_width: size.0,
         window_height: size.1,
-        fullscreen: vesper3d::viewer::startup::default_fullscreen(),
         window_resizable: true,
         high_dpi: true,
         icon: Some(macroquad::miniquad::conf::Icon {
@@ -284,7 +283,6 @@ fn config() -> Conf {
 }
 #[macroquad::main(config)]
 async fn main() {
-    vesper3d::viewer::startup::show().await;
     if let Err(error) = run().await {
         eprintln!("Sway: {error}");
         std::process::exit(1);
@@ -347,7 +345,7 @@ async fn run() -> Result<(), String> {
     let mut renderer = Renderer::default();
     let mut stepper = FixedStepper::new();
     let mut frame = 0_u32;
-    let mut fullscreen = vesper3d::viewer::startup::default_fullscreen();
+    let mut fullscreen = false;
     let mut pacing = Vec::new();
     let mut started = get_time();
     let mut was_active = false;
@@ -375,7 +373,7 @@ async fn run() -> Result<(), String> {
         {
             app.menu = !app.menu;
         }
-        if is_key_pressed(KeyCode::F) || is_key_pressed(KeyCode::F11) {
+        if is_key_pressed(KeyCode::F) {
             fullscreen = !fullscreen;
             set_fullscreen(fullscreen);
         }

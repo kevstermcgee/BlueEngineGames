@@ -356,15 +356,15 @@
     },
     {
       "path": "games/afterpull/Cargo.toml",
-      "sha256": "5ee0d8ef41543ec393fc202f38d990cd263a96b48a9511713ee873a19076496e"
+      "sha256": "f74f0ed0071934a974de1e927323bf73ade94c8a67b75ce817888a6ef44de56d"
     },
     {
       "path": "games/afterpull/README.md",
-      "sha256": "69804af59735b5a0d16c11f2d94c2b213f15040a1d93b4fac210429606605559"
+      "sha256": "1b341ef089b5954d2669babf4497bd51a93c47c7f77d1788c74a96cbd4bfcdd0"
     },
     {
       "path": "games/afterpull/STATUS.md",
-      "sha256": "17ed4f4053f801d9a46a6a0befeaef7391ee6cc79554cc592571bee039132214"
+      "sha256": "42ccc7d6084b05d0ccc3d0b285b273ed9aa8feee2155f9a71b43c8282d3aba9c"
     },
     {
       "path": "games/afterpull/assets/icon.ico",
@@ -392,7 +392,7 @@
     },
     {
       "path": "games/afterpull/assets/native-review.json",
-      "sha256": "e87ec05f8bf087a134b7a00b0256a2c5d82796b57166bd967545e8f5907e8154"
+      "sha256": "7bb1c3b59f22f2e4db958dcc6359a298b82c1514bc0982b4b72d912457eecb5a"
     },
     {
       "path": "games/afterpull/build.rs",
@@ -432,15 +432,11 @@
     },
     {
       "path": "games/afterpull/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "4f138d01ca634f1686d3c7963f06aaf001aa0ca8eeb9d4f040a75674a865635f"
     },
     {
       "path": "games/afterpull/scripts/tooling.py",
       "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
-    },
-    {
-      "path": "games/afterpull/src/bin/playtest.rs",
-      "sha256": "3d26981f20cd65122428d30c97c87601ae78a6a2026ac390575f1c623439fda7"
     },
     {
       "path": "games/afterpull/src/focus_gate.rs",
@@ -448,19 +444,23 @@
     },
     {
       "path": "games/afterpull/src/lib.rs",
-      "sha256": "34f33291b4f21c395e5b1beb4d15a0206a8adc9992fe6a5b6aa9f0e1ccbca750"
+      "sha256": "a40c6d8b3846d7c88b507a7ce19210a3ed65e60f5be60cccaaf43812b8b06490"
     },
     {
       "path": "games/afterpull/src/main.rs",
-      "sha256": "867462367ed730d6fab0ad393f1a512bb288f868707d0ffaf6d3fb656bfd6a7d"
+      "sha256": "eea6500cdfcb7e8f9e25423e472d85b086d2b8b671ac35e49c64f540928c58e2"
     },
     {
-      "path": "games/afterpull/src/playtest.rs",
-      "sha256": "b189ce4780b11c6ae14d00589cf2fd329bb4b68ec845576df4a4fa17945aa4aa"
+      "path": "games/afterpull/src/native.rs",
+      "sha256": "46b47c9d548bb2cae43eb0e2da6258ef7f1c6bb1bd54de3d571a3b34778494b5"
+    },
+    {
+      "path": "games/afterpull/src/native/window_focus.rs",
+      "sha256": "9dab961ac2f85627207d471b6f4bcdded44891d43ec8ae92d83492dee979acfe"
     },
     {
       "path": "games/afterpull/src/presentation.rs",
-      "sha256": "052273d9b478b22e283791d298fa7f505a9dba321be505e93c49b865ebc57e5a"
+      "sha256": "0fb504ce580d9c7793cde98a5515c82c4abf416dc3d483a13575b204c3cd1bd6"
     },
     {
       "path": "games/afterpull/src/rooms.rs",
@@ -568,7 +568,7 @@
     },
     {
       "path": "games/backstop/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "2f146ca3e60a5bbe725858ae217b510c950f245a1b8ca623daa9fcaf618fb6ec"
     },
     {
       "path": "games/backstop/scripts/tooling.py",
@@ -1076,7 +1076,7 @@
     },
     {
       "path": "games/corkscrew-key/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/corkscrew-key/scripts/tooling.py",
@@ -1192,7 +1192,7 @@
     },
     {
       "path": "games/corner-clutch/scripts/check.py",
-      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+      "sha256": "ff6aeb249a973046f60ae2557fc9b5e06e7c6a835e77ddccbbced2591e746187"
     },
     {
       "path": "games/corner-clutch/scripts/dev.py",
@@ -1212,15 +1212,15 @@
     },
     {
       "path": "games/corner-clutch/scripts/project.py",
-      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+      "sha256": "678f0f9974d8a410274b8345c6505ffe645a6abb29f414d1d5bc2147b619bd0d"
     },
     {
       "path": "games/corner-clutch/scripts/ship.py",
-      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+      "sha256": "a569e89471d8c93db679bd0526cb74b99ed9339c3f745c41b27a3dc91aef34af"
     },
     {
       "path": "games/corner-clutch/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "c907d4e1e39e8b80f2bd25b6a71a3ba3f3b55f0d4cb23a482532927d7557b9bb"
     },
     {
       "path": "games/corner-clutch/scripts/tooling.py",
@@ -1364,7 +1364,7 @@
     },
     {
       "path": "games/crosshaul/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "04b13d503aa56b5eea5578b01dcaa4295a6a1b9ee60b1b7d4818f0f95c8cd157"
     },
     {
       "path": "games/crosshaul/scripts/tooling.py",
@@ -1376,7 +1376,7 @@
     },
     {
       "path": "games/crosshaul/src/main.rs",
-      "sha256": "e8baa5719d31f423a9b965a0e177365b5b84d54d1db6015bab8906b4bdc3dace"
+      "sha256": "bb9cb538fcc34bd3bc0a41c688e21f62a08f6dfb9e1a181cb8aa1af23e806ba5"
     },
     {
       "path": "games/crosshaul/src/platform.rs",
@@ -1480,7 +1480,7 @@
     },
     {
       "path": "games/gap-flip/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/gap-flip/scripts/tooling.py",
@@ -1600,7 +1600,7 @@
     },
     {
       "path": "games/idea-forge/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/idea-forge/scripts/tooling.py",
@@ -1712,7 +1712,7 @@
     },
     {
       "path": "games/lantern-grove/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/lantern-grove/scripts/tooling.py",
@@ -1820,7 +1820,7 @@
     },
     {
       "path": "games/lantern-run/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/lantern-run/scripts/tooling.py",
@@ -1968,7 +1968,7 @@
     },
     {
       "path": "games/leo/scripts/tooling.json",
-      "sha256": "025396467ceaf65505449b87ccf1cb2b92dd3ebf8c36c2519796b09828429bd4"
+      "sha256": "521e045e6a15966eae0421a3dc1a65e2934414f99c2653006b680ddbdb8510d4"
     },
     {
       "path": "games/leo/scripts/tooling.py",
@@ -1992,7 +1992,7 @@
     },
     {
       "path": "games/leo/src/main.rs",
-      "sha256": "9f3c755d827e2a870b251c6cba7af4ddcd602a1ce6293508e5fccc82b1c5d961"
+      "sha256": "a2539e5994629491337da1250863c52945f7088563a4931d5851ad6043ec183e"
     },
     {
       "path": "games/leo/src/platform.rs",
@@ -2224,7 +2224,7 @@
     },
     {
       "path": "games/orchard-watch/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/orchard-watch/scripts/tooling.py",
@@ -2348,7 +2348,7 @@
     },
     {
       "path": "games/peelturn/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "a884c84ad3ee2e6abec430a0562b93d05fa75d97c8f85e6c9553b83e06b731d5"
     },
     {
       "path": "games/peelturn/scripts/tooling.py",
@@ -2484,7 +2484,7 @@
     },
     {
       "path": "games/pinstride/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "e3fb95c135e1f05e07784c096ce39f138fde3da4eeac88812153c933059d8c8b"
     },
     {
       "path": "games/pinstride/scripts/tooling.py",
@@ -2496,7 +2496,7 @@
     },
     {
       "path": "games/pinstride/src/main.rs",
-      "sha256": "0443d561672f1a6abb3efa27408cb73c650958fdee1d53d3a4a4622f330983a6"
+      "sha256": "51c22ae302b1f806af6017c8a8e8ea3affe9ef4f98acc5f1e772e3d9dd6c4bb8"
     },
     {
       "path": "games/pinstride/src/platform.rs",
@@ -2600,7 +2600,7 @@
     },
     {
       "path": "games/pocket-breaker/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/pocket-breaker/scripts/tooling.py",
@@ -2768,7 +2768,7 @@
     },
     {
       "path": "games/reverie/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/reverie/scripts/tooling.py",
@@ -2792,7 +2792,7 @@
     },
     {
       "path": "games/reverie/src/main.rs",
-      "sha256": "a692e2fa8371a72241c1893282a76c8f7d6053cc976a0ec09cccbb6bf287eaa0"
+      "sha256": "555d6c546bcd94d5a88bc244422c048770d023f82fc14550f6a58a5f994bee9b"
     },
     {
       "path": "games/reverie/src/platform.rs",
@@ -2908,7 +2908,7 @@
     },
     {
       "path": "games/rift-delver/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/rift-delver/scripts/tooling.py",
@@ -2920,7 +2920,7 @@
     },
     {
       "path": "games/rift-delver/src/main.rs",
-      "sha256": "68e99c08651eacfe26f9b2edb19e10ef1cb33bcfcd6de8caf0005b16225b3515"
+      "sha256": "accb8aac62a3bf209e672243fcd3f75fd767e168e4a23d9084c0db5a0d83c4a4"
     },
     {
       "path": "games/rift-delver/src/platform.rs",
@@ -3472,7 +3472,7 @@
     },
     {
       "path": "games/signal-garden/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/signal-garden/scripts/tooling.py",
@@ -3488,7 +3488,7 @@
     },
     {
       "path": "games/signal-garden/src/main.rs",
-      "sha256": "0202a0f6bcd49ac265073827223e2c53fdcc2f907a56a56589a62dfd741980e1"
+      "sha256": "d5d6b2be1600a0a2a660ac9a2d328c06226ce69356d059393b0632e601798b4d"
     },
     {
       "path": "games/signal-garden/src/platform.rs",
@@ -3608,7 +3608,7 @@
     },
     {
       "path": "games/sway/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/sway/scripts/tooling.py",
@@ -3628,7 +3628,7 @@
     },
     {
       "path": "games/sway/src/main.rs",
-      "sha256": "1f63ee58a05c12b246f17ec54adf2bdf9a469c106f0e86e2651635547a651c4f"
+      "sha256": "148bf478d9f2d26dc5f375f061940c78b7133923d948993832afe7a3b47bff33"
     },
     {
       "path": "games/sway/src/ui.rs",
@@ -3840,7 +3840,7 @@
     },
     {
       "path": "games/wormhole/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "8bad62b9cfb5ed5edcb9a81c9bf6acc0fece952bff61f6f0596001de833dc085"
     },
     {
       "path": "games/wormhole/scripts/tooling.py",

@@ -493,7 +493,6 @@ fn ui(
 }
 #[macroquad::main(window)]
 async fn main() {
-    vesper3d::viewer::startup::show().await;
     let args: Vec<_> = std::env::args().collect();
     let mut life = Lifecycle::<Held>::start_or_exit(&args, &CUES);
     let unattended = life.options.unattended();
