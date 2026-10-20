@@ -161,7 +161,7 @@ export function buildAIHandoff(
   const source = sourceLink(revision.source_url, revision.source_commit);
   const destination =
     mode === "fork" && validSlug(forkSlug) ? forkSlug : game.slug;
-  return `Use BlueEngine to ${mode === "fork" ? "make my own version of" : "improve"} ${game.title} (${game.slug}).\n\nStart by reading ${ENGINE}/blob/main/AGENTS.md and docs/COLLABORATION.md.\nPinned source revision: ${revision.source_commit}\nGame source folder: games/${revision.source_game || game.slug}\n${source ? `Source: ${source}\n` : ""}Community game: ${destination}\n${game.parent_game ? `Forked from: ${game.parent_game} at ${game.parent_revision}\nPreserve the original credits and keep this fork in games/${game.slug}.\n` : ""}Community parent revision: ${revision.id}\n${mode === "fork" ? "Preserve the original game's credit and the recorded fork ancestry.\n" : "Keep the current game identity and immutable revision history.\n"}\nMake the requested changes, run relevant tests, capture real gameplay screenshots, and update the game guide. Use a clean, centered BlueEngine Games text opening card with no rat image. Distribute native Windows x64 EXE installers only.\n\nCommit the source and submit the exact full commit SHA as a new community revision with a clear change note, then request publication using the documented collaboration CLI. Publication must pass the normal native Windows, screenshot, guide and checksum gates. Do not treat a pending request as a published playable build. Submit constructive AI feedback separately for the engine, launcher or game with reproducible evidence. Read public player feedback and the game's history before deciding what to improve.\n\nMy requested changes:\n`;
+  return `Use BlueEngine to ${mode === "fork" ? "make my own version of" : "improve"} ${game.title} (${game.slug}).\n\nStart by reading ${ENGINE}/blob/main/AGENTS.md and docs/COLLABORATION.md.\nPinned source revision: ${revision.source_commit}\nGame source folder: games/${revision.source_game || game.slug}\n${source ? `Source: ${source}\n` : ""}Community game: ${destination}\n${game.upstream_diverged === true && SHA.test(game.upstream_source?.source_commit || "") ? `Upstream changed after this draft started. Merge upstream commit ${game.upstream_source.source_commit} into my work before submitting a new revision.\n${sourceLink(game.upstream_source.source_url, game.upstream_source.source_commit) ? `Latest upstream source: ${sourceLink(game.upstream_source.source_url, game.upstream_source.source_commit)}\n` : ""}` : ""}${game.parent_game ? `Forked from: ${game.parent_game} at ${game.parent_revision}\nPreserve the original credits and keep this fork in games/${game.slug}.\n` : ""}Community parent revision: ${revision.id}\n${mode === "fork" ? "Preserve the original game's credit and the recorded fork ancestry.\n" : "Keep the current game identity and immutable revision history.\n"}\nMake the requested changes, run relevant tests, capture real gameplay screenshots, and update the game guide. Use a clean, centered BlueEngine Games text opening card with no rat image. Distribute native Windows x64 EXE installers only.\n\nCommit the source and submit the exact full commit SHA as a new community revision with a clear change note, then request publication using the documented collaboration CLI. Publication must pass the normal native Windows, screenshot, guide and checksum gates. Do not treat a pending request as a published playable build. Submit constructive AI feedback separately for the engine, launcher or game with reproducible evidence. Read public player feedback and the game's history before deciding what to improve.\n\nMy requested changes:\n`;
 }
 
 export function buildNewGameHandoff() {
@@ -208,6 +208,22 @@ export function renderCollaboration(
   </section>`;
 }
 
+function renderUpstreamDrift(game) {
+  if (game.upstream_diverged !== true) return "";
+  const upstream = game.upstream_source;
+  const source =
+    upstream && SHA.test(upstream.source_commit)
+      ? sourceLink(upstream.source_url, upstream.source_commit)
+      : "";
+  const history =
+    /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/commits\/main\/games\/[a-z0-9-]+$/.test(
+      game.source_history_url || "",
+    )
+      ? game.source_history_url
+      : "";
+  return `<div class="community-drift" role="note"><h4>Upstream changes to merge</h4><p>The original project's source changed after this draft started. Merge the latest source into your working branch, preserve your changes, and submit a new revision before requesting publication.</p><p class="community-source-links">${source ? `<a href="${esc(source)}" target="_blank" rel="noopener noreferrer">View latest upstream source</a>` : ""}${history ? `<a href="${esc(history)}" target="_blank" rel="noopener noreferrer">View upstream history</a>` : ""}</p>${upstream && SHA.test(upstream.source_commit) ? `<small>Latest upstream source: <code>${esc(upstream.source_commit.slice(0, 12))}</code></small>` : ""}</div>`;
+}
+
 export function renderCommunityGame(game, selectedId = game.head_revision) {
   const revision =
     game.revisions.find((item) => item.id === selectedId) ||
@@ -219,6 +235,7 @@ export function renderCommunityGame(game, selectedId = game.head_revision) {
     ? game.publication_requests
     : [];
   return `<button type="button" data-community-refresh>Refresh history</button><h3>${esc(game.title)} <span class="community-muted">${esc(game.slug)}</span></h3><p>${parent} Maintained by ${esc(game.owner || "the project maintainers")}.</p>
+    ${renderUpstreamDrift(game)}
     ${
       revision
         ? `<label>Start from a revision<select data-community-revision>${game.revisions.map((item) => `<option value="${esc(item.id)}" ${item.id === revision.id ? "selected" : ""}>${esc(item.version || "Source revision")} · ${esc(item.source_commit.slice(0, 12))} · ${esc(actorName(item.actor))}</option>`).join("")}</select></label><p class="community-source-links">${sourceLink(revision.source_url, revision.source_commit) ? `<a href="${esc(sourceLink(revision.source_url, revision.source_commit))}" target="_blank" rel="noopener noreferrer">Browse pinned source</a>` : ""} ${sourceLink(revision.download_source_url, revision.source_commit) ? `<a href="${esc(sourceLink(revision.download_source_url, revision.source_commit))}" target="_blank" rel="noopener noreferrer">Download source archive</a>` : ""}</p>

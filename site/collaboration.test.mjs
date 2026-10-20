@@ -467,3 +467,38 @@ test("publication requests show readable status and only verified receipts expos
     "",
   );
 });
+
+test("upstream drift gives a safe merge step and updates the fresh-AI handoff", () => {
+  const upstream = {
+    ...revision,
+    id: "upstream-revision",
+    source_commit: "d".repeat(40),
+    source_url: `https://github.com/author/BlueEngine/tree/${"d".repeat(40)}/games/orbit`,
+  };
+  const drifted = {
+    ...game,
+    upstream_diverged: true,
+    upstream_source: upstream,
+    source_history_url:
+      "https://github.com/author/BlueEngine/commits/main/games/orbit",
+  };
+  const html = renderCommunityGame(drifted);
+  assert.match(html, /Upstream changes to merge/);
+  assert.match(html, /submit a new revision before requesting publication/);
+  assert.match(html, /View latest upstream source/);
+  assert.match(html, /View upstream history/);
+  assert.match(
+    buildAIHandoff(drifted, revision),
+    new RegExp(`Merge upstream commit ${"d".repeat(40)}`),
+  );
+  assert.doesNotMatch(renderCommunityGame(game), /Upstream changes to merge/);
+  const untrusted = renderCommunityGame({
+    ...drifted,
+    upstream_source: { ...upstream, source_url: 'javascript:alert("bad")' },
+    source_history_url: "https://evil.example/<script>",
+  });
+  assert.doesNotMatch(
+    untrusted,
+    /href="javascript:|href="https:\/\/evil|<script>/,
+  );
+});
