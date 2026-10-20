@@ -191,15 +191,25 @@ def build_document(root, slug, engine=None):
 
 
 def entrypoint(stage, slug):
+    # Windows resolves a lowercase probe to a differently cased producer file.
+    # Keep its actual member spelling so metadata and exact integrity records
+    # describe the same file on every platform.
+    executables = {}
+    for path in stage.iterdir():
+        if path.is_file() and path.suffix.lower() == '.exe':
+            key = path.name.casefold()
+            if key in executables:
+                raise ValueError('Package contains case-aliased executable names')
+            executables[key] = path.name
     for name in (f'Play-{slug}.exe', f'{slug}.exe'):
-        if (stage / name).is_file():
-            return name
+        if name.casefold() in executables:
+            return executables[name.casefold()]
     ship = stage / 'ship.json'
     if ship.is_file():
         value = json_file(ship).get('exe')
         if value and safe_path(stage, value).is_file():
             return value
-    candidates = [path.name for path in stage.glob('*.exe') if not re.search(r'server|tools|unins|update-', path.name, re.I)]
+    candidates = [name for name in executables.values() if not re.search(r'server|tools|unins|update-', name, re.I)]
     if len(candidates) != 1:
         raise ValueError('Cannot identify one playable executable for portable metadata')
     return candidates[0]
