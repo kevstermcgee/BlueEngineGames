@@ -50,6 +50,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
       - name: Validate Windows startup verifier syntax
         shell: pwsh
         run: |
@@ -104,6 +107,10 @@ jobs:
     steps:
       - name: Check out the games catalog
         uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
 
       - name: Read source revision
         id: catalog
@@ -224,6 +231,7 @@ jobs:
           foreach ($game in @(
             @{ slug = 'pocket-breaker'; title = 'Pocket Breaker'; executable = 'pocket-breaker.exe' },
             @{ slug = 'riftwake'; title = 'Riftwake'; executable = 'Play-riftwake.exe' },
+            @{ slug = 'bluedm'; title = 'BlueDM'; executable = 'Play-bluedm.exe' },
             @{ slug = 'leo'; title = 'Leo'; executable = 'leo.exe'; arguments = @('--mute') },
             @{ slug = 'laser-vault'; title = 'Blue Engine 2 | BE2'; executable = 'BlueEngine.exe'; stock = $true }
           )) {
