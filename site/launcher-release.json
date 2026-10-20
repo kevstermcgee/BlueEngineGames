@@ -1,17 +1,17 @@
 {
+  "version": "0.1.10",
+  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.10/BlueEngine-Games-Setup-x64.exe",
+  "sha256": "f149412f8b10b37337d365c7c4ca4a4f88e4d79f9183d3fba045a5c805e1c810",
+  "size": 28123863,
   "update": {
-    "notes": "Submit game feedback directly with an optional name and no account. Reviews are saved to the engine repository for improvement cycles; offline drafts and safe retries are preserved.",
-    "pub_date": "2026-10-19T23:54:39Z",
-    "version": "0.1.9",
+    "version": "0.1.10",
+    "notes": "Create, fork and improve native games with shared source history, fresh AI handoffs, publication requests and human or AI development feedback. Includes account-free player reviews, game guides, favorites and signed launcher updates.",
+    "pub_date": "2026-10-20T16:49:48Z",
     "platforms": {
       "windows-x86_64": {
-        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjhMYVBPWDJiaDRkRXQ1S3FMZCtBMlBodC9DR0l0OFpMWEp5c05hb3d5MVVPdzZvSjVEaUs3R3VTSXBaeTdrT0pKZVZ0WkhFbk9KMy9hRWhibHhDS1FVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNDUzOTIyCWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuOV94NjQtc2V0dXAuZXhlCXZlcnNpb246MC4xLjkKODdLZXlBQWxkNy9yYWI3TzJUN0VQbjV3R1JYQ1llTHZ1TFlHSy9vQjFHQ2Q4cUlQZU1zb0RNZWx2Wi8wTzh4T0pEd1grYnZSdlg2ZkdLa2xBVGN4RGc9PQo=",
-        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.9/BlueEngine-Games-Setup-x64.exe"
+        "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVUTEZiaVl5a05UUjBKZTI4U25XdVdxL3dJU01rNmtJVkllSFdlbVkxMERlUlBRTkhTSUZ5bUFtMlFLWWJlSFR6U1plaUp6RUJqdERRNnYrUUJyYk5qVmVGNFJ5VjRLSXdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNTE0ODQ0CWZpbGU6Qmx1ZUVuZ2luZSBHYW1lc18wLjEuMTBfeDY0LXNldHVwLmV4ZQl2ZXJzaW9uOjAuMS4xMAo1a3pvREROYjZTN3drdmpHci9MZ3pjL3luYjNLOFA1eXNLMFhVS2x6MTNyREZveS9zdUN6WWE2bGkvblpmUHBCWm1ic082OWlucmswSThFYVM1K1pCUT09Cg==",
+        "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.10/BlueEngine-Games-Setup-x64.exe"
       }
     }
-  },
-  "sha256": "504a9635096f88174c6908c0caa0d1a27548147c117977ca435670e62977e73a",
-  "url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/launcher-v0.1.9/BlueEngine-Games-Setup-x64.exe",
-  "version": "0.1.9",
-  "size": 28415836
+  }
 }
