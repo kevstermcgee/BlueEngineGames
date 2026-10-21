@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 771,
+    "games": 773,
     "prototypes": 10,
     "tests": 64
   },
@@ -432,11 +432,11 @@
     },
     {
       "path": "games/afterpull/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/afterpull/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/afterpull/src/bin/playtest.rs",
@@ -568,11 +568,11 @@
     },
     {
       "path": "games/backstop/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/backstop/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/backstop/src/lib.rs",
@@ -1076,11 +1076,11 @@
     },
     {
       "path": "games/corkscrew-key/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/corkscrew-key/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/corkscrew-key/src/lib.rs",
@@ -1220,11 +1220,11 @@
     },
     {
       "path": "games/corner-clutch/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/corner-clutch/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/corner-clutch/src/input.rs",
@@ -1276,7 +1276,7 @@
     },
     {
       "path": "games/crosshaul/README.md",
-      "sha256": "5acb631556a3d02fcc5cfebfbbd96f85cbedf8506d220d480970cc11a034ba6d"
+      "sha256": "d22a958a33004cd112adee1e4a5acb3ad422b7fa3710d0c92093ed72b57c942a"
     },
     {
       "path": "games/crosshaul/STATUS.md",
@@ -1364,11 +1364,15 @@
     },
     {
       "path": "games/crosshaul/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/crosshaul/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
+    },
+    {
+      "path": "games/crosshaul/src/docking_audio.rs",
+      "sha256": "56660da89566a05603cff0dbf2a8ca9dd8ed92db0c2f1a7037e926e53df63007"
     },
     {
       "path": "games/crosshaul/src/lib.rs",
@@ -1376,7 +1380,7 @@
     },
     {
       "path": "games/crosshaul/src/main.rs",
-      "sha256": "e8baa5719d31f423a9b965a0e177365b5b84d54d1db6015bab8906b4bdc3dace"
+      "sha256": "a204d4c6442725143e30c570dc17c45f182348ea976fac1e27ecee4e7d4586c8"
     },
     {
       "path": "games/crosshaul/src/platform.rs",
@@ -1385,6 +1389,10 @@
     {
       "path": "games/crosshaul/tests/determinism.rs",
       "sha256": "ba05e3b61a69a5e7a7d9915e11967700b0ed0bad5458957300c134da6d8973dd"
+    },
+    {
+      "path": "games/crosshaul/tests/docking_audio.rs",
+      "sha256": "bde299d8cc240618347532027fe373f7483600c519da19dfcb917afe74db24ee"
     },
     {
       "path": "games/crosshaul/tests/identity.rs",
@@ -1480,11 +1488,11 @@
     },
     {
       "path": "games/gap-flip/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/gap-flip/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/gap-flip/src/lib.rs",
@@ -1600,11 +1608,11 @@
     },
     {
       "path": "games/idea-forge/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/idea-forge/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/idea-forge/src/bin/idea-forge-cli.rs",
@@ -1712,11 +1720,11 @@
     },
     {
       "path": "games/lantern-grove/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/lantern-grove/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/lantern-grove/scripts/web.py",
@@ -1820,11 +1828,11 @@
     },
     {
       "path": "games/lantern-run/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/lantern-run/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/lantern-run/scripts/web.py",
@@ -1968,11 +1976,11 @@
     },
     {
       "path": "games/leo/scripts/tooling.json",
-      "sha256": "025396467ceaf65505449b87ccf1cb2b92dd3ebf8c36c2519796b09828429bd4"
+      "sha256": "ebb37d270209fba6cd90573fe2b809b26ea202d0e366d76e36bcbdada859b37c"
     },
     {
       "path": "games/leo/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/leo/scripts/tooling_hooks.py",
@@ -2224,11 +2232,11 @@
     },
     {
       "path": "games/orchard-watch/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/orchard-watch/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/orchard-watch/scripts/web.py",
@@ -2348,11 +2356,11 @@
     },
     {
       "path": "games/peelturn/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/peelturn/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/peelturn/src/lib.rs",
@@ -2484,11 +2492,11 @@
     },
     {
       "path": "games/pinstride/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/pinstride/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/pinstride/src/lib.rs",
@@ -2600,11 +2608,11 @@
     },
     {
       "path": "games/pocket-breaker/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/pocket-breaker/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/pocket-breaker/scripts/web.py",
@@ -2768,11 +2776,11 @@
     },
     {
       "path": "games/reverie/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/reverie/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/reverie/scripts/tooling_hooks.py",
@@ -2908,11 +2916,11 @@
     },
     {
       "path": "games/rift-delver/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/rift-delver/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/rift-delver/src/lib.rs",
@@ -3024,11 +3032,11 @@
     },
     {
       "path": "games/signal-garden/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/signal-garden/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/signal-garden/src/audio.rs",
@@ -3160,11 +3168,11 @@
     },
     {
       "path": "games/sway/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/sway/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/sway/src/audio.rs",
@@ -3392,11 +3400,11 @@
     },
     {
       "path": "games/wormhole/scripts/tooling.json",
-      "sha256": "5f92a81c44101c188a625b2ff4eaa69fb0804600a785df515b3d1b24869a714f"
+      "sha256": "7908d9803307b08b3d57f294c72cea74784ad31bb354ef7667883c7028e6ec5e"
     },
     {
       "path": "games/wormhole/scripts/tooling.py",
-      "sha256": "5f534e93b375949907f89d3256f4894fd92d9e9d96150596912fb9589053705e"
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
     },
     {
       "path": "games/wormhole/src/lib.rs",
@@ -3776,6 +3784,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "c0a5bbd885bf5a9c03cdf94947b105cbb9917d39",
+  "source_revision": "c6b604fba6fc36d5e804f8685e3635a35bf71338",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
