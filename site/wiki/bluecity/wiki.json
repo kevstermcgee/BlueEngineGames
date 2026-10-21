@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "overview": "Build a riverside town into a lively city in BlueCity, an open-ended city management game made with BlueEngine. Lay roads, zone homes and workplaces, supply utilities and invest in public services while balancing taxes, running costs and community needs. Houses develop into denser neighborhoods as demand, access, land value and education allow; shortages, pollution and neglected services can send residents away.\n\nThe isometric 48 × 48 map keeps the whole community within reach. Inspect individual blocks, compare nine map views, follow population history and try different transport and spending choices. Start with an established town or confirm a fresh blank valley. There is no fixed ending: build a comfortable neighborhood, pursue a larger city or recover after a sandbox disaster. Residents, jobs, traffic and service coverage use an aggregate tile simulation.",
+  "rules": [
+    "Begin with the connected starter town, or choose New blank valley... and then Start blank map. A blank town needs a road connection to the map edge, power, water and zones before it can develop. Save a manual checkpoint before replacing a town you want to keep.",
+    "Construction spends treasury funds immediately, and infrastructure and public facilities add monthly upkeep. The City panel shows residential, commercial and industrial demand, income, running costs, happiness, health and education. Pause the calendar while planning, then resume to see monthly growth and budgets.",
+    "Extend connected roads and zone residential, commercial and industrial land nearby. Zones grow when regional road access, electricity, water and demand support them. Homes bring residents; shops and industry provide jobs. Losing access or utility service can cause decline and abandonment.",
+    "Roads carry municipal electricity and water conduits. Use separate power lines and pipes to extend those networks, and provide enough connected generation, pumps, sewage works and waste capacity. Water pumps need a river within three tiles; seaports need adjacent water. Use the Electricity and Water maps to check coverage and supply.",
+    "Choose roads or higher-capacity avenues, bridge water with transport links, and add rail stations or bus depots to improve transport. Roads and rail can share a level crossing. Traffic pressure affects local conditions and development; the Traffic map helps reveal busy routes.",
+    "Place police and fire stations, hospitals, schools, universities and parks to improve the surrounding community. Department funding affects service strength. Keep polluting facilities away from homes, and compare pollution, crime, land value and service coverage before choosing an investment.",
+    "Denser buildings develop over time as the city reaches population thresholds and local conditions allow. Higher development also depends on education and, at later stages, a university or commercial airport support. Seaports support industry; airports and stadiums also contribute to the economy. Population milestones award regional grants.",
+    "In Budget, set separate residential, commercial and industrial tax rates from 0% to 20%, and adjust transport, services, education and utilities funding from 0% to 150%. Higher taxes increase the tax rate but reduce demand; lower funding saves money while weakening the funded systems.",
+    "Borrow issues a $10,000 city bond, up to $30,000 of outstanding debt. Each bond adds $100 in monthly interest. Repay spends $10,000 to remove one bond when the treasury can cover it. A deficit does not end the game, but deep debt and insufficient construction funds can restrict growth and recovery.",
+    "The Clean air, Free transit, Recycling and Business grants policies change city conditions and costs. Review the monthly balance after changing a policy, tax rate or department budget rather than assuming every increase will pay for itself.",
+    "Zones, bulldozing and landscaping use a rectangle selected with two clicks. Roads, avenues, rail, power lines and pipes use a two-click line that turns at a right angle when needed. Click the same tile twice for a single tile; a selection may contain up to 256 tiles. Facilities use one click. Existing developments usually need bulldozing before replacement.",
+    "The Guide panel offers sandbox fire, flood, earthquake, tornado and nuclear-meltdown buttons. They damage existing development; a meltdown needs a reactor. Fire can also arise after sustained underfunding of protection. Restore broken transport and utilities, maintain emergency coverage and rebuild affected districts.",
+    "Automatic progress resumes on the next launch. K stores a separate manual checkpoint; L replaces the current state with that checkpoint. R restarts the starter town. There is no campaign, required victory target or game-over screen, so recovery and expansion remain your choices."
+  ],
+  "controls": [
+    "Click or press Enter on the opening screen to start or continue. Escape opens or closes the pause menu; R restarts the starter town.",
+    "WASD, arrow keys or controller directions pan the map. The NW, SE, NE and SW toolbar buttons also pan; Center returns to the middle. The - and + buttons zoom out and in.",
+    "Click a category along the bottom, select a tool, then click the map. Use two clicks for zoning rectangles and network lines, or one click for a facility. Cancel clears the current placement and returns to Inspect.",
+    "Choose Inspect and click a block to view its development, population or jobs and local conditions. City, Maps, Budget and Guide switch the right-hand management panel. Clicking the toolbar's Map label cycles through the map views.",
+    "The calendar buttons pause growth or select 1×, 3× or 10× speed. Pausing the calendar still lets you inspect, build and change management settings.",
+    "K saves a manual checkpoint; L loads it. M toggles sound effects, N toggles music and F toggles fullscreen.",
+    "A controller's directions pan; its primary action activates the current pointer location, or applies the selected tool to the selected or camera-center tile when no pointer is present. Use a mouse pointer to select tools and management buttons."
+  ],
+  "gallery": [
+    {
+      "image": "assets/wiki/starter-neighborhood.png",
+      "caption": "The connected starter town in January 2026: low-rise homes, commerce and industry support 2,232 residents, with $45,000 ready for new infrastructure.",
+      "alt": "An isometric riverside town with small red-roofed homes, blue-roofed shops, industrial blocks and connecting streets; the City panel shows demand bars, monthly finances, health and education."
+    },
+    {
+      "image": "assets/wiki/growing-district.png",
+      "caption": "By May, the starter districts have developed into taller apartment and commercial blocks and the population has grown to 4,566.",
+      "alt": "The same connected districts now contain taller cream apartment buildings and a dense blue commercial cluster; the treasury reads $49,342 and the City panel reports 4,566 residents."
+    },
+    {
+      "image": "assets/wiki/budget-and-electricity.png",
+      "caption": "Manage the developing city's finances while checking electricity coverage: the Budget panel exposes separate taxes, department funding, bonds and city policies.",
+      "alt": "An electricity map highlights the road and building network in yellow beside a Budget panel with three 9% tax rates, four department funding controls, Borrow and Repay buttons and four policy choices."
+    }
+  ],
+  "design": {
+    "origin": "human",
+    "original_prompt": "Using BlueEngine, make a SimCity clone called BlueCity. Ensure it has most if not every major feature from the original SimCity. Feel free to steal concepts and ideas from Cities skylines as well. I just want a super fun city management game where to build infrastructure and communities grow",
+    "prompt_note": "The original creation request is reproduced verbatim. This guide describes BlueCity's implemented compact city simulation."
+  }
+}
