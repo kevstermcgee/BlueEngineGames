@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 817,
+    "games": 857,
     "prototypes": 10,
     "tests": 64
   },
@@ -3383,6 +3383,166 @@
       "sha256": "dc7e9c0816306f3a145b15b64d6ea7996ee22329378f7f65c42044e8fc2f700c"
     },
     {
+      "path": "games/tetris/.gitignore",
+      "sha256": "afdbed3678c692184ebdeace5c3119481ae4a6c6ad1e255ba51747cfc86fe757"
+    },
+    {
+      "path": "games/tetris/AGENTS.md",
+      "sha256": "e91e11e0bf419ce12890f73234ea7741c7a59de473c5fb3fc249478c23cd1365"
+    },
+    {
+      "path": "games/tetris/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/tetris/Cargo.lock",
+      "sha256": "1a9a6b621a0e01ae09c310e87a922a9c735df08655a35981403e02864dd45da2"
+    },
+    {
+      "path": "games/tetris/Cargo.toml",
+      "sha256": "1db44aa5c249656b6442681aa61617a81e07d8ff4b219499d867efdf842466dd"
+    },
+    {
+      "path": "games/tetris/README.md",
+      "sha256": "7a3fcb25cfe95b0ce6b53de84be508ed6ac5cad13fedbf72027ee1667a630cb2"
+    },
+    {
+      "path": "games/tetris/STATUS.md",
+      "sha256": "885380329edd807fd3c54dcf20e1edc1b5ca21fa3faa734a16630f4476b6d844"
+    },
+    {
+      "path": "games/tetris/assets/audio-source/pulse.json",
+      "sha256": "0b78a9f55f67ad126857227e5a0e4e9bb51334cc1577faa088e1a13cc9480e19"
+    },
+    {
+      "path": "games/tetris/assets/audio/pulse/bank.json",
+      "sha256": "895f6180631866a3f50ffeb1b776c97d23ebb0137ed34ff85fe50dbd4fe00baa"
+    },
+    {
+      "path": "games/tetris/assets/audio/pulse/music-foundation.wav",
+      "sha256": "9149ee323802d110b3d8f88c89a319c42a3d9fdb19a0027a22657269ab400244"
+    },
+    {
+      "path": "games/tetris/assets/audio/pulse/music-pulse.wav",
+      "sha256": "650598f38399cf560a1617ff82321a8b0a9eb03995f3af0ada86dcd053153a37"
+    },
+    {
+      "path": "games/tetris/assets/audio/pulse/preview-mix.wav",
+      "sha256": "90c90f43744baec576707b2053223e25e6cb606550ad89bb439155c56e031cdb"
+    },
+    {
+      "path": "games/tetris/assets/icon.ico",
+      "sha256": "8883af5a017ccf0ce4300e744ff67c40fd1225db2094251a3364ad02cd37c839"
+    },
+    {
+      "path": "games/tetris/assets/icon.png",
+      "sha256": "2c4ea0072d216e5080986856945fa2d2ca3b8a1084ba22cb36eda05c4078ee51"
+    },
+    {
+      "path": "games/tetris/assets/icon_16.rgba",
+      "sha256": "cd8ca3a9bcf83d093eea811b888dad9b796767d137545e2371561e9156162dc3"
+    },
+    {
+      "path": "games/tetris/assets/icon_32.rgba",
+      "sha256": "c9ab59d8c025a5bc0ac133b425ef908631a3d7081fd64c62f630a38999ec8bf3"
+    },
+    {
+      "path": "games/tetris/assets/icon_64.rgba",
+      "sha256": "9fb3c7b30f5e1727fcc05c8e6e731b40a4ed0a9d67977787659b1b9f50cedb1e"
+    },
+    {
+      "path": "games/tetris/assets/identity.json",
+      "sha256": "e52ef9e4d6735a89e134d0b96e37750989fe9b68aedc15b3a8538d84f7734bb4"
+    },
+    {
+      "path": "games/tetris/assets/native-review.json",
+      "sha256": "3aa14bb6df447f1b8f5505cbc7c810298928bb5260f12b753ab7e6b302ce1664"
+    },
+    {
+      "path": "games/tetris/assets/wiki/hold-and-ghost.png",
+      "sha256": "6673a59afb7ef605426166468bd46924d6787cbd4a76f4f01d2cefc8860b6201"
+    },
+    {
+      "path": "games/tetris/assets/wiki/opening.png",
+      "sha256": "9e6c2dd5b1134e21a5c7b6c27c4b7e4058a4ad162a3e407a43e67086ca0647ab"
+    },
+    {
+      "path": "games/tetris/assets/wiki/stack-building.png",
+      "sha256": "5baf043708c1646610a16f43d2c44662809b6ba25b4ae3b340bfa49d84d9acc4"
+    },
+    {
+      "path": "games/tetris/build.rs",
+      "sha256": "a3bfa1d2193fd2624ed82bb61cc25a12f843969e6393202f8c64c85350d9da7a"
+    },
+    {
+      "path": "games/tetris/game.project.json",
+      "sha256": "3798995a8f9be0b8bc4563675f6f67c1921ae0d92b9b314ea8ec159188116d6a"
+    },
+    {
+      "path": "games/tetris/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/tetris/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/tetris/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/tetris/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/tetris/scripts/installer.json",
+      "sha256": "499e2580d13d496a91e881c3771f81f2dd97e92f2a9eaef3d9d98dfa490f198e"
+    },
+    {
+      "path": "games/tetris/scripts/make_icon.py",
+      "sha256": "3f00e28c0eebdb73f2e32803bf168e7f9a751c8ec3c4f2ffd80c068c0717b94a"
+    },
+    {
+      "path": "games/tetris/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/tetris/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/tetris/scripts/tooling.json",
+      "sha256": "17bc1f231232c660d97f975cad556ccfe18e26a1815fdb5649dbfc2d71cd766e"
+    },
+    {
+      "path": "games/tetris/scripts/tooling.py",
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
+    },
+    {
+      "path": "games/tetris/src/controls.rs",
+      "sha256": "cd76a620f3d87d6c4d4bfbc2cd8f450c6114b4279e5ef3b05ed4b34fe0228f2e"
+    },
+    {
+      "path": "games/tetris/src/lib.rs",
+      "sha256": "0b7463a0c59f8d4e47b07398c058b55b249db6977a792b708d95eb3ac057a27e"
+    },
+    {
+      "path": "games/tetris/src/main.rs",
+      "sha256": "88d76f12b9be9485b981997c64d89a9d23a7a736b6f443acbae6def4eca72047"
+    },
+    {
+      "path": "games/tetris/src/presentation.rs",
+      "sha256": "389a140e629516ea2cac8029cb4de2f9e240bcaf26d2f3ed2c9edc4e13fec370"
+    },
+    {
+      "path": "games/tetris/tests/identity.rs",
+      "sha256": "4748ed68371ac83463a91bb17f2883206f34112296b8f5d1cd8229da3f690224"
+    },
+    {
+      "path": "games/tetris/wiki.json",
+      "sha256": "55d46d6ba927ce88d284a37eb517a127929952ffe379ace5e762d21f58bc9e3a"
+    },
+    {
       "path": "games/three-switches/game.json",
       "sha256": "cdc69ba3f13f5d106adc4b1f8d3a39205008f00362e5dfd449b3ee3df2598799"
     },
@@ -3960,6 +4120,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "d433ea5dc53098dadbcdf1247b33dbe3d86122df",
+  "source_revision": "33449f5532371972441712ed4383d036e4c99c86",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }

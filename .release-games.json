@@ -379,6 +379,13 @@
       "directory": "games/scatterlock",
       "kind": "cargo-package",
       "binary": "Scatterlock"
+    },
+    {
+      "slug": "tetris",
+      "name": "Tetris",
+      "directory": "games/tetris",
+      "kind": "cargo-package",
+      "binary": "tetris"
     }
   ],
   "non_playable_directories": [
