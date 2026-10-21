@@ -264,43 +264,69 @@
     {
       "slug": "bluecity",
       "name": "BlueCity",
-      "description": "Build infrastructure and grow a thriving city. Zone neighborhoods, connect roads and transit, supply utilities, fund public services, and balance city finances through growth and disasters.",
+      "description": "Choose a seeded landscape, build infrastructure, and watch neighborhoods grow. Zone homes and workplaces, connect transport and utilities, fund services, and balance city finances through growth and disasters.",
       "created": "2026-10-20",
-      "game_version": "0.1.1",
+      "game_version": "0.2.0",
       "engine_version": "1a5b696ee653",
       "kind": "native game",
       "presentation": "2d",
       "networking": "offline",
       "design_origin": "human",
-      "source_url": "https://github.com/kevstermcgee/BlueCity/tree/7a7a79c81c3fb1007df4e7e8f131163eea66e854/src",
-      "install_help": "Install and play through the BlueEngine Games launcher, or run the Windows x64 installer. WASD/arrows pan; click tools and map tiles to build. Roads and zones use two clicks. K saves, L loads, Esc pauses, and F/F11 toggles fullscreen. Automatic progress and manual saves remain in user data when upgrading.",
+      "source_url": "https://github.com/kevstermcgee/BlueCity/tree/de063b7e4f4c298dbedbb699332771e435a8ce62/src",
+      "install_help": "Install and play through the BlueEngine Games launcher, or run the Windows x64 installer. WASD/arrows pan. Bottom categories open tools; roads and zones use two clicks. City, Maps, Budget and Guide toggle floating panels. Guide > New map creates River, Coast, Islands or Highlands terrain from a reusable seed. K saves, L loads, Esc pauses, and F/F11 toggles fullscreen. Existing saves upgrade automatically.",
       "published_release": {
-        "tag_name": "bluecity-v0.1.1",
-        "name": "BlueCity 0.1.1",
-        "published_at": "2026-10-21T03:56:05Z",
-        "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecity-v0.1.1",
+        "tag_name": "bluecity-v0.2.0",
+        "name": "BlueCity 0.2.0",
+        "published_at": "2026-10-21T04:40:19Z",
+        "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecity-v0.2.0",
         "assets": [
           {
             "name": "bluecity-setup-windows-x64.exe",
-            "size": 10781033,
-            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/bluecity-setup-windows-x64.exe",
-            "digest": "sha256:f56a15b54ed9f2de9dd02228ec2921742ff2778de298dc42165f0f67c97a3b57"
+            "size": 11097600,
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.2.0/bluecity-setup-windows-x64.exe",
+            "digest": "sha256:6307da6fef33244d3cb087773cb3420ede23124ca7944486e7842cf1a10f3db0"
           },
           {
             "name": "release-metadata.json",
             "size": 664,
-            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/release-metadata.json",
-            "digest": "sha256:483253efaf6f4e52714b80db1e1529f656d44d4cfc35516c033c4a1461d4652f"
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.2.0/release-metadata.json",
+            "digest": "sha256:79a45c379bd3327785ab45e02831a70cae13242444597cd222332763c41e9397"
           },
           {
             "name": "SHA256SUMS.txt",
             "size": 98,
-            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/SHA256SUMS.txt",
-            "digest": "sha256:6ee1f86e4d46bbac64bfd3b5bd5ce32e10c3feaf442a2573bf5fff1c604ab013"
+            "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.2.0/SHA256SUMS.txt",
+            "digest": "sha256:875cd7701f53396bfcf8bbcc544d572c688076cfc08878de1d9374ea583d74c8"
           }
         ]
       },
       "previous_releases": [
+        {
+          "tag_name": "bluecity-v0.1.1",
+          "name": "BlueCity 0.1.1",
+          "published_at": "2026-10-21T03:56:05Z",
+          "html_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/tag/bluecity-v0.1.1",
+          "assets": [
+            {
+              "name": "bluecity-setup-windows-x64.exe",
+              "size": 10781033,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/bluecity-setup-windows-x64.exe",
+              "digest": "sha256:f56a15b54ed9f2de9dd02228ec2921742ff2778de298dc42165f0f67c97a3b57"
+            },
+            {
+              "name": "release-metadata.json",
+              "size": 664,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/release-metadata.json",
+              "digest": "sha256:483253efaf6f4e52714b80db1e1529f656d44d4cfc35516c033c4a1461d4652f"
+            },
+            {
+              "name": "SHA256SUMS.txt",
+              "size": 98,
+              "browser_download_url": "https://github.com/kevstermcgee/BlueEngineGames/releases/download/bluecity-v0.1.1/SHA256SUMS.txt",
+              "digest": "sha256:6ee1f86e4d46bbac64bfd3b5bd5ce32e10c3feaf442a2573bf5fff1c604ab013"
+            }
+          ]
+        },
         {
           "tag_name": "bluecity-v0.1.0",
           "name": "BlueCity 0.1.0",

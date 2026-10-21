@@ -1,11 +1,12 @@
 {
   "version": 1,
-  "overview": "Build a riverside town into a lively city in BlueCity, an open-ended city management game made with BlueEngine. Lay roads, zone homes and workplaces, supply utilities and invest in public services while balancing taxes, running costs and community needs. Houses develop into denser neighborhoods as demand, access, land value and education allow; shortages, pollution and neglected services can send residents away.\n\nThe isometric 48 × 48 map keeps the whole community within reach. Inspect individual blocks, compare nine map views, follow population history and try different transport and spending choices. Start with an established town or confirm a fresh blank valley. There is no fixed ending: build a comfortable neighborhood, pursue a larger city or recover after a sandbox disaster. Residents, jobs, traffic and service coverage use an aggregate tile simulation.",
+  "overview": "Build a town into a lively city in BlueCity, an open-ended city management game made with BlueEngine. Lay roads, zone homes and workplaces, supply utilities and invest in public services while balancing taxes, running costs and community needs. Houses develop into denser neighborhoods as demand, access, land value and education allow; shortages, pollution and neglected services can send residents away.\n\nThe isometric 48 × 48 city fills the window, with translucent controls and compact management drawers that open when you need them. Inspect individual blocks, compare nine map views, follow population history and try different transport and spending choices. Start with an established riverside town or generate a River, Coast, Islands or Highlands landscape from a seed. There is no fixed ending: build a comfortable neighborhood, pursue a larger city or recover after a sandbox disaster. Residents, jobs, traffic and service coverage use an aggregate tile simulation.",
   "rules": [
-    "Begin with the connected starter town, or choose New blank valley... and then Start blank map. A blank town needs a road connection to the map edge, power, water and zones before it can develop. Save a manual checkpoint before replacing a town you want to keep.",
-    "Construction spends treasury funds immediately, and infrastructure and public facilities add monthly upkeep. The City panel shows residential, commercial and industrial demand, income, running costs, happiness, health and education. Pause the calendar while planning, then resume to see monthly growth and budgets.",
+    "Begin with the connected starter town, or open City or Guide and choose New map…. Select River, Coast, Islands or Highlands and a seed, then Generate map. This replaces the current town with a blank region, $60,000 and the calendar paused; Keep this town cancels. A blank town needs a road connection to the map edge, power, water and zones before it can develop. Save a manual checkpoint before replacing a town you want to keep.",
+    "Procedural styles provide a winding river, a broad coastline, an archipelago or highlands with lakes and ridges. The seed changes shorelines, topography and vegetation. The same style and seed recreate identical terrain. Generated maps retain that original recipe in saves, and Guide shows it after generation even as the city's simulation continues.",
+    "Construction spends treasury funds immediately, and infrastructure and public facilities add monthly upkeep. The top bar shows treasury funds, residents and happiness; open City for development demand, monthly finances, health and education, or details of the block you have inspected. Pause the calendar while planning, then resume to see monthly growth and budgets.",
     "Extend connected roads and zone residential, commercial and industrial land nearby. Zones grow when regional road access, electricity, water and demand support them. Homes bring residents; shops and industry provide jobs. Losing access or utility service can cause decline and abandonment.",
-    "Roads carry municipal electricity and water conduits. Use separate power lines and pipes to extend those networks, and provide enough connected generation, pumps, sewage works and waste capacity. Water pumps need a river within three tiles; seaports need adjacent water. Use the Electricity and Water maps to check coverage and supply.",
+    "Roads carry municipal electricity and water conduits. Use separate power lines and pipes to extend those networks, and provide enough connected generation, pumps, sewage works and waste capacity. Water pumps need water within three tiles; seaports need adjacent water. Use the Electricity and Water maps to check coverage; Maps also shows supply totals and a compact population history graph.",
     "Choose roads or higher-capacity avenues, bridge water with transport links, and add rail stations or bus depots to improve transport. Roads and rail can share a level crossing. Traffic pressure affects local conditions and development; the Traffic map helps reveal busy routes.",
     "Place police and fire stations, hospitals, schools, universities and parks to improve the surrounding community. Department funding affects service strength. Keep polluting facilities away from homes, and compare pollution, crime, land value and service coverage before choosing an investment.",
     "Denser buildings develop over time as the city reaches population thresholds and local conditions allow. Higher development also depends on education and, at later stages, a university or commercial airport support. Seaports support industry; airports and stadiums also contribute to the economy. Population milestones award regional grants.",
@@ -13,33 +14,46 @@
     "Borrow issues a $10,000 city bond, up to $30,000 of outstanding debt. Each bond adds $100 in monthly interest. Repay spends $10,000 to remove one bond when the treasury can cover it. A deficit does not end the game, but deep debt and insufficient construction funds can restrict growth and recovery.",
     "The Clean air, Free transit, Recycling and Business grants policies change city conditions and costs. Review the monthly balance after changing a policy, tax rate or department budget rather than assuming every increase will pay for itself.",
     "Zones, bulldozing and landscaping use a rectangle selected with two clicks. Roads, avenues, rail, power lines and pipes use a two-click line that turns at a right angle when needed. Click the same tile twice for a single tile; a selection may contain up to 256 tiles. Facilities use one click. Existing developments usually need bulldozing before replacement.",
-    "The Guide panel offers sandbox fire, flood, earthquake, tornado and nuclear-meltdown buttons. They damage existing development; a meltdown needs a reactor. Fire can also arise after sustained underfunding of protection. Restore broken transport and utilities, maintain emergency coverage and rebuild affected districts.",
-    "Automatic progress resumes on the next launch. K stores a separate manual checkpoint; L replaces the current state with that checkpoint. R restarts the starter town. There is no campaign, required victory target or game-over screen, so recovery and expansion remain your choices."
+    "Open Guide for the sandbox Fire, Flood, Quake, Storm and Atom buttons: they trigger fire, flooding, an earthquake, a tornado or a nuclear meltdown. They damage existing development; a meltdown needs a reactor. Fire can also arise after sustained underfunding of protection. Restore broken transport and utilities, maintain emergency coverage and rebuild affected districts.",
+    "Automatic progress resumes on the next launch. K stores a separate manual checkpoint; L replaces the current state with that checkpoint. R restarts the starter town. Version 1 saves migrate to version 2 while preserving the existing town and its future simulation. There is no campaign, required victory target or game-over screen, so recovery and expansion remain your choices."
   ],
   "controls": [
     "Click or press Enter on the opening screen to start or continue. Escape opens or closes the pause menu; R restarts the starter town.",
-    "WASD, arrow keys or controller directions pan the map. The NW, SE, NE and SW toolbar buttons also pan; Center returns to the middle. The - and + buttons zoom out and in.",
-    "Click a category along the bottom, select a tool, then click the map. Use two clicks for zoning rectangles and network lines, or one click for a facility. Cancel clears the current placement and returns to Inspect.",
-    "Choose Inspect and click a block to view its development, population or jobs and local conditions. City, Maps, Budget and Guide switch the right-hand management panel. Clicking the toolbar's Map label cycles through the map views.",
-    "The calendar buttons pause growth or select 1×, 3× or 10× speed. Pausing the calendar still lets you inspect, build and change management settings.",
-    "K saves a manual checkpoint; L loads it. M toggles sound effects, N toggles music and F toggles fullscreen.",
-    "A controller's directions pan; its primary action activates the current pointer location, or applies the selected tool to the selected or camera-center tile when no pointer is present. Use a mouse pointer to select tools and management buttons."
+    "WASD, arrow keys or controller directions pan the map. At the bottom right, Center returns to the middle and the - and + buttons zoom out and in.",
+    "Click Zones, Transport, Utilities, Services or Landmarks along the bottom to open its tool palette. Click the same category again to close it. Choosing a tool closes the palette; click the map to build. Use two clicks for zoning rectangles and network lines, or one click for a facility.",
+    "Inspect and Bulldoze are directly available in the bottom dock. Inspect cancels the current placement; choose it, click a block, then open City to see its development, population or jobs and local conditions. Bulldoze uses a two-click rectangle.",
+    "City, Maps, Budget and Guide at the upper right open compact management drawers. Click the active tab again or the drawer's × to close it. Opening a drawer closes the tool palette, and opening a category closes the drawer. In Maps, choose a layer; closing the drawer keeps that map layer visible.",
+    "In New map…, choose a style and enter a decimal seed from 0 to 18446744073709551615 with the keyboard or on-screen number buttons. Click the seed field to replace its contents with the next digit; Clear or Ctrl+A clears it, and Back or Backspace removes the last digit. New seed chooses another seed. Generate map replaces the town; Keep this town cancels.",
+    "The calendar buttons at the upper right of the top bar pause growth or select 1×, 3× or 10× speed. Pausing the calendar still lets you inspect, build and change management settings.",
+    "K saves a manual checkpoint; L loads it. M toggles sound effects, N toggles music and F or F11 toggles fullscreen.",
+    "A controller's directions pan; its primary action activates the current pointer location, or applies the selected tool to the selected or camera-center tile when no pointer is present. Use a mouse pointer to select tools and management buttons.",
+    "In block details, Overview returns to city-wide demand, finances, health and education. The Budget heading shows the current monthly net income."
   ],
   "gallery": [
     {
       "image": "assets/wiki/starter-neighborhood.png",
       "caption": "The connected starter town in January 2026: low-rise homes, commerce and industry support 2,232 residents, with $45,000 ready for new infrastructure.",
-      "alt": "An isometric riverside town with small red-roofed homes, blue-roofed shops, industrial blocks and connecting streets; the City panel shows demand bars, monthly finances, health and education."
+      "alt": "An isometric riverside town with small red-roofed homes, blue-roofed shops, industrial blocks and connected streets fills the window; translucent controls show treasury funds, residents, happiness and a bottom tool dock with both drawers closed."
     },
     {
       "image": "assets/wiki/growing-district.png",
-      "caption": "By May, the starter districts have developed into taller apartment and commercial blocks and the population has grown to 4,566.",
-      "alt": "The same connected districts now contain taller cream apartment buildings and a dense blue commercial cluster; the treasury reads $49,342 and the City panel reports 4,566 residents."
+      "caption": "By April, the starter districts have developed into taller apartment and commercial blocks, with 4,289 residents and $48,060 in the treasury.",
+      "alt": "The connected districts now contain taller cream apartment buildings and a dense blue commercial cluster; the top bar reads April 2026, 4,289 residents and $48,060, while compact floating controls leave most of the city visible."
     },
     {
       "image": "assets/wiki/budget-and-electricity.png",
-      "caption": "Manage the developing city's finances while checking electricity coverage: the Budget panel exposes separate taxes, department funding, bonds and city policies.",
-      "alt": "An electricity map highlights the road and building network in yellow beside a Budget panel with three 9% tax rates, four department funding controls, Borrow and Repay buttons and four policy choices."
+      "caption": "Manage the April city's finances while checking electricity coverage: the translucent Budget drawer exposes taxes, department funding, bonds and city policies.",
+      "alt": "An electricity map highlights roads and buildings in yellow behind a floating Budget drawer showing three 9% tax rates, four departments at 100% funding, Borrow $10k and Repay $10k buttons, zero debt and four policies."
+    },
+    {
+      "image": "assets/wiki/seeded-map-generator.png",
+      "caption": "Choose one of four landscape styles and enter a reproducible seed. Here Highlands and seed 42 are selected before replacing the current town.",
+      "alt": "The Create a new map drawer floats over a developed city, with River, Coast, Islands and Highlands choices, Highlands selected, seed 42 in the field, a numeric keypad, Clear, Back and New seed controls, and Generate map and Keep this town buttons."
+    },
+    {
+      "image": "assets/wiki/highlands-seed-42.png",
+      "caption": "Highlands seed 42 creates an undeveloped region with lakes, wooded slopes and a central clearing. The new town starts paused with $60,000 and zero residents.",
+      "alt": "A generated isometric landscape contains dense tree patches, triangular hills, lakes on both sides and open grass near the center; the top bar shows January 2026, $60,000, zero residents and the selected pause button, while the notice identifies Highlands seed 42."
     }
   ],
   "design": {
