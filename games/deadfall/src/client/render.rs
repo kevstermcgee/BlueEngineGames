@@ -223,6 +223,8 @@ pub struct Renderer {
     blob_feet: Rc<Cell<f32>>,
     pub alpha: Batch,
     pub add: Batch,
+    /// Flat pickup markers use the depth-tested decal pass, so walls hide them.
+    pickup_marks: Batch,
     pub fx: Fx,
     mem: HashMap<usize, Mem>,
     tracers: Vec<Tracer>,
@@ -278,6 +280,7 @@ impl Renderer {
             blob_feet,
             alpha: Batch::new(),
             add: Batch::new(),
+            pickup_marks: Batch::new(),
             fx: Fx::new(7),
             mem: HashMap::new(),
             tracers: Vec::new(),
@@ -410,6 +413,7 @@ impl Renderer {
         self.hidden.clear();
         self.alpha.clear();
         self.add.clear();
+        self.pickup_marks.clear();
         let t = self.time;
         let casting = self.shadows.casting();
         for f in figures {
@@ -473,7 +477,15 @@ impl Renderer {
                     self.blob_feet.set(l.pos.1);
                     self.shadows.blob(v3(l.pos), BLOB_ITEM);
                 }
-                Self::draw_item(&self.models, &mut self.world, &mut self.add, l.weapon, v3(l.pos), t, i as f32);
+                Self::draw_item(
+                    &self.models,
+                    &mut self.world,
+                    &mut self.pickup_marks,
+                    l.weapon,
+                    v3(l.pos),
+                    t,
+                    i as f32,
+                );
             }
         }
         for d in dropped {
@@ -481,7 +493,7 @@ impl Renderer {
                 self.blob_feet.set(d.pos.1);
                 self.shadows.blob(v3(d.pos), BLOB_ITEM);
             }
-            Self::draw_item(&self.models, &mut self.world, &mut self.add, d.weapon, v3(d.pos), t, d.id as f32);
+            Self::draw_item(&self.models, &mut self.world, &mut self.pickup_marks, d.weapon, v3(d.pos), t, d.id as f32);
         }
         for p in projectiles {
             let pos = v3(p.pos);
@@ -566,6 +578,8 @@ impl Renderer {
         }
         // Contact shadows sit on the ground and under the floor-standing actors, after the static world.
         self.shadows.draw_decals(&self.materials);
+        gl_use_material(&self.materials.decal);
+        self.pickup_marks.draw();
         gl_use_material(&self.materials.world);
         self.world.draw();
         // Translucent: glass, smoke, then additive light.
@@ -675,7 +689,7 @@ impl Renderer {
     fn draw_item(
         models: &[Option<WeaponModel>],
         world: &mut Batch,
-        add: &mut Batch,
+        pickup_marks: &mut Batch,
         weapon: u8,
         at: Vec3,
         t: f32,
@@ -690,10 +704,10 @@ impl Renderer {
         if let Some((mag, off)) = &model.mag {
             world.add(mag, m * Mat4::from_translation(*off), Tint::NONE);
         }
-        // A faint glow on the floor so it can be spotted from across the yard.
+        // A faint floor marker. The decal pass tests world depth; fx_add reveals it through walls.
         let mut glow = Template::new();
         glow.disc(vec3(0., 0.03, 0.), 0.45, [0.9, 0.85, 0.5], 0.8, 16);
-        add.add(&glow, Mat4::from_translation(at), Tint::alpha(0.25));
+        pickup_marks.add(&glow, Mat4::from_translation(at), Tint::alpha(0.25));
     }
 
     /// The weapon and arms of the first-person view, drawn in their own depth pass and composited on top.

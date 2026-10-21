@@ -5,6 +5,7 @@
 //! preview_level --what tiles --out DIR                                                 # four close top-down tiles
 //! preview_level --what walk  --out DIR --at x,y,z --angles 0,90 [--pitch 0]            # eye-height view, FOV 90
 //! preview_level --what lanes --out DIR                                                 # the view from each base's spawns
+//! Add --loot with --shadows off|simple|full to include the real pickup weapons and floor markers.
 //! ```
 //! `--shadows off|simple|full` draws through the game's own renderer instead (shadows, blobs and soldiers as in a match),
 //! with `--men x:z:yaw,x:z:yaw[:y]` standing soldiers on the map (slots 0.., alternating teams, `y` is the floor height)
@@ -191,12 +192,13 @@ async fn game_path(args: &Args, level: &deadfall::level::Level, quality: ShadowQ
         .unwrap_or_default();
     let repeat: u32 = flag_value(&args.raw, "--repeat").and_then(|v| v.parse().ok()).unwrap_or(3).max(2);
     let views = plan(args, level);
+    let loot = if args.has("--loot") { u64::MAX } else { 0 };
     for (name, view) in &views {
         let mut later = std::time::Duration::ZERO;
         for f in 0..repeat {
             let started = std::time::Instant::now();
             renderer.update(1. / 60.);
-            renderer.draw_world(view, &figures, None, 0, &[], &[], &[], &[0; 16], 1. / 60.);
+            renderer.draw_world(view, &figures, None, loot, &[], &[], &[], &[0; 16], 1. / 60.);
             if f + 1 == repeat {
                 if let Some(out) = &args.out {
                     previewkit::shot(out, name);
