@@ -83,6 +83,35 @@ function Wait-WindowState([IntPtr]$Window, [bool]$Fullscreen) {
   throw "Game window did not become fullscreen=$Fullscreen."
 }
 
+# Rendering can lag behind window creation under software OpenGL. Wait for the
+# same bright-title criterion used by the assertion, rather than a fixed delay.
+function Get-StudioTitleSamples([Drawing.Bitmap]$Bitmap) {
+  $width = $Bitmap.Width
+  $height = $Bitmap.Height
+  $scale = [Math]::Clamp([Math]::Min($width / 900.0, $height / 600.0), 0.3, 2.0)
+  $lightPixels = 0
+  $y0 = [Math]::Max(0, [int]($height * 0.43 + 10 * $scale))
+  $y1 = [Math]::Min($height, [int]($height * 0.43 + 80 * $scale))
+  $x0 = [Math]::Max(0, [int]($width / 2 - 230 * $scale))
+  $x1 = [Math]::Min($width, [int]($width / 2 + 230 * $scale))
+  for ($y = $y0; $y -lt $y1; $y += 3) {
+    for ($x = $x0; $x -lt $x1; $x += 3) {
+      $pixel = $Bitmap.GetPixel($x, $y)
+      if ($pixel.R -gt 170 -and $pixel.G -gt 180 -and $pixel.B -gt 190) { $lightPixels++ }
+    }
+  }
+  return $lightPixels
+}
+
+function Wait-StudioTitleSamples([scriptblock]$Probe, [ValidateRange(0, 5000)][int]$TimeoutMilliseconds = 2500) {
+  $watch = [Diagnostics.Stopwatch]::StartNew()
+  do {
+    $samples = & $Probe
+    if ($samples -ge 30 -or $watch.ElapsedMilliseconds -ge $TimeoutMilliseconds) { return $samples }
+    Start-Sleep -Milliseconds 75
+  } while ($true)
+}
+
 function Save-Window([IntPtr]$Window, [string]$Name, [switch]$StudioCard, [switch]$GameFrame) {
   $bounds = Get-WindowBounds $Window
   $width = $bounds.Right - $bounds.Left
@@ -91,24 +120,23 @@ function Save-Window([IntPtr]$Window, [string]$Name, [switch]$StudioCard, [switc
   $bitmap = [Drawing.Bitmap]::new($width, $height)
   $graphics = [Drawing.Graphics]::FromImage($bitmap)
   try {
-    $graphics.CopyFromScreen($bounds.Left, $bounds.Top, 0, 0, $bitmap.Size)
+    if ($StudioCard) {
+      [void](Wait-StudioTitleSamples -Probe {
+        $script:runningGame.Refresh()
+        if ($script:runningGame.HasExited) { throw 'Game exited while waiting for its studio title.' }
+        $graphics.CopyFromScreen($bounds.Left, $bounds.Top, 0, 0, $bitmap.Size)
+        Get-StudioTitleSamples $bitmap
+      })
+    } else {
+      $graphics.CopyFromScreen($bounds.Left, $bounds.Top, 0, 0, $bitmap.Size)
+    }
     $path = Join-Path $OutputDirectory "$Name.png"
     $bitmap.Save($path, [Drawing.Imaging.ImageFormat]::Png)
     if ($StudioCard) {
       # Inspect the rendered title area, not an embedded string or capture fixture.
       # The retained PNG is also reviewed visually before publication.
+      $lightPixels = Get-StudioTitleSamples $bitmap
       $scale = [Math]::Clamp([Math]::Min($width / 900.0, $height / 600.0), 0.3, 2.0)
-      $lightPixels = 0
-      $y0 = [Math]::Max(0, [int]($height * 0.43 + 10 * $scale))
-      $y1 = [Math]::Min($height, [int]($height * 0.43 + 80 * $scale))
-      $x0 = [Math]::Max(0, [int]($width / 2 - 230 * $scale))
-      $x1 = [Math]::Min($width, [int]($width / 2 + 230 * $scale))
-      for ($y = $y0; $y -lt $y1; $y += 3) {
-        for ($x = $x0; $x -lt $x1; $x += 3) {
-          $pixel = $bitmap.GetPixel($x, $y)
-          if ($pixel.R -gt 170 -and $pixel.G -gt 180 -and $pixel.B -gt 190) { $lightPixels++ }
-        }
-      }
       if ($lightPixels -lt 30) { throw "Studio title was not visible in $Name.png (light title samples: $lightPixels)." }
       # An old executable can still show the title while also showing retired artwork.
       # Keep the former logo area above the centered text clear in the shipped game.

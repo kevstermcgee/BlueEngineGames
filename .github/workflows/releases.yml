@@ -61,6 +61,10 @@ jobs:
           [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path 'distribution/check_startup_windows.ps1'), [ref]$tokens, [ref]$parseErrors)
           if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
 
+      - name: Test rendered studio title readiness
+        shell: pwsh
+        run: distribution/test_startup_verifier.ps1
+
       - name: Validate every game has a download definition
         run: |
           python distribution/check_catalog.py
