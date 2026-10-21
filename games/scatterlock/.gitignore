@@ -1,0 +1,7 @@
+/target/
+/.blue-check/
+/dist/
+/installers/
+
+# Review logs and temporary input/save evidence remain in retained run storage.
+/evidence/

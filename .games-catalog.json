@@ -1,7 +1,7 @@
 {
   "collections": {
     "demos": 83,
-    "games": 773,
+    "games": 817,
     "prototypes": 10,
     "tests": 64
   },
@@ -1323,6 +1323,18 @@
       "sha256": "8f925c1b4f72ce0bfa3442e5372032ebef23543366eed5c98e1723fc2a18477a"
     },
     {
+      "path": "games/crosshaul/assets/wiki/four-way-freight.png",
+      "sha256": "9da308ad42172b1624403904299b5950d14c4ce52722c5a91333ed3705b89e09"
+    },
+    {
+      "path": "games/crosshaul/assets/wiki/third-carrier.png",
+      "sha256": "4d53549ccd3163b10663456ac72137a917e9aeb122e1bda5237f937bd6d7028e"
+    },
+    {
+      "path": "games/crosshaul/assets/wiki/two-way-lift.png",
+      "sha256": "147a5adc996a454e36198778dfc1c5936851e1d492ab2c4780c4c5e06104f8af"
+    },
+    {
       "path": "games/crosshaul/build.rs",
       "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
     },
@@ -1397,6 +1409,10 @@
     {
       "path": "games/crosshaul/tests/identity.rs",
       "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
+      "path": "games/crosshaul/wiki.json",
+      "sha256": "0ce297a8236dd684c0f1cc3fee24e57479cb192c4ff9f7248ef979bcbb509d74"
     },
     {
       "path": "games/gap-flip/.gitignore",
@@ -2947,6 +2963,166 @@
       "sha256": "4dc418cba6b7cddee87b2f908745d865cf03d5ccfa6876b74cced2a77fb8f5b1"
     },
     {
+      "path": "games/scatterlock/.gitignore",
+      "sha256": "a77aec2d850154b272151b0b72d4fc34b10af882b6f780e4185a17d38ed93b01"
+    },
+    {
+      "path": "games/scatterlock/AGENTS.md",
+      "sha256": "215f7cc269e2853b9fefb32e716237db1fe37787bf94119fedf5864373863778"
+    },
+    {
+      "path": "games/scatterlock/CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "games/scatterlock/Cargo.lock",
+      "sha256": "0aa21bcd5630ad5cb48047af5428ca069d2e36d51f0c30e91dd44f3efe66c091"
+    },
+    {
+      "path": "games/scatterlock/Cargo.toml",
+      "sha256": "440ce0a36ae344ffcd967a9bf94090ab54fe18deebfa1b5721dbb7eac0eae41f"
+    },
+    {
+      "path": "games/scatterlock/README.md",
+      "sha256": "0ab80dcbae07f26137fa121a55b69b559ff786cc13eb43582e08097760981673"
+    },
+    {
+      "path": "games/scatterlock/STATUS.md",
+      "sha256": "686538f85d40e4ccaefcf0ccdcbbaf0355d1d99abcd71929994b5bf081727a09"
+    },
+    {
+      "path": "games/scatterlock/assets/icon.ico",
+      "sha256": "55615f351b3324774dc212ec4fb3ac1cb7fc46dbf17a290c72c4c5067033ae13"
+    },
+    {
+      "path": "games/scatterlock/assets/icon.png",
+      "sha256": "8dc420fa151663250c905c04fec934897d48f7a100109ac1e1d9e499a4afe163"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_16.rgba",
+      "sha256": "a676275ac451753eae34743872f73a913675524338aa81b026b1b2994bca1f25"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_32.rgba",
+      "sha256": "7eb071a8d6eed1821f537b5985b297dc8bf77bb89d5f747fe18e20505e6ccca4"
+    },
+    {
+      "path": "games/scatterlock/assets/icon_64.rgba",
+      "sha256": "1435b23f42a291170c6e70d7d09327e2f991878693fa4fe571d454acda75df4d"
+    },
+    {
+      "path": "games/scatterlock/assets/identity.json",
+      "sha256": "fb173fa8a5bc26c0178a2bb9dbacd3bcadf4efbdf1b674454c638758eb8bcbf5"
+    },
+    {
+      "path": "games/scatterlock/assets/native-review.json",
+      "sha256": "e38d6ffdb4c96bd3a2612d9136e45b5f6ec8ec9f59f39a482b8ab93818e3adeb"
+    },
+    {
+      "path": "games/scatterlock/assets/verification.script",
+      "sha256": "ad39a2f534910983d25fc1f31c2670920f25881fab34f8700486ec9159da9311"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/constellation-secured.png",
+      "sha256": "132bd6465939b5049ae796fe8752e14a0abeae708434f359c7ed4715d055d960"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/delivery-detour.png",
+      "sha256": "ad27cde7862f114ebbd4df73ab7b748d8b195d4bce92c03d40943f089b2ea1b2"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/origin-shift.png",
+      "sha256": "3311c23a8272a1cc99d9210f1937a62ff31f500394b64f14fbe9b81b27ae3668"
+    },
+    {
+      "path": "games/scatterlock/assets/wiki/upper-berth.png",
+      "sha256": "ccc1111a412b37da62145af264cfe4274c0aed03ec2bf971f81cfef29ea71141"
+    },
+    {
+      "path": "games/scatterlock/build.rs",
+      "sha256": "30fdca0ce4d0f300fc295a598233bb5e87c94940cac126da930c9febe50d1fcb"
+    },
+    {
+      "path": "games/scatterlock/game.project.json",
+      "sha256": "774a2f1092387bd66c6de94e85844e020d61a02782f48beecf5459abafa3682c"
+    },
+    {
+      "path": "games/scatterlock/rustfmt.toml",
+      "sha256": "93ed1668bb2ca659e88711456b72320bf2f53369ecf278c4a61af0cb63cc3a1e"
+    },
+    {
+      "path": "games/scatterlock/scripts/blue",
+      "sha256": "ee37b3e17d43c54feedf6f55afbb52a91b42bd1e34693f9006f67cb93ed8fe55"
+    },
+    {
+      "path": "games/scatterlock/scripts/blue.ps1",
+      "sha256": "4a8747ddba58da3ba1924d5a82ebfd1f42b5fb04b0fff83f1111cab7698496db"
+    },
+    {
+      "path": "games/scatterlock/scripts/capture_campaign.py",
+      "sha256": "1ad468f7f07b03d60e89cb483f5f4c05158d6d19fccf9dcd4fe4d0446973b56d"
+    },
+    {
+      "path": "games/scatterlock/scripts/check.py",
+      "sha256": "d64ea8243a6ac0da795562b3bb3e97a634a07942d28e974277b0217d9a95ebd3"
+    },
+    {
+      "path": "games/scatterlock/scripts/dev.py",
+      "sha256": "d7e00440fdab9223e8a6d52a34a1cd8be79fe53e74bcb0510ecee02893b4936c"
+    },
+    {
+      "path": "games/scatterlock/scripts/installer.json",
+      "sha256": "3f9c8d7d7e7b03334aaf70fb8638c622e1daa8b1baecbe1dd10e28a0ae0d00c9"
+    },
+    {
+      "path": "games/scatterlock/scripts/project.py",
+      "sha256": "3cc027dad74739b600d41320630e24e299b8bf9b9f5207c91fb504aa721d943a"
+    },
+    {
+      "path": "games/scatterlock/scripts/ship.py",
+      "sha256": "269482d084effd58bb3121c73ae8599bd1acafae101b45f724fade2e21add28e"
+    },
+    {
+      "path": "games/scatterlock/scripts/tooling.json",
+      "sha256": "32cc283d9abe5938a2043b631d164e36d4edfaed6cbc1b624c3c35471eac57e8"
+    },
+    {
+      "path": "games/scatterlock/scripts/tooling.py",
+      "sha256": "592e7d297f614a386f9cacdf030f78938a5e54deabb8a360bd0507a76a9bd063"
+    },
+    {
+      "path": "games/scatterlock/scripts/verify_controls.py",
+      "sha256": "eb826629cf8b89044945605db4a3917c0557bc73f5fd34038b6f46a42f531687"
+    },
+    {
+      "path": "games/scatterlock/src/controls.rs",
+      "sha256": "d05df8e8a7348c4a0bc08b74422ed3f133d07fc2fd049b169e4b196121849d91"
+    },
+    {
+      "path": "games/scatterlock/src/lib.rs",
+      "sha256": "c409f3021de17d78716401e0a0116c797e58bf28cb16885b20d4c1417dc81e2a"
+    },
+    {
+      "path": "games/scatterlock/src/main.rs",
+      "sha256": "c8dddba00d526c975c55337fbd433d2dc72f62c598694513fde3069f833ea9a0"
+    },
+    {
+      "path": "games/scatterlock/src/platform.rs",
+      "sha256": "008310c976c60f45674e8d3203c48fbbd2f38caaaea578953c28e93e978aef20"
+    },
+    {
+      "path": "games/scatterlock/tests/determinism.rs",
+      "sha256": "75ef2f8f2de721d10f8b76b1271ba7eb6fc00e54d38f0f1f2e32bb973ea356d4"
+    },
+    {
+      "path": "games/scatterlock/tests/identity.rs",
+      "sha256": "eda80019945441deb44e06238f4758818571980bae1abcefc13bd5ca8116c5e0"
+    },
+    {
+      "path": "games/scatterlock/wiki.json",
+      "sha256": "ad69f92efad84a2db53ae4feb78bb1054e55f084b67b511b41b4c4500bb76d44"
+    },
+    {
       "path": "games/signal-garden/.gitignore",
       "sha256": "8dc01a59645ac96be5821dacc4aef8b87706ebf4faf66ce2063c43e9fde8a515"
     },
@@ -3784,6 +3960,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "c6b604fba6fc36d5e804f8685e3635a35bf71338",
+  "source_revision": "d433ea5dc53098dadbcdf1247b33dbe3d86122df",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
