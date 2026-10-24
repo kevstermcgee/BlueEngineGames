@@ -475,6 +475,104 @@ try {
     `new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`,
   );
   assert.equal(await evaluate(`document.querySelector('#guide').open`), true);
+  // Real key events and IME composition must survive library renders. Restoring
+  // focus after detaching a form can pass identity/selection checks while still
+  // dropping keystrokes or committing an unfinished composition in WebView2.
+  await evaluate(`(() => {
+    const form = document.querySelector('[data-feedback-form]');
+    const roots = ['#guide-feedback', '#guide-collaborate'].map(s => document.querySelector(s));
+    const protectedNodes = new Set();
+    for (const root of roots)
+      for (let node = root; node && node !== document; node = node.parentNode)
+        protectedNodes.add(node);
+    const probe = window.__editingProbe = {
+      form, detached: 0, blurred: 0, compositionEnded: 0,
+      values: Object.fromEntries(['name', 'version', 'enjoyed', 'disliked'].map(name => [name, form.elements[name].value]))
+    };
+    probe.observer = new MutationObserver(records => {
+      for (const record of records)
+        for (const removed of record.removedNodes)
+          if (protectedNodes.has(removed)) probe.detached++;
+    });
+    probe.observer.observe(document.querySelector('#guide-content'), {childList: true, subtree: true});
+  })()`);
+  for (const name of ["name", "version", "enjoyed", "disliked"]) {
+    await evaluate(`(() => {
+      const field = window.__editingProbe.form.elements[${JSON.stringify(name)}];
+      field.value = '';
+      field.focus();
+    })()`);
+    // Even count restores the original favorite after exercising changed guide
+    // content on every key. JS clicks do not deliberately move keyboard focus.
+    for (const key of "key test") {
+      await call("Input.dispatchKeyEvent", { type: "keyDown", key, text: key });
+      await evaluate(
+        `document.querySelector('.card [data-favorite="embertrail"]').click()`,
+      );
+      await call("Input.dispatchKeyEvent", { type: "keyUp", key });
+    }
+    assert.deepEqual(
+      await evaluate(`(() => {
+        const probe = window.__editingProbe;
+        const field = probe.form.elements[${JSON.stringify(name)}];
+        return {value: field.value, focused: document.activeElement === field, detached: probe.detached};
+      })()`),
+      { value: "key test", focused: true, detached: 0 },
+      `${name} accepts every native key while the library refreshes`,
+    );
+  }
+  await evaluate(`(() => {
+    const probe = window.__editingProbe;
+    const field = probe.form.elements.enjoyed;
+    field.value = '';
+    field.focus();
+    field.addEventListener('blur', () => probe.blurred++, {once: true});
+    field.addEventListener('compositionend', () => probe.compositionEnded++);
+  })()`);
+  await call("Input.imeSetComposition", {
+    text: "日本",
+    selectionStart: 2,
+    selectionEnd: 2,
+  });
+  await evaluate(
+    `document.querySelector('.card [data-favorite="embertrail"]').click()`,
+  );
+  assert.deepEqual(
+    await evaluate(`({
+      focused: document.activeElement === window.__editingProbe.form.elements.enjoyed,
+      value: window.__editingProbe.form.elements.enjoyed.value,
+      detached: window.__editingProbe.detached,
+      blurred: window.__editingProbe.blurred,
+      compositionEnded: window.__editingProbe.compositionEnded
+    })`),
+    {
+      focused: true,
+      value: "日本",
+      detached: 0,
+      blurred: 0,
+      compositionEnded: 0,
+    },
+    "A guide refresh does not interrupt active native IME composition",
+  );
+  await call("Input.insertText", { text: "日本" });
+  await evaluate(
+    `document.querySelector('.card [data-favorite="embertrail"]').click()`,
+  );
+  assert.equal(
+    await evaluate(`window.__editingProbe.form.elements.enjoyed.value`),
+    "日本",
+    "The IME commits its complete text after the refresh",
+  );
+  await evaluate(`(() => {
+    const probe = window.__editingProbe;
+    probe.observer.disconnect();
+    for (const [name, value] of Object.entries(probe.values)) probe.form.elements[name].value = value;
+    probe.form.dispatchEvent(new Event('input', {bubbles: true}));
+    delete window.__editingProbe;
+  })()`);
+  console.log(
+    "Review text fields stayed connected and accepted every native key and IME composition across repeated guide refreshes.",
+  );
   // The CI build posts through real native HTTP to the loopback fixture server.
   await evaluate(`(() => {
     window.__feedbackSmoke = {};
@@ -533,12 +631,23 @@ try {
     ),
     review.enjoyed,
   );
+  assert.equal(
+    feedbackSmoke.reviews.length,
+    3,
+    "Transient failures receive bounded automatic retries",
+  );
+  for (const attempt of feedbackSmoke.reviews)
+    assert.deepEqual(
+      attempt,
+      review,
+      "Automatic retries preserve the same review and submission ID",
+    );
   feedbackSmoke.fail = false;
   await evaluate(
     `document.querySelector('[data-feedback-form]').requestSubmit()`,
   );
   const retried = await until(
-    () => feedbackSmoke.reviews[1],
+    () => feedbackSmoke.reviews[3],
     "saved draft retry",
   );
   assert.equal(retried.submission_id, review.submission_id);

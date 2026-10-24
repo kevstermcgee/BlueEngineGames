@@ -14,9 +14,9 @@ INSTALLER = 'BlueEngine-Games-Setup-x64.exe'
 ASSETS = {INSTALLER: 512 * 1024**2, INSTALLER + '.sig': 65536,
           'launcher-update.json': 65536, 'LAUNCHER-SHA256SUMS.txt': 16384}
 METADATA = 'site/launcher-release.json'
-NOTES = ('Create, fork and improve native games with shared source history, fresh AI handoffs, '
-         'publication requests and human or AI development feedback. Includes account-free player '
-         'reviews, game guides, favorites and signed launcher updates.')
+NOTES = ('Review text fields keep keyboard focus and composition during library refreshes. '
+         'Feedback submission retries temporary connection and receiver failures with the same '
+         'review ID, preserves drafts, and reports actionable errors.')
 
 
 class PublicationError(ValueError):

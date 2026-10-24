@@ -34,7 +34,11 @@ sign-in is required. A blank name appears as **Anonymous**. Names and reviews
 are public, so keep private information out of the form.
 
 Drafts stay on the device while offline or after a failed submission. Retrying
-the same review uses the same submission ID to avoid duplicates. The launcher
+the same review uses the same submission ID to avoid duplicates. Each submission
+retries temporary connection or receiver failures up to three times within
+90 seconds. Validation errors and rate limits show the next step without repeated
+requests. Library refreshes leave review editors connected, preserving keyboard
+focus, cursor position and text composition while you write. The launcher
 confirms success only after the receiver publishes the review to the engine
 repository. Accepted reviews feed future improvement cycles and IdeaForge
 planning, building and review. Public ratings and a paginated review browser
