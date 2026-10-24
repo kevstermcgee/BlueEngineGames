@@ -144,6 +144,152 @@ test("submission POST sends JSON without account credentials and requires exact 
     );
 });
 
+test("transient failures retry identical bytes until a matching receipt arrives", async () => {
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  const bodies = [];
+  const receipt = { accepted: true, submission_id: submissionId };
+  const result = await submitFeedback(payload, {
+    fetcher: async (_url, options) => {
+      bodies.push(options.body);
+      if (bodies.length === 1) {
+        // A network failure can also mean the receiver accepted the first request.
+        payload.enjoyed = "An edit made while submitting";
+        payload.submission_id = "An identity changed by the caller";
+        throw new TypeError("Connection reset");
+      }
+      if (bodies.length === 2) return { ok: false, status: 503 };
+      return { ok: true, json: async () => receipt };
+    },
+  });
+  assert.deepEqual(result, receipt);
+  assert.equal(bodies.length, 3);
+  assert.equal(new Set(bodies).size, 1);
+  assert.equal(JSON.parse(bodies[0]).submission_id, submissionId);
+  assert.equal(JSON.parse(bodies[0]).enjoyed, review.enjoyed.trim());
+});
+
+test("permanent failures and mismatched receipts stop after one attempt", async () => {
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  for (const [status, message] of [
+    [400, /Check your rating/],
+    [409, /Edit your draft/],
+    [413, /Check your rating/],
+    [422, /Check your rating/],
+    [429, /wait a few minutes/],
+    [302, /temporarily unavailable/],
+  ]) {
+    let requests = 0;
+    await assert.rejects(
+      submitFeedback(payload, {
+        fetcher: async () => {
+          requests++;
+          return { ok: false, status };
+        },
+      }),
+      message,
+    );
+    assert.equal(requests, 1);
+  }
+  let requests = 0;
+  await assert.rejects(
+    submitFeedback(payload, {
+      fetcher: async () => {
+        requests++;
+        return {
+          ok: true,
+          json: async () => ({ accepted: true, submission_id: "wrong" }),
+        };
+      },
+    }),
+    /receipt could not be verified/,
+  );
+  assert.equal(requests, 1);
+});
+
+test("transient retry attempts are bounded", async () => {
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  let requests = 0;
+  await assert.rejects(
+    submitFeedback(payload, {
+      fetcher: async () => {
+        requests++;
+        return { ok: false, status: 503 };
+      },
+    }),
+    /temporarily unavailable/,
+  );
+  assert.equal(requests, 3);
+});
+
+test("closing the form aborts an active request without a retry", async () => {
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  const controller = new AbortController();
+  let requests = 0;
+  let requestSignal;
+  const pending = submitFeedback(payload, {
+    signal: controller.signal,
+    fetcher: async (_url, options) => {
+      requests++;
+      requestSignal = options.signal;
+      return new Promise((_, reject) => {
+        options.signal.addEventListener(
+          "abort",
+          () => reject(new Error("aborted")),
+          { once: true },
+        );
+      });
+    },
+  });
+  controller.abort();
+  await assert.rejects(pending, /draft is still here/);
+  assert.equal(requestSignal.aborted, true);
+  assert.equal(requests, 1);
+});
+
+test("closing during backoff cancels the retry", async () => {
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  const controller = new AbortController();
+  let requests = 0;
+  const pending = submitFeedback(payload, {
+    signal: controller.signal,
+    fetcher: async () => {
+      requests++;
+      return { ok: false, status: 503 };
+    },
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  controller.abort();
+  await assert.rejects(pending, /draft is still here/);
+  assert.equal(requests, 1);
+});
+
+test("request timeouts retry within a single 90-second submission budget", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const { payload } = buildFeedbackSubmission(game, review, submissionId);
+  let requests = 0;
+  const pending = submitFeedback(payload, {
+    fetcher: async (_url, options) => {
+      requests++;
+      return new Promise((_, reject) => {
+        options.signal.addEventListener(
+          "abort",
+          () => reject(new Error("timeout")),
+          { once: true },
+        );
+      });
+    },
+  });
+  const rejected = assert.rejects(pending, /draft is still here/);
+  t.mock.timers.tick(60000);
+  await new Promise((resolve) => setImmediate(resolve));
+  t.mock.timers.tick(500);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(requests, 2);
+  t.mock.timers.tick(29500);
+  await rejected;
+  assert.equal(requests, 2);
+});
+
 test("drafts preserve optional name and retry identity, and remain isolated per game", () => {
   const local = storage();
   const draft = { ...review, name: "Ada", submission_id: submissionId };
@@ -706,5 +852,36 @@ test("invalid fields stay local and focus the first accessible error", async () 
   assert.equal(fixture.fields.name.focused, true);
   assert.equal(fixture.fields.name.getAttribute("aria-invalid"), "true");
   assert.equal(loadFeedbackDraft(game, fixture.local).name.length, 81);
+  fixture.cleanup();
+});
+
+test("submission errors show actionable safe transport messages and retain drafts", async () => {
+  for (const message of [
+    "Please wait a few minutes before trying again. Your draft is still here.",
+    "A previous submission uses this review ID. Edit your draft before submitting again. Your draft is still here.",
+    "The feedback service is temporarily unavailable. Your draft is still here; please try again shortly.",
+  ]) {
+    const fixture = feedbackFixture({
+      submitReview: async () => {
+        throw message;
+      },
+    });
+    await fixture.form.emit("submit");
+    assert.equal(fixture.status.textContent, message);
+    assert.equal(fixture.fields.enjoyed.value, review.enjoyed);
+    assert.equal(
+      loadFeedbackDraft(game, fixture.local).enjoyed,
+      review.enjoyed,
+    );
+    fixture.cleanup();
+  }
+  const fixture = feedbackFixture({
+    submitReview: async () => {
+      throw new Error("Internal credentials or stack trace");
+    },
+  });
+  await fixture.form.emit("submit");
+  assert.doesNotMatch(fixture.status.textContent, /credentials|stack trace/);
+  assert.match(fixture.status.textContent, /could not be submitted/);
   fixture.cleanup();
 });

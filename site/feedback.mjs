@@ -181,32 +181,121 @@ export function buildFeedbackSubmission(game, review, submissionId) {
   };
 }
 
+const submissionMessages = {
+  connection:
+    "Feedback could not be sent. Your draft is still here. Check your connection and try again.",
+  unavailable:
+    "The feedback service is temporarily unavailable. Your draft is still here; please try again shortly.",
+  rateLimited:
+    "Please wait a few minutes before trying again. Your draft is still here.",
+  invalid:
+    "The review was not accepted. Check your rating and written answers before trying again. Your draft is still here.",
+  conflict:
+    "A previous submission uses this review ID. Edit your draft before submitting again. Your draft is still here.",
+  receipt:
+    "The feedback receipt could not be verified. Your draft is still here; retrying safely uses the same review ID.",
+};
+const transientSubmissionStatuses = new Set([408, 425, 500, 502, 503, 504]);
+const submissionRetryDelays = [500, 1500];
+
+class SubmissionFailure extends Error {
+  constructor(message, retry = false) {
+    super(message);
+    this.retry = retry;
+  }
+}
+
+function submissionResponseFailure(status) {
+  const message =
+    status === 429
+      ? submissionMessages.rateLimited
+      : status === 409
+        ? submissionMessages.conflict
+        : [400, 413, 422].includes(status)
+          ? submissionMessages.invalid
+          : submissionMessages.unavailable;
+  return new SubmissionFailure(
+    message,
+    transientSubmissionStatuses.has(status),
+  );
+}
+
+function submissionRetryDelay(delay, signal) {
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      clearTimeout(timer);
+      reject(new SubmissionFailure(submissionMessages.connection));
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", abort);
+      resolve();
+    }, delay);
+    if (signal.aborted) abort();
+    else signal.addEventListener("abort", abort, { once: true });
+  });
+}
+
 export async function submitFeedback(
   payload,
   { fetcher = globalThis.fetch, signal, url = FEEDBACK_SUBMIT_URL } = {},
 ) {
-  if (typeof fetcher !== "function") throw new Error("Feedback unavailable");
+  if (typeof fetcher !== "function")
+    throw new SubmissionFailure(submissionMessages.unavailable);
+  // Every attempt sends the same bytes and ID, even if the player keeps editing.
+  const body = JSON.stringify(payload);
+  const submissionId = payload.submission_id;
   const controller = new AbortController();
   const abort = () => controller.abort();
   if (signal?.aborted) abort();
   signal?.addEventListener("abort", abort, { once: true });
-  const timeout = setTimeout(abort, 60000);
+  const timeout = setTimeout(abort, 90000);
   try {
-    const response = await fetcher(url, {
-      method: "POST",
-      credentials: "omit",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    if (!response.ok) throw new Error("Feedback unavailable");
-    const result = await response.json();
-    if (
-      result?.accepted !== true ||
-      result.submission_id !== payload.submission_id
-    )
-      throw new Error("Feedback was not acknowledged");
-    return result;
+    for (let attempt = 0; ; attempt++) {
+      if (controller.signal.aborted)
+        throw new SubmissionFailure(submissionMessages.connection);
+      const request = new AbortController();
+      const abortRequest = () => request.abort();
+      controller.signal.addEventListener("abort", abortRequest, { once: true });
+      const requestTimeout = setTimeout(abortRequest, 60000);
+      try {
+        const response = await fetcher(url, {
+          method: "POST",
+          credentials: "omit",
+          redirect: "error",
+          headers: { "Content-Type": "application/json" },
+          body,
+          signal: request.signal,
+        });
+        if (!response.ok) throw submissionResponseFailure(response.status);
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          throw new SubmissionFailure(submissionMessages.receipt, true);
+        }
+        if (result?.accepted !== true || result.submission_id !== submissionId)
+          throw new SubmissionFailure(submissionMessages.receipt);
+        return result;
+      } catch (error) {
+        const failure =
+          error instanceof SubmissionFailure
+            ? error
+            : new SubmissionFailure(submissionMessages.connection, true);
+        if (
+          controller.signal.aborted ||
+          !failure.retry ||
+          attempt >= submissionRetryDelays.length
+        )
+          throw failure;
+      } finally {
+        clearTimeout(requestTimeout);
+        controller.signal.removeEventListener("abort", abortRequest);
+      }
+      await submissionRetryDelay(
+        submissionRetryDelays[attempt],
+        controller.signal,
+      );
+    }
   } finally {
     clearTimeout(timeout);
     signal?.removeEventListener("abort", abort);
@@ -520,11 +609,13 @@ export function mountFeedback(
         status.textContent =
           "Thank you! Your feedback was saved to the BlueEngine repository. Your newer changes remain saved as a separate draft.";
       }
-    } catch {
+    } catch (error) {
       if (alive) {
         persist();
-        status.textContent =
-          "Feedback could not be submitted right now. Your draft is still here. Check your connection and try again; retrying won’t create a duplicate review.";
+        const message = typeof error === "string" ? error : error?.message;
+        status.textContent = Object.values(submissionMessages).includes(message)
+          ? message
+          : "Feedback could not be submitted right now. Your draft is still here. Check your connection and try again; retrying won’t create a duplicate review.";
       }
     } finally {
       submitting = false;

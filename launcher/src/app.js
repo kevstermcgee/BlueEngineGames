@@ -277,56 +277,58 @@ function paragraphs(s) {
     .map((p) => `<p>${esc(p)}</p>`)
     .join("");
 }
+// These regions never contain a mounted editor. Keeping their ancestors in the
+// document avoids blurring WebView text inputs or interrupting IME composition.
+const guideRegionHTML = new WeakMap();
 function renderGuide(g) {
   if (!g) return;
   const w = g.wiki;
   const dialog = $("#guide");
-  const sameGame = $("#guide-content").dataset.game === g.slug;
+  const content = $("#guide-content");
+  const sameGame = content.dataset.game === g.slug;
   const scrollPosition = dialog.scrollTop;
-  const activeElement = $("#guide-content").contains(document.activeElement)
+  const activeElement = content.contains(document.activeElement)
     ? document.activeElement
     : null;
-  const activeSelection =
-    activeElement && typeof activeElement.selectionStart === "number"
-      ? [activeElement.selectionStart, activeElement.selectionEnd]
-      : null;
   const focusId = activeElement?.id;
   const focusHref = activeElement?.matches("a[href]")
     ? activeElement.getAttribute("href")
     : null;
-  const previousCommunity = sameGame ? $("#guide-collaborate") : null;
-  if (!previousCommunity) cleanupGuideCommunity?.();
-  const versionsExpanded = $("#guide-versions details")?.open;
-  const content = $("#guide-content"),
-    previous =
-      content.dataset.game === g.slug
-        ? content.querySelector("#guide-feedback")
-        : null,
-    focused = previous?.contains(document.activeElement)
-      ? document.activeElement
-      : null,
-    selection =
-      focused && typeof focused.selectionStart === "number"
-        ? [focused.selectionStart, focused.selectionEnd]
-        : null;
-  if (!previous) cleanupGuideFeedback?.();
+  const versionsExpanded = content.querySelector(
+    "#guide-versions details",
+  )?.open;
+  if (!sameGame) {
+    cleanupGuideFeedback?.();
+    cleanupGuideCommunity?.();
+    content.innerHTML = `<div class="guide-hero" data-guide-region="hero"></div><nav class="guide-nav" data-guide-region="navigation"></nav><div class="guide-body"><section id="guide-overview" data-guide-region="overview"></section><div data-guide-region="versions"></div><div class="guide-columns"><section id="guide-rules" data-guide-region="rules"></section><section id="guide-controls" data-guide-region="controls"></section></div><div data-guide-region="story"></div><div data-guide-region="characters"></div><section id="guide-gallery" data-guide-region="gallery"></section><section id="guide-creation" data-guide-region="creation"></section>${renderFeedback(g)}${renderCollaboration(g)}<div data-guide-region="installation"></div></div>`;
+    content.dataset.game = g.slug;
+    guideRegionHTML.set(content, {});
+  }
   const optional = optionalGuideSections(w, { esc, paragraphs, img });
-  $("#guide-content").innerHTML =
-    `<div class="guide-hero"><img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><div class="guide-heading"><h1>${esc(g.name)}</h1>${favorite(g, true)}</div><div class="badges">${badges(g)}</div><a class="public-score" href="#guide-feedback">${renderPublicScore(g, publicReviewState)}</a>${releaseSummary(g)}<div class="guide-actions">${guidePrimary(g)}<span class="package-size">${size(g.package.size)} · Windows x64</span></div></div></div><nav class="guide-nav">${guideNavigation(
-      w,
-    )
+  const regions = {
+    hero: `<img src="${img(g.image)}" alt="${esc(g.name)} gameplay"><div><p class="eyebrow">GAME GUIDE</p><div class="guide-heading"><h1>${esc(g.name)}</h1>${favorite(g, true)}</div><div class="badges">${badges(g)}</div><a class="public-score" href="#guide-feedback">${renderPublicScore(g, publicReviewState)}</a>${releaseSummary(g)}<div class="guide-actions">${guidePrimary(g)}<span class="package-size">${size(g.package.size)} · Windows x64</span></div></div>`,
+    navigation: guideNavigation(w)
       .map((n) => `<a href="#guide-${n.toLowerCase()}">${n}</a>`)
-      .join(
-        "",
-      )}</nav><div class="guide-body"><section id="guide-overview"><h2>Overview</h2>${paragraphs(w.overview)}</section>${renderVersions(g)}<div class="guide-columns"><section id="guide-rules"><h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol></section><section id="guide-controls"><h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></section></div>${optional.story}${optional.characters}<section id="guide-gallery"><h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div></section><section id="guide-creation"><h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}</section>${renderFeedback(g)}${renderCollaboration(g)}${installs[g.slug]?.installed ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>` : ""}</div>`;
-  content.dataset.game = g.slug;
-  if (previous) {
-    content.querySelector("#guide-feedback").replaceWith(previous);
-    if (focused) {
-      focused.focus({ preventScroll: true });
-      if (selection) focused.setSelectionRange(...selection);
-    }
-  } else {
+      .join(""),
+    overview: `<h2>Overview</h2>${paragraphs(w.overview)}`,
+    versions: renderVersions(g),
+    rules: `<h2>How to play</h2><ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol>`,
+    controls: `<h2>Controls</h2><ul>${w.controls.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>`,
+    story: optional.story,
+    characters: optional.characters,
+    gallery: `<h2>Inside the game</h2><div class="gallery">${w.gallery.map((p) => `<figure><img src="${img(p.image)}" alt="${esc(p.alt)}" loading="lazy"><figcaption>${esc(p.caption)}</figcaption></figure>`).join("")}</div>`,
+    creation: `<h2>${g.origin === "ai" ? "Why this game was chosen" : "The original game idea"}</h2>${g.origin === "ai" ? paragraphs(w.design.rationale || "Original selection rationale not yet recovered.") : `<pre>${esc(w.design.original_prompt || "Original prompt not yet recovered")}</pre>`}${paragraphs(w.design.rationale_source)}${paragraphs(w.design.prompt_note)}`,
+    installation: installs[g.slug]?.installed
+      ? `<section class="manage"><h2>Manage installation</h2><p>${esc(installs[g.slug].path)}</p><button class="danger" data-uninstall="${esc(g.slug)}" ${active ? "disabled" : ""}>Uninstall game</button><small>Saves and player-created files are kept.</small></section>`
+      : "",
+  };
+  const previousHTML = guideRegionHTML.get(content);
+  for (const [name, html] of Object.entries(regions)) {
+    if (previousHTML[name] === html) continue;
+    content.querySelector(`[data-guide-region="${name}"]`).innerHTML = html;
+    previousHTML[name] = html;
+  }
+  if (!sameGame) {
     cleanupGuideFeedback = mountFeedback(
       content.querySelector("#guide-feedback"),
       {
@@ -339,10 +341,6 @@ function renderGuide(g) {
         ? { submitReview: (review) => invoke("submit_feedback", { review }) }
         : {},
     );
-  }
-  if (previousCommunity)
-    content.querySelector("#guide-collaborate").replaceWith(previousCommunity);
-  else
     cleanupGuideCommunity = mountCollaboration(
       content.querySelector("#guide-collaborate"),
       g,
@@ -350,24 +348,23 @@ function renderGuide(g) {
         ? { openExternal: (url) => invoke("open_community_url", { url }) }
         : {},
     );
-  if (sameGame) {
+  } else {
     const details = content.querySelector("#guide-versions details");
     if (details) details.open = !!versionsExpanded;
-    if (!focused && activeElement) {
-      const replacement = content.contains(activeElement)
-        ? activeElement
-        : focusId
-          ? document.getElementById(focusId)
-          : [...content.querySelectorAll("a[href]")].find(
-              (a) => a.getAttribute("href") === focusHref,
-            );
+    // A changed button or link may need a replacement. Connected editors keep
+    // their native focus and selection without any programmatic focus calls.
+    if (activeElement && !content.contains(activeElement)) {
+      const replacement = focusId
+        ? document.getElementById(focusId)
+        : [...content.querySelectorAll("a[href]")].find(
+            (a) => a.getAttribute("href") === focusHref,
+          );
       replacement?.focus({ preventScroll: true });
-      if (activeSelection && replacement?.setSelectionRange)
-        replacement.setSelectionRange(...activeSelection);
     }
     dialog.scrollTop = scrollPosition;
   }
 }
+
 let lastConnection = null;
 function apply(s) {
   const notice = s.message;
