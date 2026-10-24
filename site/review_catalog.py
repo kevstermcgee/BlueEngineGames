@@ -46,29 +46,17 @@ def reviewable_games(document):
     return games
 
 
-def fetch_reviewable_games(*, opener=None, sleep=time.sleep):
-    opener = opener or build_opener(NoRedirect())
-    for attempt in range(len(RETRY_DELAYS) + 1):
-        try:
-            request = Request(ENDPOINT, headers={"Accept": "application/json", "Cache-Control": "no-cache"}, method="GET")
-            with opener.open(request, timeout=TIMEOUT) as response:
-                content = response.read(MAX_BODY + 1)
-            if len(content) > MAX_BODY:
-                raise CoverageError("The review receiver catalog exceeds the response limit. Restore the receiver before publishing.")
-            try:
-                document = json.loads(content)
-            except (UnicodeError, ValueError, RecursionError):
-                raise CoverageError("The review receiver returned malformed JSON. Restore the receiver before publishing.") from None
-            return reviewable_games(document)
-        except HTTPError as error:
-            if error.code not in TRANSIENT_STATUS:
-                raise CoverageError(f"The review receiver returned HTTP {error.code}. Deploy or restore the receiver before publishing.") from None
-            failure = f"HTTP {error.code}"
-        except (TimeoutError, socket.timeout, URLError, OSError, HTTPException):
-            failure = "a timeout or connection failure"
-        if attempt == len(RETRY_DELAYS):
-            raise CoverageError(f"The review receiver is unavailable after {attempt + 1} attempts ({failure}). Restore it and rerun publication.")
-        sleep(RETRY_DELAYS[attempt])
+def fetch_reviewable_games(opener):
+    request = Request(ENDPOINT, headers={"Accept": "application/json", "Cache-Control": "no-cache"}, method="GET")
+    with opener.open(request, timeout=TIMEOUT) as response:
+        content = response.read(MAX_BODY + 1)
+    if len(content) > MAX_BODY:
+        raise CoverageError("The review receiver catalog exceeds the response limit. Restore the receiver before publishing.")
+    try:
+        document = json.loads(content)
+    except (UnicodeError, ValueError, RecursionError):
+        raise CoverageError("The review receiver returned malformed JSON. Restore the receiver before publishing.") from None
+    return reviewable_games(document)
 
 
 def check(document, *, opener=None, sleep=time.sleep):
@@ -82,12 +70,27 @@ def check(document, *, opener=None, sleep=time.sleep):
                 or game["slug"] in published):
             raise CoverageError("The generated launcher catalog has an invalid or duplicate game identity.")
         published[game["slug"]] = game["name"]
-    accepted = fetch_reviewable_games(opener=opener, sleep=sleep)
-    missing = sorted(published.keys() - accepted.keys())
-    if missing:
-        names = ", ".join(f"{published[slug]} ({slug})" for slug in missing)
-        raise CoverageError(f"Published games cannot receive reviews: {names}. Update the receiver's trusted game catalog and rerun publication; the site was not deployed.")
-    return {"published_games": len(published), "reviewable_games": len(accepted), "endpoint": ENDPOINT}
+    opener = opener or build_opener(NoRedirect())
+    for attempt in range(len(RETRY_DELAYS) + 1):
+        try:
+            accepted = fetch_reviewable_games(opener)
+            missing = sorted(published.keys() - accepted.keys())
+            if not missing:
+                return {"published_games": len(published), "reviewable_games": len(accepted), "endpoint": ENDPOINT}
+            names = ", ".join(f"{published[slug]} ({slug})" for slug in missing)
+            failure = (f"Published games cannot receive reviews: {names}. Update the receiver's trusted game catalog "
+                       "and rerun publication; the site was not deployed.")
+        except HTTPError as error:
+            if error.code not in TRANSIENT_STATUS:
+                raise CoverageError(f"The review receiver returned HTTP {error.code}. Deploy or restore the receiver before publishing.") from None
+            failure = f"The review receiver is unavailable after {attempt + 1} attempts (HTTP {error.code}). Restore it and rerun publication."
+        except (TimeoutError, socket.timeout, URLError, OSError, HTTPException):
+            failure = f"The review receiver is unavailable after {attempt + 1} attempts (a timeout or connection failure). Restore it and rerun publication."
+        if attempt == len(RETRY_DELAYS):
+            raise CoverageError(failure)
+        # Receiver reads cache trusted Git snapshots briefly. The same bounded
+        # budget covers network recovery and a just-published game's propagation.
+        sleep(RETRY_DELAYS[attempt])
 
 
 def main(argv=None):

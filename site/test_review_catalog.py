@@ -27,10 +27,12 @@ class ReviewPublicationCoverage(unittest.TestCase):
         original = {f"legacy-{index}": f"Legacy {index}" for index in range(51)}
         newly_published = {"bluecity": "BlueCity", "scatterlock": "Scatterlock", "tetris": "Tetris"}
         opener = Mock()
-        opener.open.return_value = response(accepted(original))
+        opener.open.side_effect = [response(accepted(original)) for _ in range(3)]
+        sleep = Mock()
         with self.assertRaisesRegex(coverage.CoverageError, "BlueCity \\(bluecity\\).*Scatterlock \\(scatterlock\\).*Tetris \\(tetris\\).*"):
-            coverage.check(published(original | newly_published), opener=opener)
-        self.assertEqual(opener.open.call_count, 1, "Missing trusted identities need catalog repair, not network retries")
+            coverage.check(published(original | newly_published), opener=opener, sleep=sleep)
+        self.assertEqual(opener.open.call_count, 3, "A catalog gap gets only the bounded propagation window")
+        self.assertEqual([call.args for call in sleep.call_args_list], [(5,), (15,)])
 
     def test_all_published_games_pass_with_unpublished_extras_and_different_display_titles(self):
         opener = Mock()
@@ -46,9 +48,24 @@ class ReviewPublicationCoverage(unittest.TestCase):
         opener = Mock()
         document = accepted({})
         document["games"] = [{"slug": "draft", "title": "Unverified creator draft"}]
-        opener.open.return_value = response(document)
+        opener.open.side_effect = [response(document) for _ in range(3)]
         with self.assertRaisesRegex(coverage.CoverageError, "Draft \\(draft\\)"):
-            coverage.check(published({"draft": "Draft"}), opener=opener)
+            coverage.check(published({"draft": "Draft"}), opener=opener, sleep=Mock())
+
+    def test_new_publication_can_wait_for_the_receiver_freshness_window(self):
+        opener, sleep = Mock(), Mock()
+        opener.open.side_effect = [response(accepted({})), response(accepted({"bluecity": "BlueCity"}))]
+        self.assertEqual(coverage.check(published({"bluecity": "BlueCity"}), opener=opener, sleep=sleep)["published_games"], 1)
+        self.assertEqual(opener.open.call_count, 2)
+        sleep.assert_called_once_with(5)
+
+    def test_catalog_propagation_and_transport_failures_share_one_request_budget(self):
+        opener, sleep = Mock(), Mock()
+        opener.open.side_effect = [response(accepted({})), TimeoutError("timed out"),
+                                   response(accepted({"bluecity": "BlueCity"}))]
+        self.assertEqual(coverage.check(published({"bluecity": "BlueCity"}), opener=opener, sleep=sleep)["published_games"], 1)
+        self.assertEqual(opener.open.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
 
     def test_deployed_receiver_must_report_valid_explicit_eligibility(self):
         invalid = [None, [], {"schema_version": 2, "games": []},
