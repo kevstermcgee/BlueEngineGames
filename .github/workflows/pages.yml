@@ -88,6 +88,10 @@ jobs:
         if: steps.metadata.outputs.ready == 'true'
         run: python3 site/check.py _site
 
+      - name: Verify published games can receive player reviews
+        if: steps.metadata.outputs.ready == 'true'
+        run: python3 site/review_catalog.py _site/catalog.json
+
       - uses: actions/configure-pages@v5
         if: steps.metadata.outputs.ready == 'true'
 
