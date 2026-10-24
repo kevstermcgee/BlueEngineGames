@@ -2984,11 +2984,11 @@
     },
     {
       "path": "games/scatterlock/README.md",
-      "sha256": "0ab80dcbae07f26137fa121a55b69b559ff786cc13eb43582e08097760981673"
+      "sha256": "ee3f95247262eaff35bd4133eb006b44bd3dc2a1e45580388abb321c129c97ef"
     },
     {
       "path": "games/scatterlock/STATUS.md",
-      "sha256": "686538f85d40e4ccaefcf0ccdcbbaf0355d1d99abcd71929994b5bf081727a09"
+      "sha256": "d5a9a86c78d597381977e16a3ddcdc642d142e82e41ce377b2015f117b002c3c"
     },
     {
       "path": "games/scatterlock/assets/icon.ico",
@@ -3016,7 +3016,7 @@
     },
     {
       "path": "games/scatterlock/assets/native-review.json",
-      "sha256": "e38d6ffdb4c96bd3a2612d9136e45b5f6ec8ec9f59f39a482b8ab93818e3adeb"
+      "sha256": "2ab198d9f57efb08be121be65794ff0336f608720259ec46e4a8cf33ea625097"
     },
     {
       "path": "games/scatterlock/assets/verification.script",
@@ -3104,7 +3104,7 @@
     },
     {
       "path": "games/scatterlock/src/main.rs",
-      "sha256": "c8dddba00d526c975c55337fbd433d2dc72f62c598694513fde3069f833ea9a0"
+      "sha256": "c3daff74bdd79b38b81d3b570d8c5bbfb173c7660a670787b6c28cafe9c2a5dc"
     },
     {
       "path": "games/scatterlock/src/platform.rs",
@@ -4120,6 +4120,6 @@
   ],
   "schema_version": 1,
   "source_repository": "kevstermcgee/BlueEngine",
-  "source_revision": "cc2e9f54bed69b325bd5016a68712667756faf70",
+  "source_revision": "181ed71a6d1b43ea5ab37ec9dc46fc4ce59e1f92",
   "target_repository": "kevstermcgee/BlueEngineGames"
 }
